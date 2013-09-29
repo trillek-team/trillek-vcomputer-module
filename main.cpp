@@ -6,10 +6,11 @@
 #include <cstdio>
 #include <algorithm>
 
+size_t prg_size = 24*2;
 CPU::word_t prg[] = {
-    0x6210,  // SET 1, r0
-    0x6211,  // SET 1, r1
-    0x6222,  // SET 2, r2 ..
+    0x6210,  // 000h SET 1, r0
+    0x6211,  // 002h SET 1, r1
+    0x6222,  // 004h SET 2, r2 ..
     0x6233,
     0x6244,
     0x6255,
@@ -21,9 +22,17 @@ CPU::word_t prg[] = {
     0x62BB,
     0x62CC,
     0x62DD,
-    0x62EE,  // SET 14, BP
-    0x62FF,  // SET 15, SP
-    0x620F,  // SET 0 , SP
+    0x62EE,  // 01Ch SET 14, BP
+    0x62FF,  // 01Eh SET 15, SP
+    0x000F,  // 020h literal
+    0x620F,  // 022h SET 0 , SP
+    0x2001,  // 024h NOT r1
+    0x2012,  // 026h NEG r2
+    0x2023,  // 028h XCHG r3
+    0x62F4,  // 02Ah SET 0x00FF, r4
+    0x00FF,  // 02Ch literal
+    0x2034,  // 02Eh SXTBD r4 (r4= 0xFFFF)
+    0
 };
 
 void print_regs(const CPU::CpuState& state);
@@ -35,7 +44,7 @@ int main()
     RC1600 cpu;
     cpu.reset();
     
-    std::copy_n((byte_t*)prg, 17*2, cpu.ram);
+    std::copy_n((byte_t*)prg, prg_size, cpu.ram);
 
     print_regs(cpu.getState());
     
