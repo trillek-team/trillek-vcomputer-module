@@ -95,9 +95,105 @@ unsigned RC1600::realStep()
     reg2 = (inst >> 4) & 0xF;
     reg1 = (inst >> 8) & 0xF;
     std::printf("### reg3 %x reg2 %x reg1 %x\n", reg3, reg2, reg1);
+    // Check if we are skiping a instrucction
+    if (state.skiping) {
+        state.wait_cycles = 1;
+        // See what kind of instrucction is to know how many should
+        // increment PC, and remove skiping flag if is not a branch
+        if (IS_PAR3(inst)) {
+            // 3 parameter instrucction
+            opcode = (inst >> 12) & 7;
+            switch (opcode) {
+                case PAR3_OPCODE::LOAD_LIT:
+                case PAR3_OPCODE::LOADB_LIT:
+                case PAR3_OPCODE::STORE_LIT:
+                case PAR3_OPCODE::STOREB_LIT:
+                    GRAB_NEXT_WORD_LITERAL(reg2);
+                    break;
+
+                default:
+                    break;
+            }
+            state.skiping = false;
+        } else if (IS_PAR2(inst)) {
+            // 2 parameter instrucction
+            opcode = (inst >> 8) & 0x3F;
+            switch (opcode) {
+                case PAR2_OPCODE::ADD_LIT :
+                case PAR2_OPCODE::SUB_LIT :
+                case PAR2_OPCODE::SUBC_LIT :
+                case PAR2_OPCODE::SLL_LIT :
+                case PAR2_OPCODE::SRL_LIT :
+                case PAR2_OPCODE::SRA_LIT :
+                case PAR2_OPCODE::SET :
+                case PAR2_OPCODE::INP_LIT :
+                case PAR2_OPCODE::OUT_LIT :
+                case PAR2_OPCODE::JMP :
+                case PAR2_OPCODE::CALL :
+                    GRAB_NEXT_WORD_LITERAL(reg2);
+                    state.skiping = false;
+                    break;
+               
+                case PAR2_OPCODE::BEQ_LIT :
+                case PAR2_OPCODE::BNEQ_LIT :
+                case PAR2_OPCODE::BG_LIT :
+                case PAR2_OPCODE::BGE_LIT :
+                case PAR2_OPCODE::BUG_LIT :
+                case PAR2_OPCODE::BUGE_LIT :
+                    GRAB_NEXT_WORD_LITERAL(reg2);
+                
+                case PAR2_OPCODE::BEQ:
+                case PAR2_OPCODE::BNEQ:
+                case PAR2_OPCODE::BG:
+                case PAR2_OPCODE::BGE:
+                case PAR2_OPCODE::BUG:
+                case PAR2_OPCODE::BUGE:
+                case PAR2_OPCODE::BBITS:
+                case PAR2_OPCODE::BCLEAR:
+                    state.skiping = true;
+                    break;
+
+                default:
+                    state.skiping = false;
+                    break;
+            }
+        } else if (IS_PAR1(inst)) {
+            // 1 parameter instrucction
+            opcode = (inst >> 4) & 0x1FF;
+            switch (opcode) {
+                case PAR1_OPCODE::SETY_LIT :
+                case PAR1_OPCODE::INT_LIT  :
+                case PAR1_OPCODE::SETIA_LIT  :
+                case PAR1_OPCODE::SETCS_LIT  :
+                case PAR1_OPCODE::SETDS_LIT  :
+                case PAR1_OPCODE::SETSS_LIT  :
+                case PAR1_OPCODE::SETIS_LIT  :
+                    GRAB_NEXT_WORD_LITERAL(reg2);
+                    break;
+
+                default:
+                    break;
+            }
+            state.skiping = false;
+        } else if (IS_NOPAR(inst) ) {
+            // Instrucctions without parameters
+            opcode = inst & 0xFFF;
+            switch (opcode) {
+                case NOPAR_OPCODE::BOVF :
+                case NOPAR_OPCODE::BOCF :
+                    state.skiping = true;
+                    break;
+
+                default:
+                    state.skiping = false;
+                    break;
+            }
+        }
+        return state.wait_cycles;
+    }
+
     // Check the type of instrucction
     if (IS_PAR3(inst)) {
-        std::cout << "## Type Par3" << std::endl;
         // 3 parameter instrucction
         opcode = (inst >> 12) & 7;
         state.wait_cycles += 4;
@@ -205,7 +301,6 @@ unsigned RC1600::realStep()
         }
 
     } else if (IS_PAR2(inst)) {
-        std::cout << "## Type Par2" << std::endl;
         // 2 parameter instrucction
         opcode = (inst >> 8) & 0x3F;
 
@@ -691,7 +786,6 @@ unsigned RC1600::realStep()
         }
 
     } else if (IS_PAR1(inst)) {
-        std::cout << "## Type Par1" << std::endl;
         // 1 parameter instrucction
         opcode = (inst >> 4) & 0x1FF;
 
@@ -908,7 +1002,6 @@ unsigned RC1600::realStep()
         }
 
     } else if (IS_NOPAR(inst)) {
-        std::cout << "## Type NoPar" << std::endl;
         // Instrucctions without parameters
         opcode = inst & 0xFFF;
 

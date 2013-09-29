@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <algorithm>
 
-size_t prg_size = 37*2;
+size_t prg_size = 41*2;
 CPU::word_t prg[] = {
     0x6210,  // 000h SET r0, 1
     0x6211,  // 002h SET r1, 1
@@ -45,9 +45,10 @@ CPU::word_t prg[] = {
     0x9061,  // 044h LOAD [r0 + r6], r1     (r1 == 0x3362)
     0xA012,  // 046h LOAD.B [r0+1], r2      (r2 == 0xFF62)
     0xB082,  // 048h LOAD.B [r0+r8], r2     (r2 == 0xFF44)
-    0,
-    0,
-    0,
+    0x6456,  // 04Ah BEQ r6 == 5  (true)
+    0x62F6,  // 04Ch SET r6, 0xCAFE (not should happen)
+    0xCAFE,  // 04Eh literal
+    0x6201,  // 050h SET r1, 0
     0,
 };
 
