@@ -3,6 +3,7 @@ rc1600
 
 RC1600 CPU prototype
 
+Specs : https://gist.github.com/Zardoz89/6240295
 
 Actually only executes instruccions from a hardcoded program in a array. Each tinme that you press any key, executes one instrucction.
 I dont did yet a online dissaambler, but you could see the all registers, and what instrucction hex code was executed.
