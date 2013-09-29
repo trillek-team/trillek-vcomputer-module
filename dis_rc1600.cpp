@@ -133,8 +133,267 @@ std::string disassembly(const byte_t* data) {
 			case PAR2_OPCODE::XOR :
 				snprintf(buf, 32, "XOR r%u, r%u", reg3, reg2);
 				break;
+
+
+			case PAR2_OPCODE::SLL :
+				snprintf(buf, 32, "SLL r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::SLL_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "SLL r%u, 0x%04x", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::SRL :
+				snprintf(buf, 32, "SRL r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::SRL_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "SRL r%u, 0x%04x", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::SRA :
+				snprintf(buf, 32, "SRA r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::SRA_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "SRA r%u, 0x%04x", reg3, reg2);
+				break;
+
+
+			case PAR2_OPCODE::ROTL :
+				snprintf(buf, 32, "ROTL r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::ROTL_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "ROTL r%u, 0x%04x", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::ROTR :
+				snprintf(buf, 32, "ROTT r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::ROTR_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "ROTR r%u, 0x%04x", reg3, reg2);
+				break;
+
+
+			case PAR2_OPCODE::UMUL :
+				snprintf(buf, 32, "UMUL r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::UMUL_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "UMUL r%u, 0x%04x", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::UDIV :
+				snprintf(buf, 32, "UDIV r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::UDIV_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "UDIV r%u, 0x%04x", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::UMOD :
+				snprintf(buf, 32, "UMOD r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::UMOD_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "UMOD r%u, 0x%04x", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::MUL :
+				snprintf(buf, 32, "MUL r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::MUL_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "MUL r%u, 0x%04x", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::DIV :
+				snprintf(buf, 32, "DIV r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::DIV_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "DIV r%u, 0x%04x", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::MOD :
+				snprintf(buf, 32, "MOD r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::MOD_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "MOD r%u, 0x%04x", reg3, reg2);
+				break;
+			
+
+			case PAR2_OPCODE::SWP :
+				snprintf(buf, 32, "SWP r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::CPY :
+				snprintf(buf, 32, "CPY r%u, r%u", reg3, reg2);
+				break;
+
+			case PAR2_OPCODE::SET :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "SET r%u, 0x%04x", reg3, reg2);
+				break;
+
+
+			case PAR2_OPCODE::BEQ :
+				snprintf(buf, 32, "BEQ r%u, r%u", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::BEQ_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "BEQ r%u, 0x%04x", reg3, reg2);
+				break;
 		
+			case PAR2_OPCODE::BNEQ :
+				snprintf(buf, 32, "BNEQ r%u, r%u", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::BNEQ_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "BNEQ r%u, 0x%04x", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::BG :
+				snprintf(buf, 32, "BG r%u, r%u", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::BG_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "BG r%u, 0x%04x", reg3, reg2);
+				break;
 		
+			case PAR2_OPCODE::BGE :
+				snprintf(buf, 32, "BGE r%u, r%u", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::BGE_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "BGE r%u, 0x%04x", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::BUG :
+				snprintf(buf, 32, "BUG r%u, r%u", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::BUG_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "BUG r%u, 0x%04x", reg3, reg2);
+				break;
+		
+			case PAR2_OPCODE::BUGE :
+				snprintf(buf, 32, "BUGE r%u, r%u", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::BUGE_LIT :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "BUGE r%u, 0x%04x", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::BBITS :
+				snprintf(buf, 32, "BBITS r%u, r%u", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::BCLEAR :
+				snprintf(buf, 32, "BCLEAR r%u, r%u", reg3, reg2);
+				break;
+		
+
+			case PAR2_OPCODE::LJMP :
+				snprintf(buf, 32, "LJMP [r%u:r%u]", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::LCALL :
+				snprintf(buf, 32, "LCALL [r%u:r%u]", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::JMP :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "JMP [r%u + 0x%04x]", reg3, reg2);
+				break;
+			
+			case PAR2_OPCODE::CALL :
+				if (reg2 == 0xF) {
+					reg2 = (data[epc+1] << 8) | data[epc];
+					epc +=2;
+				}
+				snprintf(buf, 32, "CALL [r%u + 0x%04x]", reg3, reg2);
+				break;
+			
+			default:
+				snprintf(buf, 32, "??? r%u, r%u", reg3, reg2);
 		}
     
 	} else if (IS_PAR1(inst)) {
@@ -301,11 +560,11 @@ std::string disassembly(const byte_t* data) {
         word_t long_lit = inst & 0x1FF;
         switch (opcode) {
             case PAR1L_OPCODE::JMP_REL :
-				snprintf(buf, 32, "JUMP [%d]", (int)long_lit);
+				snprintf(buf, 32, "JUMP %d", (int)long_lit);
 				break;
             
 			case PAR1L_OPCODE::CALL_REL : 
-				snprintf(buf, 32, "CALL [%d]", (int)long_lit);
+				snprintf(buf, 32, "CALL %d", (int)long_lit);
 				break;
 
 			default:

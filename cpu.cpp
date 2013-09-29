@@ -730,8 +730,29 @@ unsigned RC1600::realStep()
                 }
                 break;
 
-                
+            // INP & OUT ------------------------------------------------------    
             // TODO INP and OUT
+            case PAR2_OPCODE::INP :
+                state.wait_cycles +=3;
+
+                break;
+
+            case PAR2_OPCODE::INP_LIT :
+                state.wait_cycles +=3;
+                GRAB_NEXT_WORD_LITERAL(reg2);
+
+                break;
+            
+            case PAR2_OPCODE::OUT :
+                state.wait_cycles +=3;
+
+                break;
+
+            case PAR2_OPCODE::OUT_LIT :
+                state.wait_cycles +=3;
+                GRAB_NEXT_WORD_LITERAL(reg2);
+
+                break;
             
             // Absolute JuMPs and CALLs ---------------------------------------
             case PAR2_OPCODE::LJMP :
@@ -968,7 +989,6 @@ unsigned RC1600::realStep()
         }
 
     } else if (IS_PAR1L(inst)) {
-        std::cout << "## Type Par1L" << std::endl;
         // 1 parameter that is a long literal
         opcode = (inst >> 9) & 0x7;
         word_t long_lit = inst & 0x1FF;
@@ -1082,7 +1102,22 @@ unsigned RC1600::realStep()
                 state.interrupt = false; // We now not have a interrupt
                 break;
 
-            // TODO
+            case NOPAR_OPCODE::BOVF :
+                state.wait_cycles +=6;
+                if (GET_OF(state.flags) ) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+            
+            case NOPAR_OPCODE::BOCF :
+                state.wait_cycles +=6;
+                if (GET_CF(state.flags) ) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+            
             default: // Acts like a NOP
                 state.wait_cycles++;
                 break;
