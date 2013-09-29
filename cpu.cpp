@@ -114,7 +114,7 @@ unsigned RC1600::realStep()
                 } else {
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
-                state.r[reg3] = ram[ptr];
+                state.r[reg3] = (ram[ptr+1] << 8) | ram[ptr];
                 break;
 
             case PAR3_OPCODE::LOAD :
@@ -126,7 +126,7 @@ unsigned RC1600::realStep()
                 } else {
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
-                state.r[reg3] = ram[ptr];
+                state.r[reg3] = (ram[ptr+1] << 8) | ram[ptr];
                 break;
 
             case PAR3_OPCODE::LOADB_LIT :
@@ -140,7 +140,7 @@ unsigned RC1600::realStep()
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
                 state.r[reg3] &= 0xFF00; // Not overwrite MSB
-                state.r[reg3] |= ram[ptr] & 0x00FF;
+                state.r[reg3] |= ram[ptr];
                 break;
 
             case PAR3_OPCODE::LOADB :
@@ -153,7 +153,7 @@ unsigned RC1600::realStep()
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
                 state.r[reg3] &= 0xFF00; // Not overwrite MSB
-                state.r[reg3] |= ram[ptr] & 0x00FF;
+                state.r[reg3] |= ram[ptr];
                 break;
 
             // Write ----------------------------------------------------------
@@ -165,7 +165,8 @@ unsigned RC1600::realStep()
                 } else {
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
-                ram[ptr] = state.r[reg3];
+                ram[ptr] = state.r[reg3] & 0x00FF;
+                ram[ptr+1] = state.r[reg3] >> 8;
                 break;
 
             case PAR3_OPCODE::STORE :
@@ -175,7 +176,8 @@ unsigned RC1600::realStep()
                 } else {
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
-                ram[ptr] = state.r[reg3];
+                ram[ptr] = state.r[reg3] & 0x00FF;
+                ram[ptr+1] = state.r[reg3] >> 8;
                 break;
 
             case PAR3_OPCODE::STOREB_LIT :
@@ -186,8 +188,7 @@ unsigned RC1600::realStep()
                 } else {
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
-                ram[ptr] &= 0xFF00; // Not overwrite MSB
-                ram[ptr] |= state.r[reg3] & 0x00FF;
+                ram[ptr] = state.r[reg3];
                 break;
 
             case PAR3_OPCODE::STOREB :
@@ -197,8 +198,7 @@ unsigned RC1600::realStep()
                 } else {
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
-                ram[ptr] &= 0xFF00; // Not overwrite MSB
-                ram[ptr] |= state.r[reg3] & 0x00FF;
+                ram[ptr] = state.r[reg3];
                 break;
        
             default:
