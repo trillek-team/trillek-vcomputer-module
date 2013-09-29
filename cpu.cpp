@@ -34,19 +34,29 @@ void RC1600::reset()
 
 unsigned RC1600::step()
 {
-    auto cyc = realStep();
-    tot_cycles += cyc;
-    return cyc;
+    if (!state.sleeping) {
+        auto cyc = realStep();
+        tot_cycles += cyc;
+        return cyc;
+    } else {
+        tot_cycles++;
+        processInterrupt();
+        return 1;
+    }
 }
 
 void RC1600::tick (unsigned n)
 {
     for (unsigned i=0; i < n; i++) {
-        if (state.wait_cycles <=0) {
+        if (state.wait_cycles <=0 && !state.sleeping) {
             realStep();
         }
+        
+        if (!state.sleeping)
+            state.wait_cycles--;
+        else
+            processInterrupt();
 
-        state.wait_cycles--;
         tot_cycles++;
     }
 }
@@ -1123,6 +1133,7 @@ void RC1600::processInterrupt()
         state.pc = state.ia;
         state.cs = state.is;
         SET_ON_IF(state.flags);
+        state.sleeping = false; // WakeUp! 
     }
 }
 
