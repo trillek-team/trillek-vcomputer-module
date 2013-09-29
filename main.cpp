@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <algorithm>
 
-size_t prg_size = 45*2;
+size_t prg_size = 47*2;
 CPU::word_t prg[] = {
     0x6210,  // 000h SET r0, 1
     0x6211,  // 002h SET r1, 1
@@ -53,11 +53,14 @@ CPU::word_t prg[] = {
     0x6501,  // 054h BNEQ r1, 0 (false, but chained)
     0x62F6,  // 056h SET r6, 0xCAFE (not should happen)
     0xCAFE,  // 058h literal
+    0x2042,  // 05Ah PUSH r2  (SP = FFFE and [FFFF] = FF44) 
+    0x205B,  // 05Ch PPOP r11 (SP = 0 and r11 = FF44) 
     0,
 };
 
 void print_regs(const CPU::CpuState& state);
 void print_cspc(const CPU::CpuState& state, const CPU::byte_t* ram);
+void print_stack(const CPU::CpuState& state, const CPU::byte_t* ram);
 
 int main()
 {
@@ -81,7 +84,8 @@ int main()
         
         std::printf("Takes %u cycles\n", cpu.getState().wait_cycles);
         print_regs(cpu.getState());
-        std::cout << std::endl;
+        print_stack(cpu.getState(), cpu.ram);
+
         c = std::getchar();
     }
 
@@ -108,6 +112,7 @@ void print_regs(const CPU::CpuState& state)
             GET_TDE(state.flags), GET_TOE(state.flags), GET_TSS(state.flags),
             GET_IF(state.flags), GET_DE(state.flags), GET_OF(state.flags),
             GET_CF(state.flags));
+    std::printf("\n");
 
 }
 
@@ -116,3 +121,18 @@ void print_cspc(const CPU::CpuState& state, const CPU::byte_t* ram)
     CPU::dword_t epc = ((state.cs&0x0F) << 16) | state.pc;
     std::printf("\t[CS:PC]= 0x%02x%02x \n", ram[epc+1], ram[epc]); // Big Endian
 }
+
+void print_stack(const CPU::CpuState& state, const CPU::byte_t* ram)
+{
+    std::printf("STACK:\n");
+
+    CPU::dword_t ptr = ((state.ss&0x0F) << 16) | state.r[SP];
+    for (size_t i =0; i <6; i++) {
+        std::printf("%02Xh ", ram[ptr]);
+        ptr++;
+        if (((size_t)(state.r[SP]) + i) >= 0xFFFF)
+            break;
+    }
+    std::printf("\n");
+}
+

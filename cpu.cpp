@@ -816,7 +816,9 @@ unsigned RC1600::realStep()
             case PAR1_OPCODE::PUSH :
                 state.wait_cycles +=3;
                 // Push MSB
+                std::printf("### before SP 0x%04x ", state.r[SP]);
                 ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+                std::printf("   after SP 0x%04x\n", state.r[SP]);
                 ram[ptr] = state.r[reg3] >> 8; 
                 // Push LSB
                 ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
