@@ -94,14 +94,30 @@ public:
         return state;
     }
 
-    // TODO External class to have a real ROM mapped somewhere
+    /**
+     * Throws a interrupt to the CPU
+     */
+    void throwInterrupt (word_t msg)
+    {
+        if (!state.iacq) {
+            // The CPU accpets a new interrupt
+            state.interrupt = true;
+            state.int_msg = msg;
+        }
+    }
+
+    // TODO External class to have a real ROM mapped somewhere and check
+    // bounds
     byte_t ram[0x100000]; // 1 MiB (0 to F:FFFF) 
 
 protected:
     CpuState state;
+    std::size_t tot_cycles;
 
     unsigned realStep();
 
+    void processInterrupt();
+    
 };
 
 } // End of namespace CPU

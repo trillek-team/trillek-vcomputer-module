@@ -7,7 +7,7 @@
 
 namespace CPU {
 
-RC1600::RC1600()
+RC1600::RC1600() : tot_cycles(0)
 {
     reset();    
 }
@@ -34,7 +34,9 @@ void RC1600::reset()
 
 unsigned RC1600::step()
 {
-   return realStep();
+    auto cyc = realStep();
+    tot_cycles += cyc;
+    return cyc;
 }
 
 void RC1600::tick (unsigned n)
@@ -45,6 +47,7 @@ void RC1600::tick (unsigned n)
         }
 
         state.wait_cycles--;
+        tot_cycles++;
     }
 }
 
@@ -75,6 +78,8 @@ unsigned RC1600::realStep()
     // TODO Check if is sleeping. If is sleeping, cheks that a interrupt is not
     // hapening. If is not happening, then skips all. If happens, removes the
     // sleeping flag and does the interrupt
+    
+    processInterrupt(); // Here we check if a interrupt happens
 
     dword_t epc = ((state.cs&0x0F) << 16) | state.pc;
     if (state.pc >= 0xFFFE) { // Auto increment of CS
@@ -320,8 +325,7 @@ unsigned RC1600::realStep()
                     if (tmp1 != tmp2) { // Overflow
                         SET_ON_OF(state.flags);
                         if (GET_TOE(state.flags)) {
-                            state.interrupt = true;
-                            state.int_msg = 4;
+                            throwInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(state.flags);
@@ -347,8 +351,7 @@ unsigned RC1600::realStep()
                     if (tmp1 != tmp2) { // Overflow
                         SET_ON_OF(state.flags);
                         if (GET_TOE(state.flags)) {
-                            state.interrupt = true;
-                            state.int_msg = 4;
+                            throwInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(state.flags);
@@ -373,8 +376,7 @@ unsigned RC1600::realStep()
                     if (tmp1 != tmp2) { // Overflow
                         SET_ON_OF(state.flags);
                         if (GET_TOE(state.flags)) {
-                            state.interrupt = true;
-                            state.int_msg = 4;
+                            throwInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(state.flags);
@@ -400,8 +402,7 @@ unsigned RC1600::realStep()
                     if (tmp1 != tmp2) { // Overflow
                         SET_ON_OF(state.flags);
                         if (GET_TOE(state.flags)) {
-                            state.interrupt = true;
-                            state.int_msg = 4;
+                            throwInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(state.flags);
@@ -429,8 +430,7 @@ unsigned RC1600::realStep()
                     if (tmp1 != tmp2) { // Overflow
                         SET_ON_OF(state.flags);
                         if (GET_TOE(state.flags)) {
-                            state.interrupt = true;
-                            state.int_msg = 4;
+                            throwInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(state.flags);
@@ -457,9 +457,8 @@ unsigned RC1600::realStep()
                     tmp2 = (tmp3 >> 15) & 0x1;
                     if (tmp1 != tmp2) { // Overflow
                         SET_ON_OF(state.flags);
-                        if (GET_TOE(state.flags)) {
-                            state.interrupt = true;
-                            state.int_msg = 4;
+                        if (GET_TOE(state.flags)) { // Overflow interrupt
+                            throwInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(state.flags);
@@ -488,8 +487,7 @@ unsigned RC1600::realStep()
                     if (tmp1 != tmp2) { // Overflow
                         SET_ON_OF(state.flags);
                         if (GET_TOE(state.flags)) {
-                            state.interrupt = true;
-                            state.int_msg = 4;
+                            throwInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(state.flags);
@@ -866,8 +864,19 @@ unsigned RC1600::realStep()
                 state.r[reg3] = state.y;
                 break;
 
-            // TODO INTs
+            // Interrupt ------------------------------------------------------
+            case PAR1_OPCODE::INT :
+                state.wait_cycles +=8;
+                throwInterrupt(state.r[reg3]);
+                break;
 
+            case PAR1_OPCODE::INT_LIT :
+                state.wait_cycles +=8;
+                GRAB_NEXT_WORD_LITERAL(reg3);
+                throwInterrupt(reg3);
+                break;
+            
+                // ----------------------------------------------------------------
             case PAR1_OPCODE::SETIA :
                 state.wait_cycles +=3;
                 state.ia = state.r[reg3];
@@ -1080,4 +1089,39 @@ unsigned RC1600::realStep()
     
 }
 
+/**
+ * Check if is a interrupt to be procesed
+ */
+void RC1600::processInterrupt()
+{
+    if (state.ia != 0 && state.interrupt) {
+        uint32_t ptr;
+        state.iacq = true;
+        // Push R1 MSB
+        ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+        ram[ptr] = state.r[1] >> 8; 
+        // Push R1 LSB
+        ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+        ram[ptr] = state.r[1] & 0xFF;
+
+        // Push CS MSB
+        ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+        ram[ptr] = state.cs >> 8; 
+        // Push CS LSB
+        ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+        ram[ptr] = state.cs & 0xFF;
+        // Push PC MSB
+        ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+        ram[ptr] = state.pc >> 8; 
+        // Push PC LSB
+        ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+        ram[ptr] = state.pc & 0xFF;
+
+        state.r[1] = state.int_msg;
+        state.pc = state.ia;
+        state.cs = state.is;
+        SET_ON_IF(state.flags);
+    }
 }
+
+} // End of namespace CPU
