@@ -1,4 +1,5 @@
 #include "cpu.hpp"
+#include "dis_rc1600.hpp"
 
 #include <iostream>
 #include <ios>
@@ -201,7 +202,8 @@ void print_regs(const CPU::CpuState& state)
 void print_cspc(const CPU::CpuState& state, const CPU::byte_t* ram)
 {
     CPU::dword_t epc = ((state.cs&0x0F) << 16) | state.pc;
-    std::printf("\t[CS:PC]= 0x%02x%02x \n", ram[epc+1], ram[epc]); // Big Endian
+    std::printf("\t[CS:PC]= 0x%02x%02x ", ram[epc+1], ram[epc]); // Big Endian
+    std::cout << CPU::disassembly(ram + epc) << std::endl;  
 }
 
 void print_stack(const CPU::CpuState& state, const CPU::byte_t* ram)

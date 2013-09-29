@@ -85,10 +85,6 @@ unsigned RC1600::realStep()
 {
     state.wait_cycles = 0;
 
-    // TODO Check if is sleeping. If is sleeping, cheks that a interrupt is not
-    // hapening. If is not happening, then skips all. If happens, removes the
-    // sleeping flag and does the interrupt
-    
     dword_t epc = ((state.cs&0x0F) << 16) | state.pc;
     if (state.pc >= 0xFFFE) { // Auto increment of CS
         state.cs++;
