@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <algorithm>
 
-size_t prg_size = 47*2;
+size_t prg_size = 50*2;
 CPU::word_t prg[] = {
     0x6210,  // 000h SET r0, 1
     0x6211,  // 002h SET r1, 1
@@ -54,8 +54,15 @@ CPU::word_t prg[] = {
     0x62F6,  // 056h SET r6, 0xCAFE (not should happen)
     0xCAFE,  // 058h literal
     0x2042,  // 05Ah PUSH r2  (SP = FFFE and [FFFF] = FF44) 
-    0x205B,  // 05Ch PPOP r11 (SP = 0 and r11 = FF44) 
-    0,
+    0x205B,  // 05Ch POP r11 (SP = 0 and r11 = FF44)
+    0x21B1,  // 05Eh SETIS 1 (Interrupts in segment 1)
+    0x20F2,  // 060h SETIA 2
+    0x20D6,  // 062h INT 6
+};
+
+size_t isr_size = 1*2;
+CPU::word_t isr[] = {
+    0x0004,  // 002h RFI
 };
 
 void print_regs(const CPU::CpuState& state);
@@ -68,7 +75,8 @@ int main()
     RC1600 cpu;
     cpu.reset();
     
-    std::copy_n((byte_t*)prg, prg_size, cpu.ram);
+    std::copy_n((byte_t*)prg, prg_size, cpu.ram); // Copy program
+    std::copy_n((byte_t*)isr, isr_size, &(cpu.ram[0x10002])); // Copy ISR
 
     print_regs(cpu.getState());
     

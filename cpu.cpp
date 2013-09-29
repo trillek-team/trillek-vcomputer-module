@@ -89,8 +89,6 @@ unsigned RC1600::realStep()
     // hapening. If is not happening, then skips all. If happens, removes the
     // sleeping flag and does the interrupt
     
-    processInterrupt(); // Here we check if a interrupt happens
-
     dword_t epc = ((state.cs&0x0F) << 16) | state.pc;
     if (state.pc >= 0xFFFE) { // Auto increment of CS
         state.cs++;
@@ -109,7 +107,6 @@ unsigned RC1600::realStep()
     reg3 = inst & 0xF;
     reg2 = (inst >> 4) & 0xF;
     reg1 = (inst >> 8) & 0xF;
-    std::printf("### reg3 %x reg2 %x reg1 %x\n", reg3, reg2, reg1);
     // Check if we are skiping a instrucction
     if (state.skiping) {
         state.wait_cycles = 1;
@@ -1079,13 +1076,14 @@ unsigned RC1600::realStep()
                 state.cs |= ram[ptr] << 8; 
                 // Pop R1 LSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.r[reg3] = ram[ptr];
+                state.r[1] = ram[ptr];
                 // Pop R1 MSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
                 state.r[1] |= ram[ptr] << 8; 
                 
                 SET_OFF_IF(state.flags);
                 state.iacq = false;
+                state.interrupt = false; // We now not have a interrupt
                 break;
 
             // TODO
@@ -1096,6 +1094,7 @@ unsigned RC1600::realStep()
         }
     }
 
+    processInterrupt(); // Here we check if a interrupt happens
     state.r[0] = 0; // r0 always is 0
     return state.wait_cycles;
     
@@ -1106,7 +1105,7 @@ unsigned RC1600::realStep()
  */
 void RC1600::processInterrupt()
 {
-    if (state.ia != 0 && state.interrupt) {
+    if (state.ia != 0 && state.interrupt && !state.iacq) {
         uint32_t ptr;
         state.iacq = true;
         // Push R1 MSB
