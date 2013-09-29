@@ -3,14 +3,17 @@ RC1600 CPU prototype
 
 Specs : https://gist.github.com/Zardoz89/6240295
 
-Actually only executes instructions from a hard-coded program in a array. Each time that you press any key, executes one instruction, and shows what instruction is being executed, in human form.
+Actually does this:
+
+ - Allow to select run mode or step mode
+ - In run mode, shows a **MDA** 80x25 like **screen** in stdout, **mapped at B:0000h**
+ - In step mode, show register status, last values of Stack, instruction being executed in human form, also executes a single instrucction every time that a key is pressed. If is pressed '**q**' or '**Q**', then ends the emulation.
+
 
 TODO :
 ------
 
  - INP and OUT instruction
- - Step-Mode of the RC1600 (throw a interrupt before every instruction)
  - Better interface with RAM to allow to use seamless ROM and memory mapped devices, plus bound checking to not overrun
- - Implement some basic MDA like device to show output to a screen.
  - Do more extensive tests
- - Implement or adapt a assembler to the RC1600 ASM
+ - Implement or adapt an assembler to the RC1600 ASM (imperative!)

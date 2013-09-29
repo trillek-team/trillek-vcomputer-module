@@ -39,6 +39,8 @@ struct CpuState {
     bool interrupt;
     word_t int_msg;
     bool iacq;
+
+    bool step_mode;
 };
 
 // Operation in Flags bits

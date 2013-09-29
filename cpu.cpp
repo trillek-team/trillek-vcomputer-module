@@ -30,6 +30,8 @@ void RC1600::reset()
     state.interrupt = false;
     state.int_msg = 0;
     state.iacq = false;
+
+    state.step_mode = false;
 }
 
 unsigned RC1600::step()
@@ -867,6 +869,7 @@ unsigned RC1600::realStep()
             case PAR1_OPCODE::SETFLAGS :
                 state.wait_cycles +=3;
                 state.flags = state.r[reg3];
+                state.step_mode = GET_TSS(state.flags);
                 break;
 
             case PAR1_OPCODE::GETFLAGS :
@@ -1127,6 +1130,11 @@ unsigned RC1600::realStep()
 
     processInterrupt(); // Here we check if a interrupt happens
     state.r[0] = 0; // r0 always is 0
+    
+    // If step-mode is enable, throw the adecuate exception
+    if (state.step_mode)
+        throwInterrupt(4);
+
     return state.wait_cycles;
     
 }
