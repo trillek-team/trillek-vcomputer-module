@@ -317,6 +317,169 @@ unsigned RC1600::realStep()
                 state.r[reg3] = (word_t)(tmp3 & 0xFFFF);
                 break;
 
+            case PAR2_OPCODE::ADDC :
+                state.wait_cycles +=3;
+                tmp3 = (uint_fast32_t)(state.r[reg3]) + state.r[reg2];
+                if (GET_CF(state.flags)) // Add carry bit
+                     tmp3++;
+
+                if (CARRY_BIT(tmp3))
+                    SET_ON_CF(state.flags);
+                else
+                    SET_OFF_CF(state.flags);
+
+                tmp1 = (state.r[reg3] >> 15) & 0x1; // gets Sign bits
+                tmp2 = (state.r[reg2] >> 15) & 0x1;
+                if (tmp1 == tmp2) { // Check sign of result
+                    tmp2 = (tmp3 >> 15) & 0x1;
+                    if (tmp1 != tmp2) { // Overflow
+                        SET_ON_OF(state.flags);
+                        if (GET_TOE(state.flags)) {
+                            state.interrupt = true;
+                            state.int_msg = 4;
+                        }
+                    } else {
+                        SET_OFF_OF(state.flags);
+                    }
+                }
+
+                state.r[reg3] = (word_t)(tmp3 & 0xFFFF);
+                break;
+
+            case PAR2_OPCODE::SUBC :
+                state.wait_cycles +=3;
+                tmp3 = (uint_fast32_t)(state.r[reg3]) - state.r[reg2];
+                if (GET_CF(state.flags)) // Borrow bit
+                    tmp3--;
+                
+                if (state.r[reg3] < state.r[reg2])
+                    SET_ON_CF(state.flags);
+                else
+                    SET_OFF_CF(state.flags);
+
+                tmp1 = (state.r[reg3] >> 15) & 0x1; // gets Sign bits
+                tmp2 = (state.r[reg2] >> 15) & 0x1;
+                if (tmp1 == tmp2) { // Check sign of result
+                    tmp2 = (tmp3 >> 15) & 0x1;
+                    if (tmp1 != tmp2) { // Overflow
+                        SET_ON_OF(state.flags);
+                        if (GET_TOE(state.flags)) {
+                            state.interrupt = true;
+                            state.int_msg = 4;
+                        }
+                    } else {
+                        SET_OFF_OF(state.flags);
+                    }
+                }
+
+                state.r[reg3] = (word_t)(tmp3 & 0xFFFF);
+                break;
+
+            case PAR2_OPCODE::SUBC_LIT :
+                state.wait_cycles +=3;
+                GRAB_NEXT_WORD_LITERAL;
+                tmp3 = (uint_fast32_t)(state.r[reg3]) - reg2;
+                if (GET_CF(state.flags)) // Borrow bit
+                    tmp3--;
+                
+                if (state.r[reg3] < reg2)
+                    SET_ON_CF(state.flags);
+                else
+                    SET_OFF_CF(state.flags);
+
+                tmp1 = (state.r[reg3] >> 15) & 0x1; // gets Sign bits
+                tmp2 = (reg2 >> 15) & 0x1;
+                if (tmp1 == tmp2) { // Check sign of result
+                    tmp2 = (tmp3 >> 15) & 0x1;
+                    if (tmp1 != tmp2) { // Overflow
+                        SET_ON_OF(state.flags);
+                        if (GET_TOE(state.flags)) {
+                            state.interrupt = true;
+                            state.int_msg = 4;
+                        }
+                    } else {
+                        SET_OFF_OF(state.flags);
+                    }
+                }
+
+                state.r[reg3] = (word_t)(tmp3 & 0xFFFF);
+                break;
+
+            case PAR2_OPCODE::AND :
+                state.wait_cycles +=3;
+                state.r[reg3] &= state.r[reg2];
+                SET_OFF_OF(state.flags);
+                SET_OFF_CF(state.flags);
+                break;
+
+            case PAR2_OPCODE::OR :
+                state.wait_cycles +=3;
+                state.r[reg3] |= state.r[reg2];
+                SET_OFF_OF(state.flags);
+                SET_OFF_CF(state.flags);
+                break;
+
+            case PAR2_OPCODE::XOR :
+                state.wait_cycles +=3;
+                state.r[reg3] ^= state.r[reg2];
+                SET_OFF_OF(state.flags);
+                SET_OFF_CF(state.flags);
+                break;
+
+            case PAR2_OPCODE::SLL :
+                state.wait_cycles +=3;
+                state.r[reg3] = state.r[reg3] << state.r[reg2]; 
+                SET_OFF_OF(state.flags);
+                SET_OFF_CF(state.flags);
+                break;
+
+            case PAR2_OPCODE::SLL_LIT :
+                state.wait_cycles +=3;
+                GRAB_NEXT_WORD_LITERAL;
+                state.r[reg3] = state.r[reg3] << reg2; 
+                SET_OFF_OF(state.flags);
+                SET_OFF_CF(state.flags);
+                break;
+
+            case PAR2_OPCODE::SRL :
+                state.wait_cycles +=3;
+                state.r[reg3] = state.r[reg3] >> state.r[reg2]; 
+                SET_OFF_OF(state.flags);
+                SET_OFF_CF(state.flags);
+                break;
+
+            case PAR2_OPCODE::SRL_LIT :
+                state.wait_cycles +=3;
+                GRAB_NEXT_WORD_LITERAL;
+                state.r[reg3] = state.r[reg3] >> reg2; 
+                SET_OFF_OF(state.flags);
+                SET_OFF_CF(state.flags);
+                break;
+
+            case PAR2_OPCODE::SRA :
+            {
+                state.wait_cycles +=3;
+                int16_t r3 = state.r[reg3];
+                int16_t r2 = state.r[reg2];
+                int16_t r = r3 << r2;
+                state.r[reg3] = (word_t)(r);
+                SET_OFF_OF(state.flags);
+                SET_OFF_CF(state.flags);
+                break;
+            }
+
+            case PAR2_OPCODE::SRA_LIT :
+            {
+                state.wait_cycles +=3;
+                GRAB_NEXT_WORD_LITERAL;
+                int16_t r3 = state.r[reg3];
+                int16_t r2 = reg2;
+                int16_t r = r3 << r2;
+                state.r[reg3] = (word_t)(r);
+                SET_OFF_OF(state.flags);
+                SET_OFF_CF(state.flags);
+                break;
+            }
             // TODO
 
             case PAR2_OPCODE::SWP :
