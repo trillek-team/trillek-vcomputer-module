@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <algorithm>
 
-size_t prg_size = 41*2;
+size_t prg_size = 45*2;
 CPU::word_t prg[] = {
     0x6210,  // 000h SET r0, 1
     0x6211,  // 002h SET r1, 1
@@ -49,6 +49,10 @@ CPU::word_t prg[] = {
     0x62F6,  // 04Ch SET r6, 0xCAFE (not should happen)
     0xCAFE,  // 04Eh literal
     0x6201,  // 050h SET r1, 0
+    0x6401,  // 052h BEQ r1, 0  (true)
+    0x6501,  // 054h BNEQ r1, 0 (false, but chained)
+    0x62F6,  // 056h SET r6, 0xCAFE (not should happen)
+    0xCAFE,  // 058h literal
     0,
 };
 
@@ -68,7 +72,13 @@ int main()
     int c = std::getchar();
     while (c != 'q' && c != 'Q') {
         print_cspc(cpu.getState(), cpu.ram);
+        if (cpu.getState().skiping)
+            std::printf("Skiping!\n");
+        if (cpu.getState().sleeping)
+            std::printf("ZZZZzzzz...\n");
+        
         cpu.step();
+        
         std::printf("Takes %u cycles\n", cpu.getState().wait_cycles);
         print_regs(cpu.getState());
         std::cout << std::endl;
