@@ -5,8 +5,10 @@
 #include <iomanip> 
 #include <cstdio>
 #include <algorithm>
+#include <chrono>
+#include <unistd.h>
 
-size_t prg_size = 50*2;
+size_t prg_size = 64*2;
 CPU::word_t prg[] = {
     0x6210,  // 000h SET r0, 1
     0x6211,  // 002h SET r1, 1
@@ -58,6 +60,18 @@ CPU::word_t prg[] = {
     0x21B1,  // 05Eh SETIS 1 (Interrupts in segment 1)
     0x20F2,  // 060h SETIA 2
     0x20D6,  // 062h INT 6
+    0x215B,  // 064h SETDS 0xB
+    0x62F1,  // 068h SET r1, 'A'
+    0x0041,  // 06Ah
+    0x6202,  // 06Ch SET r2, 0
+    0xC201,  // 06Eh STORE [r2], r1  (type A)
+    0x4122,  // 070h ADD r2, 2 
+    0x4111,  // 072h ADD r1, 1 
+    0xC201,  // 074h STORE [r2], r1  (type B)
+    0x62F2,  // 076h SET r2, 0xA0
+    0x00B0,  // 078h
+    0x4111,  // 07Ah ADD r1, 1 
+    0xC201,  // 07Ch STORE [r2], r1  (type C)
 };
 
 size_t isr_size = 1*2;
@@ -78,25 +92,85 @@ int main()
     std::copy_n((byte_t*)prg, prg_size, cpu.ram); // Copy program
     std::copy_n((byte_t*)isr, isr_size, &(cpu.ram[0x10002])); // Copy ISR
 
-    print_regs(cpu.getState());
-    
-    int c = std::getchar();
-    while (c != 'q' && c != 'Q') {
-        print_cspc(cpu.getState(), cpu.ram);
-        if (cpu.getState().skiping)
-            std::printf("Skiping!\n");
-        if (cpu.getState().sleeping)
-            std::printf("ZZZZzzzz...\n");
-        
-        cpu.step();
-        
-        std::printf("Takes %u cycles\n", cpu.getState().wait_cycles);
+    std::cout << "Run program (r) or Step Mode (s) ?\n";
+    char mode;
+    std::cin >> mode;
+
+    if (mode == 's' || mode == 'S') {
+
         print_regs(cpu.getState());
-        print_stack(cpu.getState(), cpu.ram);
+        
+        int c = std::getchar();
+        while (c != 'q' && c != 'Q') {
+            print_cspc(cpu.getState(), cpu.ram);
+            if (cpu.getState().skiping)
+                std::printf("Skiping!\n");
+            if (cpu.getState().sleeping)
+                std::printf("ZZZZzzzz...\n");
+            
+            cpu.step();
+            
+            std::printf("Takes %u cycles\n", cpu.getState().wait_cycles);
+            print_regs(cpu.getState());
+            print_stack(cpu.getState(), cpu.ram);
 
-        c = std::getchar();
+            c = std::getchar();
+        }
+
+    } else {
+        std::cout << "Running!\n";
+        unsigned ticks = 40000;
+        unsigned long ticks_count = 0; 
+        auto start = std::chrono::system_clock::now();
+        cpu.tick(ticks);
+        ticks_count += ticks;
+        auto end = std::chrono::system_clock::now();
+
+        int64_t delta=std::chrono::duration_cast<std::chrono::microseconds>
+                             (end-start).count();
+        int64_t ttime = ticks*(1000000 / cpu.getClock());
+        std::cout << "Delta   us: "<< delta << std::endl;
+        std::cout << "T. Time us: "<< ttime << std::endl;
+        std::cout << "Diff : "<< ttime - delta << std::endl;
+     
+        while (1) {
+            end = std::chrono::system_clock::now();
+            delta=std::chrono::duration_cast<std::chrono::microseconds>
+                             (end-start).count();
+            ttime = ticks*(1000000 / cpu.getClock());
+            /*if (ticks_count > 1000) {
+                std::cout << "Delta   us: "<< delta << std::endl;
+                std::cout << "T. Time us: "<< ttime << std::endl;
+                std::cout << "Diff : "<< ttime - delta << std::endl;
+                ticks_count -= 1000;
+            }*/
+            cpu.tick(ticks);
+            ticks_count += ticks;
+
+            // Print to the stdout a 80x25 MDA like screen at 80000h
+            unsigned col = 0;
+            //std::printf("\033[2J\033[;H"); // Clear screen
+            std::printf("\033[82T\033[;H"); // Clear screen
+            std::printf(
+"*******************************************************************************\n");
+            for(size_t i= 0xB0000; i< 0xB0FA0; i+=2) {
+                std::printf("%c", cpu.ram[i]);
+                if (col == 79) {
+                    col = 0;
+                    std::printf("\n");
+                } else {
+                    col++;
+                }
+            }
+            std::printf(
+"*******************************************************************************\n");
+
+            if (ttime > delta)
+                usleep(ttime-delta );
+            start = end;
+        }
+
     }
-
     return 0;
 }
 
