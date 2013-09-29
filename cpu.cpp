@@ -51,14 +51,13 @@ void RC1600::tick (unsigned n)
 #define GRAB_NEXT_WORD_LITERAL                                                \
 {                                                                             \
     if (reg2 == 0xF) { /* Literal comes from the next word */                 \
-        std::printf("### Next Word literal! ");                               \
         epc = ((state.cs&0x0F) << 16) | state.pc;                             \
         if (state.pc >= 0xFFFE) { /* Auto increment of CS */                  \
             state.cs++;                                                       \
             state.pc -= 0xFFFE;                                               \
         }                                                                     \
         state.pc +=2;                                                         \
-        reg2 = ram[epc];                                                      \
+        reg2 = (ram[epc+1] << 8) | ram[epc]; /* Big Endian */                 \
         state.wait_cycles++;                                                  \
     }                                                                         \
 }
