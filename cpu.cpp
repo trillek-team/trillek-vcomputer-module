@@ -48,16 +48,16 @@ void RC1600::tick (unsigned n)
     }
 }
 
-#define GRAB_NEXT_WORD_LITERAL                                                \
+#define GRAB_NEXT_WORD_LITERAL(R)                                             \
 {                                                                             \
-    if (reg2 == 0xF) { /* Literal comes from the next word */                 \
-        epc = ((state.cs&0x0F) << 16) | state.pc;                             \
+    if (R == 0xF) { /* Literal comes from the next word */                    \
+        uint32_t epc = ((state.cs&0x0F) << 16) | state.pc;                    \
         if (state.pc >= 0xFFFE) { /* Auto increment of CS */                  \
             state.cs++;                                                       \
             state.pc -= 0xFFFE;                                               \
         }                                                                     \
         state.pc +=2;                                                         \
-        reg2 = (ram[epc+1] << 8) | ram[epc]; /* Big Endian */                 \
+        R = (ram[epc+1] << 8) | ram[epc]; /* Big Endian */                    \
         state.wait_cycles++;                                                  \
     }                                                                         \
 }
@@ -76,7 +76,6 @@ unsigned RC1600::realStep()
     // hapening. If is not happening, then skips all. If happens, removes the
     // sleeping flag and does the interrupt
 
-    dword_t esp;
     dword_t epc = ((state.cs&0x0F) << 16) | state.pc;
     if (state.pc >= 0xFFFE) { // Auto increment of CS
         state.cs++;
@@ -105,7 +104,7 @@ unsigned RC1600::realStep()
         switch (opcode) {
             // READ -----------------------------------------------------------
             case PAR3_OPCODE::LOAD_LIT :
-                GRAB_NEXT_WORD_LITERAL;
+                GRAB_NEXT_WORD_LITERAL(reg2);
                 if (reg3 == 0) // We cant write on r0
                     break;
                 tmp1 = (state.r[reg1] + reg2)&0xFFFF;
@@ -130,7 +129,7 @@ unsigned RC1600::realStep()
                 break;
 
             case PAR3_OPCODE::LOADB_LIT :
-                GRAB_NEXT_WORD_LITERAL;
+                GRAB_NEXT_WORD_LITERAL(reg2);
                 if (reg3 == 0) // We cant write on r0
                     break;
                 tmp1 = (state.r[reg1] + reg2)&0xFFFF;
@@ -158,7 +157,7 @@ unsigned RC1600::realStep()
 
             // Write ----------------------------------------------------------
             case PAR3_OPCODE::STORE_LIT :
-                GRAB_NEXT_WORD_LITERAL;
+                GRAB_NEXT_WORD_LITERAL(reg2);
                 tmp1 = (state.r[reg1] + reg2)&0xFFFF;
                 if (reg1 == BP || reg1 == SP ) {
                     ptr = ((state.ss&0xF) << 16) | tmp1;
@@ -181,7 +180,7 @@ unsigned RC1600::realStep()
                 break;
 
             case PAR3_OPCODE::STOREB_LIT :
-                GRAB_NEXT_WORD_LITERAL;
+                GRAB_NEXT_WORD_LITERAL(reg2);
                 tmp1 = (state.r[reg1] + reg2)&0xFFFF;
                 if (reg1 == BP || reg1 == SP ) {
                     ptr = ((state.ss&0xF) << 16) | tmp1;
@@ -239,7 +238,7 @@ unsigned RC1600::realStep()
 
             case PAR2_OPCODE::ADD_LIT :
                 state.wait_cycles +=3;
-                GRAB_NEXT_WORD_LITERAL;
+                GRAB_NEXT_WORD_LITERAL(reg2);
                 tmp3 = (uint_fast32_t)(state.r[reg3]) + reg2;
                 if (CARRY_BIT(tmp3) != 0)
                     SET_ON_CF(state.flags);
@@ -292,7 +291,7 @@ unsigned RC1600::realStep()
 
             case PAR2_OPCODE::SUB_LIT :
                 state.wait_cycles +=3;
-                GRAB_NEXT_WORD_LITERAL;
+                GRAB_NEXT_WORD_LITERAL(reg2);
                 tmp3 = (uint_fast32_t)(state.r[reg3]) - reg2;
                 if (state.r[reg3] < reg2)
                     SET_ON_CF(state.flags);
@@ -377,7 +376,7 @@ unsigned RC1600::realStep()
 
             case PAR2_OPCODE::SUBC_LIT :
                 state.wait_cycles +=3;
-                GRAB_NEXT_WORD_LITERAL;
+                GRAB_NEXT_WORD_LITERAL(reg2);
                 tmp3 = (uint_fast32_t)(state.r[reg3]) - reg2;
                 if (GET_CF(state.flags)) // Borrow bit
                     tmp3--;
@@ -435,7 +434,7 @@ unsigned RC1600::realStep()
 
             case PAR2_OPCODE::SLL_LIT :
                 state.wait_cycles +=3;
-                GRAB_NEXT_WORD_LITERAL;
+                GRAB_NEXT_WORD_LITERAL(reg2);
                 state.r[reg3] = state.r[reg3] << reg2; 
                 SET_OFF_OF(state.flags);
                 SET_OFF_CF(state.flags);
@@ -450,7 +449,7 @@ unsigned RC1600::realStep()
 
             case PAR2_OPCODE::SRL_LIT :
                 state.wait_cycles +=3;
-                GRAB_NEXT_WORD_LITERAL;
+                GRAB_NEXT_WORD_LITERAL(reg2);
                 state.r[reg3] = state.r[reg3] >> reg2; 
                 SET_OFF_OF(state.flags);
                 SET_OFF_CF(state.flags);
@@ -471,7 +470,7 @@ unsigned RC1600::realStep()
             case PAR2_OPCODE::SRA_LIT :
             {
                 state.wait_cycles +=3;
-                GRAB_NEXT_WORD_LITERAL;
+                GRAB_NEXT_WORD_LITERAL(reg2);
                 int16_t r3 = state.r[reg3];
                 int16_t r2 = reg2;
                 int16_t r = r3 << r2;
@@ -480,7 +479,7 @@ unsigned RC1600::realStep()
                 SET_OFF_CF(state.flags);
                 break;
             }
-            // TODO
+            // TODO MUL/DIV/MOD family
 
             case PAR2_OPCODE::SWP :
                 state.wait_cycles += 3;
@@ -496,11 +495,194 @@ unsigned RC1600::realStep()
 
             case PAR2_OPCODE::SET :
                 state.wait_cycles += 2;
-                GRAB_NEXT_WORD_LITERAL;
+                GRAB_NEXT_WORD_LITERAL(reg2);
                 state.r[reg3] = reg2;
                 break;
 
-            // TODO
+            // Branch --------------------------------------------------------- 
+            case PAR2_OPCODE::BEQ :
+                state.wait_cycles +=5;
+                if (state.r[reg3] == state.r[reg2]) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+
+            case PAR2_OPCODE::BEQ_LIT :
+                state.wait_cycles +=5;
+                GRAB_NEXT_WORD_LITERAL(reg2);
+                if (state.r[reg3] == reg2) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+            
+            case PAR2_OPCODE::BNEQ :
+                state.wait_cycles +=5;
+                if (state.r[reg3] != state.r[reg2]) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+
+            case PAR2_OPCODE::BNEQ_LIT :
+                state.wait_cycles +=5;
+                GRAB_NEXT_WORD_LITERAL(reg2);
+                if (state.r[reg3] != reg2) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+            
+            case PAR2_OPCODE::BG :
+            {
+                state.wait_cycles +=5;
+                int16_t r3 = state.r[reg3];
+                int16_t r2 = state.r[reg2];
+                if (r3 > r2) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+            }
+
+            case PAR2_OPCODE::BG_LIT :
+            {
+                state.wait_cycles +=5;
+                GRAB_NEXT_WORD_LITERAL(reg2);
+                int16_t r3 = state.r[reg3];
+                int16_t r2 = reg2;
+                if (r3 > r2) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+            }
+            
+            case PAR2_OPCODE::BGE :
+            {
+                state.wait_cycles +=5;
+                int16_t r3 = state.r[reg3];
+                int16_t r2 = state.r[reg2];
+                if (r3 >= r2) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+            }
+
+            case PAR2_OPCODE::BGE_LIT :
+            {
+                state.wait_cycles +=5;
+                GRAB_NEXT_WORD_LITERAL(reg2);
+                int16_t r3 = state.r[reg3];
+                int16_t r2 = reg2;
+                if (r3 >= r2) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+            }
+            
+            case PAR2_OPCODE::BUG :
+                state.wait_cycles +=5;
+                if (state.r[reg3] > state.r[reg2]) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+
+            case PAR2_OPCODE::BUG_LIT :
+                state.wait_cycles +=5;
+                GRAB_NEXT_WORD_LITERAL(reg2);
+                if (state.r[reg3] > reg2) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+            
+            case PAR2_OPCODE::BUGE :
+                state.wait_cycles +=5;
+                if (state.r[reg3] >= state.r[reg2]) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+
+            case PAR2_OPCODE::BUGE_LIT :
+                state.wait_cycles +=5;
+                GRAB_NEXT_WORD_LITERAL(reg2);
+                if (state.r[reg3] >= reg2) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+           
+            case PAR2_OPCODE::BBITS :
+                state.wait_cycles +=6;
+                if ((state.r[reg3] & state.r[reg2]) != 0) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+            
+            case PAR2_OPCODE::BCLEAR :
+                state.wait_cycles +=6;
+                if ((state.r[reg3] & state.r[reg2]) == 0) {
+                    state.skiping = true;
+                    state.wait_cycles++;
+                }
+                break;
+
+                
+            // TODO INP and OUT
+            
+            // Absolute JuMPs and CALLs ---------------------------------------
+            case PAR2_OPCODE::LJMP :
+                state.wait_cycles += 3;
+                state.cs = state.r[reg3];
+                state.pc = state.r[reg2];
+                break;
+            
+            case PAR2_OPCODE::LCALL :
+                state.wait_cycles += 3;
+
+                // Push CS MSB
+                ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+                ram[ptr] = state.cs >> 8; 
+                // Push CS LSB
+                ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+                ram[ptr] = state.cs & 0xFF;
+                // Push PC MSB
+                ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+                ram[ptr] = state.pc >> 8; 
+                // Push PC LSB
+                ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+                ram[ptr] = state.pc & 0xFF;
+
+                state.cs = state.r[reg3];
+                state.pc = state.r[reg2];
+                break;
+            
+            case PAR2_OPCODE::JMP :
+                state.wait_cycles += 3;
+                GRAB_NEXT_WORD_LITERAL(reg2);
+                state.pc = state.r[reg3] + reg2;
+                break;
+            
+            case PAR2_OPCODE::CALL :
+                state.wait_cycles += 3;
+                GRAB_NEXT_WORD_LITERAL(reg2);
+
+                // Push PC MSB
+                ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+                ram[ptr] = state.pc >> 8; 
+                // Push PC LSB
+                ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+                ram[ptr] = state.pc & 0xFF;
+
+                state.pc = state.r[reg3] + reg2;
+                break;
 
             default: // Acts like a NOP
                 state.wait_cycles++;
@@ -539,6 +721,139 @@ unsigned RC1600::realStep()
                 }
                 break;
 
+            case PAR1_OPCODE::PUSH :
+                state.wait_cycles +=3;
+                // Push MSB
+                ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+                ram[ptr] = state.r[reg3] >> 8; 
+                // Push LSB
+                ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+                ram[ptr] = state.r[reg3] & 0xFF;
+                break;
+
+            case PAR1_OPCODE::POP :
+                state.wait_cycles +=3;
+                // Pop LSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.r[reg3] = ram[ptr];
+                // Pop MSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.r[reg3] |= ram[ptr] << 8; 
+                break;
+            
+            case PAR1_OPCODE::GETPC :
+                state.wait_cycles +=2;
+                state.r[reg3] = state.pc;
+                break;
+   
+            case PAR1_OPCODE::SETFLAGS :
+                state.wait_cycles +=3;
+                state.flags = state.r[reg3];
+                break;
+
+            case PAR1_OPCODE::GETFLAGS :
+                state.wait_cycles +=2;
+                state.r[reg3] = state.flags;
+                break;
+    
+            case PAR1_OPCODE::SETY :
+                state.wait_cycles +=3;
+                state.y = state.r[reg3];
+                break;
+
+            case PAR1_OPCODE::SETY_LIT :
+                state.wait_cycles +=3;
+                GRAB_NEXT_WORD_LITERAL(reg3);
+                state.y = reg3;
+                break;
+
+            case PAR1_OPCODE::GETY :
+                state.wait_cycles +=2;
+                state.r[reg3] = state.y;
+                break;
+
+            // TODO INTs
+
+            case PAR1_OPCODE::SETIA :
+                state.wait_cycles +=3;
+                state.ia = state.r[reg3];
+                break;
+
+            case PAR1_OPCODE::SETIA_LIT :
+                state.wait_cycles +=3;
+                GRAB_NEXT_WORD_LITERAL(reg3);
+                state.ia = reg3;
+                break;
+
+            case PAR1_OPCODE::GETIA :
+                state.wait_cycles +=2;
+                state.r[reg3] = state.ia;
+                break;
+
+            case PAR1_OPCODE::SETCS :
+                state.wait_cycles +=3;
+                state.cs = state.r[reg3];
+                break;
+
+            case PAR1_OPCODE::SETCS_LIT :
+                state.wait_cycles +=3;
+                GRAB_NEXT_WORD_LITERAL(reg3);
+                state.cs = reg3;
+                break;
+
+            case PAR1_OPCODE::GETCS :
+                state.wait_cycles +=2;
+                state.r[reg3] = state.cs;
+                break;
+
+            case PAR1_OPCODE::SETDS :
+                state.wait_cycles +=3;
+                state.ds = state.r[reg3];
+                break;
+
+            case PAR1_OPCODE::SETDS_LIT :
+                state.wait_cycles +=3;
+                GRAB_NEXT_WORD_LITERAL(reg3);
+                state.ds = reg3;
+                break;
+
+            case PAR1_OPCODE::GETDS :
+                state.wait_cycles +=2;
+                state.r[reg3] = state.ds;
+                break;
+
+            case PAR1_OPCODE::SETSS :
+                state.wait_cycles +=3;
+                state.ss = state.r[reg3];
+                break;
+
+            case PAR1_OPCODE::SETSS_LIT :
+                state.wait_cycles +=3;
+                GRAB_NEXT_WORD_LITERAL(reg3);
+                state.ss = reg3;
+                break;
+
+            case PAR1_OPCODE::GETSS :
+                state.wait_cycles +=2;
+                state.r[reg3] = state.ss;
+                break;
+
+            case PAR1_OPCODE::SETIS :
+                state.wait_cycles +=3;
+                state.is = state.r[reg3];
+                break;
+
+            case PAR1_OPCODE::SETIS_LIT :
+                state.wait_cycles +=3;
+                GRAB_NEXT_WORD_LITERAL(reg3);
+                state.is = reg3;
+                break;
+
+            case PAR1_OPCODE::GETIS :
+                state.wait_cycles +=2;
+                state.r[reg3] = state.is;
+                break;
+
             default: // Acts like a NOP
                 state.wait_cycles++;
                 break;
@@ -567,17 +882,19 @@ unsigned RC1600::realStep()
 
             case PAR1L_OPCODE::CALL_REL : 
                 state.wait_cycles +=4;
-                // Push PC
-                esp = ((state.ss&0x0F) << 16) | --state.r[SP];
-                ram[esp] = state.pc; 
+                
+                // Push PC MSB
+                ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+                ram[ptr] = state.pc >> 8; 
+                // Push PC LSB
+                ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
+                ram[ptr] = state.pc & 0xFF;
 
                 relpos = state.pc + long_lit;
                 if (relpos > 0xFFFF) {
-                    state.cs++;
-                    state.pc = (word_t)(relpos - 0xFFFF);
+                    state.pc = 0xFFFF;
                 } else if (tmp3 < 0) {
-                    state.cs--;
-                    state.pc = (word_t)(0xFFFF + relpos);
+                    state.pc = 0;
                 } else {
                     state.pc = (word_t)(relpos &0xFFFF);
                 }
@@ -608,32 +925,51 @@ unsigned RC1600::realStep()
 
             case NOPAR_OPCODE::RET :
                 state.wait_cycles +=4;
-                // Pop PC
-                esp = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.pc = ram[esp];
+                // Pop PC LSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.pc = ram[ptr];
+                // Pop PC MSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.pc |= ram[ptr] << 8; 
                 break;
             
             case NOPAR_OPCODE::LRET :
                 state.wait_cycles +=5;
-                // Pop PC
-                esp = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.pc = ram[esp];
-                // Pop CS
-                esp = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.cs = ram[esp];
+                // Pop PC LSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.pc = ram[ptr];
+                // Pop PC MSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.pc |= ram[ptr] << 8; 
+                // Pop CS LSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.cs = ram[ptr];
+                // Pop CS MSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.cs |= ram[ptr] << 8; 
                 break;
 
             case NOPAR_OPCODE::RFI :
                 state.wait_cycles +=8;
-                // Pop R1
-                esp = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.r[1] = ram[esp];
-                // Pop PC
-                esp = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.pc = ram[esp];
-                // Pop CS
-                esp = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.cs = ram[esp];
+                // Pop PC LSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.pc = ram[ptr];
+                // Pop PC MSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.pc |= ram[ptr] << 8; 
+                // Pop CS LSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.cs = ram[ptr];
+                // Pop CS MSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.cs |= ram[ptr] << 8; 
+                // Pop R1 LSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.r[reg3] = ram[ptr];
+                // Pop R1 MSB
+                ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
+                state.r[1] |= ram[ptr] << 8; 
+                
                 SET_OFF_IF(state.flags);
                 state.iacq = false;
                 break;
