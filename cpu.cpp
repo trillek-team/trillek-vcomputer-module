@@ -63,6 +63,8 @@ void RC1600::tick (unsigned n)
     }                                                                         \
 }
 
+#define CARRY_BIT(x)  ((((x) >> 16) &0x1) == 1)
+
 /**
  * Executes a RC1600 instrucction
  * @return Number of cycles that takes to do it
@@ -212,22 +214,25 @@ unsigned RC1600::realStep()
         switch (opcode) {
             case PAR2_OPCODE::ADD :
                 state.wait_cycles +=3;
-                tmp3 = state.r[reg3] + state.r[reg2];
-                if ((tmp3 &0x1000) != 0)
+                tmp3 = (uint_fast32_t)(state.r[reg3]) + state.r[reg2];
+                if (CARRY_BIT(tmp3))
                     SET_ON_CF(state.flags);
                 else
                     SET_OFF_CF(state.flags);
 
-                tmp1 = (tmp3 >> 15) & 0x1;      // get Sign bit
-                tmp1 ^= GET_CF(state.flags);    // Overflow
-                if (tmp1 != 0) {
-                    SET_ON_OF(state.flags);
-                    if (GET_TOE(state.flags)) {
-                        state.interrupt = true;
-                        state.int_msg = 4;
+                tmp1 = (state.r[reg3] >> 15) & 0x1; // gets Sign bits
+                tmp2 = (state.r[reg2] >> 15) & 0x1;
+                if (tmp1 == tmp2) { // Check sign of result
+                    tmp2 = (tmp3 >> 15) & 0x1;
+                    if (tmp1 != tmp2) { // Overflow
+                        SET_ON_OF(state.flags);
+                        if (GET_TOE(state.flags)) {
+                            state.interrupt = true;
+                            state.int_msg = 4;
+                        }
+                    } else {
+                        SET_OFF_OF(state.flags);
                     }
-                } else {
-                    SET_OFF_OF(state.flags);
                 }
 
                 state.r[reg3] = (word_t)(tmp3 & 0xFFFF);
@@ -236,22 +241,25 @@ unsigned RC1600::realStep()
             case PAR2_OPCODE::ADD_LIT :
                 state.wait_cycles +=3;
                 GRAB_NEXT_WORD_LITERAL;
-                tmp3 = state.r[reg3] + reg2;
-                if ((tmp3 &0x1000) != 0)
+                tmp3 = (uint_fast32_t)(state.r[reg3]) + reg2;
+                if (CARRY_BIT(tmp3) != 0)
                     SET_ON_CF(state.flags);
                 else
                     SET_OFF_CF(state.flags);
 
-                tmp1 = (tmp3 >> 15) & 0x1;      // get Sign bit
-                tmp1 ^= GET_CF(state.flags);    // Overflow
-                if (tmp1 != 0) {
-                    SET_ON_OF(state.flags);
-                    if (GET_TOE(state.flags)) {
-                        state.interrupt = true;
-                        state.int_msg = 4;
+                tmp1 = (state.r[reg3] >> 15) & 0x1; // gets Sign bits
+                tmp2 = (reg2 >> 15) & 0x1;
+                if (tmp1 == tmp2) { // Check sign of result
+                    tmp2 = (tmp3 >> 15) & 0x1;
+                    if (tmp1 != tmp2) { // Overflow
+                        SET_ON_OF(state.flags);
+                        if (GET_TOE(state.flags)) {
+                            state.interrupt = true;
+                            state.int_msg = 4;
+                        }
+                    } else {
+                        SET_OFF_OF(state.flags);
                     }
-                } else {
-                    SET_OFF_OF(state.flags);
                 }
 
                 state.r[reg3] = (word_t)(tmp3 & 0xFFFF);
@@ -259,22 +267,25 @@ unsigned RC1600::realStep()
 
             case PAR2_OPCODE::SUB :
                 state.wait_cycles +=3;
-                tmp3 = state.r[reg3] - state.r[reg2];
-                if ((tmp3 &0x1000) != 0)
+                tmp3 = (uint_fast32_t)(state.r[reg3]) - state.r[reg2];
+                if (state.r[reg3] < state.r[reg2])
                     SET_ON_CF(state.flags);
                 else
                     SET_OFF_CF(state.flags);
 
-                tmp1 = (tmp3 >> 15) & 0x1;      // get Sign bit
-                tmp1 ^= GET_CF(state.flags);    // Overflow
-                if (tmp1 != 0) {
-                    SET_ON_OF(state.flags);
-                    if (GET_TOE(state.flags)) {
-                        state.interrupt = true;
-                        state.int_msg = 4;
+                tmp1 = (state.r[reg3] >> 15) & 0x1; // gets Sign bits
+                tmp2 = (state.r[reg2] >> 15) & 0x1;
+                if (tmp1 == tmp2) { // Check sign of result
+                    tmp2 = (tmp3 >> 15) & 0x1;
+                    if (tmp1 != tmp2) { // Overflow
+                        SET_ON_OF(state.flags);
+                        if (GET_TOE(state.flags)) {
+                            state.interrupt = true;
+                            state.int_msg = 4;
+                        }
+                    } else {
+                        SET_OFF_OF(state.flags);
                     }
-                } else {
-                    SET_OFF_OF(state.flags);
                 }
 
                 state.r[reg3] = (word_t)(tmp3 & 0xFFFF);
@@ -283,26 +294,27 @@ unsigned RC1600::realStep()
             case PAR2_OPCODE::SUB_LIT :
                 state.wait_cycles +=3;
                 GRAB_NEXT_WORD_LITERAL;
-                tmp3 = state.r[reg3] - reg2;
-                if ((tmp3 &0x1000) != 0)
+                tmp3 = (uint_fast32_t)(state.r[reg3]) - reg2;
+                if (state.r[reg3] < reg2)
                     SET_ON_CF(state.flags);
                 else
                     SET_OFF_CF(state.flags);
 
-                tmp1 = (tmp3 >> 15) & 0x1;      // get Sign bit
-                tmp1 ^= GET_CF(state.flags);    // Overflow
-                if (tmp1 != 0) {
-                    SET_ON_OF(state.flags);
-                    if (GET_TOE(state.flags)) {
-                        state.interrupt = true;
-                        state.int_msg = 4;
+                tmp1 = (state.r[reg3] >> 15) & 0x1; // gets Sign bits
+                tmp2 = (reg2 >> 15) & 0x1;
+                if (tmp1 == tmp2) { // Check sign of result
+                    tmp2 = (tmp3 >> 15) & 0x1;
+                    if (tmp1 != tmp2) { // Overflow
+                        SET_ON_OF(state.flags);
+                        if (GET_TOE(state.flags)) {
+                            state.interrupt = true;
+                            state.int_msg = 4;
+                        }
+                    } else {
+                        SET_OFF_OF(state.flags);
                     }
-                } else {
-                    SET_OFF_OF(state.flags);
                 }
 
-                if (reg3 == 0) // We cant write on r0
-                    break;
                 state.r[reg3] = (word_t)(tmp3 & 0xFFFF);
                 break;
 

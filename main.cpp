@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <algorithm>
 
-size_t prg_size = 24*2;
+size_t prg_size = 28*2;
 CPU::word_t prg[] = {
     0x6210,  // 000h SET 1, r0
     0x6211,  // 002h SET 1, r1
@@ -31,8 +31,16 @@ CPU::word_t prg[] = {
     0x2023,  // 028h XCHG r3
     0x62F4,  // 02Ah SET 0x00FF, r4
     0x00FF,  // 02Ch literal
-    0x2034,  // 02Eh SXTBD r4 (r4= 0xFFFF)
-    0
+    0x2034,  // 02Eh SXTBD r4       (r4 == 0xFFFF)
+    0x4025,  // 030h ADD r5, r2     (r5 == 0x0003)
+    0x4111,  // 032h ADD r1, 1      (r1 == 0xFFFF)
+    0x4225,  // 034h SUB r5, r2     (r5 == 0x0005)
+    0x4316,  // 036  SUB r6, 1      (r6 == 0x0005)
+    0,
+    0,
+    0,
+    0,
+    0,
 };
 
 void print_regs(const CPU::CpuState& state);
@@ -54,6 +62,7 @@ int main()
         cpu.step();
         std::printf("Takes %u cycles\n", cpu.getState().wait_cycles);
         print_regs(cpu.getState());
+        std::cout << std::endl;
         c = std::getchar();
     }
 
@@ -75,11 +84,16 @@ void print_regs(const CPU::CpuState& state)
     std::printf("\tDS= 0x%04x\n", state.ds);
     std::printf("\tCS:PC= %01X:%04Xh ", state.cs, state.pc);
     std::printf("IS:IA= %01X:%04Xh \n", state.is, state.ia);
+    std::printf("FLAGS= 0x%04x \n", state.flags);
+    std::printf("TDE: %d TOE: %d TSS: %d \t IF: %d DE %d OF: %d CF: %d\n",
+            GET_TDE(state.flags), GET_TOE(state.flags), GET_TSS(state.flags),
+            GET_IF(state.flags), GET_DE(state.flags), GET_OF(state.flags),
+            GET_CF(state.flags));
 
 }
 
 void print_cspc(const CPU::CpuState& state, const CPU::byte_t* ram)
 {
     CPU::dword_t epc = ((state.cs&0x0F) << 16) | state.pc;
-    std::printf("\t[CS:PC]= 0x%02x%02x ", ram[epc+1], ram[epc]); // Big Endian
+    std::printf("\t[CS:PC]= 0x%02x%02x \n", ram[epc+1], ram[epc]); // Big Endian
 }

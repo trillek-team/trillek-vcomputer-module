@@ -43,8 +43,8 @@ struct CpuState {
 
 // Operation in Flags bits
 #define GET_CF(x)          ((x) & 0x1)
-#define SET_ON_CF(x)       (x | 0x1)
-#define SET_OFF_CF(x)      (x & 0xFFFE)
+#define SET_ON_CF(x)       (x |= 0x1)
+#define SET_OFF_CF(x)      (x &= 0xFFFE)
 
 #define GET_OF(x)          (((x) & 0x2) >> 1)
 #define SET_ON_OF(x)       (x |= 0x2)
