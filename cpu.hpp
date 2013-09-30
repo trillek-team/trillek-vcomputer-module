@@ -1,14 +1,12 @@
 #ifndef __CPU_HPP__
 #define __CPU_HPP__
 
+#include "ram.hpp"
+
 #include <cstdint>
 #include <vector>
 
 namespace CPU {
-
-typedef uint32_t dword_t;
-typedef uint16_t word_t;
-typedef uint8_t byte_t;
 
 #define BP (14)
 #define SP (15)
