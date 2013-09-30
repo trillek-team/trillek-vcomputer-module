@@ -108,7 +108,8 @@ public:
 
     // TODO External class to have a real ROM mapped somewhere and check
     // bounds
-    byte_t ram[0x100000]; // 1 MiB (0 to F:FFFF) 
+    //byte_t ram[0x100000]; // 1 MiB (0 to F:FFFF) 
+	CPU::Mem ram;
 
 protected:
     CpuState state;

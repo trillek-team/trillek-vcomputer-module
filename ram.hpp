@@ -52,7 +52,7 @@ public:
 	/**
 	 * Read  operator
 	 */
-	const byte_t& operator[](size_t index) const
+	byte_t rb(size_t index) const
 	{
 		index &= max_address;
 		// Search the apropiated block
@@ -63,13 +63,13 @@ public:
 			}
 		}
 
-		return dumb_dst;
+		return 0;
 	}
 
 	/**
 	 * Write operator
 	 */
-	byte_t& operator[](size_t index) {
+	void wb(size_t index, byte_t val) {
 		index &= max_address;
 		// Search the apropiated block
 		for (auto it= blocks.begin(); it != blocks.end(); ++it) {
@@ -77,11 +77,11 @@ public:
 					&& ((*it)->begin + (*it)->size) > index 
 					&& !((*it)->read_only) ){
 				index -= (*it)->begin;
-				return (*it)->block[index];
+				(*it)->block[index] = val;
+                return;
 			}
 		}
 
-		return dumb_dst;
 	}
 
 	void addBlock(MBlock_sptr block)

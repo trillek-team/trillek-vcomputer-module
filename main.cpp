@@ -75,25 +75,34 @@ CPU::word_t prg[] = {
     0xC201,  // 07Ch STORE [r2], r1  (type C)
 };
 
-size_t isr_size = 1*2;
+size_t isr_size = 2*2;
 CPU::word_t isr[] = {
+	0x0000,  // 000h NOP
     0x0004,  // 002h RFI
 };
 
 void print_regs(const CPU::CpuState& state);
-void print_cspc(const CPU::CpuState& state, const CPU::byte_t* ram);
-void print_stack(const CPU::CpuState& state, const CPU::byte_t* ram);
+void print_cspc(const CPU::CpuState& state, const CPU::Mem& ram);
+void print_stack(const CPU::CpuState& state, const CPU::Mem& ram);
 
 int main()
 {
     using namespace CPU;
     RC1600 cpu;
-    cpu.reset();
-    
-    std::copy_n((byte_t*)prg, prg_size, cpu.ram); // Copy program
-    std::copy_n((byte_t*)isr, isr_size, &(cpu.ram[0x10002])); // Copy ISR
 
-    std::cout << "Run program (r) or Step Mode (s) ?\n";
+    cpu.reset();
+	
+	auto prg_blq = std::make_shared<MBlock>(0, 0x10000);
+	cpu.ram.addBlock(prg_blq);
+
+	auto isr_blq = std::make_shared<MBlock>(0x10000, 0x10000);
+	cpu.ram.addBlock(isr_blq);
+    
+    std::copy_n((byte_t*)prg, prg_size, prg_blq->block); // Copy program
+    std::copy_n((byte_t*)isr, isr_size, isr_blq->block); // Copy ISR
+
+    
+	std::cout << "Run program (r) or Step Mode (s) ?\n";
     char mode;
     std::cin >> mode;
 
@@ -119,6 +128,9 @@ int main()
         }
 
     } else {
+	    auto mda_blq = std::make_shared<MBlock>(0xB0000, 0x10000);
+	    cpu.ram.addBlock(mda_blq);
+    
         std::cout << "Running!\n";
         unsigned ticks = 40000;
         unsigned long ticks_count = 0; 
@@ -155,7 +167,7 @@ int main()
             std::printf(
 "*******************************************************************************\n");
             for(size_t i= 0xB0000; i< 0xB0FA0; i+=2) {
-                std::printf("%c", cpu.ram[i]);
+                std::printf("%c", cpu.ram.rb(i));
                 if (col == 79) {
                     col = 0;
                     std::printf("\n");
@@ -199,20 +211,20 @@ void print_regs(const CPU::CpuState& state)
 
 }
 
-void print_cspc(const CPU::CpuState& state, const CPU::byte_t* ram)
+void print_cspc(const CPU::CpuState& state, const CPU::Mem&  ram)
 {
     CPU::dword_t epc = ((state.cs&0x0F) << 16) | state.pc;
-    std::printf("\t[CS:PC]= 0x%02x%02x ", ram[epc+1], ram[epc]); // Big Endian
-    std::cout << CPU::disassembly(ram + epc) << std::endl;  
+    std::printf("\t[CS:PC]= 0x%02x%02x ", ram.rb(epc+1), ram.rb(epc)); // Big Endian
+    std::cout << CPU::disassembly(ram,  epc) << std::endl;  
 }
 
-void print_stack(const CPU::CpuState& state, const CPU::byte_t* ram)
+void print_stack(const CPU::CpuState& state, const CPU::Mem& ram)
 {
     std::printf("STACK:\n");
 
     CPU::dword_t ptr = ((state.ss&0x0F) << 16) | state.r[SP];
     for (size_t i =0; i <6; i++) {
-        std::printf("%02Xh ", ram[ptr]);
+        std::printf("%02Xh ", ram.rb(ptr));
         ptr++;
         if (((size_t)(state.r[SP]) + i) >= 0xFFFF)
             break;
