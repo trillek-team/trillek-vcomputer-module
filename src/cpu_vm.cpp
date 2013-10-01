@@ -6,13 +6,16 @@
 #include <iomanip> 
 #include <cstdio>
 #include <algorithm>
+#include <string>
+#include <cwctype>
+#include <clocale>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 
 #define FRAMERATE (60)
 
-size_t prg_size = 66*2;
+size_t prg_size = 68*2;
 CPU::word_t prg[] = {
     0x6210,  // 000h SET r0, 1
     0x6211,  // 002h SET r1, 1
@@ -69,17 +72,20 @@ CPU::word_t prg[] = {
     0x0041,  // 06Ah
     0x6202,  // 06Ch SET r2, 0
     0xC201,  // 06Eh STORE [r2], r1  (type A)
-    0x4122,  // 070h ADD r2, 2 
-    0x4111,  // 072h ADD r1, 1 
-    0xC201,  // 074h STORE [r2], r1  (type B)
-    0x62F2,  // 076h SET r2, 0xA0
-    0x00B0,  // 078h
-    0x4111,  // 07Ah ADD r1, 1 
-    0xC201,  // 07Ch STORE [r2], r1  (type C)
-    0x2150,  // 07Eh SETDS 0
-    0xC001,  // 080h STORE [0], r1
-    0x8001,  // 082h LOAD [0], r1 (shoud be 0x6210)
-    0x0000
+    0x62F2,  // 070h SET r2, 80*2
+    0x00A0,  // 072h
+    0x4111,  // 074h ADD r1, 1 
+    0xC201,  // 076h STORE [r2], r1  (type B)
+    0x62F2,  // 078h SET r2, 80*4
+    0x0140,  // 07Ah
+    0x4111,  // 07Ch ADD r1, 1 
+    0xC201,  // 07Eh STORE [r2], r1  (type C)
+    0x2150,  // 080h SETDS 0
+    0xC001,  // 082h STORE [0], r1
+    0x8001,  // 084h LOAD [0], r1 (shoud be 0x6210)
+    0x0000,
+    0x0000,
+    0x0000,
 };
 
 size_t isr_size = 2*2;
@@ -120,74 +126,107 @@ int main()
     char mode;
     std::cin >> mode;
 
-    //sf::RenderWindow mda_window;
-    //mda_window.create(sf::VideoMode(720, 350), "RC1600 prototype");
-    //mda_window.setFramerateLimit(FRAMERATE);
+    sf::RenderWindow mda_window;
+    mda_window.create(sf::VideoMode(640, 406), "RC1600 prototype");
+    mda_window.setFramerateLimit(FRAMERATE);
 
+    bool debug = false;
     if (mode == 's' || mode == 'S') {
+        debug = true;
+    }
+   
+    sf::Font font;
+    if (!font.loadFromFile("cour.ttf")) {
+        std::cerr << "Error loading font\n";
+        exit(0);
+    }
+    sf::Text text;
+    text.setFont(font);
+    text.setColor(sf::Color::Green);
+    text.setCharacterSize(14); // 14 pixels
 
-        print_regs(cpu.getState());
+    std::cout << "Running!\n";
+    sf::Clock clock; 
+    unsigned ticks;
+    unsigned long ticks_count = 0; 
+    mda_window.clear(sf::Color::Black);
+    mda_window.display();
+
+    int c = ' ';
+    while ( mda_window.isOpen()) {
+
+        // T period of a 1MHz signal = 1 microseconds
+        const auto delta=clock.getElapsedTime().asMicroseconds(); 
+        clock.restart();
+        double tmp = cpu.getClock()/ (double)(FRAMERATE);
+        ticks= tmp+0.5;
         
-        int c = std::getchar();
-        while (c != 'q' && c != 'Q') {
+        if (debug) {
             print_cspc(cpu.getState(), cpu.ram);
             if (cpu.getState().skiping)
                 std::printf("Skiping!\n");
             if (cpu.getState().sleeping)
                 std::printf("ZZZZzzzz...\n");
-            
-            cpu.step();
-            
-            std::printf("Takes %u cycles\n", cpu.getState().wait_cycles);
-            print_regs(cpu.getState());
-            print_stack(cpu.getState(), cpu.ram);
-
-            c = std::getchar();
         }
 
-    } else {
-    
-        std::cout << "Running!\n";
-        sf::Clock clock; 
-        unsigned ticks;
-        unsigned long ticks_count = 0; 
-     
-        while (1) {
+        cpu.tick(ticks);
+        ticks_count += ticks;
 
-            // T period of a 1MHz signal = 1 microseconds
-            const auto delta=clock.getElapsedTime().asMicroseconds(); 
-            clock.restart();
-            double tmp = cpu.getClock()/ (double)(FRAMERATE);
-            ticks= tmp+0.5;
-            
-            cpu.tick(ticks);
-            ticks_count += ticks;
-
-            // Print to the stdout a 80x25 MDA like screen at 80000h
-            unsigned col = 0;
-            //std::printf("\033[2J\033[;H"); // Clear screen
-            std::printf("\033[82T\033[;H"); // Clear screen
-            std::printf(
-"*******************************************************************************\n");
-            for(size_t i= 0xB0000; i< 0xB0FA0; i+=2) {
-                std::printf("%c", cpu.ram.rb(i));
-                if (col == 79) {
-                    col = 0;
-                    std::printf("\n");
-                } else {
-                    col++;
+        // Print to the stdout a 80x25 MDA like screen at 80000h
+        auto mda_ram = mda_blq.lock();
+        if (mda_ram) {
+            std::wstring txt = L"";
+            unsigned col = 0, row = 0;
+            dword_t i = 0;
+            for(row =0; row < 25 && i < mda_ram->size(); row++) {
+                for(col =0; col < 80 && i < mda_ram->size(); col++) {
+                    wchar_t c = (wchar_t)(mda_ram->getPtr()[i]);
+                    i +=2;
+                    if (std::iswgraph(c))
+                        txt.push_back(c);
+                    else
+                        txt.push_back(L' ');
                 }
+                txt.push_back(L'\n');
             }
-            std::printf(
-"*******************************************************************************\n");
+            text.setString(txt);
+        }
+
+        // Speed info
+        if (ticks_count > 100000 && !debug) {
             std::cout << "Running " << ticks << " cycles in " << delta << " uS"
                       << " Speed of " 
                       << 100 * (((ticks * 1000000.0) / cpu.getClock()) / delta)
                       << "% \n";
+            ticks_count -= 100000;
+        }
 
+        // Poll events
+        sf::Event ev;
+        while (mda_window.pollEvent(ev)) {
+            if (ev.type == sf::Event::Closed) {
+                mda_window.close();
+                break;
+            }
+        }
+
+
+        mda_window.clear(sf::Color(0,0,0, 0xAA));
+        // Update here
+        mda_window.draw(text);
+        mda_window.display();
+
+        if (debug) {
+            std::printf("Takes %u cycles\n", cpu.getState().wait_cycles);
+            print_regs(cpu.getState());
+            print_stack(cpu.getState(), cpu.ram);
+            c = std::getchar();
+            if (c == 'q' || c == 'Q')
+                mda_window.close();
         }
 
     }
+
     return 0;
 }
 
