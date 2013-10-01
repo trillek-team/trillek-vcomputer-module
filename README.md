@@ -10,6 +10,17 @@ Actually does this:
  - In run mode, shows a **MDA** 80x25 like **screen** in stdout, **mapped at B:0000h**
  - In step mode, show register status, last values of Stack, instruction being executed in human form, also executes a single instrucction every time that a key is pressed. If is pressed '**q**' or '**Q**', then ends the emulation.
 
+COMPILING
+---------
+Actually I'm using CMake, and I need SFML for graphics/events/timing
+
+    mkdir build
+    cd build
+    cmake ..
+    make
+ 
+If all it's OK, should generate a executable called **vm**, and in ./src/ should be created static and shared libs of the VM core.
+
 
 TODO :
 ------
