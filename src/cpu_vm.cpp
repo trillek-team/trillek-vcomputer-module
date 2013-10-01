@@ -6,8 +6,11 @@
 #include <iomanip> 
 #include <cstdio>
 #include <algorithm>
-#include <chrono>
-#include <unistd.h>
+
+#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+
+#define FRAMERATE (60)
 
 size_t prg_size = 66*2;
 CPU::word_t prg[] = {
@@ -117,6 +120,10 @@ int main()
     char mode;
     std::cin >> mode;
 
+    //sf::RenderWindow mda_window;
+    //mda_window.create(sf::VideoMode(720, 350), "RC1600 prototype");
+    //mda_window.setFramerateLimit(FRAMERATE);
+
     if (mode == 's' || mode == 'S') {
 
         print_regs(cpu.getState());
@@ -141,31 +148,18 @@ int main()
     } else {
     
         std::cout << "Running!\n";
-        unsigned ticks = 40000;
+        sf::Clock clock; 
+        unsigned ticks;
         unsigned long ticks_count = 0; 
-        auto start = std::chrono::system_clock::now();
-        cpu.tick(ticks);
-        ticks_count += ticks;
-        auto end = std::chrono::system_clock::now();
-
-        int64_t delta=std::chrono::duration_cast<std::chrono::microseconds>
-                             (end-start).count();
-        int64_t ttime = ticks*(1000000 / cpu.getClock());
-        std::cout << "Delta   us: "<< delta << std::endl;
-        std::cout << "T. Time us: "<< ttime << std::endl;
-        std::cout << "Diff : "<< ttime - delta << std::endl;
      
         while (1) {
-            end = std::chrono::system_clock::now();
-            delta=std::chrono::duration_cast<std::chrono::microseconds>
-                             (end-start).count();
-            ttime = ticks*(1000000 / cpu.getClock());
-            /*if (ticks_count > 1000) {
-                std::cout << "Delta   us: "<< delta << std::endl;
-                std::cout << "T. Time us: "<< ttime << std::endl;
-                std::cout << "Diff : "<< ttime - delta << std::endl;
-                ticks_count -= 1000;
-            }*/
+
+            // T period of a 1MHz signal = 1 microseconds
+            const auto delta=clock.getElapsedTime().asMicroseconds(); 
+            clock.restart();
+            double tmp = cpu.getClock()/ (double)(FRAMERATE);
+            ticks= tmp+0.5;
+            
             cpu.tick(ticks);
             ticks_count += ticks;
 
@@ -186,10 +180,11 @@ int main()
             }
             std::printf(
 "*******************************************************************************\n");
+            std::cout << "Running " << ticks << " cycles in " << delta << " uS"
+                      << " Speed of " 
+                      << 100 * (((ticks * 1000000.0) / cpu.getClock()) / delta)
+                      << "% \n";
 
-            if (ttime > delta)
-                usleep(ttime-delta );
-            start = end;
         }
 
     }
