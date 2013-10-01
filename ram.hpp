@@ -4,6 +4,9 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
+#include <cstdio>
+
+#include <cassert>
 
 namespace CPU {
 
@@ -11,55 +14,113 @@ typedef uint32_t dword_t;
 typedef uint16_t word_t;
 typedef uint8_t  byte_t;
 
+class Mem;
+
 /**
  * Defines a Memmory Block
  */
-class MBlock {
+class ABlock {
 public:
-	size_t begin;	/// Begin of the Block of memory
-	size_t size;	/// Size of the block of memory
+
+	ABlock(dword_t begin, dword_t size = 1, bool read_only = false) : 
+		block(NULL), _begin(begin), _size(size), read_only(read_only),
+        allocated(false)
+	{ }
+
+	~ABlock()
+	{ }
+
+    /**
+     * Begin of address block
+     */
+    dword_t begin() const
+    {
+        return this->_begin;
+    }
+
+    /**
+     * Size of the address block
+     */
+    dword_t size() const
+    {
+        return this->_size;
+    }
+
+    /**
+     * End of the address block (not inclusive)
+     */
+    dword_t end() const
+    {
+        return _begin+_size;
+    }
+
+    /**
+     * Is real-only ? Aka writable only by owner
+     */
+    bool isReadOnly() const
+    {
+        return read_only;
+    }
+
+    /**
+     * Have the block being allocted to host ram ?
+     */
+    bool isAllocated() const
+    {
+        return allocated;
+    }
+
+    byte_t* getPtr()
+    {
+        return block;
+    }
+
+    friend class Mem;
+protected:
+	byte_t* block;  /// Ptr to the allocated block
+	
+    dword_t _begin;	/// Begin of the Block of memory
+	dword_t _size;	/// Size of the block of memory
 
 	bool read_only; /// Read-Only ? (Writebale only by the owner device)
+    bool allocated; /// Is allocated ?
 
-	byte_t* block;
-
-	MBlock(size_t begin, size_t size = 1, bool read_only = false) : 
-		begin(begin), size(size), read_only(read_only)
-	{
-		block = new byte_t[size];
-	}
-
-	~MBlock()
-	{
-		delete[] block;
-	}
 };
 
-typedef std::shared_ptr<MBlock> MBlock_sptr;
+typedef std::weak_ptr<ABlock> ABlock_wptr;
 
 /**
  * Represents the memmory address space of the computer
+ * Uses an arena to keep all address blocks in a contigous chunk of RAM of the
+ * host
  */
 class Mem {
 public:
 	byte_t dumb_dst;
 
-	Mem (size_t address_space= 20)
+	Mem (size_t address_space= 20) : ram_buffer(NULL)
 	{
 		max_address = (1<< address_space)-1;
 	}
 
+    ~Mem()
+    {
+        if (ram_buffer != NULL)
+            delete[] ram_buffer;
+    }
+
 	/**
 	 * Read  operator
+     * @param addr Address
 	 */
-	byte_t rb(size_t index) const
+	byte_t rb(dword_t addr) const
 	{
-		index &= max_address;
+		addr &= max_address;
 		// Search the apropiated block
 		for (auto it= blocks.begin(); it != blocks.end(); ++it) {
-			if ( (*it)->begin < index && ((*it)->begin + (*it)->size) > index){
-				index -= (*it)->begin;
-				return (*it)->block[index];
+			if ( (*it)->_begin <= addr && ((*it)->end() > addr)) {
+				addr -= (*it)->_begin;
+				return (*it)->block[addr];
 			}
 		}
 
@@ -68,31 +129,72 @@ public:
 
 	/**
 	 * Write operator
+     * @param addr Address
+     * @param val Byte value to been writen
 	 */
-	void wb(size_t index, byte_t val) {
-		index &= max_address;
+	void wb(dword_t addr, byte_t val) {
+		addr &= max_address;
 		// Search the apropiated block
 		for (auto it= blocks.begin(); it != blocks.end(); ++it) {
-			if ( (*it)->begin < index 
-					&& ((*it)->begin + (*it)->size) > index 
+			if ( (*it)->_begin <= addr 
+					&& ((*it)->end() > addr) 
 					&& !((*it)->read_only) ){
-				index -= (*it)->begin;
-				(*it)->block[index] = val;
+				addr -= (*it)->_begin;
+				
+                assert((*it)->isAllocated() );
+
+                (*it)->block[addr] = val;
                 return;
 			}
 		}
 
+        return;
 	}
 
-	void addBlock(MBlock_sptr block)
+    /**
+     * Adds a Address block
+     * @param begin Begin address
+     * @param size Size of the block (>= 1)
+     * @return a Weak ptr to a ABlock
+     */
+	ABlock_wptr addBlock(dword_t begin, dword_t size = 1)
 	{
-		blocks.push_back(block);
+        assert(size >= 1);
+        if ((begin+size) > max_address )
+            return ABlock_wptr(); // Like returning null ptr
+
+        auto ab = std::make_shared<ABlock>(begin, size);
+		blocks.push_back(ab);
+        return ABlock_wptr(ab);
 	}
+
+    /**
+     * Allocated enought contigous memory for all memmory blocks
+     * @return allocated arena size
+     */
+    size_t allocateBlocks()
+    {
+        // calc size
+        size_t size = 0;
+		for (auto it= blocks.begin(); it != blocks.end(); ++it) {
+            size = size > (*it)->end() ? size : (*it)->end();
+        }
+        ram_buffer = new byte_t[size];
+        std::fill_n(ram_buffer, size, 0); // Clean it
+
+		for (auto it= blocks.begin(); it != blocks.end(); ++it) {
+            (*it)->block = ram_buffer + (*it)->_begin;
+            (*it)->allocated = true;
+        }
+
+        return size;
+    }
 
 private:
 	size_t max_address; /// Bit mask of avalible addresses
+    byte_t* ram_buffer;
 
-	std::vector<MBlock_sptr> blocks; /// Contains address space block
+	std::vector<std::shared_ptr<ABlock>> blocks; ///Contains address space blocks
 	
 
 };

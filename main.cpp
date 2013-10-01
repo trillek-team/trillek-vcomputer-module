@@ -92,15 +92,21 @@ int main()
 
     cpu.reset();
 	
-	auto prg_blq = std::make_shared<MBlock>(0, 0x10000);
-	cpu.ram.addBlock(prg_blq);
+	auto prg_blq = cpu.ram.addBlock(0, 0x10000);
+	auto isr_blq = cpu.ram.addBlock(0x10000, 0x10000);
+	
+    auto mda_blq = cpu.ram.addBlock(0xB0000, 0x10000);
+   
+    std::cout << "Allocted memory: " << cpu.ram.allocateBlocks()/1024 
+              << "KiB" << std::endl;
 
-	auto isr_blq = std::make_shared<MBlock>(0x10000, 0x10000);
-	cpu.ram.addBlock(isr_blq);
-    
-    std::copy_n((byte_t*)prg, prg_size, prg_blq->block); // Copy program
-    std::copy_n((byte_t*)isr, isr_size, isr_blq->block); // Copy ISR
+    {
+        auto prg_sptr = prg_blq.lock();
+        auto isr_sptr = isr_blq.lock();
 
+        std::copy_n((byte_t*)prg, prg_size, prg_sptr->getPtr()); // Copy program
+        std::copy_n((byte_t*)isr, isr_size, isr_sptr->getPtr()); // Copy ISR
+    }
     
 	std::cout << "Run program (r) or Step Mode (s) ?\n";
     char mode;
@@ -128,8 +134,6 @@ int main()
         }
 
     } else {
-	    auto mda_blq = std::make_shared<MBlock>(0xB0000, 0x10000);
-	    cpu.ram.addBlock(mda_blq);
     
         std::cout << "Running!\n";
         unsigned ticks = 40000;

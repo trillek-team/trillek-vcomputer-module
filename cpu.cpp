@@ -17,7 +17,7 @@ RC1600::~RC1600()
 
 void RC1600::reset()
 {
-    std::fill_n(state.r, 15, 0);
+    std::fill_n(state.r, 16, 0);
 
     state.pc = state.cs = state.ia = state.is = 0;
     state.ss = state.ds = state.flags = state.y = 0;
