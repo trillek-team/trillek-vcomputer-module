@@ -7,7 +7,7 @@ Actually does this:
 
  - Allow to select run mode or step mode
  - Have a **real ROM** of 32 Kib from 0:0000h to 0:8000h
- - In run mode, shows a **MDA** 80x25 like **screen** in stdout, **mapped at B:0000h**
+ - Shows a **MDA** 80x25 like **screen** in stdout, **mapped at B:0000h**. Refresh at 60Hz
  - In step mode, show register status, last values of Stack, instruction being executed in human form, also executes a single instrucction every time that a key is pressed. If is pressed '**q**' or '**Q**', then ends the emulation.
 
 COMPILING
