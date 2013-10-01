@@ -169,7 +169,11 @@ int main()
                 std::printf("ZZZZzzzz...\n");
         }
 
-        cpu.tick(ticks);
+        if (!debug)
+            cpu.tick(ticks);
+        else
+            ticks = cpu.step();
+
         ticks_count += ticks;
 
         // Print to the stdout a 80x25 MDA like screen at 80000h
