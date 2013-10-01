@@ -1,14 +1,12 @@
 #ifndef __CPU_HPP__
 #define __CPU_HPP__
 
+#include "ram.hpp"
+
 #include <cstdint>
 #include <vector>
 
 namespace CPU {
-
-typedef uint32_t dword_t;
-typedef uint16_t word_t;
-typedef uint8_t byte_t;
 
 #define BP (14)
 #define SP (15)
@@ -110,7 +108,8 @@ public:
 
     // TODO External class to have a real ROM mapped somewhere and check
     // bounds
-    byte_t ram[0x100000]; // 1 MiB (0 to F:FFFF) 
+    //byte_t ram[0x100000]; // 1 MiB (0 to F:FFFF) 
+	CPU::Mem ram;
 
 protected:
     CpuState state;

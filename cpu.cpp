@@ -7,7 +7,7 @@
 
 namespace CPU {
 
-RC1600::RC1600() : tot_cycles(0)
+RC1600::RC1600() : ram(), tot_cycles(0)
 {
     reset();    
 }
@@ -17,7 +17,7 @@ RC1600::~RC1600()
 
 void RC1600::reset()
 {
-    std::fill_n(state.r, 15, 0);
+    std::fill_n(state.r, 16, 0);
 
     state.pc = state.cs = state.ia = state.is = 0;
     state.ss = state.ds = state.flags = state.y = 0;
@@ -72,7 +72,7 @@ void RC1600::tick (unsigned n)
             state.pc -= 0xFFFE;                                               \
         }                                                                     \
         state.pc +=2;                                                         \
-        R = (ram[epc+1] << 8) | ram[epc]; /* Big Endian */                    \
+        R = (ram.rb(epc+1) << 8) | ram.rb(epc); /* Big Endian */                    \
         state.wait_cycles++;                                                  \
     }                                                                         \
 }
@@ -93,8 +93,7 @@ unsigned RC1600::realStep()
         state.pc -= 0xFFFE;
     }
     state.pc +=2;
-    word_t inst = (ram[epc+1] << 8) | ram[epc]; // Big Endian
-    //std::printf("### 0x%04x \n", inst);
+    word_t inst = (ram.rb(epc+1) << 8) | ram.rb(epc); // Big Endian
     word_t opcode, reg1, reg2, reg3;
 
     word_t tmp1, tmp2;
@@ -219,7 +218,7 @@ unsigned RC1600::realStep()
                 } else {
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
-                state.r[reg3] = (ram[ptr+1] << 8) | ram[ptr];
+                state.r[reg3] = (ram.rb(ptr+1) << 8) | ram.rb(ptr);
                 break;
 
             case PAR3_OPCODE::LOAD :
@@ -231,7 +230,7 @@ unsigned RC1600::realStep()
                 } else {
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
-                state.r[reg3] = (ram[ptr+1] << 8) | ram[ptr];
+                state.r[reg3] = (ram.rb(ptr+1) << 8) | ram.rb(ptr);
                 break;
 
             case PAR3_OPCODE::LOADB_LIT :
@@ -245,7 +244,7 @@ unsigned RC1600::realStep()
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
                 state.r[reg3] &= 0xFF00; // Not overwrite MSB
-                state.r[reg3] |= ram[ptr];
+                state.r[reg3] |= ram.rb(ptr);
                 break;
 
             case PAR3_OPCODE::LOADB :
@@ -258,7 +257,7 @@ unsigned RC1600::realStep()
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
                 state.r[reg3] &= 0xFF00; // Not overwrite MSB
-                state.r[reg3] |= ram[ptr];
+                state.r[reg3] |= ram.rb(ptr);
                 break;
 
             // Write ----------------------------------------------------------
@@ -270,8 +269,8 @@ unsigned RC1600::realStep()
                 } else {
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
-                ram[ptr] = state.r[reg3] & 0x00FF;
-                ram[ptr+1] = state.r[reg3] >> 8;
+                ram.wb(ptr, state.r[reg3] & 0x00FF);
+                ram.wb(ptr+1, state.r[reg3] >> 8);
                 break;
 
             case PAR3_OPCODE::STORE :
@@ -281,8 +280,8 @@ unsigned RC1600::realStep()
                 } else {
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
-                ram[ptr] = state.r[reg3] & 0x00FF;
-                ram[ptr+1] = state.r[reg3] >> 8;
+                ram.wb(ptr, state.r[reg3] & 0x00FF);
+                ram.wb(ptr+1, state.r[reg3] >> 8);
                 break;
 
             case PAR3_OPCODE::STOREB_LIT :
@@ -293,7 +292,7 @@ unsigned RC1600::realStep()
                 } else {
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
-                ram[ptr] = state.r[reg3];
+                ram.wb(ptr, state.r[reg3]);
                 break;
 
             case PAR3_OPCODE::STOREB :
@@ -303,7 +302,7 @@ unsigned RC1600::realStep()
                 } else {
                     ptr = ((state.ds&0xF) << 16) | tmp1;
                 }
-                ram[ptr] = state.r[reg3];
+                ram.wb(ptr, state.r[reg3]);
                 break;
        
             default:
@@ -768,16 +767,16 @@ unsigned RC1600::realStep()
 
                 // Push CS MSB
                 ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-                ram[ptr] = state.cs >> 8; 
+                ram.wb(ptr, state.cs >> 8); 
                 // Push CS LSB
                 ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-                ram[ptr] = state.cs & 0xFF;
+                ram.wb(ptr, state.cs & 0xFF);
                 // Push PC MSB
                 ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-                ram[ptr] = state.pc >> 8; 
+                ram.wb(ptr, state.pc >> 8); 
                 // Push PC LSB
                 ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-                ram[ptr] = state.pc & 0xFF;
+                ram.wb(ptr, state.pc & 0xFF);
 
                 state.cs = state.r[reg3];
                 state.pc = state.r[reg2];
@@ -795,10 +794,10 @@ unsigned RC1600::realStep()
 
                 // Push PC MSB
                 ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-                ram[ptr] = state.pc >> 8; 
+                ram.wb(ptr, state.pc >> 8); 
                 // Push PC LSB
                 ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-                ram[ptr] = state.pc & 0xFF;
+                ram.wb(ptr, state.pc & 0xFF);
 
                 state.pc = state.r[reg3] + reg2;
                 break;
@@ -842,23 +841,21 @@ unsigned RC1600::realStep()
             case PAR1_OPCODE::PUSH :
                 state.wait_cycles +=3;
                 // Push MSB
-                std::printf("### before SP 0x%04x ", state.r[SP]);
                 ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-                std::printf("   after SP 0x%04x\n", state.r[SP]);
-                ram[ptr] = state.r[reg3] >> 8; 
+                ram.wb(ptr, state.r[reg3] >> 8); 
                 // Push LSB
                 ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-                ram[ptr] = state.r[reg3] & 0xFF;
+                ram.wb(ptr, state.r[reg3] & 0xFF);
                 break;
 
             case PAR1_OPCODE::POP :
                 state.wait_cycles +=3;
                 // Pop LSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.r[reg3] = ram[ptr];
+                state.r[reg3] = ram.rb(ptr);
                 // Pop MSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.r[reg3] |= ram[ptr] << 8; 
+                state.r[reg3] |= ram.rb(ptr) << 8; 
                 break;
             
             case PAR1_OPCODE::GETPC :
@@ -1016,10 +1013,10 @@ unsigned RC1600::realStep()
                 
                 // Push PC MSB
                 ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-                ram[ptr] = state.pc >> 8; 
+                ram.wb(ptr, state.pc >> 8); 
                 // Push PC LSB
                 ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-                ram[ptr] = state.pc & 0xFF;
+                ram.wb(ptr, state.pc & 0xFF);
 
                 relpos = state.pc + long_lit;
                 if (relpos > 0xFFFF) {
@@ -1057,48 +1054,48 @@ unsigned RC1600::realStep()
                 state.wait_cycles +=4;
                 // Pop PC LSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.pc = ram[ptr];
+                state.pc = ram.rb(ptr);
                 // Pop PC MSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.pc |= ram[ptr] << 8; 
+                state.pc |= ram.rb(ptr) << 8; 
                 break;
             
             case NOPAR_OPCODE::LRET :
                 state.wait_cycles +=5;
                 // Pop PC LSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.pc = ram[ptr];
+                state.pc = ram.rb(ptr);
                 // Pop PC MSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.pc |= ram[ptr] << 8; 
+                state.pc |= ram.rb(ptr) << 8; 
                 // Pop CS LSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.cs = ram[ptr];
+                state.cs = ram.rb(ptr);
                 // Pop CS MSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.cs |= ram[ptr] << 8; 
+                state.cs |= ram.rb(ptr) << 8; 
                 break;
 
             case NOPAR_OPCODE::RFI :
                 state.wait_cycles +=8;
                 // Pop PC LSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.pc = ram[ptr];
+                state.pc = ram.rb(ptr);
                 // Pop PC MSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.pc |= ram[ptr] << 8; 
+                state.pc |= ram.rb(ptr) << 8; 
                 // Pop CS LSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.cs = ram[ptr];
+                state.cs = ram.rb(ptr);
                 // Pop CS MSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.cs |= ram[ptr] << 8; 
+                state.cs |= ram.rb(ptr) << 8; 
                 // Pop R1 LSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.r[1] = ram[ptr];
+                state.r[1] = ram.rb(ptr);
                 // Pop R1 MSB
                 ptr = ((state.ss&0x0F) << 16) | state.r[SP]++;
-                state.r[1] |= ram[ptr] << 8; 
+                state.r[1] |= ram.rb(ptr) << 8; 
                 
                 SET_OFF_IF(state.flags);
                 state.iacq = false;
@@ -1149,23 +1146,23 @@ void RC1600::processInterrupt()
         state.iacq = true;
         // Push R1 MSB
         ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-        ram[ptr] = state.r[1] >> 8; 
+        ram.wb(ptr, state.r[1] >> 8); 
         // Push R1 LSB
         ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-        ram[ptr] = state.r[1] & 0xFF;
+        ram.wb(ptr, state.r[1] & 0xFF);
 
         // Push CS MSB
         ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-        ram[ptr] = state.cs >> 8; 
+        ram.wb(ptr, state.cs >> 8); 
         // Push CS LSB
         ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-        ram[ptr] = state.cs & 0xFF;
+        ram.wb(ptr, state.cs & 0xFF);
         // Push PC MSB
         ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-        ram[ptr] = state.pc >> 8; 
+        ram.wb(ptr, state.pc >> 8); 
         // Push PC LSB
         ptr = ((state.ss&0x0F) << 16) | --state.r[SP];
-        ram[ptr] = state.pc & 0xFF;
+        ram.wb(ptr, state.pc & 0xFF);
 
         state.r[1] = state.int_msg;
         state.pc = state.ia;

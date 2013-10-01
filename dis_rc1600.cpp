@@ -5,11 +5,10 @@
 
 namespace CPU {
 
-std::string disassembly(const byte_t* data) {
+std::string disassembly(const Mem& ram, dword_t epc) {
 	char buf[32] = {0};
     
-	dword_t epc = 0;
-    word_t inst = (data[epc+1] << 8) | data[epc]; // Big Endian
+    word_t inst = (ram.rb(epc+1) << 8) | ram.rb(epc); // Big Endian
 	epc +=2;
     word_t opcode, reg1, reg2, reg3;
 
@@ -23,7 +22,7 @@ std::string disassembly(const byte_t* data) {
 		switch (opcode) {
 			case PAR3_OPCODE::LOAD_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "LOAD [r%u + 0x%04x], r%u", reg1, reg2, reg3);
@@ -35,7 +34,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR3_OPCODE::LOADB_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "LOAD.B [r%u + 0x%04x], r%u", reg1, reg2, 
@@ -49,7 +48,7 @@ std::string disassembly(const byte_t* data) {
             // Write ----------------------------------------------------------
             case PAR3_OPCODE::STORE_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "STORE [r%u + 0x%04x], r%u", reg1, reg2, 
@@ -62,7 +61,7 @@ std::string disassembly(const byte_t* data) {
 
             case PAR3_OPCODE::STOREB_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "STORE.B [r%u + 0x%04x], r%u", reg1, reg2, 
@@ -87,7 +86,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::ADD_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "ADD r%u, 0x%04x", reg3, reg2);
@@ -99,7 +98,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::SUB_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "SUB r%u, 0x%04x", reg3, reg2);
@@ -115,7 +114,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::SUBC_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "SUBB r%u, 0x%04x", reg3, reg2);
@@ -141,7 +140,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::SLL_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "SLL r%u, 0x%04x", reg3, reg2);
@@ -153,7 +152,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::SRL_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "SRL r%u, 0x%04x", reg3, reg2);
@@ -165,7 +164,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::SRA_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "SRA r%u, 0x%04x", reg3, reg2);
@@ -178,7 +177,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::ROTL_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "ROTL r%u, 0x%04x", reg3, reg2);
@@ -190,7 +189,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::ROTR_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "ROTR r%u, 0x%04x", reg3, reg2);
@@ -203,7 +202,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::UMUL_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "UMUL r%u, 0x%04x", reg3, reg2);
@@ -215,7 +214,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::UDIV_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "UDIV r%u, 0x%04x", reg3, reg2);
@@ -227,7 +226,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::UMOD_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "UMOD r%u, 0x%04x", reg3, reg2);
@@ -239,7 +238,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::MUL_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "MUL r%u, 0x%04x", reg3, reg2);
@@ -251,7 +250,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::DIV_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "DIV r%u, 0x%04x", reg3, reg2);
@@ -263,7 +262,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::MOD_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "MOD r%u, 0x%04x", reg3, reg2);
@@ -280,7 +279,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR2_OPCODE::SET :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "SET r%u, 0x%04x", reg3, reg2);
@@ -293,7 +292,7 @@ std::string disassembly(const byte_t* data) {
 			
 			case PAR2_OPCODE::BEQ_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "BEQ r%u, 0x%04x", reg3, reg2);
@@ -305,7 +304,7 @@ std::string disassembly(const byte_t* data) {
 			
 			case PAR2_OPCODE::BNEQ_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "BNEQ r%u, 0x%04x", reg3, reg2);
@@ -317,7 +316,7 @@ std::string disassembly(const byte_t* data) {
 			
 			case PAR2_OPCODE::BG_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "BG r%u, 0x%04x", reg3, reg2);
@@ -329,7 +328,7 @@ std::string disassembly(const byte_t* data) {
 			
 			case PAR2_OPCODE::BGE_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "BGE r%u, 0x%04x", reg3, reg2);
@@ -341,7 +340,7 @@ std::string disassembly(const byte_t* data) {
 			
 			case PAR2_OPCODE::BUG_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "BUG r%u, 0x%04x", reg3, reg2);
@@ -353,7 +352,7 @@ std::string disassembly(const byte_t* data) {
 			
 			case PAR2_OPCODE::BUGE_LIT :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "BUGE r%u, 0x%04x", reg3, reg2);
@@ -378,7 +377,7 @@ std::string disassembly(const byte_t* data) {
 			
 			case PAR2_OPCODE::JMP :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "JMP [r%u + 0x%04x]", reg3, reg2);
@@ -386,7 +385,7 @@ std::string disassembly(const byte_t* data) {
 			
 			case PAR2_OPCODE::CALL :
 				if (reg2 == 0xF) {
-					reg2 = (data[epc+1] << 8) | data[epc];
+					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "CALL [r%u + 0x%04x]", reg3, reg2);
@@ -445,7 +444,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR1_OPCODE::SETY_LIT :
 				if (reg3 == 0xF) {
-					reg3 = (data[epc+1] << 8) | data[epc];
+					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "SETY 0x%04x", reg3);
@@ -462,7 +461,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR1_OPCODE::INT_LIT :
 				if (reg3 == 0xF) {
-					reg3 = (data[epc+1] << 8) | data[epc];
+					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "INT %xh", reg3);
@@ -475,7 +474,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR1_OPCODE::SETIA_LIT :
 				if (reg3 == 0xF) {
-					reg3 = (data[epc+1] << 8) | data[epc];
+					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "SETIA 0x%04x", reg3);
@@ -491,7 +490,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR1_OPCODE::SETCS_LIT :
 				if (reg3 == 0xF) {
-					reg3 = (data[epc+1] << 8) | data[epc];
+					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "SETCS 0x%04x", reg3);
@@ -507,7 +506,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR1_OPCODE::SETDS_LIT :
 				if (reg3 == 0xF) {
-					reg3 = (data[epc+1] << 8) | data[epc];
+					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "SETDS 0x%04x", reg3);
@@ -523,7 +522,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR1_OPCODE::SETSS_LIT :
 				if (reg3 == 0xF) {
-					reg3 = (data[epc+1] << 8) | data[epc];
+					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "SETSS 0x%04x", reg3);
@@ -539,7 +538,7 @@ std::string disassembly(const byte_t* data) {
 
 			case PAR1_OPCODE::SETIS_LIT :
 				if (reg3 == 0xF) {
-					reg3 = (data[epc+1] << 8) | data[epc];
+					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
 					epc +=2;
 				}
 				snprintf(buf, 32, "SETIS 0x%04x", reg3);
