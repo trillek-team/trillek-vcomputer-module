@@ -4,7 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
-#include <cstdio>
+#include <iostream>
 
 #include <cassert>
 
@@ -93,6 +93,7 @@ typedef std::weak_ptr<ABlock> ABlock_wptr;
  * Represents the memmory address space of the computer
  * Uses an arena to keep all address blocks in a contigous chunk of RAM of the
  * host
+ * TODO Usea better container to make lighting fast the search of the address
  */
 class Mem {
 public:
@@ -147,7 +148,6 @@ public:
                 return;
 			}
 		}
-
         return;
 	}
 
@@ -155,15 +155,16 @@ public:
      * Adds a Address block
      * @param begin Begin address
      * @param size Size of the block (>= 1)
+     * @param ro Read Only ? (false)
      * @return a Weak ptr to a ABlock
      */
-	ABlock_wptr addBlock(dword_t begin, dword_t size = 1)
+	ABlock_wptr addBlock(dword_t begin, dword_t size = 1, bool ro = false)
 	{
         assert(size >= 1);
         if ((begin+size) > max_address )
             return ABlock_wptr(); // Like returning null ptr
 
-        auto ab = std::make_shared<ABlock>(begin, size);
+        auto ab = std::make_shared<ABlock>(begin, size, ro);
 		blocks.push_back(ab);
         return ABlock_wptr(ab);
 	}

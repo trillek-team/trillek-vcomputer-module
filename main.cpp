@@ -9,7 +9,7 @@
 #include <chrono>
 #include <unistd.h>
 
-size_t prg_size = 64*2;
+size_t prg_size = 66*2;
 CPU::word_t prg[] = {
     0x6210,  // 000h SET r0, 1
     0x6211,  // 002h SET r1, 1
@@ -73,6 +73,10 @@ CPU::word_t prg[] = {
     0x00B0,  // 078h
     0x4111,  // 07Ah ADD r1, 1 
     0xC201,  // 07Ch STORE [r2], r1  (type C)
+    0x2150,  // 07Eh SETDS 0
+    0xC001,  // 080h STORE [0], r1
+    0x8001,  // 082h LOAD [0], r1 (shoud be 0x6210)
+    0x0000
 };
 
 size_t isr_size = 2*2;
@@ -92,7 +96,8 @@ int main()
 
     cpu.reset();
 	
-	auto prg_blq = cpu.ram.addBlock(0, 0x10000);
+	auto prg_blq = cpu.ram.addBlock(0, 0x8000, true); // ROM
+	cpu.ram.addBlock(0x8000, 0x8000); // Free ram
 	auto isr_blq = cpu.ram.addBlock(0x10000, 0x10000);
 	
     auto mda_blq = cpu.ram.addBlock(0xB0000, 0x10000);
