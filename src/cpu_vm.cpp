@@ -136,7 +136,7 @@ int main()
     }
    
     sf::Font font;
-    if (!font.loadFromFile("cour.ttf")) {
+    if (!font.loadFromFile("./assets/font/cour.ttf")) {
         std::cerr << "Error loading font\n";
         exit(0);
     }

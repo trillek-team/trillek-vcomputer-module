@@ -30,8 +30,8 @@ message( "Procesing Source Code")
 #add_subdirectory(include)
 add_subdirectory(src)
 
-#message( "Procesing Assets")
-#add_subdirectory(assets)
+message( "Procesing Assets")
+add_subdirectory(assets)
 
 
 if(BUILD_tests)
