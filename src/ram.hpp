@@ -1,6 +1,8 @@
 #ifndef __RAM_HPP__
 #define __RAM_HPP__ 1
 
+#include "types.hpp"
+
 #include <vector>
 #include <algorithm>
 #include <memory>
@@ -10,9 +12,6 @@
 
 namespace CPU {
 
-typedef uint32_t dword_t;
-typedef uint16_t word_t;
-typedef uint8_t  byte_t;
 
 class Mem;
 
