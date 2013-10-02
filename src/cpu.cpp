@@ -80,7 +80,7 @@ void RC1600::tick (unsigned n)
 #define CARRY_BIT(x)  ((((x) >> 16) &0x1) == 1)
 
 /**
- * Executes a RC1600 instrucction
+ * Executes a RC1600 instruction
  * @return Number of cycles that takes to do it
  */
 unsigned RC1600::realStep()
@@ -104,13 +104,13 @@ unsigned RC1600::realStep()
     reg3 = inst & 0xF;
     reg2 = (inst >> 4) & 0xF;
     reg1 = (inst >> 8) & 0xF;
-    // Check if we are skiping a instrucction
+    // Check if we are skiping a instruction
     if (state.skiping) {
         state.wait_cycles = 1;
-        // See what kind of instrucction is to know how many should
+        // See what kind of instruction is to know how many should
         // increment PC, and remove skiping flag if is not a branch
         if (IS_PAR3(inst)) {
-            // 3 parameter instrucction
+            // 3 parameter instruction
             opcode = (inst >> 12) & 7;
             switch (opcode) {
                 case PAR3_OPCODE::LOAD_LIT:
@@ -125,7 +125,7 @@ unsigned RC1600::realStep()
             }
             state.skiping = false;
         } else if (IS_PAR2(inst)) {
-            // 2 parameter instrucction
+            // 2 parameter instruction
             opcode = (inst >> 8) & 0x3F;
             switch (opcode) {
                 case PAR2_OPCODE::ADD_LIT :
@@ -167,7 +167,7 @@ unsigned RC1600::realStep()
                     break;
             }
         } else if (IS_PAR1(inst)) {
-            // 1 parameter instrucction
+            // 1 parameter instruction
             opcode = (inst >> 4) & 0x1FF;
             switch (opcode) {
                 case PAR1_OPCODE::SETY_LIT :
@@ -185,7 +185,7 @@ unsigned RC1600::realStep()
             }
             state.skiping = false;
         } else if (IS_NOPAR(inst) ) {
-            // Instrucctions without parameters
+            // Instructions without parameters
             opcode = inst & 0xFFF;
             switch (opcode) {
                 case NOPAR_OPCODE::BOVF :
@@ -201,9 +201,9 @@ unsigned RC1600::realStep()
         return state.wait_cycles;
     }
 
-    // Check the type of instrucction
+    // Check the type of instruction
     if (IS_PAR3(inst)) {
-        // 3 parameter instrucction
+        // 3 parameter instruction
         opcode = (inst >> 12) & 7;
         state.wait_cycles += 4;
         switch (opcode) {
@@ -1036,7 +1036,7 @@ unsigned RC1600::realStep()
         }
 
     } else if (IS_NOPAR(inst)) {
-        // Instrucctions without parameters
+        // Instructions without parameters
         opcode = inst & 0xFFF;
 
         switch (opcode) {
@@ -1128,7 +1128,7 @@ unsigned RC1600::realStep()
     processInterrupt(); // Here we check if a interrupt happens
     state.r[0] = 0; // r0 always is 0
     
-    // If step-mode is enable, throw the adecuate exception
+    // If step-mode is enable, throw the adequate exception
     if (state.step_mode)
         throwInterrupt(4);
 
