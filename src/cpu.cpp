@@ -210,8 +210,6 @@ unsigned RC1600::realStep()
             // READ -----------------------------------------------------------
             case PAR3_OPCODE::LOAD_LIT :
                 GRAB_NEXT_WORD_LITERAL(reg2);
-                if (reg3 == 0) // We cant write on r0
-                    break;
                 tmp1 = (state.r[reg1] + reg2)&0xFFFF;
                 if (reg1 == BP || reg1 == SP ) {
                     ptr = ((state.ss&0xF) << 16) | tmp1;
@@ -222,8 +220,6 @@ unsigned RC1600::realStep()
                 break;
 
             case PAR3_OPCODE::LOAD :
-                if (reg3 == 0) // We cant write on r0
-                    break;
                 tmp1 = (state.r[reg1] + state.r[reg2])&0xFFFF;
                 if (reg1 == BP || reg1 == SP ) {
                     ptr = ((state.ss&0xF) << 16) | tmp1;
@@ -235,8 +231,6 @@ unsigned RC1600::realStep()
 
             case PAR3_OPCODE::LOADB_LIT :
                 GRAB_NEXT_WORD_LITERAL(reg2);
-                if (reg3 == 0) // We cant write on r0
-                    break;
                 tmp1 = (state.r[reg1] + reg2)&0xFFFF;
                 if (reg1 == BP || reg1 == SP ) {
                     ptr = ((state.ss&0xF) << 16) | tmp1;
@@ -248,8 +242,6 @@ unsigned RC1600::realStep()
                 break;
 
             case PAR3_OPCODE::LOADB :
-                if (reg3 == 0) // We cant write on r0
-                    break;
                 tmp1 = (state.r[reg1] + state.r[reg2])&0xFFFF;
                 if (reg1 == BP || reg1 == SP ) {
                     ptr = ((state.ss&0xF) << 16) | tmp1;
@@ -1126,7 +1118,6 @@ unsigned RC1600::realStep()
     }
 
     processInterrupt(); // Here we check if a interrupt happens
-    state.r[0] = 0; // r0 always is 0
     
     // If step-mode is enable, throw the adecuate exception
     if (state.step_mode)
