@@ -100,7 +100,7 @@ unsigned RC3200::realStep()
     r3 = OP3(inst);
     r2 = OP2(inst);
     r1 = OP1(inst);
-    opcode = (inst >> 15) & 0x0FFF;
+    opcode = (inst >> 16) & 0x0FFF;
 
     // Check if we are skiping a instruction
     
@@ -132,7 +132,8 @@ unsigned RC3200::realStep()
     // Check the type of instruction
     if (IS_PAR3(inst)) {
         // 3 parameter instruction ********************************************
-        
+        std::printf("Type: Par3 \n");        
+
         if (literal && IS_BIG_LITERAL_P3(r2)) { // Next dword is literal value 
             r2 = ram.rb(state.pc++);
             r2 |= (ram.rb(state.pc++) << 8);
@@ -400,8 +401,9 @@ unsigned RC3200::realStep()
 
     } else if (IS_PAR2(inst)) {
         // 2 parameter instrucction *******************************************
+        std::printf("Type: Par2 r2:0x%02x r3:0x%02x \n", r2, r3);        
         
-        if (literal && IS_BIG_LITERAL_P2((r3 << 5) | r2)) { // Next dword is literal value 
+        if (literal && IS_BIG_LITERAL_P2((r1 << 5) | r2)) { // Next dword is literal value 
             r2 = ram.rb(state.pc++);
             r2 |= (ram.rb(state.pc++) << 8);
             r2 |= (ram.rb(state.pc++) << 16);
@@ -605,6 +607,7 @@ unsigned RC3200::realStep()
     
     } else if (IS_PAR1(inst)) {
         // 1 parameter instrucction *******************************************
+        std::printf("Type: Par1 \n");        
         
         if (literal && IS_BIG_LITERAL_P1(inst & 0x7FFF)) { // Next dword is literal value 
             r1 = ram.rb(state.pc++);
@@ -742,6 +745,7 @@ unsigned RC3200::realStep()
 
     } else if (IS_NOPAR(inst)) {
         // Instructions without parameters ************************************
+        std::printf("Type: NoPar \n");        
         
         if (IS_JUMP(inst)) { // Return instruction
             switch (opcode) {

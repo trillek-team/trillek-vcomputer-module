@@ -15,7 +15,7 @@
 
 #define FRAMERATE (60)
 
-std::size_t prg_size = 31*4;
+std::size_t prg_size = 32*4;
 vm::dword_t prg[] = {
     0x80008020,  // 000h SET %r0, 1
     0x80008021,  // 004h SET %r1, 1
@@ -145,6 +145,7 @@ int main()
 	std::cout << "Run program (r) or Step Mode (s) ?\n";
     char mode;
     std::cin >> mode;
+    std::getchar();
 
     //sf::RenderWindow mda_window;
     //mda_window.create(sf::VideoMode(640, 406), "RC1600 prototype");
