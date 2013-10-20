@@ -1,5 +1,5 @@
 #include "cpu.hpp"
-#include "dis_rc1600.hpp"
+#include "dis_rc3200.hpp"
 
 #include <iostream>
 #include <ios>
@@ -10,8 +10,8 @@
 #include <cwctype>
 #include <clocale>
 
-#include <SFML/Graphics.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
+//#include <SFML/Graphics.hpp>
+//#include <SFML/Graphics/RenderWindow.hpp>
 
 #define FRAMERATE (60)
 
@@ -126,15 +126,16 @@ int main()
     char mode;
     std::cin >> mode;
 
-    sf::RenderWindow mda_window;
-    mda_window.create(sf::VideoMode(640, 406), "RC1600 prototype");
-    mda_window.setFramerateLimit(FRAMERATE);
+    //sf::RenderWindow mda_window;
+    //mda_window.create(sf::VideoMode(640, 406), "RC1600 prototype");
+    //mda_window.setFramerateLimit(FRAMERATE);
 
     bool debug = false;
     if (mode == 's' || mode == 'S') {
         debug = true;
     }
    
+    /*
     sf::Font font;
     if (!font.loadFromFile("./assets/font/cour.ttf")) {
         std::cerr << "Error loading font\n";
@@ -143,23 +144,23 @@ int main()
     sf::Text text;
     text.setFont(font);
     text.setColor(sf::Color::Green);
-    text.setCharacterSize(14); // 14 pixels
+    text.setCharacterSize(14); // 14 pixels*/
 
     std::cout << "Running!\n";
-    sf::Clock clock; 
+    //sf::Clock clock; 
     unsigned ticks;
     unsigned long ticks_count = 0; 
-    mda_window.clear(sf::Color::Black);
-    mda_window.display();
+    //mda_window.clear(sf::Color::Black);
+    //mda_window.display();
 
     int c = ' ';
-    while ( mda_window.isOpen()) {
+    while ( 1) {//mda_window.isOpen()) {
 
         // T period of a 1MHz signal = 1 microseconds
-        const auto delta=clock.getElapsedTime().asMicroseconds(); 
-        clock.restart();
-        double tmp = cpu.getClock()/ (double)(FRAMERATE);
-        ticks= tmp+0.5;
+        //const auto delta=clock.getElapsedTime().asMicroseconds(); 
+        //clock.restart();
+        //double tmp = cpu.getClock()/ (double)(FRAMERATE);
+        //ticks= tmp+0.5;
         
         if (debug) {
             print_cspc(cpu.getState(), cpu.ram);
@@ -177,7 +178,7 @@ int main()
         ticks_count += ticks;
 
         // Print to the stdout a 80x25 MDA like screen at 80000h
-        auto mda_ram = mda_blq.lock();
+        /*auto mda_ram = mda_blq.lock();
         if (mda_ram) {
             std::wstring txt = L"";
             unsigned col = 0, row = 0;
@@ -194,31 +195,32 @@ int main()
                 txt.push_back(L'\n');
             }
             text.setString(txt);
-        }
+        }*/
 
         // Speed info
         if (ticks_count > 100000 && !debug) {
-            std::cout << "Running " << ticks << " cycles in " << delta << " uS"
+            std::cout << "Running " << ticks; /*<< " cycles in " << delta << " uS"
                       << " Speed of " 
                       << 100 * (((ticks * 1000000.0) / cpu.getClock()) / delta)
-                      << "% \n";
+                      << "% \n";*/
+            std::cout << std::endl;
             ticks_count -= 100000;
         }
 
         // Poll events
-        sf::Event ev;
+        /*sf::Event ev;
         while (mda_window.pollEvent(ev)) {
             if (ev.type == sf::Event::Closed) {
                 mda_window.close();
                 break;
             }
-        }
+        }*/
 
 
-        mda_window.clear(sf::Color(0,0,0, 0xAA));
+        /*mda_window.clear(sf::Color(0,0,0, 0xAA));
         // Update here
         mda_window.draw(text);
-        mda_window.display();
+        mda_window.display();*/
 
         if (debug) {
             std::printf("Takes %u cycles\n", cpu.getState().wait_cycles);
@@ -226,7 +228,9 @@ int main()
             print_stack(cpu.getState(), cpu.ram);
             c = std::getchar();
             if (c == 'q' || c == 'Q')
-                mda_window.close();
+                break;
+                //mda_window.close();
+
         }
 
     }

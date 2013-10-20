@@ -1,5 +1,5 @@
 #include "cpu.hpp"
-#include "rc1600_opcodes.hpp"
+#include "rc3200_opcodes.hpp"
 
 #include <iostream>
 #include <cstdio>

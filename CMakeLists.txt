@@ -1,8 +1,8 @@
-project(rc1600)
+project(rc3200)
 
 cmake_minimum_required(VERSION 2.6)
 set(PACKAGE_BUGREPORT "luis.panader@gmail.com")
-set(PACKAGE_NAME "rc1600_prototype")
+set(PACKAGE_NAME "rc3200_vm")
 set(PACKAGE_VERSION "0.1")
 set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
 set(PACKAGE_TARNAME "${PACKAGE_NAME}")
@@ -15,11 +15,11 @@ else (CMAKE_BUILD_TYPE STREQUAL "Release")
     set (LOG_ENABLE 1)
 endif (CMAKE_BUILD_TYPE STREQUAL "Release")
 
-set(CMAKE_MODULE_PATH ${rc1600_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${rc3200_SOURCE_DIR}/cmake)
 
 set(DCPU-VM_INCLUDE_DIRS
     ${PROJECT_BINARY_DIR}
-    ${rc1600_SOURCE_DIR}/include
+    ${rc3200_SOURCE_DIR}/include
 )
 
 include(Platform)

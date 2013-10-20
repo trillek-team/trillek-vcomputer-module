@@ -1,5 +1,5 @@
-#include "dis_rc1600.hpp"
-#include "rc1600_opcodes.hpp"
+#include "dis_rc3200.hpp"
+#include "rc3200_opcodes.hpp"
 
 #include <cstdio>
 
