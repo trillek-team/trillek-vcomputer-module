@@ -1,18 +1,25 @@
-#ifndef __DIS_RC1600_HPP__
-#define __DIS_RC1600_HPP__ 1
+#pragma once
+/**
+ * RC3200 VM - dis_rc3200.hpp
+ * On-Line dissambler of VM ram
+ */
+#ifndef __DIS_RC3200_HPP__
+#define __DIS_RC3200_HPP__ 1
 
 #include "cpu.hpp"
 
 #include <string>
 
-namespace CPU {
+namespace vm {
+namespace cpu {
 
 /**
-* Disassembly one instruction of RC1600 code to a humman redable text
-* @param data Ptr. to RC1600 machine code
+* Disassembly one instruction of RC3200 code to a humman redable text
+* @param data Ptr. to RC3200 machine code
 */
-std::string disassembly(const Mem& ram, dword_t epc);
+std::string disassembly(const ram::Mem& ram, dword_t pc);
 
-} // End of namespace CPU
+} // End of namespace cpu
+} // End of namespace vm
 
-#endif // __DIS_RC1600_HPP__
+#endif // __DIS_RC3200_HPP__

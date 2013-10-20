@@ -3,19 +3,23 @@
 
 #include <cstdio>
 
-namespace CPU {
+namespace vm {
+namespace cpu {
 
-std::string disassembly(const Mem& ram, dword_t epc) {
+std::string disassembly(const ram::Mem& ram, dword_t pc) {
 	char buf[32] = {0};
     
-    word_t inst = (ram.rb(epc+1) << 8) | ram.rb(epc); // Big Endian
-	epc +=2;
+    word_t inst = ram.rb(pc++);
+    inst |= ram.rb(pc++);
+    inst |= ram.rb(pc++);
+    inst |= ram.rb(pc++);
+
     word_t opcode, reg1, reg2, reg3;
 
     reg3 = inst & 0xF;
     reg2 = (inst >> 4) & 0xF;
     reg1 = (inst >> 8) & 0xF;
-
+/*
     if (IS_PAR3(inst)) {
         // 3 parameter instrucction
         opcode = (inst >> 12) & 7;
@@ -609,9 +613,10 @@ std::string disassembly(const Mem& ram, dword_t epc) {
 	} else {
 		// Unknow
 	}
-
-	std::string out(buf);
+*/
+	std::string out("");
 	return out;
 }
 
-} // End of namespace CPU
+} // End of namespace cpu
+} // End of namespace vm

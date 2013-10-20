@@ -15,22 +15,40 @@
 
 #define FRAMERATE (60)
 
-size_t prg_size = 68*2;
-CPU::word_t prg[] = {
-    0x6210,  // 000h SET r0, 1
-    0x6211,  // 002h SET r1, 1
-    0x6222,  // 004h SET r2, 2 ..
-    0x6233,
-    0x6244,
-    0x6255,
-    0x6266,
-    0x6277,
-    0x6288,
-    0x6299,
-    0x62AA,
-    0x62BB,
-    0x62CC,
-    0x62DD,
+std::size_t prg_size = 31*4;
+vm::dword_t prg[] = {
+    0x80008020,  // 000h SET %r0, 1
+    0x80008021,  // 004h SET %r1, 1
+    0x80008042,  // 008h SET %r2, 2 ..
+    0x80008063,
+    0x80008084,
+    0x800080A5,
+    0x800080C6,
+    0x800080E7,
+    0x80008108,
+    0x80008129,
+    0x8000814A,
+    0x8000816B,
+    0x8000818C,
+    0x800081AD,
+    0x800081CE,
+    0x800081EF,
+    0x80008210,
+    0x80008231,   // 044h SET %r17 = 17
+    0x80008252,   
+    0x80008273,   
+    0x80008294,   
+    0x800082B5,   
+    0x800082D6,   
+    0x800082F7,   
+    0x80008318,   
+    0x80008339,   
+    0x8000835A,   
+    0x8000837B,   
+    0x8000839C,   
+    0x800083BD,   
+    0x800083DE,   // 078h SET %r30 = 30
+    0x800083FF,   // 07Ch SET %r31 = 31
     0x62EE,  // 01Ch SET BP, 14
     0x62FF,  // 01Eh SET SP, 15
     0x000F,  // 020h literal
@@ -88,20 +106,22 @@ CPU::word_t prg[] = {
     0x0000,
 };
 
-size_t isr_size = 2*2;
-CPU::word_t isr[] = {
-	0x0000,  // 000h NOP
+std::size_t isr_size = 2*2;
+vm::word_t isr[] = {
+	0x00000000,  // 000h NOP
     0x0004,  // 002h RFI
 };
 
-void print_regs(const CPU::CpuState& state);
-void print_cspc(const CPU::CpuState& state, const CPU::Mem& ram);
-void print_stack(const CPU::CpuState& state, const CPU::Mem& ram);
+void print_regs(const vm::cpu::CpuState& state);
+void print_pc(const vm::cpu::CpuState& state, const vm::ram::Mem& ram);
+void print_stack(const vm::cpu::CpuState& state, const vm::ram::Mem& ram);
 
 int main()
 {
-    using namespace CPU;
-    RC1600 cpu;
+    using namespace vm;
+    using namespace vm::cpu;
+
+    RC3200 cpu;
 
     cpu.reset();
 	
@@ -163,7 +183,7 @@ int main()
         //ticks= tmp+0.5;
         
         if (debug) {
-            print_cspc(cpu.getState(), cpu.ram);
+            print_pc(cpu.getState(), cpu.ram);
             if (cpu.getState().skiping)
                 std::printf("Skiping!\n");
             if (cpu.getState().sleeping)
@@ -239,45 +259,44 @@ int main()
 }
 
 
-void print_regs(const CPU::CpuState& state)
+void print_regs(const vm::cpu::CpuState& state)
 {
     // Print registers
-    for (int i=0; i < 14; i++) {
-        std::printf("r%2d= 0x%04x ", i, state.r[i]);
-        if (i == 5 || i == 11 || i == 13)
+    for (int i=0; i < 32; i++) {
+        std::printf("r%2d= 0x%08x ", i, state.r[i]);
+        if (i == 3 || i == 7 || i == 11 || i == 15 || i == 19 || i == 23 || i == 27 || i == 31)
             std::printf("\n");
     }
 
-    std::printf("\tSS:SP= %01X:%04Xh ", state.ss, state.r[SP]);
-    std::printf("BP= 0x%04x ", state.r[BP]);
-    std::printf("\tDS= 0x%04x\n", state.ds);
-    std::printf("\tCS:PC= %01X:%04Xh ", state.cs, state.pc);
-    std::printf("IS:IA= %01X:%04Xh \n", state.is, state.ia);
-    std::printf("FLAGS= 0x%04x \n", state.flags);
-    std::printf("TDE: %d TOE: %d TSS: %d \t IF: %d DE %d OF: %d CF: %d\n",
-            GET_TDE(state.flags), GET_TOE(state.flags), GET_TSS(state.flags),
+    std::printf(" PC= 0x%08x ", state.pc);
+    std::printf("IA= 0x%08x ", state.ia);
+    std::printf("FLAGS= 0x%08x \n", state.flags);
+    std::printf("EDE: %d EOE: %d ESS: %d EI: %d \t IF: %d DE %d OF: %d CF: %d\n",
+            GET_EDE(state.flags), GET_EOE(state.flags), GET_ESS(state.flags),
+            GET_EI(state.flags),
             GET_IF(state.flags), GET_DE(state.flags), GET_OF(state.flags),
             GET_CF(state.flags));
     std::printf("\n");
 
 }
 
-void print_cspc(const CPU::CpuState& state, const CPU::Mem&  ram)
+void print_pc(const vm::cpu::CpuState& state, const vm::ram::Mem&  ram)
 {
-    CPU::dword_t epc = ((state.cs&0x0F) << 16) | state.pc;
-    std::printf("\t[CS:PC]= 0x%02x%02x ", ram.rb(epc+1), ram.rb(epc)); // Big Endian
-    std::cout << CPU::disassembly(ram,  epc) << std::endl;  
+    std::printf("\t[PC]= 0x%02x%02x%02x%02x ", 
+            ram.rb(state.pc + 3), 
+            ram.rb(state.pc + 2), 
+            ram.rb(state.pc + 1), 
+            ram.rb(state.pc )); // Little Endian
+    std::cout << vm::cpu::disassembly(ram,  state.pc) << std::endl;  
 }
 
-void print_stack(const CPU::CpuState& state, const CPU::Mem& ram)
+void print_stack(const vm::cpu::CpuState& state, const vm::ram::Mem& ram)
 {
     std::printf("STACK:\n");
 
-    CPU::dword_t ptr = ((state.ss&0x0F) << 16) | state.r[SP];
     for (size_t i =0; i <6; i++) {
-        std::printf("%02Xh ", ram.rb(ptr));
-        ptr++;
-        if (((size_t)(state.r[SP]) + i) >= 0xFFFF)
+        std::printf("%02Xh ", ram.rb(state.r[SP]+i));
+        if (((size_t)(state.r[SP]) + i) >= 0xFFFFFFFF)
             break;
     }
     std::printf("\n");

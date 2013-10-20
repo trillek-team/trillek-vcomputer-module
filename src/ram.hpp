@@ -1,3 +1,11 @@
+#pragma once
+/**
+ * RC3200 VM - ram.hpp
+ * Address space mapping class
+ *
+ * Maps blocks of address space to RAM/ROM or devices
+ */
+
 #ifndef __RAM_HPP__
 #define __RAM_HPP__ 1
 
@@ -10,7 +18,8 @@
 
 #include <cassert>
 
-namespace CPU {
+namespace vm {
+namespace ram {
 
 
 class Mem;
@@ -199,6 +208,7 @@ private:
 
 };
 
-} // End of namespace CPU
+} // End of namespace ram
+} // End of namespace vm
 
 #endif
