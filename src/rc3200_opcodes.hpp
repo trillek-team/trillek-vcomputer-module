@@ -59,8 +59,31 @@ enum OPCODE_JUMP {
     RET             = 4,
 };
 
-// 3 Parameters OpCodes *******************************************************
+/**
+ * OpCodes that does branching
+ */
+enum OPCODE_BRANCH {
+    BEQ             = 0,   
+    BNEQ            = 1,  
 
+    BG              = 2,
+    BUG             = 3,
+    BGE             = 4,
+    BUGE            = 5,
+    
+    BL              = 6,
+    BUL             = 7,
+    BLE             = 8,
+    BULE            = 9,
+    
+    BBITS           = 10,
+    BCLEAR          = 11,
+    
+    BOVF            = 12,
+    BOCF            = 13,
+};
+
+// 3 Parameters OpCodes *******************************************************
 
 /**
  * 3 parameters OpCodes that does ALU operations
@@ -96,27 +119,6 @@ enum PAR3_OPCODE_ALU {
 enum PAR2_OPCODE {
     CPY_SET         = 0,
     SWP             = 1,
-};
-
-/**
- * 2 parameter OpCodes that does branching
- */
-enum PAR2_OPCODE_BRANCH {
-    BEQ             = 0,   
-    BNEQ            = 1,  
-
-    BG              = 2,
-    BUG             = 3,
-    BGE             = 4,
-    BUGE            = 5,
-    
-    BL              = 6,
-    BUL             = 7,
-    BLE             = 8,
-    BULE            = 9,
-    
-    BBITS           = 10,
-    BCLEAR          = 11,
 };
 
 // 1 Parameter OpCodes ********************************************************
@@ -155,13 +157,6 @@ enum NOPAR_OPCODE {
     SLEEP           = 1,
 };
 
-/**
- * 0 paramaters branching OpCodes
- */
-enum NOPAR_OPCODE_BRANCH {
-    BOVF            = 0,
-    BOCF            = 1,
-};
 
 } // End of namespace cpu
 } // End of namespace vm

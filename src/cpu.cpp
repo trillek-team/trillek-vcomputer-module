@@ -76,7 +76,12 @@ void RC3200::tick (unsigned n)
 #define CARRY_BIT(x)    ((((x) >> 32) & 0x1) == 1)
 #define DW_SIGN_BIT(x)  (((x) >> 31)  & 0x1)
 #define W_SIGN_BIT(x)   (((x) >> 15)  & 0x1)
-#define B_SIGN_BIT(x)   (((x) >> 8)   & 0x1)
+#define B_SIGN_BIT(x)   (((x) >> 7)   & 0x1)
+
+// Extract sign of Literal Operator
+#define O5_SIGN_BIT(x)  (((x) >> 4)   & 0x1)
+#define O10_SIGN_BIT(x) (((x) >> 9)   & 0x1)
+#define O15_SIGN_BIT(x) (((x) >> 14)  & 0x1)
 
 /**
  * Executes a RC3200 instruction
@@ -133,15 +138,20 @@ unsigned RC3200::realStep()
     if (IS_PAR3(inst)) {
         // 3 parameter instruction ********************************************
         std::printf("Type: Par3 \n");        
-
-        if (literal && IS_BIG_LITERAL_P3(r2)) { // Next dword is literal value 
-            r2 = ram.rb(state.pc++);
-            r2 |= (ram.rb(state.pc++) << 8);
-            r2 |= (ram.rb(state.pc++) << 16);
-            r2 |= (ram.rb(state.pc++) << 24); // Little Endian
-            state.wait_cycles++;
+        
+        if (literal) {
+            if (IS_BIG_LITERAL_P3(r2)) { // Next dword is literal value 
+                r2 = ram.rb(state.pc++);
+                r2 |= (ram.rb(state.pc++) << 8);
+                r2 |= (ram.rb(state.pc++) << 16);
+                r2 |= (ram.rb(state.pc++) << 24); // Little Endian
+                state.wait_cycles++;
+            } else if (O5_SIGN_BIT(r2)) { // Negative Literal -> Extend sign
+                r2 |= 0xFFFFFFE0;
+            }
+        } else {
+            r2 = state.r[r2];
         }
-        r2 = (literal) ? r2 : state.r[r2]; // Operand 2 value
         
         if (IS_RAM(inst)) { // LOAD/STORE instruction
             state.wait_cycles += 4;
@@ -187,7 +197,7 @@ unsigned RC3200::realStep()
             state.wait_cycles += 3;
             switch (opcode) {
                 case PAR3_OPCODE_ALU::ADD :
-                    ltmp = (qword_t)(state.r[1] + r2);
+                    ltmp = (qword_t)(state.r[r1] + r2);
                     if (CARRY_BIT(ltmp)) // We grab carry bit
                         SET_ON_CF(state.flags);
                     else
@@ -195,7 +205,7 @@ unsigned RC3200::realStep()
 
                     // If operands have same sign, check overflow
                     if (DW_SIGN_BIT(state.r[r1]) == DW_SIGN_BIT(r2)) {
-                        if (DW_SIGN_BIT(state.r[r1]) != DW_SIGN_BIT(state.r[ltmp]) ) { 
+                        if (DW_SIGN_BIT(r2) != DW_SIGN_BIT(state.r[ltmp]) ) { 
                             // Overflow happens
                             SET_ON_OF(state.flags);
                             if (GET_EOE(state.flags)) {
@@ -217,7 +227,7 @@ unsigned RC3200::realStep()
 
                     // If operands have same sign, check overflow
                     if (DW_SIGN_BIT(state.r[r1]) == DW_SIGN_BIT(r2)) {
-                        if (DW_SIGN_BIT(state.r[r1]) != DW_SIGN_BIT(state.r[ltmp]) ) { 
+                        if (DW_SIGN_BIT(r2) != DW_SIGN_BIT(state.r[ltmp]) ) { 
                             // Overflow happens
                             SET_ON_OF(state.flags);
                             if (GET_EOE(state.flags)) {
@@ -231,7 +241,7 @@ unsigned RC3200::realStep()
                     break;
 
                 case PAR3_OPCODE_ALU::ADDC :
-                    ltmp = (qword_t)(state.r[1] + r2);
+                    ltmp = (qword_t)(state.r[r1] + r2);
                     if (GET_CF(state.flags)) // Apply Carry bit
                         ltmp++;
 
@@ -242,7 +252,7 @@ unsigned RC3200::realStep()
 
                     // If operands have same sign, check overflow
                     if (DW_SIGN_BIT(state.r[r1]) == DW_SIGN_BIT(r2)) {
-                        if (DW_SIGN_BIT(state.r[r1]) != DW_SIGN_BIT(state.r[ltmp]) ) { 
+                        if (DW_SIGN_BIT(r2) != DW_SIGN_BIT(state.r[ltmp]) ) { 
                             // Overflow happens
                             SET_ON_OF(state.flags);
                             if (GET_EOE(state.flags)) {
@@ -267,7 +277,7 @@ unsigned RC3200::realStep()
 
                     // If operands have same sign, check overflow
                     if (DW_SIGN_BIT(state.r[r1]) == DW_SIGN_BIT(r2)) {
-                        if (DW_SIGN_BIT(state.r[r1]) != DW_SIGN_BIT(state.r[ltmp]) ) { 
+                        if (DW_SIGN_BIT(r2) != DW_SIGN_BIT(state.r[ltmp]) ) { 
                             // Overflow happens
                             SET_ON_OF(state.flags);
                             if (GET_EOE(state.flags)) {
@@ -402,14 +412,22 @@ unsigned RC3200::realStep()
     } else if (IS_PAR2(inst)) {
         // 2 parameter instrucction *******************************************
         std::printf("Type: Par2 r2:0x%02x r3:0x%02x \n", r2, r3);        
-        
-        if (literal && IS_BIG_LITERAL_P2((r1 << 5) | r2)) { // Next dword is literal value 
-            r2 = ram.rb(state.pc++);
-            r2 |= (ram.rb(state.pc++) << 8);
-            r2 |= (ram.rb(state.pc++) << 16);
-            r2 |= (ram.rb(state.pc++) << 24); // Little Endian
-            state.wait_cycles++;
+       
+        if (literal) {
+            r2 = (inst >> 5) & 0x3FF;
+            if (IS_BIG_LITERAL_P2(r2)) { // Next dword is literal value 
+                r2 = ram.rb(state.pc++);
+                r2 |= (ram.rb(state.pc++) << 8);
+                r2 |= (ram.rb(state.pc++) << 16);
+                r2 |= (ram.rb(state.pc++) << 24); // Little Endian
+                state.wait_cycles++;
+            } else if (O10_SIGN_BIT(r2)) { // Negative Literal -> Extend sign
+                r2 |= 0xFFFFFC00;
+            }
+        } else {
+            r2 = state.r[r2];
         }
+
         
         if (IS_RAM(inst) && literal) { // LOAD/STORE instruction
             state.wait_cycles += 4;
@@ -453,30 +471,29 @@ unsigned RC3200::realStep()
 
         } else if (IS_BRANCH(inst)) { // BRANCHing instruction
             state.wait_cycles += 3;
-            r2 = (literal) ? r2 : state.r[r2]; // Operand 2 value
             switch (opcode) {
-                case PAR2_OPCODE_BRANCH::BEQ :
+                case OPCODE_BRANCH::BEQ :
                     if (state.r[r3] == r2) {
                         state.skiping = true;
                         state.wait_cycles++;
                     }
                     break;
 
-                case PAR2_OPCODE_BRANCH::BNEQ :
+                case OPCODE_BRANCH::BNEQ :
                     if (state.r[r3] != r2) {
                         state.skiping = true;
                         state.wait_cycles++;
                     }
                     break;
 
-                case PAR2_OPCODE_BRANCH::BG :
+                case OPCODE_BRANCH::BG :
                     if (state.r[r3] > r2) {
                         state.skiping = true;
                         state.wait_cycles++;
                     }
                     break;
 
-                case PAR2_OPCODE_BRANCH::BUG : {
+                case OPCODE_BRANCH::BUG : {
                         sdword_t sr3 = state.r[r3];
                         sdword_t sr2 = r2;
                         if (sr3 > sr2) {
@@ -486,14 +503,14 @@ unsigned RC3200::realStep()
                         break;
                     }
 
-                case PAR2_OPCODE_BRANCH::BGE :
+                case OPCODE_BRANCH::BGE :
                     if (state.r[r3] >= r2) {
                         state.skiping = true;
                         state.wait_cycles++;
                     }
                     break;
                 
-                case PAR2_OPCODE_BRANCH::BUGE : {
+                case OPCODE_BRANCH::BUGE : {
                         sdword_t sr3 = state.r[r3];
                         sdword_t sr2 = r2;
                         if (sr3 >= sr2) {
@@ -503,14 +520,14 @@ unsigned RC3200::realStep()
                         break;
                     }
 
-                case PAR2_OPCODE_BRANCH::BL :
+                case OPCODE_BRANCH::BL :
                     if (state.r[r3] < r2) {
                         state.skiping = true;
                         state.wait_cycles++;
                     }
                     break;
 
-                case PAR2_OPCODE_BRANCH::BUL : {
+                case OPCODE_BRANCH::BUL : {
                         sdword_t sr3 = state.r[r3];
                         sdword_t sr2 = r2;
                         if (sr3 < sr2) {
@@ -520,14 +537,14 @@ unsigned RC3200::realStep()
                         break;
                     }
 
-                case PAR2_OPCODE_BRANCH::BLE :
+                case OPCODE_BRANCH::BLE :
                     if (state.r[r3] <= r2) {
                         state.skiping = true;
                         state.wait_cycles++;
                     }
                     break;
                 
-                case PAR2_OPCODE_BRANCH::BULE : {
+                case OPCODE_BRANCH::BULE : {
                         sdword_t sr3 = state.r[r3];
                         sdword_t sr2 = r2;
                         if (sr3 <= sr2) {
@@ -537,14 +554,14 @@ unsigned RC3200::realStep()
                         break;
                     }
 
-                case PAR2_OPCODE_BRANCH::BBITS :
+                case OPCODE_BRANCH::BBITS :
                     if ((state.r[r3] & r2) != 0) {
                         state.skiping = true;
                         state.wait_cycles++;
                     }
                     break;
                 
-                case PAR2_OPCODE_BRANCH::BCLEAR :
+                case OPCODE_BRANCH::BCLEAR :
                     if ((state.r[r3] & r2) == 0) {
                         state.skiping = true;
                         state.wait_cycles++;
@@ -558,8 +575,6 @@ unsigned RC3200::realStep()
 
         } else if (IS_JUMP(inst)) { // JUMP/CALL instruction
             state.wait_cycles += 3;
-            r2 = (literal) ? r2 : state.r[r2]; // Operand 2 value
-
             switch (opcode) {
                 case OPCODE_JUMP::JMP : // Absolute jump
                     state.pc = r2;
@@ -582,14 +597,10 @@ unsigned RC3200::realStep()
 
         } else { // Register manipulation instruction
             state.wait_cycles += 3;
-            
             switch (opcode) {
                 case PAR2_OPCODE::CPY_SET :
-                    if (literal)
                         state.r[r3] = r2;
-                    else
-                        state.r[r3] = state.r[r2];
-                    break;
+                        break;
 
                 case PAR2_OPCODE::SWP :
                     if (! literal) { // SWP with literal acts like a NOP
@@ -609,44 +620,49 @@ unsigned RC3200::realStep()
         // 1 parameter instrucction *******************************************
         std::printf("Type: Par1 \n");        
         
-        if (literal && IS_BIG_LITERAL_P1(inst & 0x7FFF)) { // Next dword is literal value 
-            r1 = ram.rb(state.pc++);
-            r1 |= (ram.rb(state.pc++) << 8);
-            r1 |= (ram.rb(state.pc++) << 16);
-            r1 |= (ram.rb(state.pc++) << 24); // Little Endian
-            state.wait_cycles++;
+        if (literal) {
+            r3 = inst & 0x7FFF;
+            if (IS_BIG_LITERAL_P1(r3)) { // Next dword is literal value 
+                r3 = ram.rb(state.pc++);
+                r3 |= (ram.rb(state.pc++) << 8);
+                r3 |= (ram.rb(state.pc++) << 16);
+                r3 |= (ram.rb(state.pc++) << 24); // Little Endian
+                state.wait_cycles++;
+            } else if (O15_SIGN_BIT(r3)) { // Negative Literal -> Extend sign
+                r3 |= 0xFFFF8000;
+            }
         }
 
         if (IS_RAM(inst)) { // Stack instructions
             if (opcode == OPCODE_RAM::PUSH) {
                 state.wait_cycles +=4;
-                r1 = (literal) ? r1 : state.r[r1]; // Operand 2 value
+                r3= (literal) ? r3 : state.r[r3]; // Operand value
                 
-                ram.wb(--state.r[SP], r1 >> 24);
-                ram.wb(--state.r[SP], r1 >> 16);
-                ram.wb(--state.r[SP], r1 >> 8);
-                ram.wb(--state.r[SP], r1); // Little Endian
+                ram.wb(--state.r[SP], r3 >> 24);
+                ram.wb(--state.r[SP], r3 >> 16);
+                ram.wb(--state.r[SP], r3 >> 8);
+                ram.wb(--state.r[SP], r3); // Little Endian
             } else if (opcode == OPCODE_RAM::POP) {
                 state.wait_cycles +=4;
-                state.r[r1] = ram.rb(state.r[SP]++);
-                state.r[r1] |= ram.rb(state.r[SP]++) << 8;
-                state.r[r1] |= ram.rb(state.r[SP]++) << 16;
-                state.r[r1] |= ram.rb(state.r[SP]++) << 24;
+                state.r[r3] = ram.rb(state.r[SP]++);
+                state.r[r3] |= ram.rb(state.r[SP]++) << 8;
+                state.r[r3] |= ram.rb(state.r[SP]++) << 16;
+                state.r[r3] |= ram.rb(state.r[SP]++) << 24;
                 // Little Endian
             } 
 
         } else if (IS_JUMP(inst)) { // Jump/Call instructions
             state.wait_cycles += 3;
-            r1 = (literal) ? r1 : state.r[r1]; // Operand 2 value
+            r3 = (literal) ? r3 : state.r[r3]; // Operand 2 value
 
             switch (opcode) {
                 case OPCODE_JUMP::INT : // Software interrupt
                     state.wait_cycles += 3;
-                    throwInterrupt(r1);
+                    throwInterrupt(r3);
                     break;
                 
                 case OPCODE_JUMP::JMP : // Absolute jump
-                    state.pc += r1;
+                    state.pc += r3;
                     break;
                 
                 case OPCODE_JUMP::CALL : // Absolute call
@@ -656,7 +672,7 @@ unsigned RC3200::realStep()
                     ram.wb(--state.r[SP], state.pc >> 16);
                     ram.wb(--state.r[SP], state.pc >> 8);
                     ram.wb(--state.r[SP], state.pc); // Little Endian
-                    state.pc += r1;
+                    state.pc += r3;
                     break;
                 
                 default:
@@ -745,7 +761,8 @@ unsigned RC3200::realStep()
 
     } else if (IS_NOPAR(inst)) {
         // Instructions without parameters ************************************
-        std::printf("Type: NoPar \n");        
+        std::printf("Type: NoPar \n");
+        opcode = inst & 0x0FFFFFFF; // OpCode uses the 16 LSB
         
         if (IS_JUMP(inst)) { // Return instruction
             switch (opcode) {
@@ -786,14 +803,14 @@ unsigned RC3200::realStep()
         } else if (IS_BRANCH(inst)) { // Branch if Flag X
             state.wait_cycles = 3;
             switch (opcode) {
-                case NOPAR_OPCODE_BRANCH::BOVF :
+                case OPCODE_BRANCH::BOVF :
                     if (GET_OF(state.flags)) {
                         state.skiping = true;
                         state.wait_cycles++;
                     }
                     break;
                 
-                case NOPAR_OPCODE_BRANCH::BOCF :
+                case OPCODE_BRANCH::BOCF :
                     if (GET_CF(state.flags)) {
                         state.skiping = true;
                         state.wait_cycles++;
