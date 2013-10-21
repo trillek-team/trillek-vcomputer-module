@@ -15,7 +15,7 @@
 
 #define FRAMERATE (60)
 
-std::size_t prg_size = 45*4;
+std::size_t prg_size = 59*4;
 vm::dword_t prg[] = {
     0x80008020,  // 000h SET %r0, 1
     0x80008021,  // 004h SET %r1, 1
@@ -62,52 +62,20 @@ vm::dword_t prg[] = {
     0x8000FFC6,   // 0A8h SET %r6, -2 (%r6 = 0xFFFFFFFE)
     0xC000208C,   // 0ACh ADD %r8, %r4, %r12 (%r12 = %r8 +%r4 = 0x408)
     0xC000A020,   // 0B0h ADD %r8, 1, %r0 (%r0 = %r8 +1 = 9)
-    0x2034,  // 02Eh SXTBD r4       (r4  == 0xFFFF)
-    0x4025,  // 030h ADD r5, r2     (r5  == 0x0003) CF=1
-    0x4111,  // 032h ADD r1, 1      (r1  == 0xFFFF)
-    0x4225,  // 034h SUB r5, r2     (r5  == 0x0005) CF=1
-    0x4316,  // 036h SUB r6, 1      (r6  == 0x0005)
-    0x62FA,  // 038h SET r10, 0x7FFF
-    0x7FFF,  // 03Ah literal
-    0x411A,  // 03Ch ADD r10, 1     (r10 == 0x8000) OF=1
-    0x6061,  // 03Eh SWP r1 ,r6
-    0x6116,  // 040h CPY r6, r1     (r1 == r6 == 0x0005)
-    0x8001,  // 042h LOAD [r0], r1          (r1 == 0x6210)
-    0x9061,  // 044h LOAD [r0 + r6], r1     (r1 == 0x3362)
-    0xA012,  // 046h LOAD.B [r0+1], r2      (r2 == 0xFF62)
-    0xB082,  // 048h LOAD.B [r0+r8], r2     (r2 == 0xFF44)
-    0x6456,  // 04Ah BEQ r6 == 5  (true)
-    0x62F6,  // 04Ch SET r6, 0xCAFE (not should happen)
-    0xCAFE,  // 04Eh literal
-    0x6201,  // 050h SET r1, 0
-    0x6401,  // 052h BEQ r1, 0  (true)
-    0x6501,  // 054h BNEQ r1, 0 (false, but chained)
-    0x62F6,  // 056h SET r6, 0xCAFE (not should happen)
-    0xCAFE,  // 058h literal
-    0x2042,  // 05Ah PUSH r2  (SP = FFFE and [FFFF] = FF44) 
-    0x205B,  // 05Ch POP r11 (SP = 0 and r11 = FF44)
-    0x21B1,  // 05Eh SETIS 1 (Interrupts in segment 1)
-    0x20F2,  // 060h SETIA 2
-    0x20D6,  // 062h INT 6
-    0x215B,  // 064h SETDS 0xB
-    0x62F1,  // 068h SET r1, 'A'
-    0x0041,  // 06Ah
-    0x6202,  // 06Ch SET r2, 0
-    0xC201,  // 06Eh STORE [r2], r1  (type A)
-    0x62F2,  // 070h SET r2, 80*2
-    0x00A0,  // 072h
-    0x4111,  // 074h ADD r1, 1 
-    0xC201,  // 076h STORE [r2], r1  (type B)
-    0x62F2,  // 078h SET r2, 80*4
-    0x0140,  // 07Ah
-    0x4111,  // 07Ch ADD r1, 1 
-    0xC201,  // 07Eh STORE [r2], r1  (type C)
-    0x2150,  // 080h SETDS 0
-    0xC001,  // 082h STORE [0], r1
-    0x8001,  // 084h LOAD [0], r1 (shoud be 0x6210)
-    0x0000,
-    0x0000,
-    0x0000,
+    0xC0015A96,   // 0B4h SUB %r22, %r20, %r22 (%r22 = %r22 - %r20 = 2)
+    0xC001E096,   // 0B8h SUB %r24, 4, %r22    (%r22 = %r24 - 4 = 20)
+    0xC001E396,   // 0BCh SUB %r24, -4, %r22   (%r22 = %r24 - (-4) = 28)
+    0x80008000,   // 0C0h SET %r0 , 0        (for %r0=0; %r < 10; %r++)
+    0x00000000,   // 0C4h NOP
+    0xC0008020,   // 0C8h ADD %r0, 1, %r0    (next %r0)
+    0xA003800A,   // 0CCh BUG 10, %r0
+    0x700180C4,   // 0D0h     JMP PC - 0x00C (0x0C4)
+    0x8000C01F,   // 0D4h SET %sp, 0x10000 (Stack pointer to the last address of RAM)
+    0x00010000,   // 0D8h Literal
+    0x5006CAFE,   // 0DCh PUSH 0xFFFFCAFE
+    0x50060006,   // 0E0h PUSH %r6
+    0x5007001D,   // 0E4h POP  %r29 (%r29 = 6)
+    0x5007001C,   // 0E8h POP  %r28 (%r28 = 0xFFFFCAFE)
 };
 
 std::size_t isr_size = 2*2;
@@ -287,11 +255,12 @@ void print_regs(const vm::cpu::CpuState& state)
 
 void print_pc(const vm::cpu::CpuState& state, const vm::ram::Mem&  ram)
 {
-    std::printf("\t[PC]= 0x%02x%02x%02x%02x ", 
-            ram.rb(state.pc + 3), 
-            ram.rb(state.pc + 2), 
-            ram.rb(state.pc + 1), 
-            ram.rb(state.pc )); // Little Endian
+    vm::dword_t val = ram.rb(state.pc);
+    val |= ram.rb(state.pc +1) << 8;
+    val |= ram.rb(state.pc +2) << 16;
+    val |= ram.rb(state.pc +3) << 24;
+    
+    std::printf("\t[PC]= 0x%08X ", val); 
     std::cout << vm::cpu::disassembly(ram,  state.pc) << std::endl;  
 }
 
@@ -299,11 +268,15 @@ void print_stack(const vm::cpu::CpuState& state, const vm::ram::Mem& ram)
 {
     std::printf("STACK:\n");
 
-    for (size_t i =0; i <6; i++) {
-        std::printf("%02Xh ", ram.rb(state.r[SP]+i));
+    for (size_t i =0; i <5*4;) {
+        vm::dword_t val = ram.rb(state.r[SP]+(i++));
+        val |= ram.rb(state.r[SP]+(i++)) << 8;
+        val |= ram.rb(state.r[SP]+(i++)) << 16;
+        val |= ram.rb(state.r[SP]+(i++)) << 24;
+
+        std::printf("0x%08X\n", val);
         if (((size_t)(state.r[SP]) + i) >= 0xFFFFFFFF)
             break;
     }
-    std::printf("\n");
 }
 
