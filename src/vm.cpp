@@ -15,7 +15,7 @@
 
 #define FRAMERATE (60)
 
-std::size_t prg_size = 32*4;
+std::size_t prg_size = 45*4;
 vm::dword_t prg[] = {
     0x80008020,  // 000h SET %r0, 1
     0x80008021,  // 004h SET %r1, 1
@@ -32,8 +32,8 @@ vm::dword_t prg[] = {
     0x8000818C,
     0x800081AD,
     0x800081CE,
-    0x800081EF,
-    0x80008210,
+    0x800081EF,   // 03Ch SET %r15 = 15
+    0x80008210,   // 040h SET %r16 = 16
     0x80008231,   // 044h SET %r17 = 17
     0x80008252,   
     0x80008273,   
@@ -49,15 +49,19 @@ vm::dword_t prg[] = {
     0x800083BD,   
     0x800083DE,   // 078h SET %r30 = 30
     0x800083FF,   // 07Ch SET %r31 = 31
-    0x62EE,  // 01Ch SET BP, 14
-    0x62FF,  // 01Eh SET SP, 15
-    0x000F,  // 020h literal
-    0x620F,  // 022h SET SP, 0
-    0x2001,  // 024h NOT r1
-    0x2012,  // 026h NEG r2
-    0x2023,  // 028h XCHG r3
-    0x62F4,  // 02Ah SET 0x00FF, r4
-    0x00FF,  // 02Ch literal
+    0x8000801E,   // 080h SET %r30 = 0
+    0x8000801F,   // 084h SET %r31 = 0
+    0x8000C001,   // 088h SET %r1 = 0xBEBECAFE
+    0xBEBECAFE,   // 08Ch literal value
+    0x8000002A,   // 090h CPY %r1, %r10
+    0x40000000,   // 094h NOT %r0
+    0x40010003,   // 098h NEG %r3 (%r3 = -3 = 0xFFFFFFFD)
+    0x40020004,   // 09Ch XCHG %r4
+    0x40030005,   // 0A0h XCHG.W %r5
+    0x8000FFE7,   // 0A4h SET %r7, -1 (%r5 = 0xFFFFFFFF)
+    0x8000FFC6,   // 0A8h SET %r6, -2 (%r6 = 0xFFFFFFFE)
+    0xC000208C,   // 0ACh ADD %r8, %r4, %r12 (%r12 = %r8 +%r4 = 0x408)
+    0xC000A020,   // 0B0h ADD %r8, 1, %r0 (%r0 = %r8 +1 = 9)
     0x2034,  // 02Eh SXTBD r4       (r4  == 0xFFFF)
     0x4025,  // 030h ADD r5, r2     (r5  == 0x0003) CF=1
     0x4111,  // 032h ADD r1, 1      (r1  == 0xFFFF)
