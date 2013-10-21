@@ -22,3 +22,7 @@ CMakeFiles/
 
 #build folder from cmake/premake
 build/
+
+# vim/kate/nano backup files
+*.swp
+*.~
