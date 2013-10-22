@@ -2,6 +2,7 @@
 #include "dis_rc3200.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <ios>
 #include <iomanip> 
 #include <cstdio>
@@ -78,17 +79,11 @@ vm::dword_t prg[] = {
     0x5007001C,   // 0E8h POP  %r28 (%r28 = 0xFFFFCAFE)
 };
 
-std::size_t isr_size = 2*2;
-vm::word_t isr[] = {
-	0x00000000,  // 000h NOP
-    0x0004,  // 002h RFI
-};
-
 void print_regs(const vm::cpu::CpuState& state);
 void print_pc(const vm::cpu::CpuState& state, const vm::ram::Mem& ram);
 void print_stack(const vm::cpu::CpuState& state, const vm::ram::Mem& ram);
 
-int main()
+int main(int argv, char* argc[])
 {
     using namespace vm;
     using namespace vm::cpu;
@@ -97,22 +92,30 @@ int main()
 
     cpu.reset();
 	
-	auto prg_blq = cpu.ram.addBlock(0, 0x8000, true); // ROM
-	cpu.ram.addBlock(0x8000, 0x8000); // Free ram
-	auto isr_blq = cpu.ram.addBlock(0x10000, 0x10000);
+	auto prg_blq = cpu.ram.addBlock(0, 64*1024, true); // ROM
+	cpu.ram.addBlock(64*1024, 64*1024); // Free ram
 	
     auto mda_blq = cpu.ram.addBlock(0xB0000, 0x10000);
    
     std::cout << "Allocted memory: " << cpu.ram.allocateBlocks()/1024 
               << "KiB" << std::endl;
 
-    {
+    if (argv == 1) {
+        std::printf("Using hardcoded test program\n");
         auto prg_sptr = prg_blq.lock();
-        auto isr_sptr = isr_blq.lock();
-
         std::copy_n((byte_t*)prg, prg_size, prg_sptr->getPtr()); // Copy program
-        std::copy_n((byte_t*)isr, isr_size, isr_sptr->getPtr()); // Copy ISR
+    } else if (argv > 1) {
+        auto prg_sptr = prg_blq.lock();
+        auto ptr = prg_sptr->getPtr();
+        std::printf("Opening file %s\n", argc[1]);
+        std::fstream f(argc[1], std::ios::in | std::ios::binary);
+        unsigned count = 0;
+        while (f.good() && count++ < 64*1024) {
+            f.read(reinterpret_cast<char*>(ptr++), 1); // Read byte at byte, so the file must be in Little Endian
+        }
+        std::printf("Read %u bytes and stored in ROM\n", count);
     }
+
     
 	std::cout << "Run program (r) or Step Mode (s) ?\n";
     char mode;
