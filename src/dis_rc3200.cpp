@@ -445,18 +445,18 @@ std::string disassembly(const ram::Mem& ram, dword_t pc) {
                         snprintf(buf, BUF_SIZE, "INT %%r%u", r3);
                     break;
                 
-                case OPCODE_JUMP::JMP : 
+                case OPCODE_JUMP::JMP : // Relative 
                     if (literal)
-                        snprintf(buf, BUF_SIZE, "JMP 0x%08x", r3);
+                        snprintf(buf, BUF_SIZE, "JMP %%pc + 0x%08x", r3);
                     else
-                        snprintf(buf, BUF_SIZE, "JMP %%r%u", r3);
+                        snprintf(buf, BUF_SIZE, "JMP %%pc +%%r%u", r3);
                     break;
 
                 case OPCODE_JUMP::CALL : 
                     if (literal)
-                        snprintf(buf, BUF_SIZE, "CALL 0x%08x", r3);
+                        snprintf(buf, BUF_SIZE, "CALL %%pc + 0x%08x", r3);
                     else
-                        snprintf(buf, BUF_SIZE, "CALL %%r%u", r3);
+                        snprintf(buf, BUF_SIZE, "CALL %%pc + %%r%u", r3);
                     break;
 
                 default:
@@ -570,6 +570,8 @@ std::string disassembly(const ram::Mem& ram, dword_t pc) {
 
     } else if (IS_NOPAR(inst)) {
         // Instructions without parameters ************************************
+        
+        opcode = inst & 0x0FFFFFFF; // OpCode uses the 16 LSB
         if (IS_JUMP(inst)) { // Return instruction
             switch (opcode) {
                 case OPCODE_JUMP::RFI :
