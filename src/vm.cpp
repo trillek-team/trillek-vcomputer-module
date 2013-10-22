@@ -66,10 +66,10 @@ vm::dword_t prg[] = {
     0xC001E096,   // 0B8h SUB %r24, 4, %r22    (%r22 = %r24 - 4 = 20)
     0xC001E396,   // 0BCh SUB %r24, -4, %r22   (%r22 = %r24 - (-4) = 28)
     0x80008000,   // 0C0h SET %r0 , 0        (for %r0=0; %r < 10; %r++)
-    0x00000000,   // 0C4h NOP
+    0x00000001,   // 0C4h NOP
     0xC0008020,   // 0C8h ADD %r0, 1, %r0    (next %r0)
-    0xA003800A,   // 0CCh BUG 10, %r0
-    0x700180C4,   // 0D0h     JMP PC - 0x00C (0x0C4)
+    0xA0038140,   // 0CCh IFUG 10, %r0 (if 10 > %r0)
+    0x7001FFF4,   // 0D0h     JMP PC - 0x00C (0x0C4)
     0x8000C01F,   // 0D4h SET %sp, 0x10000 (Stack pointer to the last address of RAM)
     0x00010000,   // 0D8h Literal
     0x5006CAFE,   // 0DCh PUSH 0xFFFFCAFE

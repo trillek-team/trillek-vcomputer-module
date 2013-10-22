@@ -11,8 +11,8 @@
 #define IS_NOPAR(x) (((x) & 0xC0000000) == 0)
 
 /// Instrucction sub-types
-#define IS_RAM(x)       (((x) & 0x10000000) == 0x10000000 )
-#define IS_BRANCH(x)    (((x) & 0x20000000) == 0x20000000 )
+#define IS_RAM(x)       (((x) & 0x30000000) == 0x10000000 )
+#define IS_BRANCH(x)    (((x) & 0x30000000) == 0x20000000 )
 #define IS_JUMP(x)      (((x) & 0x30000000) == 0x30000000 )
 
 /// Uses a Literal value ?
@@ -63,24 +63,24 @@ enum OPCODE_JUMP {
  * OpCodes that does branching
  */
 enum OPCODE_BRANCH {
-    BEQ             = 0,   
-    BNEQ            = 1,  
+    IFEQ             = 0,   
+    IFNEQ            = 1,  
 
-    BG              = 2,
-    BUG             = 3,
-    BGE             = 4,
-    BUGE            = 5,
+    IFG              = 2,
+    IFUG             = 3,
+    IFGE             = 4,
+    IFUGE            = 5,
     
-    BL              = 6,
-    BUL             = 7,
-    BLE             = 8,
-    BULE            = 9,
+    IFL              = 6,
+    IFUL             = 7,
+    IFLE             = 8,
+    IFULE            = 9,
     
-    BBITS           = 10,
-    BCLEAR          = 11,
+    IFBITS           = 10,
+    IFCLEAR          = 11,
     
-    BOVF            = 12,
-    BOCF            = 13,
+    IFOF             = 12,
+    IFCF             = 13,
 };
 
 // 3 Parameters OpCodes *******************************************************
@@ -153,8 +153,8 @@ enum PAR1_OPCODE {
  * 0 Paramaters generic OpCodes
  */
 enum NOPAR_OPCODE {
-    NOP             = 0,
-    SLEEP           = 1,
+    NOP             = 1,
+    SLEEP           = 0,
 };
 
 
