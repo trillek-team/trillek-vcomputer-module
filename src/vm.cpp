@@ -263,7 +263,7 @@ void print_pc(const vm::cpu::CpuState& state, const vm::ram::Mem&  ram)
     val |= ram.rb(state.pc +2) << 16;
     val |= ram.rb(state.pc +3) << 24;
     
-    std::printf("\t[PC]= 0x%08X ", val); 
+    std::printf("\tPC : 0x%08X > 0x%08X ", state.pc, val); 
     std::cout << vm::cpu::disassembly(ram,  state.pc) << std::endl;  
 }
 
