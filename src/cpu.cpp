@@ -72,16 +72,6 @@ void RC3200::tick (unsigned n)
     }
 }
 
-// Macros for ALU operations
-#define CARRY_BIT(x)    ((((x) >> 32) & 0x1) == 1)
-#define DW_SIGN_BIT(x)  (((x) >> 31)  & 0x1)
-#define W_SIGN_BIT(x)   (((x) >> 15)  & 0x1)
-#define B_SIGN_BIT(x)   (((x) >> 7)   & 0x1)
-
-// Extract sign of Literal Operator
-#define O5_SIGN_BIT(x)  (((x) >> 4)   & 0x1)
-#define O10_SIGN_BIT(x) (((x) >> 9)   & 0x1)
-#define O15_SIGN_BIT(x) (((x) >> 14)  & 0x1)
 
 /**
  * Executes a RC3200 instruction

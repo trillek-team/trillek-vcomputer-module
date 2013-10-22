@@ -7,615 +7,616 @@ namespace vm {
 namespace cpu {
 
 std::string disassembly(const ram::Mem& ram, dword_t pc) {
-	char buf[32] = {0};
+#define BUF_SIZE (32)
+	char buf[BUF_SIZE] = {0};
     
-    word_t inst = ram.rb(pc++);
-    inst |= ram.rb(pc++);
-    inst |= ram.rb(pc++);
-    inst |= ram.rb(pc++);
+    dword_t inst = ram.rb(pc++); // Fetch
+    inst |= (ram.rb(pc++) << 8);
+    inst |= (ram.rb(pc++) << 16);
+    inst |= (ram.rb(pc++) << 24); // Little Endian
 
-    word_t opcode, reg1, reg2, reg3;
+    dword_t opcode, r1, r2, r3;
+    // Here beging the Decoding
+    bool literal = HAVE_LITERAL(inst); 
 
-    reg3 = inst & 0xF;
-    reg2 = (inst >> 4) & 0xF;
-    reg1 = (inst >> 8) & 0xF;
-/*
+    r3 = OP3(inst);
+    r2 = OP2(inst);
+    r1 = OP1(inst);
+    opcode = (inst >> 16) & 0x0FFF;
+
+    // Check the type of instruction
     if (IS_PAR3(inst)) {
-        // 3 parameter instrucction
-        opcode = (inst >> 12) & 7;
-		switch (opcode) {
-			case PAR3_OPCODE::LOAD_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "LOAD [r%u + 0x%04x], r%u", reg1, reg2, reg3);
-				break;
+        // 3 parameter instruction ********************************************
+        
+        if (literal) {
+            if (IS_BIG_LITERAL_P3(r2)) { // Next dword is literal value 
+                r2 = ram.rb(pc++);
+                r2 |= (ram.rb(pc++) << 8);
+                r2 |= (ram.rb(pc++) << 16);
+                r2 |= (ram.rb(pc++) << 24); // Little Endian
+            } else if (O5_SIGN_BIT(r2)) { // Negative Literal -> Extend sign
+                r2 |= 0xFFFFFFE0;
+            }
+        } 
+        
+        if (IS_RAM(inst)) { // LOAD/STORE instruction
+            switch (opcode) {
+                case OPCODE_RAM::LOAD :
+                    if (literal)
+				        snprintf(buf, BUF_SIZE, "LOAD %%r%u + 0x%08x, %%r%u", r1, r2, r3);
+                    else
+				        snprintf(buf, BUF_SIZE, "LOAD %%r%u + %%r%u, %%r%u", r1, r2, r3);
+                    break;
 
-			case PAR3_OPCODE::LOAD :
-				snprintf(buf, 32, "LOAD [r%u + r%u], r%u", reg1, reg2, reg3);
-				break;
+                case OPCODE_RAM::LOADW :
+                    if (literal)
+				        snprintf(buf, BUF_SIZE, "LOAD.W %%r%u + 0x%08x, %%r%u", r1, r2, r3);
+                    else
+				        snprintf(buf, BUF_SIZE, "LOAD.W %%r%u + %%r%u, %%r%u", r1, r2, r3);
+                    break;
 
-			case PAR3_OPCODE::LOADB_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "LOAD.B [r%u + 0x%04x], r%u", reg1, reg2, 
-						 reg3);
-				break;
+                case OPCODE_RAM::LOADB :
+                    if (literal)
+				        snprintf(buf, BUF_SIZE, "LOAD.B %%r%u + 0x%08x, %%r%u", r1, r2, r3);
+                    else
+				        snprintf(buf, BUF_SIZE, "LOAD.B %%r%u + %%r%u, %%r%u", r1, r2, r3);
+                    break;
 
-			case PAR3_OPCODE::LOADB :
-				snprintf(buf, 32, "LOAD.B [r%u + r%u], r%u", reg1, reg2, reg3);
-				break;
+                case OPCODE_RAM::STORE :
+                    if (literal)
+				        snprintf(buf, BUF_SIZE, "STORE %%r%u + 0x%08x, %%r%u", r1, r2, r3);
+                    else
+				        snprintf(buf, BUF_SIZE, "STORE %%r%u + %%r%u, %%r%u", r1, r2, r3);
+                    break;
 
-            // Write ----------------------------------------------------------
-            case PAR3_OPCODE::STORE_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "STORE [r%u + 0x%04x], r%u", reg1, reg2, 
-						 reg3);
-				break;
+                case OPCODE_RAM::STOREW :
+                    if (literal)
+				        snprintf(buf, BUF_SIZE, "STORE.W %%r%u + 0x%08x, %%r%u", r1, r2, r3);
+                    else
+				        snprintf(buf, BUF_SIZE, "STORE.W %%r%u + %%r%u, %%r%u", r1, r2, r3);
+                    break;
 
-            case PAR3_OPCODE::STORE :
-				snprintf(buf, 32, "STORE [r%u + r%u], r%u", reg1, reg2, reg3);
-				break;
+                case OPCODE_RAM::STOREB :
+                    if (literal)
+				        snprintf(buf, BUF_SIZE, "STORE.B %%r%u + 0x%08x, %%r%u", r1, r2, r3);
+                    else
+				        snprintf(buf, BUF_SIZE, "STORE.B %%r%u + %%r%u, %%r%u", r1, r2, r3);
+                    break;
 
-            case PAR3_OPCODE::STOREB_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "STORE.B [r%u + 0x%04x], r%u", reg1, reg2, 
-						 reg3);
-				break;
+                default:
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "???? %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "???? %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+            }
+        } else { // ALU operations of type r3 = r1 op r2 
+            switch (opcode) {
+                case PAR3_OPCODE_ALU::ADD :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "ADD %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "ADD %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
 
-            case PAR3_OPCODE::STOREB :
-				snprintf(buf, 32, "STORE.B [r%u + r%u], r%u", reg1, reg2, reg3);
-				break;
-
-			default:
-				snprintf(buf, 32, "??? r%u , r%u, r%u", reg1, reg2, reg3);
-		}
-
+                case PAR3_OPCODE_ALU::SUB :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "SUB %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "SUB %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::ADDC :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "ADDC %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "ADDC %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+                
+                case PAR3_OPCODE_ALU::SUBB :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "SUBB %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "SUBB %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::AND :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "AND %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "AND %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::OR :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "OR %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "OR %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::XOR :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "XOR %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "XOR %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::NAND :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "NAND %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "NAND %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::SRL :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "SRL %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "SRL %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::SLL :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "SLL %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "SLL %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::SRA :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "SRA %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "SRA %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::ROTL :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "ROTL %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "ROTL %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::ROTR :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "ROTR %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "ROTR %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+                
+                case PAR3_OPCODE_ALU::UMUL :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "UMUL %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "UMUL %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::UDIV :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "UDIV %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "UDIV %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::MUL :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "MUL %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "MUL %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                case PAR3_OPCODE_ALU::DIV :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "DIV %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "DIV %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+                    break;
+            
+                default:
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "???? %%r%u , %u, %%r%u", r1, r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "???? %%r%u , %%r%u, %%r%u", r1, r2 ,r3);
+            
+            }
+        }
     } else if (IS_PAR2(inst)) {
-		// 2 parameter instrucction
-        opcode = (inst >> 8) & 0x3F;
-        switch (opcode) {
-			case PAR2_OPCODE::ADD :
-				snprintf(buf, 32, "ADD r%u, r%u", reg3, reg2);
-				break;
+        // 2 parameter instrucction *******************************************
+       
+        if (literal) {
+            r2 = (inst >> 5) & 0x3FF;
+            if (IS_BIG_LITERAL_P2(r2)) { // Next dword is literal value 
+                r2 = ram.rb(pc++);
+                r2 |= (ram.rb(pc++) << 8);
+                r2 |= (ram.rb(pc++) << 16);
+                r2 |= (ram.rb(pc++) << 24); // Little Endian
+            } else if (O10_SIGN_BIT(r2)) { // Negative Literal -> Extend sign
+                r2 |= 0xFFFFFC00;
+            }
+        }
+        
+        if (IS_RAM(inst) && literal) { // LOAD/STORE instruction
+            switch (opcode) {
+                case OPCODE_RAM::LOAD :
+				    snprintf(buf, BUF_SIZE, "LOAD 0x%08x, %%r%u", r2, r3);
+                    break;
+                
+                case OPCODE_RAM::LOADW :
+				    snprintf(buf, BUF_SIZE, "LOAD.W 0x%08x, %%r%u", r2, r3);
+                    break;
 
-			case PAR2_OPCODE::ADD_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "ADD r%u, 0x%04x", reg3, reg2);
-				break;
+                case OPCODE_RAM::LOADB :
+				    snprintf(buf, BUF_SIZE, "LOAD.B 0x%08x, %%r%u", r2, r3);
+                    break;
 
-			case PAR2_OPCODE::SUB :
-				snprintf(buf, 32, "SUB r%u, r%u", reg3, reg2);
-				break;
+                case OPCODE_RAM::STORE :
+				    snprintf(buf, BUF_SIZE, "STORE 0x%08x, %%r%u", r2, r3);
+                    break;
+                
+                case OPCODE_RAM::STOREW :
+				    snprintf(buf, BUF_SIZE, "STORE.W 0x%08x, %%r%u", r2, r3);
+                    break;
 
-			case PAR2_OPCODE::SUB_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "SUB r%u, 0x%04x", reg3, reg2);
-				break;
+                case OPCODE_RAM::STOREB :
+				    snprintf(buf, BUF_SIZE, "STORE.B 0x%08x, %%r%u", r2, r3);
+                    break;
 
-			case PAR2_OPCODE::ADDC :
-				snprintf(buf, 32, "SUB r%u, r%u", reg3, reg2);
-				break;
+                default:
+                    snprintf(buf, BUF_SIZE, "???? 0x%08x, %%r%u", r2 ,r3);
 
-			case PAR2_OPCODE::SUBC :
-				snprintf(buf, 32, "SUBB r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::SUBC_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "SUBB r%u, 0x%04x", reg3, reg2);
-				break;
-
-		
-			case PAR2_OPCODE::AND :
-				snprintf(buf, 32, "AND r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::OR :
-				snprintf(buf, 32, "OR r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::XOR :
-				snprintf(buf, 32, "XOR r%u, r%u", reg3, reg2);
-				break;
-
-
-			case PAR2_OPCODE::SLL :
-				snprintf(buf, 32, "SLL r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::SLL_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "SLL r%u, 0x%04x", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::SRL :
-				snprintf(buf, 32, "SRL r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::SRL_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "SRL r%u, 0x%04x", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::SRA :
-				snprintf(buf, 32, "SRA r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::SRA_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "SRA r%u, 0x%04x", reg3, reg2);
-				break;
-
-
-			case PAR2_OPCODE::ROTL :
-				snprintf(buf, 32, "ROTL r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::ROTL_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "ROTL r%u, 0x%04x", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::ROTR :
-				snprintf(buf, 32, "ROTT r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::ROTR_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "ROTR r%u, 0x%04x", reg3, reg2);
-				break;
-
-
-			case PAR2_OPCODE::UMUL :
-				snprintf(buf, 32, "UMUL r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::UMUL_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "UMUL r%u, 0x%04x", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::UDIV :
-				snprintf(buf, 32, "UDIV r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::UDIV_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "UDIV r%u, 0x%04x", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::UMOD :
-				snprintf(buf, 32, "UMOD r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::UMOD_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "UMOD r%u, 0x%04x", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::MUL :
-				snprintf(buf, 32, "MUL r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::MUL_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "MUL r%u, 0x%04x", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::DIV :
-				snprintf(buf, 32, "DIV r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::DIV_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "DIV r%u, 0x%04x", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::MOD :
-				snprintf(buf, 32, "MOD r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::MOD_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "MOD r%u, 0x%04x", reg3, reg2);
-				break;
-			
-
-			case PAR2_OPCODE::SWP :
-				snprintf(buf, 32, "SWP r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::CPY :
-				snprintf(buf, 32, "CPY r%u, r%u", reg3, reg2);
-				break;
-
-			case PAR2_OPCODE::SET :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "SET r%u, 0x%04x", reg3, reg2);
-				break;
-
-
-			case PAR2_OPCODE::BEQ :
-				snprintf(buf, 32, "BEQ r%u, r%u", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::BEQ_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "BEQ r%u, 0x%04x", reg3, reg2);
-				break;
-		
-			case PAR2_OPCODE::BNEQ :
-				snprintf(buf, 32, "BNEQ r%u, r%u", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::BNEQ_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "BNEQ r%u, 0x%04x", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::BG :
-				snprintf(buf, 32, "BG r%u, r%u", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::BG_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "BG r%u, 0x%04x", reg3, reg2);
-				break;
-		
-			case PAR2_OPCODE::BGE :
-				snprintf(buf, 32, "BGE r%u, r%u", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::BGE_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "BGE r%u, 0x%04x", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::BUG :
-				snprintf(buf, 32, "BUG r%u, r%u", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::BUG_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "BUG r%u, 0x%04x", reg3, reg2);
-				break;
-		
-			case PAR2_OPCODE::BUGE :
-				snprintf(buf, 32, "BUGE r%u, r%u", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::BUGE_LIT :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "BUGE r%u, 0x%04x", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::BBITS :
-				snprintf(buf, 32, "BBITS r%u, r%u", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::BCLEAR :
-				snprintf(buf, 32, "BCLEAR r%u, r%u", reg3, reg2);
-				break;
-		
-
-			case PAR2_OPCODE::LJMP :
-				snprintf(buf, 32, "LJMP [r%u:r%u]", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::LCALL :
-				snprintf(buf, 32, "LCALL [r%u:r%u]", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::JMP :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "JMP [r%u + 0x%04x]", reg3, reg2);
-				break;
-			
-			case PAR2_OPCODE::CALL :
-				if (reg2 == 0xF) {
-					reg2 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "CALL [r%u + 0x%04x]", reg3, reg2);
-				break;
-			
-			default:
-				snprintf(buf, 32, "??? r%u, r%u", reg3, reg2);
-		}
-    
-	} else if (IS_PAR1(inst)) {
-        // 1 parameter instrucction
-        opcode = (inst >> 4) & 0x1FF;
-        switch (opcode) {
-			case PAR1_OPCODE::NOT :
-				snprintf(buf, 32, "NOT r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::NEG :
-				snprintf(buf, 32, "NEG r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::XCHG :
-				snprintf(buf, 32, "XCHG r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::SXTBD :
-				snprintf(buf, 32, "SXTBD r%u", reg3);
-				break;
-
-
-			case PAR1_OPCODE::PUSH :
-				snprintf(buf, 32, "PUSH r%u", reg3);
-				break;
-			
-			case PAR1_OPCODE::POP :
-				snprintf(buf, 32, "POP r%u", reg3);
-				break;
-
-
-			case PAR1_OPCODE::GETPC :
-				snprintf(buf, 32, "GETPC r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::SETFLAGS :
-				snprintf(buf, 32, "SETFLAGS r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::GETFLAGS :
-				snprintf(buf, 32, "GETFLAGS r%u", reg3);
-				break;
-
-
-			case PAR1_OPCODE::SETY :
-				snprintf(buf, 32, "SETY r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::SETY_LIT :
-				if (reg3 == 0xF) {
-					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "SETY 0x%04x", reg3);
-				break;
-			
-			case PAR1_OPCODE::GETY :
-				snprintf(buf, 32, "GETY r%u", reg3);
-				break;
-
-
-			case PAR1_OPCODE::INT :
-				snprintf(buf, 32, "INT r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::INT_LIT :
-				if (reg3 == 0xF) {
-					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "INT %xh", reg3);
-				break;
-
-
-			case PAR1_OPCODE::SETIA :
-				snprintf(buf, 32, "SETIA r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::SETIA_LIT :
-				if (reg3 == 0xF) {
-					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "SETIA 0x%04x", reg3);
-				break;
-			
-			case PAR1_OPCODE::GETIA :
-				snprintf(buf, 32, "GETY r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::SETCS :
-				snprintf(buf, 32, "SETCS r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::SETCS_LIT :
-				if (reg3 == 0xF) {
-					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "SETCS 0x%04x", reg3);
-				break;
-			
-			case PAR1_OPCODE::GETCS :
-				snprintf(buf, 32, "GETCS r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::SETDS :
-				snprintf(buf, 32, "SETDS r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::SETDS_LIT :
-				if (reg3 == 0xF) {
-					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "SETDS 0x%04x", reg3);
-				break;
-			
-			case PAR1_OPCODE::GETDS :
-				snprintf(buf, 32, "GETDS r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::SETSS :
-				snprintf(buf, 32, "SETSS r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::SETSS_LIT :
-				if (reg3 == 0xF) {
-					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "SETSS 0x%04x", reg3);
-				break;
-			
-			case PAR1_OPCODE::GETSS :
-				snprintf(buf, 32, "GETSS r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::SETIS :
-				snprintf(buf, 32, "SETIS r%u", reg3);
-				break;
-
-			case PAR1_OPCODE::SETIS_LIT :
-				if (reg3 == 0xF) {
-					reg3 = (ram.rb(epc+1) << 8) | ram.rb(epc);
-					epc +=2;
-				}
-				snprintf(buf, 32, "SETIS 0x%04x", reg3);
-				break;
-			
-			case PAR1_OPCODE::GETIS :
-				snprintf(buf, 32, "GETIS r%u", reg3);
-				break;
-
-			default:
-				snprintf(buf, 32, "??? r%u", reg3);
-
-		}
-    
-	} else if (IS_PAR1L(inst)) {
-        // 1 parameter that is a long literal
-        opcode = (inst >> 9) & 0x7;
-        word_t long_lit = inst & 0x1FF;
-        switch (opcode) {
-            case PAR1L_OPCODE::JMP_REL :
-				snprintf(buf, 32, "JUMP %d", (int)long_lit);
-				break;
+            }
+        } else if (IS_BRANCH(inst)) { // BRANCHing instruction
+            switch (opcode) {
+                case OPCODE_BRANCH::IFEQ :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IFEQ %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IFEQ %%r%u, %%r%u", r2 ,r3);
+                    break;
+                
+                case OPCODE_BRANCH::IFNEQ :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IFNEQ %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IFNEQ %%r%u, %%r%u", r2 ,r3);
+                    break;
+                
+                case OPCODE_BRANCH::IFUG :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IFUG %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IFUG %%r%u, %%r%u", r2 ,r3);
+                    break;
             
-			case PAR1L_OPCODE::CALL_REL : 
-				snprintf(buf, 32, "CALL %d", (int)long_lit);
-				break;
+                case OPCODE_BRANCH::IFG :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IFG %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IFG %%r%u, %%r%u", r2 ,r3);
+                    break;
+            
+                case OPCODE_BRANCH::IFUGE :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IFUGE %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IFUGE %%r%u, %%r%u", r2 ,r3);
+                    break;
+            
+                case OPCODE_BRANCH::IFGE :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IFGE %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IFGE %%r%u, %%r%u", r2 ,r3);
+                    break;
+            
+                
+                case OPCODE_BRANCH::IFUL :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IFUL %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IFUL %%r%u, %%r%u", r2 ,r3);
+                    break;
+            
+                case OPCODE_BRANCH::IFL :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IFL %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IFL %%r%u, %%r%u", r2 ,r3);
+                    break;
+            
+                case OPCODE_BRANCH::IFULE :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IFULE %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IFULE %%r%u, %%r%u", r2 ,r3);
+                    break;
+            
+                case OPCODE_BRANCH::IFLE :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IFLE %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IFLE %%r%u, %%r%u", r2 ,r3);
+                    break;
+            
+            
+                case OPCODE_BRANCH::IFBITS :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IFBITS %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IFBITS %%r%u, %%r%u", r2 ,r3);
+                    break;
+                
+                case OPCODE_BRANCH::IFCLEAR :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IFCLEAR %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IFCLEAR %%r%u, %%r%u", r2 ,r3);
+                    break;
+            
+                default:
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "IF???? %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "IF???? %%r%u, %%r%u", r2 ,r3);
+            }
+        } else if (IS_JUMP(inst)) { // JUMP/CALL instruction
+            switch (opcode) {
+                case OPCODE_JUMP::JMP : // Absolute jump
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "JMP 0x%08x, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "JMP %%r%u, %%r%u", r2 ,r3);
+                    break;
+                
+                case OPCODE_JUMP::CALL : // Absolute jump
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "CALL 0x%08x, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "CALL %%r%u, %%r%u", r2 ,r3);
+                    break;
 
-			default:
-				snprintf(buf, 32, "??? %d", (int)long_lit);
-		}
-		
+                default:
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "J???? %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "J???? %%r%u, %%r%u", r2 ,r3);
+            }
+        } else { // Register manipulation instruction
+            switch (opcode) {
+                case PAR2_OPCODE::CPY_SET :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "SET 0x%08x, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "CPY %%r%u, %%r%u", r2 ,r3);
+                    break;
+                
+                case PAR2_OPCODE::SWP :
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "R???? %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "SWP %%r%u, %%r%u", r2 ,r3);
+                    break;
+
+
+                default:
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "R???? %u, %%r%u", r2 ,r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "R???? %%r%u, %%r%u", r2 ,r3);
+            }
+        }
+
+    } else if (IS_PAR1(inst)) {
+        // 1 parameter instrucction *******************************************
+        
+        if (literal) {
+            r3 = inst & 0x7FFF;
+            if (IS_BIG_LITERAL_P1(r3)) { // Next dword is literal value 
+                r3 = ram.rb(pc++);
+                r3 |= (ram.rb(pc++) << 8);
+                r3 |= (ram.rb(pc++) << 16);
+                r3 |= (ram.rb(pc++) << 24); // Little Endian
+            } else if (O15_SIGN_BIT(r3)) { // Negative Literal -> Extend sign
+                r3 |= 0xFFFF8000;
+            }
+        }
+
+        if (IS_RAM(inst)) { // Stack instructions
+            if (opcode == OPCODE_RAM::PUSH) {
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "PUSH 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "PUSH %%r%u", r3);
+            } else if (opcode == OPCODE_RAM::POP) {
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "Pop?? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "POP %%r%u", r3);
+            } else {
+                if (literal)
+                    snprintf(buf, BUF_SIZE, "RAM??? 0x%08x", r3);
+                else
+                    snprintf(buf, BUF_SIZE, "RAM??? \r%u", r3);
+            }
+        } else if (IS_JUMP(inst)) { // Jump/Call instructions
+            switch (opcode) {
+                case OPCODE_JUMP::INT : // Software interrupt
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "INT %08Xh", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "INT %%r%u", r3);
+                    break;
+                
+                case OPCODE_JUMP::JMP : 
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "JMP 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "JMP %%r%u", r3);
+                    break;
+
+                case OPCODE_JUMP::CALL : 
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "CALL 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "CALL %%r%u", r3);
+                    break;
+
+                default:
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "J???? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "J???? %%r%u", r3);
+            }
+
+        } else { // ALU / REGISTER instructions
+            switch (opcode) {
+                case PAR1_OPCODE::NOT :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "NOT? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "NOT %%r%u", r3);
+                    break;
+                
+                case PAR1_OPCODE::NEG :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "NEG? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "NEG %%r%u", r3);
+                    break;
+                
+                case PAR1_OPCODE::XCHG :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "XCHG? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "XCHG %%r%u", r3);
+                    break;
+                
+                case PAR1_OPCODE::XCHGW :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "XCHGW? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "XCHGW %%r%u", r3);
+                    break;
+                
+                case PAR1_OPCODE::SXTBD :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "SXTBD? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "SXTBD %%r%u", r3);
+                    break;
+                
+                case PAR1_OPCODE::SXTWD :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "SXTWD? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "SXTWD %%r%u", r3);
+                    break;
+               
+
+                case PAR1_OPCODE::GETPC :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "GETPC? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "GETPC %%r%u", r3);
+                    break;
+                
+                case PAR1_OPCODE::SETFLAGS :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "SETFLAGS 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "SETFLAGS %%r%u", r3);
+                    break;
+                
+                case PAR1_OPCODE::GETFLAGS :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "GETFLAGS? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "GETFLAGS %%r%u", r3);
+                    break;
+                
+                case PAR1_OPCODE::SETY :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "SETY 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "SETY %%r%u", r3);
+                    break;
+                
+                case PAR1_OPCODE::GETY :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "GETY? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "GETY %%r%u", r3);
+                    break;
+                
+                case PAR1_OPCODE::SETIA :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "SETIA 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "SETIA %%r%u", r3);
+                    break;
+                
+                case PAR1_OPCODE::GETIA :
+                    if(literal)
+                        snprintf(buf, BUF_SIZE, "GETIA? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "GETIA %%r%u", r3);
+                    break;
+                
+                default:
+                    if (literal)
+                        snprintf(buf, BUF_SIZE, "J???? 0x%08x", r3);
+                    else
+                        snprintf(buf, BUF_SIZE, "J???? %%r%u", r3);
+            }
+        }
+
     } else if (IS_NOPAR(inst)) {
-        // Instrucctions without parameters
-        opcode = inst & 0xFFF;
-		switch (opcode) {
-            case NOPAR_OPCODE::NOP :
-				snprintf(buf, 32, "NOP");
-				break;
+        // Instructions without parameters ************************************
+        if (IS_JUMP(inst)) { // Return instruction
+            switch (opcode) {
+                case OPCODE_JUMP::RFI :
+                    snprintf(buf, BUF_SIZE, "RFI");
+                    break;
 
-            case NOPAR_OPCODE::SLEEP :
-				snprintf(buf, 32, "SLEEP");
-				break;
+                case OPCODE_JUMP::RET :
+                    snprintf(buf, BUF_SIZE, "RET");
+                    break;
+                
+                default:
+                    snprintf(buf, BUF_SIZE, "J????");
 
-            case NOPAR_OPCODE::RET :
-				snprintf(buf, 32, "RET");
-				break;
-
-            case NOPAR_OPCODE::LRET :
-				snprintf(buf, 32, "LRET");
-				break;
-            
-			case NOPAR_OPCODE::RFI :
-				snprintf(buf, 32, "RFI");
-				break;
-
-            case NOPAR_OPCODE::BOVF :
-				snprintf(buf, 32, "BOVF");
-				break;
-
-            case NOPAR_OPCODE::BOCF :
-				snprintf(buf, 32, "BOCF");
-				break;
-
-			default:
-				snprintf(buf, 32, "???");
-		}
-
-	} else {
-		// Unknow
-	}
-*/
-	std::string out("");
+            }
+        } else if (IS_BRANCH(inst)) { // Branch if Flag X
+            switch (opcode) {
+                case OPCODE_BRANCH::IFOF :
+                    snprintf(buf, BUF_SIZE, "IFOF");
+                    break;
+                
+                case OPCODE_BRANCH::IFCF :
+                    snprintf(buf, BUF_SIZE, "IFCF");
+                    break;
+                
+                default:
+                    snprintf(buf, BUF_SIZE, "IF????");
+            }
+        } else {    // Misc no parameter instruction
+            switch (opcode) {
+                case NOPAR_OPCODE::SLEEP :
+                    snprintf(buf, BUF_SIZE, "SLEEP");
+                    break;
+                
+                case NOPAR_OPCODE::NOP :
+                    snprintf(buf, BUF_SIZE, "NOP");
+                    break;
+                
+                default:
+                    snprintf(buf, BUF_SIZE, "NOP????");
+            }
+        }
+    }
+	
+    std::string out(buf);
 	return out;
+
+#undef BUF_SIZE
 }
 
 } // End of namespace cpu
