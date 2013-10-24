@@ -88,34 +88,29 @@ int main(int argv, char* argc[])
     using namespace vm;
     using namespace vm::cpu;
 
-    RC3200 cpu;
-
-    cpu.reset();
-	
-	auto prg_blq = cpu.ram.addBlock(0, 64*1024, true); // ROM
-	cpu.ram.addBlock(64*1024, 64*1024); // Free ram
-	
-    auto mda_blq = cpu.ram.addBlock(0xB0000, 0x10000);
-   
-    std::cout << "Allocted memory: " << cpu.ram.allocateBlocks()/1024 
-              << "KiB" << std::endl;
+    byte_t* rom = NULL;
+    size_t rom_size = 0;
 
     if (argv == 1) {
         std::printf("Using hardcoded test program\n");
-        auto prg_sptr = prg_blq.lock();
-        std::copy_n((byte_t*)prg, prg_size, prg_sptr->getPtr()); // Copy program
+        rom = (byte_t*) prg;
+        rom_size = prg_size;
+
     } else if (argv > 1) {
-        auto prg_sptr = prg_blq.lock();
-        auto ptr = prg_sptr->getPtr();
+        rom = new byte_t[64*1024];	
         std::printf("Opening file %s\n", argc[1]);
         std::fstream f(argc[1], std::ios::in | std::ios::binary);
         unsigned count = 0;
-        while (f.good() && count++ < 64*1024) {
-            f.read(reinterpret_cast<char*>(ptr++), 1); // Read byte at byte, so the file must be in Little Endian
+        while (f.good() && count < 64*1024) {
+            f.read(reinterpret_cast<char*>(rom + count++), 1); // Read byte at byte, so the file must be in Little Endian
         }
         std::printf("Read %u bytes and stored in ROM\n", count);
+        rom_size = count;
     }
 
+    RC3200 cpu(rom, rom_size);
+
+    cpu.reset();
     
 	std::cout << "Run program (r) or Step Mode (s) ?\n";
     char mode;

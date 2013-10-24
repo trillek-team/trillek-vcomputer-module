@@ -1,7 +1,9 @@
 #include "ram.hpp"
 
-namespace CPU {
+namespace vm {
+namespace ram {
 
 
+}
 }
 

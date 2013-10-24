@@ -25,17 +25,15 @@ namespace ram {
 class Mem;
 
 /**
- * Defines a Memmory Block
+ * Defines handler for a block of addresses
  */
-class ABlock {
+class AHandler {
 public:
 
-	ABlock(dword_t begin, dword_t size = 1, bool read_only = false) : 
-		block(NULL), _begin(begin), _size(size), read_only(read_only),
-        allocated(false)
+	AHandler(dword_t begin, dword_t size = 1) :  _begin(begin), _size(size)
 	{ }
 
-	~ABlock()
+	virtual ~AHandler()
 	{ }
 
     /**
@@ -63,59 +61,55 @@ public:
     }
 
     /**
-     * Is real-only ? Aka writable only by owner
+     * Code that is executed when the CPU try to read an address of the block
+     * @param addr Address to read
+     * @return byte of data to return
      */
-    bool isReadOnly() const
-    {
-        return read_only;
-    }
+    virtual byte_t rb(dword_t addr) = 0; 
 
     /**
-     * Have the block being allocted to host ram ?
+     * Code that is exeucuted when the CPU try to write to an address of the block
+     * @param addr Address to read
+     * @param val Byte value that try to write
      */
-    bool isAllocated() const
-    {
-        return allocated;
-    }
+    virtual void wb(dword_t addr, byte_t val) = 0; 
 
-    byte_t* getPtr()
-    {
-        return block;
-    }
-
-    friend class Mem;
 protected:
-	byte_t* block;  /// Ptr to the allocated block
 	
     dword_t _begin;	/// Begin of the Block of memory
 	dword_t _size;	/// Size of the block of memory
 
-	bool read_only; /// Read-Only ? (Writebale only by the owner device)
-    bool allocated; /// Is allocated ?
-
 };
-
-typedef std::weak_ptr<ABlock> ABlock_wptr;
 
 /**
  * Represents the memmory address space of the computer
- * Uses an arena to keep all address blocks in a contigous chunk of RAM of the
- * host
- * TODO Usea better container to make lighting fast the search of the address
+ * TODO Usea better container to make lighting fast the search of a address handler. Could be a interval tree or similar
  */
 class Mem {
 public:
-	byte_t dumb_dst;
 
-	Mem (size_t address_space= 20) : ram_buffer(NULL)
+    /**
+     * Generates a memmory mapping of RAM/ROM here the ROM resides in the first 
+     * addreses of the addres space and fills the ROM with some data
+     * @param *rom Ptr to the data to be copied to the ROM
+     * @param rom_size Size of the ROM data that must be less or equal to 64KiB. Big sizes will be ignored
+     * @param ram_size Size of the RAM. By default is 128KiB
+     */
+	Mem (const byte_t* rom, size_t rom_size, size_t ram_size = 128*1024) : 
+        ram_size(ram_size), buffer(NULL)
 	{
-		max_address = (1<< address_space)-1;
+        if (rom_size > 64*1024)
+            rom_size = 64*1024;
+        this->rom_size = rom_size;
+
+        buffer =  new byte_t[64*1024 + this->ram_size];
+        std::copy_n(rom, this->rom_size, buffer); // Copy ROM
 	}
 
     ~Mem()
     {
-        if (ram_buffer != NULL)
-            delete[] ram_buffer;
+        if (buffer != NULL)
+            delete[] buffer;
     }
 
 	/**
@@ -124,16 +118,20 @@ public:
 	 */
 	byte_t rb(dword_t addr) const
 	{
-		addr &= max_address;
-		// Search the apropiated block
+        if (addr < rom_size) { // ROM ADDRESS
+            return buffer[addr];
+        } else if (addr > 64*1024 && addr < (64*1024 + ram_size)) { // RAM ADDRESS
+            return buffer[addr];
+        } 
+		
+        // Search the apropiated block
 		for (auto it= blocks.begin(); it != blocks.end(); ++it) {
-			if ( (*it)->_begin <= addr && ((*it)->end() > addr)) {
-				addr -= (*it)->_begin;
-				return (*it)->block[addr];
+			if ( (*it)->begin() <= addr && ((*it)->end() > addr)) {
+				return (*it)->rb(addr);
 			}
 		}
 
-		return 0;
+		return 0; // Not found address, so we return 0
 	}
 
 	/**
@@ -142,69 +140,43 @@ public:
      * @param val Byte value to been writen
 	 */
 	void wb(dword_t addr, byte_t val) {
-		addr &= max_address;
-		// Search the apropiated block
+        if (addr < rom_size) { // ROM ADDRESS, we do nothing
+            return;
+        } else if (addr > 64*1024 && addr < (64*1024 + ram_size)) { // RAM ADDRESS
+            buffer[addr] = val;
+            return;
+        } 
+		
+        // Search the apropiated block
 		for (auto it= blocks.begin(); it != blocks.end(); ++it) {
-			if ( (*it)->_begin <= addr 
-					&& ((*it)->end() > addr) 
-					&& !((*it)->read_only) ){
-				addr -= (*it)->_begin;
-				
-                assert((*it)->isAllocated() );
-
-                (*it)->block[addr] = val;
+			if ( (*it)->begin() <= addr	&& ((*it)->end() > addr) ){
+                (*it)->wb(addr, val);
                 return;
 			}
 		}
-        return;
-	}
-
-    /**
-     * Adds a Address block
-     * @param begin Begin address
-     * @param size Size of the block (>= 1)
-     * @param ro Read Only ? (false)
-     * @return a Weak ptr to a ABlock
-     */
-	ABlock_wptr addBlock(dword_t begin, dword_t size = 1, bool ro = false)
-	{
-        assert(size >= 1);
-        if ((begin+size) > max_address )
-            return ABlock_wptr(); // Like returning null ptr
-
-        auto ab = std::make_shared<ABlock>(begin, size, ro);
-		blocks.push_back(ab);
-        return ABlock_wptr(ab);
-	}
-
-    /**
-     * Allocated enought contigous memory for all memmory blocks
-     * @return allocated arena size
-     */
-    size_t allocateBlocks()
-    {
-        // calc size
-        size_t size = 0;
-		for (auto it= blocks.begin(); it != blocks.end(); ++it) {
-            size = size > (*it)->end() ? size : (*it)->end();
-        }
-        ram_buffer = new byte_t[size];
-        std::fill_n(ram_buffer, size, 0); // Clean it
-
-		for (auto it= blocks.begin(); it != blocks.end(); ++it) {
-            (*it)->block = ram_buffer + (*it)->_begin;
-            (*it)->allocated = true;
-        }
-
-        return size;
+		
+        return ; // Not found address, so we do nothing
     }
 
-private:
-	size_t max_address; /// Bit mask of avalible addresses
-    byte_t* ram_buffer;
+    /**
+     * Adds a Address block handler
+     * @param block Address Handler
+     * @returns False if was any problem
+     */
+	bool addBlock(std::shared_ptr<AHandler> block)
+	{
+        // TODO Use other data structure to contains the blocks
+		blocks.push_back(block);
+        return true;
+	}
 
-	std::vector<std::shared_ptr<ABlock>> blocks; ///Contains address space blocks
-	
+private:
+    size_t rom_size;
+    size_t ram_size;
+
+    byte_t* buffer; /// Contains the ROM + RAM as are contigous
+
+	std::vector<std::shared_ptr<AHandler>> blocks; ///Contains address space blocks
 
 };
 
