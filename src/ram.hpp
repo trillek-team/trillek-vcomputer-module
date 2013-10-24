@@ -18,6 +18,7 @@
 
 #include <cassert>
 
+
 namespace vm {
 namespace ram {
 

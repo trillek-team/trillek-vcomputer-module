@@ -1,3 +1,4 @@
+#include "types.hpp"
 #include "cpu.hpp"
 #include "dis_rc3200.hpp"
 
@@ -10,6 +11,7 @@
 #include <string>
 #include <cwctype>
 #include <clocale>
+
 
 //#include <SFML/Graphics.hpp>
 //#include <SFML/Graphics/RenderWindow.hpp>
@@ -97,20 +99,36 @@ int main(int argv, char* argc[])
         rom_size = prg_size;
 
     } else if (argv > 1) {
-        rom = new byte_t[64*1024];	
+        rom = new byte_t[64*1024];
+
         std::printf("Opening file %s\n", argc[1]);
         std::fstream f(argc[1], std::ios::in | std::ios::binary);
         unsigned count = 0;
+#if (BYTE_ORDER != LITTLE_ENDIAN)
         while (f.good() && count < 64*1024) {
             f.read(reinterpret_cast<char*>(rom + count++), 1); // Read byte at byte, so the file must be in Little Endian
         }
+#else
+        size_t size;
+        auto begin = f.tellg();
+        f.seekg (0, std::ios::end);
+        auto end = f.tellg();
+        f.seekg (0, std::ios::beg);
+
+        size = end - begin;
+        size = size > (64*1024) ? (64*1024) : size;
+        
+        f.read(reinterpret_cast<char*>(rom), size);
+        count = size;
+#endif
         std::printf("Read %u bytes and stored in ROM\n", count);
         rom_size = count;
     }
-
+    
     RC3200 cpu(rom, rom_size);
 
     cpu.reset();
+    std::printf("Size of CPU state : %zu bytes \n", sizeof(cpu.getState()) );
     
 	std::cout << "Run program (r) or Step Mode (s) ?\n";
     char mode;

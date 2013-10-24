@@ -7,6 +7,8 @@
 #ifndef __TYPES_HPP__
 #define __TYPES_HPP__ 1
 
+#include "endian.h"
+
 #include <cstdint>
 
 namespace vm {
