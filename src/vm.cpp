@@ -12,13 +12,9 @@
 #include <cwctype>
 #include <clocale>
 
+#include <chrono>
 
-//#include <SFML/Graphics.hpp>
-//#include <SFML/Graphics/RenderWindow.hpp>
-
-#define FRAMERATE (60)
-
-std::size_t prg_size = 59*4;
+std::size_t prg_size = 60*4;
 vm::dword_t prg[] = {
     0x80008020,  // 000h SET %r0, 1
     0x80008021,  // 004h SET %r1, 1
@@ -79,6 +75,7 @@ vm::dword_t prg[] = {
     0x50060006,   // 0E0h PUSH %r6
     0x5007001D,   // 0E4h POP  %r29 (%r29 = 6)
     0x5007001C,   // 0E8h POP  %r28 (%r28 = 0xFFFFCAFE)
+    0x7001FF10,   // 0ECh JMP PC - 0F0h (Jumps to 0)
 };
 
 void print_regs(const vm::cpu::CpuState& state);
@@ -135,41 +132,23 @@ int main(int argv, char* argc[])
     std::cin >> mode;
     std::getchar();
 
-    //sf::RenderWindow mda_window;
-    //mda_window.create(sf::VideoMode(640, 406), "RC1600 prototype");
-    //mda_window.setFramerateLimit(FRAMERATE);
 
     bool debug = false;
     if (mode == 's' || mode == 'S') {
         debug = true;
     }
    
-    /*
-    sf::Font font;
-    if (!font.loadFromFile("./assets/font/cour.ttf")) {
-        std::cerr << "Error loading font\n";
-        exit(0);
-    }
-    sf::Text text;
-    text.setFont(font);
-    text.setColor(sf::Color::Green);
-    text.setCharacterSize(14); // 14 pixels*/
 
     std::cout << "Running!\n";
-    //sf::Clock clock; 
-    unsigned ticks;
-    unsigned long ticks_count = 0; 
-    //mda_window.clear(sf::Color::Black);
-    //mda_window.display();
+    unsigned ticks = 2000;
+    unsigned long ticks_count = 0;
+
+    using namespace std::chrono;
+    auto clock = high_resolution_clock::now();
+    double delta;
 
     int c = ' ';
-    while ( 1) {//mda_window.isOpen()) {
-
-        // T period of a 1MHz signal = 1 microseconds
-        //const auto delta=clock.getElapsedTime().asMicroseconds(); 
-        //clock.restart();
-        //double tmp = cpu.getClock()/ (double)(FRAMERATE);
-        //ticks= tmp+0.5;
+    while ( 1) {
         
         if (debug) {
             print_pc(cpu.getState(), cpu.ram);
@@ -179,57 +158,32 @@ int main(int argv, char* argc[])
                 std::printf("ZZZZzzzz...\n");
         }
 
-        if (!debug)
+        if (!debug) {
             cpu.tick(ticks);
-        else
+            ticks_count += ticks;
+
+            auto oldClock = clock;
+            clock = high_resolution_clock::now();
+            if (ticks <= 0) // Compensates if is too quick
+                delta += duration_cast<nanoseconds>(clock - oldClock).count();
+            else
+                delta = duration_cast<nanoseconds>(clock - oldClock).count();
+
+            ticks = delta/100.0f + 0.5f; // Rounding bug correction
+        } else
             ticks = cpu.step();
 
-        ticks_count += ticks;
-
-        // Print to the stdout a 80x25 MDA like screen at 80000h
-        /*auto mda_ram = mda_blq.lock();
-        if (mda_ram) {
-            std::wstring txt = L"";
-            unsigned col = 0, row = 0;
-            dword_t i = 0;
-            for(row =0; row < 25 && i < mda_ram->size(); row++) {
-                for(col =0; col < 80 && i < mda_ram->size(); col++) {
-                    wchar_t c = (wchar_t)(mda_ram->getPtr()[i]);
-                    i +=2;
-                    if (std::iswgraph(c))
-                        txt.push_back(c);
-                    else
-                        txt.push_back(L' ');
-                }
-                txt.push_back(L'\n');
-            }
-            text.setString(txt);
-        }*/
 
         // Speed info
-        if (ticks_count > 100000 && !debug) {
-            std::cout << "Running " << ticks; /*<< " cycles in " << delta << " uS"
+        if (!debug && ticks_count > 5000000) {
+            std::cout << "Running " << ticks << " cycles in " << delta << " nS"
                       << " Speed of " 
-                      << 100 * (((ticks * 1000000.0) / cpu.getClock()) / delta)
-                      << "% \n";*/
+                      << 100.0f * (((ticks * 1000000000.0) / cpu.getClock()) / delta)
+                      << "% \n";
             std::cout << std::endl;
-            ticks_count -= 100000;
+            ticks_count -= 5000000;
         }
 
-        // Poll events
-        /*sf::Event ev;
-        while (mda_window.pollEvent(ev)) {
-            if (ev.type == sf::Event::Closed) {
-                mda_window.close();
-                break;
-            }
-        }*/
-
-
-        /*mda_window.clear(sf::Color(0,0,0, 0xAA));
-        // Update here
-        mda_window.draw(text);
-        mda_window.display();*/
 
         if (debug) {
             std::printf("Takes %u cycles\n", cpu.getState().wait_cycles);
@@ -238,7 +192,6 @@ int main(int argv, char* argc[])
             c = std::getchar();
             if (c == 'q' || c == 'Q')
                 break;
-                //mda_window.close();
 
         }
 
