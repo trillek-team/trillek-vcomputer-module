@@ -26,7 +26,7 @@
 /// Uses next dword as literal
 #define IS_BIG_LITERAL_P3(x)  ((x) == 0x10)
 #define IS_BIG_LITERAL_P2(x)  ((x) == 0x200)
-#define IS_BIG_LITERAL_P1(x)  ((x) == 0x400000)
+#define IS_BIG_LITERAL_P1(x)  ((x) == 0x4000)
 
 // Macros for ALU operations
 #define CARRY_BIT(x)    ((((x) >> 32) & 0x1) == 1)

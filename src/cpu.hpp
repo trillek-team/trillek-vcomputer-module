@@ -16,8 +16,8 @@ namespace vm {
 namespace cpu {
 
 // Alias to BP and SP registers
-#define BP (30)
-#define SP (31)
+#define BP (14)
+#define SP (15)
 
 static unsigned const N_GPRS = 32;
 

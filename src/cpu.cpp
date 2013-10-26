@@ -616,6 +616,7 @@ unsigned RC3200::realStep()
     } else if (IS_PAR1(inst)) {
         // 1 parameter instrucction *******************************************
         
+        // TODO check why fails push big literal
         if (literal) {
             r3 = inst & 0x7FFF;
             if (IS_BIG_LITERAL_P1(r3)) { // Next dword is literal value 
