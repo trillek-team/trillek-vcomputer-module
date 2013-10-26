@@ -80,12 +80,10 @@ void RC3200::tick (unsigned n)
  */
 unsigned RC3200::realStep()
 {
-    if (state.pc % 4 != 0) // Not multiply of 4 addresses have penalty
-        state.wait_cycles = 1;
-    else
-        state.wait_cycles = 0;
+    state.wait_cycles = 0;
 
-    dword_t inst = ram.rd(state.pc++);
+    dword_t inst = ram.rd(state.pc);
+    state.pc +=4;
 
     dword_t opcode, r1, r2, r3;
     bool literal = HAVE_LITERAL(inst); 
