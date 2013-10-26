@@ -117,11 +117,11 @@ public:
 	 * Read  operator
      * @param addr Address
 	 */
-	byte_t rb(dword_t addr) const
+	inline byte_t rb(dword_t addr) const
 	{
         if (addr < rom_size) { // ROM ADDRESS
             return buffer[addr];
-        } else if (addr > 64*1024 && addr < (64*1024 + ram_size)) { // RAM ADDRESS
+        } else if (addr >= 64*1024 && addr < (64*1024 + ram_size)) { // RAM ADDRESS
             return buffer[addr];
         } 
 		
@@ -136,14 +136,44 @@ public:
 	}
 
 	/**
+	 * Read operator. Read a dword direclty
+     * @param addr Address
+	 */
+	inline dword_t rd(dword_t addr) const
+	{
+#if (BYTE_ORDER != LITTLE_ENDIAN)
+        if (addr < rom_size) { // ROM ADDRESS
+            return buffer[addr] | (buffer[addr+1] << 8) | (buffer[addr+2] << 16) | (buffer[addr+3] << 24);
+        } else if (addr >= 64*1024 && addr < (64*1024 + ram_size)) { // RAM ADDRESS
+            return buffer[addr] | (buffer[addr+1] << 8) | (buffer[addr+2] << 16) | (buffer[addr+3] << 24);
+        } 
+#else
+        if (addr < rom_size) { // ROM ADDRESS
+            return *((dword_t*)(buffer + addr));
+        } else if (addr >= 64*1024 && addr < (64*1024 + ram_size)) { // RAM ADDRESS
+            return *((dword_t*)(buffer + addr));
+        } 
+
+#endif
+        // Search the apropiated block
+		for (auto it= blocks.begin(); it != blocks.end(); ++it) {
+			if ( (*it)->begin() <= addr && ((*it)->end() > addr)) {
+                return (*it)->rb(addr) | ((*it)->rb(addr+1) << 8) | ((*it)->rb(addr+2) << 16) | ((*it)->rb(addr+3) << 24);
+			}
+		}
+
+		return 0; // Not found address, so we return 0
+	}
+
+	/**
 	 * Write operator
      * @param addr Address
      * @param val Byte value to been writen
 	 */
-	void wb(dword_t addr, byte_t val) {
+	inline void wb(dword_t addr, byte_t val) {
         if (addr < rom_size) { // ROM ADDRESS, we do nothing
             return;
-        } else if (addr > 64*1024 && addr < (64*1024 + ram_size)) { // RAM ADDRESS
+        } else if (addr >= 64*1024 && addr < (64*1024 + ram_size)) { // RAM ADDRESS
             buffer[addr] = val;
             return;
         } 
@@ -158,6 +188,7 @@ public:
 		
         return ; // Not found address, so we do nothing
     }
+
 
     /**
      * Adds a Address block handler

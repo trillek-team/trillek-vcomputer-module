@@ -85,10 +85,7 @@ unsigned RC3200::realStep()
     else
         state.wait_cycles = 0;
 
-    dword_t inst = ram.rb(state.pc++);
-    inst |= (ram.rb(state.pc++) << 8);
-    inst |= (ram.rb(state.pc++) << 16);
-    inst |= (ram.rb(state.pc++) << 24); // Little Endian
+    dword_t inst = ram.rd(state.pc++);
 
     dword_t opcode, r1, r2, r3;
     bool literal = HAVE_LITERAL(inst); 
@@ -204,7 +201,7 @@ unsigned RC3200::realStep()
 
                     // If operands have same sign, check overflow
                     if (DW_SIGN_BIT(state.r[r1]) == DW_SIGN_BIT(r2)) {
-                        if (DW_SIGN_BIT(r2) != DW_SIGN_BIT(state.r[ltmp]) ) { 
+                        if (DW_SIGN_BIT(r2) != DW_SIGN_BIT(ltmp) ) { 
                             // Overflow happens
                             SET_ON_OF(state.flags);
                             if (GET_EOE(state.flags)) {
@@ -226,7 +223,7 @@ unsigned RC3200::realStep()
 
                     // If operands have same sign, check overflow
                     if (DW_SIGN_BIT(state.r[r1]) == DW_SIGN_BIT(r2)) {
-                        if (DW_SIGN_BIT(r2) != DW_SIGN_BIT(state.r[ltmp]) ) { 
+                        if (DW_SIGN_BIT(r2) != DW_SIGN_BIT(ltmp) ) { 
                             // Overflow happens
                             SET_ON_OF(state.flags);
                             if (GET_EOE(state.flags)) {
@@ -251,7 +248,7 @@ unsigned RC3200::realStep()
 
                     // If operands have same sign, check overflow
                     if (DW_SIGN_BIT(state.r[r1]) == DW_SIGN_BIT(r2)) {
-                        if (DW_SIGN_BIT(r2) != DW_SIGN_BIT(state.r[ltmp]) ) { 
+                        if (DW_SIGN_BIT(r2) != DW_SIGN_BIT(ltmp) ) { 
                             // Overflow happens
                             SET_ON_OF(state.flags);
                             if (GET_EOE(state.flags)) {
@@ -276,7 +273,7 @@ unsigned RC3200::realStep()
 
                     // If operands have same sign, check overflow
                     if (DW_SIGN_BIT(state.r[r1]) == DW_SIGN_BIT(r2)) {
-                        if (DW_SIGN_BIT(r2) != DW_SIGN_BIT(state.r[ltmp]) ) { 
+                        if (DW_SIGN_BIT(r2) != DW_SIGN_BIT(ltmp) ) { 
                             // Overflow happens
                             SET_ON_OF(state.flags);
                             if (GET_EOE(state.flags)) {
