@@ -128,7 +128,7 @@ unsigned RC3200::realStep()
     if (IS_PAR3(inst)) {
         // 3 parameter instruction ******************************************** 
         state.wait_cycles += 3;
-        opcode = (inst >> 23) & 0x3F;
+        opcode = (inst >> 24) & 0x3F;
         
         // Fetch RN and RS parameters
         if (literal) {
@@ -451,7 +451,7 @@ unsigned RC3200::realStep()
         // 2 parameter instrucction *******************************************
        
         state.wait_cycles += 3;
-        opcode = (inst >> 23) & 0x7F;
+        opcode = (inst >> 24) & 0x7F;
         
         // Fetch Rn operand
         if (literal) {
@@ -623,7 +623,7 @@ unsigned RC3200::realStep()
         // 1 parameter instrucction *******************************************
         
         state.wait_cycles += 3;
-        opcode = (inst >> 23) & 0x1F;
+        opcode = (inst >> 24) & 0x1F;
         
         // Fetch Rn operand
         if (literal) {

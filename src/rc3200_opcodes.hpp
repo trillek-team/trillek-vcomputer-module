@@ -27,7 +27,7 @@
 #define IS_BRANCH(x)    (((x) & 0xE0000000) == 0xA0000000 )
 
 /// Uses a Literal value ?
-#define HAVE_LITERAL(x)     (((x) & 0x00080000) != 0)
+#define HAVE_LITERAL(x)     (((x) & 0x00800000) != 0)
 
 /// Extract operands
 #define RD(x)               ( (x)       & 0x1F) 

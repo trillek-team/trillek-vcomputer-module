@@ -145,7 +145,8 @@ void print_regs(const vm::cpu::CpuState& state)
         if (i == 3 || i == 7 || i == 11 || i == 15 || i == 19 || i == 23 || i == 27 || i == 31)
             std::printf("\n");
     }
-    std::printf("\n");
+    std::printf("%%y= 0x%08x\n", Y);
+    
     std::printf("%%ia= 0x%08x ", IA);
     std::printf("%%flags= 0x%08x ", FLAGS);
     std::printf("%%bp= 0x%08x ", state.r[BP]);
