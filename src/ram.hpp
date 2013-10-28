@@ -114,7 +114,7 @@ public:
     }
 
 	/**
-	 * Read  operator
+	 * Read operator. Reads a byte directly
      * @param addr Address
 	 */
 	inline byte_t rb(dword_t addr) const
@@ -136,7 +136,37 @@ public:
 	}
 
 	/**
-	 * Read operator. Read a dword direclty
+	 * Read operator. Reads a word direclty
+     * @param addr Address
+	 */
+	inline word_t rw(dword_t addr) const
+	{
+#if (BYTE_ORDER != LITTLE_ENDIAN)
+        if (addr < rom_size) { // ROM ADDRESS
+            return buffer[addr] | (buffer[addr+1] << 8);
+        } else if (addr >= 64*1024 && addr < (64*1024 + ram_size)) { // RAM ADDRESS
+            return buffer[addr] | (buffer[addr+1] << 8);
+        } 
+#else
+        if (addr < rom_size) { // ROM ADDRESS
+            return *((word_t*)(buffer + addr));
+        } else if (addr >= 64*1024 && addr < (64*1024 + ram_size)) { // RAM ADDRESS
+            return *((word_t*)(buffer + addr));
+        } 
+#endif
+
+        // Search the apropiated block
+		for (auto it= blocks.begin(); it != blocks.end(); ++it) {
+			if ( (*it)->begin() <= addr && ((*it)->end() > addr)) {
+                return (*it)->rb(addr) | ((*it)->rb(addr+1) << 8);
+			}
+		}
+
+		return 0; // Not found address, so we return 0
+	}
+
+	/**
+	 * Read operator. Reads a dword direclty
      * @param addr Address
 	 */
 	inline dword_t rd(dword_t addr) const
@@ -148,6 +178,7 @@ public:
             return buffer[addr] | (buffer[addr+1] << 8) | (buffer[addr+2] << 16) | (buffer[addr+3] << 24);
         } 
 #else
+
         if (addr < rom_size) { // ROM ADDRESS
             return *((dword_t*)(buffer + addr));
         } else if (addr >= 64*1024 && addr < (64*1024 + ram_size)) { // RAM ADDRESS

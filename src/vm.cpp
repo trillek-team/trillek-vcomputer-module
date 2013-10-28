@@ -14,75 +14,12 @@
 
 #include <chrono>
 
-std::size_t prg_size = 60*4;
-vm::dword_t prg[] = {
-    0x80008020,  // 000h SET %r0, 1
-    0x80008021,  // 004h SET %r1, 1
-    0x80008042,  // 008h SET %r2, 2 ..
-    0x80008063,
-    0x80008084,
-    0x800080A5,
-    0x800080C6,
-    0x800080E7,
-    0x80008108,
-    0x80008129,
-    0x8000814A,
-    0x8000816B,
-    0x8000818C,
-    0x800081AD,
-    0x800081CE,
-    0x800081EF,   // 03Ch SET %r15 = 15
-    0x80008210,   // 040h SET %r16 = 16
-    0x80008231,   // 044h SET %r17 = 17
-    0x80008252,   
-    0x80008273,   
-    0x80008294,   
-    0x800082B5,   
-    0x800082D6,   
-    0x800082F7,   
-    0x80008318,   
-    0x80008339,   
-    0x8000835A,   
-    0x8000837B,   
-    0x8000839C,   
-    0x800083BD,   
-    0x800083DE,   // 078h SET %r30 = 30
-    0x800083FF,   // 07Ch SET %r31 = 31
-    0x8000801E,   // 080h SET %r30 = 0
-    0x8000801F,   // 084h SET %r31 = 0
-    0x8000C001,   // 088h SET %r1 = 0xBEBECAFE
-    0xBEBECAFE,   // 08Ch literal value
-    0x8000002A,   // 090h CPY %r1, %r10
-    0x40000000,   // 094h NOT %r0
-    0x40010003,   // 098h NEG %r3 (%r3 = -3 = 0xFFFFFFFD)
-    0x40020004,   // 09Ch XCHG %r4
-    0x40030005,   // 0A0h XCHG.W %r5
-    0x8000FFE7,   // 0A4h SET %r7, -1 (%r5 = 0xFFFFFFFF)
-    0x8000FFC6,   // 0A8h SET %r6, -2 (%r6 = 0xFFFFFFFE)
-    0xC000208C,   // 0ACh ADD %r8, %r4, %r12 (%r12 = %r8 +%r4 = 0x408)
-    0xC000A020,   // 0B0h ADD %r8, 1, %r0 (%r0 = %r8 +1 = 9)
-    0xC0015A96,   // 0B4h SUB %r22, %r20, %r22 (%r22 = %r22 - %r20 = 2)
-    0xC001E096,   // 0B8h SUB %r24, 4, %r22    (%r22 = %r24 - 4 = 20)
-    0xC001E396,   // 0BCh SUB %r24, -4, %r22   (%r22 = %r24 - (-4) = 28)
-    0x80008000,   // 0C0h SET %r0 , 0        (for %r0=0; %r < 10; %r++)
-    0x00000001,   // 0C4h NOP
-    0xC0008020,   // 0C8h ADD %r0, 1, %r0    (next %r0)
-    0xA0038140,   // 0CCh IFUG 10, %r0 (if 10 > %r0)
-    0x7001FFF4,   // 0D0h     JMP PC - 0x00C (0x0C4)
-    0x8000C01F,   // 0D4h SET %sp, 0x20000 (Stack pointer to the last address of RAM)
-    0x00020000,   // 0D8h Literal
-    0x5006CAFE,   // 0DCh PUSH 0xFFFFCAFE
-    0x50060006,   // 0E0h PUSH %r6
-    0x5007001D,   // 0E4h POP  %r29 (%r29 = 6)
-    0x5007001C,   // 0E8h POP  %r28 (%r28 = 0xFFFFCAFE)
-    0x7001FF10,   // 0ECh JMP PC - 0F0h (Jumps to 0)
-};
 
 void print_regs(const vm::cpu::CpuState& state);
 void print_pc(const vm::cpu::CpuState& state, const vm::ram::Mem& ram);
 void print_stack(const vm::cpu::CpuState& state, const vm::ram::Mem& ram);
 
-int main(int argv, char* argc[])
+int main(int argc, char* argv[])
 {
     using namespace vm;
     using namespace vm::cpu;
@@ -90,16 +27,15 @@ int main(int argv, char* argc[])
     byte_t* rom = NULL;
     size_t rom_size = 0;
 
-    if (argv == 1) {
-        std::printf("Using hardcoded test program\n");
-        rom = (byte_t*) prg;
-        rom_size = prg_size;
+    if (argc < 2) {
+        std::printf("Usage: %s binary_file\n", argv[0]);
+        return -1;
 
-    } else if (argv > 1) {
+    } else {
         rom = new byte_t[64*1024];
 
-        std::printf("Opening file %s\n", argc[1]);
-        std::fstream f(argc[1], std::ios::in | std::ios::binary);
+        std::printf("Opening file %s\n", argv[1]);
+        std::fstream f(argv[1], std::ios::in | std::ios::binary);
         unsigned count = 0;
 #if (BYTE_ORDER != LITTLE_ENDIAN)
         while (f.good() && count < 64*1024) {
@@ -204,20 +140,21 @@ int main(int argv, char* argc[])
 void print_regs(const vm::cpu::CpuState& state)
 {
     // Print registers
-    for (int i=0; i < 32; i++) {
-        std::printf("r%2d= 0x%08x ", i, state.r[i]);
+    for (int i=0; i < 27; i++) {
+        std::printf("%%r%2d= 0x%08x ", i, state.r[i]);
         if (i == 3 || i == 7 || i == 11 || i == 15 || i == 19 || i == 23 || i == 27 || i == 31)
             std::printf("\n");
     }
+    std::printf("\n");
+    std::printf("%%ia= 0x%08x ", IA);
+    std::printf("%%flags= 0x%08x ", FLAGS);
+    std::printf("%%bp= 0x%08x ", state.r[BP]);
+    std::printf("%%sp= 0x%08x\n", state.r[SP]);
 
-    std::printf(" PC= 0x%08x ", state.pc);
-    std::printf("IA= 0x%08x ", state.ia);
-    std::printf("FLAGS= 0x%08x \n", state.flags);
+    std::printf("%%pc= 0x%08x \n", state.pc);
     std::printf("EDE: %d EOE: %d ESS: %d EI: %d \t IF: %d DE %d OF: %d CF: %d\n",
-            GET_EDE(state.flags), GET_EOE(state.flags), GET_ESS(state.flags),
-            GET_EI(state.flags),
-            GET_IF(state.flags), GET_DE(state.flags), GET_OF(state.flags),
-            GET_CF(state.flags));
+            GET_EDE(FLAGS), GET_EOE(FLAGS), GET_ESS(FLAGS), GET_EI(FLAGS),
+            GET_IF(FLAGS) , GET_DE(FLAGS) , GET_OF(FLAGS) , GET_CF(FLAGS));
     std::printf("\n");
 
 }

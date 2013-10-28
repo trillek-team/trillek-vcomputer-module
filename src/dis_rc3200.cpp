@@ -15,10 +15,10 @@ std::string disassembly(const ram::Mem& ram, dword_t pc) {
     inst |= (ram.rb(pc++) << 16);
     inst |= (ram.rb(pc++) << 24); // Little Endian
 
-    dword_t opcode, r1, r2, r3;
+    dword_t opcode, rd, rn, rs;
     // Here beging the Decoding
     bool literal = HAVE_LITERAL(inst); 
-
+/*
     r3 = OP3(inst);
     r2 = OP2(inst);
     r1 = OP1(inst);
@@ -613,7 +613,7 @@ std::string disassembly(const ram::Mem& ram, dword_t pc) {
                     snprintf(buf, BUF_SIZE, "NOP????");
             }
         }
-    }
+    }*/
 	
     std::string out(buf);
 	return out;

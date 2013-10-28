@@ -9,15 +9,12 @@
 
 #include "types.hpp"
 #include "ram.hpp"
+#include "rc3200_opcodes.hpp"
 
 #include <vector>
 
 namespace vm {
 namespace cpu {
-
-// Alias to BP and SP registers
-#define BP (14)
-#define SP (15)
 
 static unsigned const N_GPRS = 32;
 
@@ -25,22 +22,17 @@ static unsigned const N_GPRS = 32;
  * Represent the state of the CPU in a moment of time
  */
 struct CpuState {
-    dword_t r[N_GPRS];          /// GPR registers
-
+    dword_t r[N_GPRS];      /// Registers
     dword_t pc;             /// Program Counter 
     
-    dword_t ia;             /// Interrupt Address
+    dword_t int_msg;        /// Interrupt message
     
-    dword_t flags;          /// Flags register
-    dword_t y;              /// Y register
-
     unsigned wait_cycles;   /// Number of cycles need to wait do realice a instruction
     
     bool skiping;           /// Is skiping the next instruction
     bool sleeping;          /// Is sleeping?
 
     bool interrupt;         /// Is hapening an interrupt?
-    dword_t int_msg;        /// Interrupt message
     bool iacq;              /// IACQ signal
 
     bool step_mode;         /// Is in step mode execution ?
@@ -123,7 +115,7 @@ public:
      */
     void throwInterrupt (dword_t msg)
     {
-        if (!state.iacq && GET_EI(state.flags)) {
+        if (!state.iacq && GET_EI(FLAGS)) {
             // The CPU accepts a new interrupt
             state.interrupt = true;
             state.int_msg = msg;

@@ -1,171 +1,172 @@
 #pragma once
+/**
+ * RC3200 VM - RC3200 opcodes for RC3200 v7
+ * CPU of the virtual machine
+ */
 
 #ifndef __RC3200_OPCODES__
 #define __RC3200_OPCODES__ 1
 
+// Alias to BP and SP registers
+#define BP (30)
+#define SP (31)
+
+// Alias to Ym Flags and IA registers
+#define Y       state.r[27]
+#define IA      state.r[28]
+#define FLAGS   state.r[29]
+
 
 /// Instrucction types
-#define IS_PAR3(x)  (((x) & 0xC0000000) == 0xC0000000 )
+#define IS_PAR3(x)  (((x) & 0xC0000000) == 0x40000000 )
 #define IS_PAR2(x)  (((x) & 0x80000000) == 0x80000000 )
-#define IS_PAR1(x)  (((x) & 0x40000000) == 0x40000000 )
-#define IS_NOPAR(x) (((x) & 0xC0000000) == 0)
+#define IS_PAR1(x)  (((x) & 0xE0000000) == 0x20000000 )
+#define IS_NP(x)    (((x) & 0xE0000000) == 0x00000000 )
 
-/// Instrucction sub-types
-#define IS_RAM(x)       (((x) & 0x30000000) == 0x10000000 )
-#define IS_BRANCH(x)    (((x) & 0x30000000) == 0x20000000 )
-#define IS_JUMP(x)      (((x) & 0x30000000) == 0x30000000 )
+/// Instrucction sub-type
+#define IS_BRANCH(x)    (((x) & 0xE0000000) == 0xA0000000 )
 
 /// Uses a Literal value ?
-#define HAVE_LITERAL(x)     (((x) & 0x8000) != 0)
+#define HAVE_LITERAL(x)     (((x) & 0x00080000) != 0)
 
 /// Extract operands
-#define OP1(x)              (((x) >> 10) & 0x1F) 
-#define OP2(x)              (((x) >> 5) & 0x1F) 
-#define OP3(x)              ((x) & 0x1F) 
+#define RD(x)               ( (x)       & 0x1F) 
+#define RS(x)               (((x) >> 5) & 0x1F) 
+#define RN(x)               (((x) >> 10)& 0x1F) 
+
+#define LIT13(x)            (((x) >> 10)& 0x1FFF) 
+#define LIT18(x)            (((x) >> 5) & 0x3FFFF) 
+#define LIT22(x)            ( (x)       & 0x7FFFFF) 
 
 /// Uses next dword as literal
-#define IS_BIG_LITERAL_P3(x)  ((x) == 0x10)
-#define IS_BIG_LITERAL_P2(x)  ((x) == 0x200)
-#define IS_BIG_LITERAL_P1(x)  ((x) == 0x4000)
+#define IS_BIG_LITERAL_L13(x)   ((x) == 0x1000)
+#define IS_BIG_LITERAL_L18(x)   ((x) == 0x20000)
+#define IS_BIG_LITERAL_L22(x)   ((x) == 0x400000)
 
 // Macros for ALU operations
-#define CARRY_BIT(x)    ((((x) >> 32) & 0x1) == 1)
-#define DW_SIGN_BIT(x)  (((x) >> 31)  & 0x1)
-#define W_SIGN_BIT(x)   (((x) >> 15)  & 0x1)
-#define B_SIGN_BIT(x)   (((x) >> 7)   & 0x1)
+#define CARRY_BIT(x)        ((((x) >> 32) & 0x1) == 1)
+#define DW_SIGN_BIT(x)      ( ((x) >> 31) & 0x1)
+#define W_SIGN_BIT(x)       ( ((x) >> 15) & 0x1)
+#define B_SIGN_BIT(x)       ( ((x) >> 7)  & 0x1)
 
 // Extract sign of Literal Operator
-#define O5_SIGN_BIT(x)  (((x) >> 4)   & 0x1)
-#define O10_SIGN_BIT(x) (((x) >> 9)   & 0x1)
-#define O15_SIGN_BIT(x) (((x) >> 14)  & 0x1)
+#define O13_SIGN_BIT(x)     (((x) >> 12)  & 0x1)
+#define O18_SIGN_BIT(x)     (((x) >> 17)  & 0x1)
+#define O22_SIGN_BIT(x)     (((x) >> 21)  & 0x1)
 
 namespace vm {
 namespace cpu {
 
 
-/**
- * OpCodes that are to access RAM
- */
-enum OPCODE_RAM {
-    LOAD            = 0,
-    LOADW           = 1,
-    LOADB           = 2,
-
-    STORE           = 3,
-    STOREW          = 4,
-    STOREB          = 5,
-
-    PUSH            = 6,
-    POP             = 7,
-};
-
-/**
- * OpCodes that does jump
- */
-enum OPCODE_JUMP {
-    INT             = 0,
-    JMP             = 1,
-    CALL            = 2,
-    RFI             = 3,
-    RET             = 4,
-};
-
-/**
- * OpCodes that does branching
- */
-enum OPCODE_BRANCH {
-    IFEQ             = 0,   
-    IFNEQ            = 1,  
-
-    IFG              = 2,
-    IFUG             = 3,
-    IFGE             = 4,
-    IFUGE            = 5,
-    
-    IFL              = 6,
-    IFUL             = 7,
-    IFLE             = 8,
-    IFULE            = 9,
-    
-    IFBITS           = 10,
-    IFCLEAR          = 11,
-    
-    IFOF             = 12,
-    IFCF             = 13,
-};
-
 // 3 Parameters OpCodes *******************************************************
 
 /**
- * 3 parameters OpCodes that does ALU operations
+ * 3 parameters OpCodes 
  */
-enum PAR3_OPCODE_ALU {
-    ADD             = 0,
-    SUB             = 1,
-    ADDC            = 2,
-    SUBB            = 3,
+enum P3_OPCODE {
+    AND             = 0x00,
+    OR              = 0x01,
+    XOR             = 0x02,
+    BITC            = 0x03,
 
-    AND             = 4,
-    OR              = 5,
-    XOR             = 6,
-    NAND            = 7,
+    ADD             = 0x04,
+    ADDC            = 0x05,
+    SUB             = 0x06,
+    SUBB            = 0x07,
+    RSB             = 0x08,
+    RSBB            = 0x09,
 
-    SLL             = 8,
-    SRL             = 9,
-    SRA             = 10,
-    ROTL            = 11,
-    ROTR            = 12,
+    LLS             = 0x0A,
+    RLS             = 0x0B,
+    ARS             = 0x0C,
+    ROTL            = 0x0D,
+    ROTR            = 0x0E,
 
-    UMUL            = 13,
-    UDIV            = 14,
-    MUL             = 15,
-    DIV             = 16,
+    MUL             = 0x10,
+    SMUL            = 0x11,
+    DIV             = 0x12,
+    SDIV            = 0x13,
+
+    LOAD            = 0x20,
+    LOADW           = 0x21,
+    LOADB           = 0x22,
+
+    STORE           = 0x24,
+    STOREW          = 0x25,
+    STOREB          = 0x26,
 };
 
 // 2 Parameters OpCodes *******************************************************
 
 /**
- * 2 parameter OpCodes that manipulates registers
+ * 2 parameter OpCodes
  */
-enum PAR2_OPCODE {
-    CPY_SET         = 0,
-    SWP             = 1,
+enum P2_OPCODE {
+    MOV             = 0x00,
+    SWP             = 0x01,
+
+    SIGXB           = 0x02,
+    SIGXW           = 0x03,
+
+    NOT             = 0x04,
+
+    LOAD2           = 0x40,
+    LOADW2          = 0x41,
+    LOADB2          = 0x42,
+
+    STORE2          = 0x44,
+    STOREW2         = 0x45,
+    STOREB2         = 0x46,
+
+    IFEQ            = 0x20,
+    IFNEQ           = 0x21,
+
+    IFG             = 0x22,
+    IFSG            = 0x23,
+    IFGE            = 0x24,
+    IFSGE           = 0x25,
+
+    IFBITS          = 0x26,
+    IFCLEAR         = 0x27,
+
+    JMP2            = 0x60,
+    CALL2           = 0x61,
 };
 
 // 1 Parameter OpCodes ********************************************************
 
 /**
- * 1 Parameter OpCodes that manipulates registers
+ * 1 Parameter OpCodes
  */
-enum PAR1_OPCODE {
-    NOT             = 0,
-    NEG             = 1,
+enum P1_OPCODE {
 
-    XCHG            = 2,
-    XCHGW           = 3,
-    SXTBD           = 4,
-    SXTWD           = 5,
+    XCHGB           = 0x00,
+    XCHGW           = 0x01,
 
-    GETPC           = 8,
+    GETPC           = 0x02,
 
-    SETFLAGS        = 9,
-    GETFLAGS        = 10,
+    POP             = 0x09,
+    PUSH            = 0x0A,
 
-    SETY            = 11,
-    GETY            = 12,
+    JMP             = 0x10,
+    CALL            = 0x11,
 
-    SETIA           = 13, 
-    GETIA           = 14,
+    RJMP            = 0x12,
+    RCALL           = 0x13,
+
+    INT             = 0x1C,
 };
 
 // 0 Parameters OpCodes ********************************************************
 
 /**
- * 0 Paramaters generic OpCodes
+ * 0 Paramaters OpCodes
  */
-enum NOPAR_OPCODE {
-    NOP             = 1,
-    SLEEP           = 0,
+enum NP_OPCODE {
+    SLEEP           = 0x00000000,
+    
+    RET             = 0x00000004,
+    RFI             = 0x00000005,
 };
 
 
