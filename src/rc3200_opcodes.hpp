@@ -148,11 +148,11 @@ enum P1_OPCODE {
     POP             = 0x09,
     PUSH            = 0x0A,
 
-    JMP             = 0x10,
-    CALL            = 0x11,
+    JMP             = 0x18,
+    CALL            = 0x19,
 
-    RJMP            = 0x12,
-    RCALL           = 0x13,
+    RJMP            = 0x1A,
+    RCALL           = 0x1B,
 
     INT             = 0x1C,
 };
