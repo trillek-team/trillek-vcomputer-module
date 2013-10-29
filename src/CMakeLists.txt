@@ -4,8 +4,8 @@
 
 set(rc3200_SRCS
     ./cpu.cpp
-    ./ram.cpp
     ./dis_rc3200.cpp
+    ./CDA.cpp
 )
 
 

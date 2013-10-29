@@ -2,12 +2,15 @@
 #include "cpu.hpp"
 #include "dis_rc3200.hpp"
 
+#include "CDA.hpp"
+
 #include <iostream>
 #include <fstream>
 #include <ios>
 #include <iomanip> 
 #include <cstdio>
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <cwctype>
 #include <clocale>
@@ -57,8 +60,12 @@ int main(int argc, char* argv[])
         std::printf("Read %u bytes and stored in ROM\n", count);
         rom_size = count;
     }
-    
+   
+
     RC3200 cpu(rom, rom_size);
+
+    auto t = std::make_shared<cda::TextRAM>();
+    cpu.ram.addBlock(t);
 
     cpu.reset();
     std::printf("Size of CPU state : %zu bytes \n", sizeof(cpu.getState()) );

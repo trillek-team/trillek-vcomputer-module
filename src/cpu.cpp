@@ -517,21 +517,21 @@ unsigned RC3200::realStep()
                 break;
             
             case P2_OPCODE::STORE2 :
-                ram.wb(rs   , state.r[rd]);
-                ram.wb(rs +1, state.r[rd] >> 8);
-                ram.wb(rs +2, state.r[rd] >> 16);
-                ram.wb(rs +3, state.r[rd] >> 24);
+                ram.wb(rn   , state.r[rd]);
+                ram.wb(rn +1, state.r[rd] >> 8);
+                ram.wb(rn +2, state.r[rd] >> 16);
+                ram.wb(rn +3, state.r[rd] >> 24);
                 state.wait_cycles++;
                 break;
             
             case P2_OPCODE::STOREW2 :
-                ram.wb(rs   , state.r[rd]);
-                ram.wb(rs +1, state.r[rd] >> 8);
+                ram.wb(rn   , state.r[rd]);
+                ram.wb(rn +1, state.r[rd] >> 8);
                 state.wait_cycles++;
                 break;
 
             case P2_OPCODE::STOREB2 :
-                ram.wb(rs   , state.r[rd]);
+                ram.wb(rn   , state.r[rd]);
                 state.wait_cycles++;
                 break;
 
