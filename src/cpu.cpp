@@ -354,8 +354,8 @@ unsigned RC3200::realStep()
             case P3_OPCODE::MUL :
                 state.wait_cycles += 17;
                 ltmp = ((qword_t)rs) * rn;
-                Y = (word_t)(ltmp >> 32);       // 32bit MSB of the 64 bit result
-                state.r[rd] = (word_t)ltmp;     // 32bit LSB of the 64 bit result
+                Y = (dword_t)(ltmp >> 32);       // 32bit MSB of the 64 bit result
+                state.r[rd] = (dword_t)ltmp;     // 32bit LSB of the 64 bit result
                 SET_OFF_OF(FLAGS);
                 SET_OFF_CF(FLAGS);
                 break;
@@ -364,8 +364,8 @@ unsigned RC3200::realStep()
                     state.wait_cycles += 27;
                     sqword_t lword = (sqword_t)rs;
                     lword *= rn;
-                    Y = (word_t)(lword >> 32);      // 32bit MSB of the 64 bit result
-                    state.r[rd] = (word_t)lword;    // 32bit LSB of the 64 bit result
+                    Y = (dword_t)(lword >> 32);      // 32bit MSB of the 64 bit result
+                    state.r[rd] = (dword_t)lword;    // 32bit LSB of the 64 bit result
                     SET_OFF_OF(FLAGS);
                     SET_OFF_CF(FLAGS);
                     break;
@@ -550,34 +550,34 @@ unsigned RC3200::realStep()
                 }
                 break;
 
-            case P2_OPCODE::IFG :
-                if (!(state.r[rd] > rn)) {
+            case P2_OPCODE::IFL :
+                if (!(state.r[rd] < rn)) {
                     state.skiping = true;
                     state.wait_cycles++;
                 }
                 break;
 
-            case P2_OPCODE::IFSG : {
+            case P2_OPCODE::IFSL : {
                     sdword_t srd = state.r[rd];
                     sdword_t srn = rn;
-                    if (!(srd > srn)) {
+                    if (!(srd < srn)) {
                         state.skiping = true;
                         state.wait_cycles++;
                     }
                     break;
                 }
 
-            case P2_OPCODE::IFGE :
-                if (!(state.r[rd] >= rn)) {
+            case P2_OPCODE::IFLE :
+                if (!(state.r[rd] <= rn)) {
                     state.skiping = true;
                     state.wait_cycles++;
                 }
                 break;
             
-            case P2_OPCODE::IFSGE : {
+            case P2_OPCODE::IFSLE : {
                     sdword_t srd = state.r[rd];
                     sdword_t srn = rn;
-                    if (!(srd >= srn)) {
+                    if (!(srd <= srn)) {
                         state.skiping = true;
                         state.wait_cycles++;
                     }

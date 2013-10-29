@@ -121,10 +121,10 @@ enum P2_OPCODE {
     IFEQ            = 0x20,
     IFNEQ           = 0x21,
 
-    IFG             = 0x22,
-    IFSG            = 0x23,
-    IFGE            = 0x24,
-    IFSGE           = 0x25,
+    IFL             = 0x22,
+    IFSL            = 0x23,
+    IFLE            = 0x24,
+    IFSLE           = 0x25,
 
     IFBITS          = 0x26,
     IFCLEAR         = 0x27,

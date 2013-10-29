@@ -334,32 +334,32 @@ std::string disassembly(const ram::Mem& ram, dword_t pc) {
                     snprintf(buf, BUF_SIZE, "IFNEQ %%r%02u, %%r%02u", rd, rn);
                 break;
 
-            case P2_OPCODE::IFG :
+            case P2_OPCODE::IFL :
                 if (literal)                                          
-                    snprintf(buf, BUF_SIZE, "IFG %%r%02u, 0x%08x",  rd, rn);
+                    snprintf(buf, BUF_SIZE, "IFL %%r%02u, 0x%08x",  rd, rn);
                 else
-                    snprintf(buf, BUF_SIZE, "IFG %%r%02u, %%r%02u", rd, rn);
+                    snprintf(buf, BUF_SIZE, "IFL %%r%02u, %%r%02u", rd, rn);
                 break;
 
-            case P2_OPCODE::IFSG :
+            case P2_OPCODE::IFSL :
                 if (literal)                                          
-                    snprintf(buf, BUF_SIZE, "IFSG %%r%02u, 0x%08x",  rd, rn);
+                    snprintf(buf, BUF_SIZE, "IFSL %%r%02u, 0x%08x",  rd, rn);
                 else
-                    snprintf(buf, BUF_SIZE, "IFSG %%r%02u, %%r%02u", rd, rn);
+                    snprintf(buf, BUF_SIZE, "IFSL %%r%02u, %%r%02u", rd, rn);
                 break;
 
-            case P2_OPCODE::IFGE :
+            case P2_OPCODE::IFLE :
                 if (literal)                                          
-                    snprintf(buf, BUF_SIZE, "IFGE %%r%02u, 0x%08x",  rd, rn);
+                    snprintf(buf, BUF_SIZE, "IFLE %%r%02u, 0x%08x",  rd, rn);
                 else
-                    snprintf(buf, BUF_SIZE, "IFGE %%r%02u, %%r%02u", rd, rn);
+                    snprintf(buf, BUF_SIZE, "IFLE %%r%02u, %%r%02u", rd, rn);
                 break;
 
-            case P2_OPCODE::IFSGE :
+            case P2_OPCODE::IFSLE :
                 if (literal)                                          
-                    snprintf(buf, BUF_SIZE, "IFSGE %%r%02u, 0x%08x",  rd, rn);
+                    snprintf(buf, BUF_SIZE, "IFSLE %%r%02u, 0x%08x",  rd, rn);
                 else
-                    snprintf(buf, BUF_SIZE, "IFSGE %%r%02u, %%r%02u", rd, rn);
+                    snprintf(buf, BUF_SIZE, "IFSLE %%r%02u, %%r%02u", rd, rn);
                 break;
 
             case P2_OPCODE::IFBITS :
