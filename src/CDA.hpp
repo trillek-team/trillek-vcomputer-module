@@ -1,4 +1,3 @@
-
 #pragma once
 /**
  * RC3200 VM - CDA.hpp
@@ -10,6 +9,8 @@
 #define __CDA_HPP__ 1
 
 #include "types.hpp"
+#include "ram.hpp"
+#include "IDevice.hpp"
 
 #include <vector>
 #include <algorithm>
@@ -22,7 +23,27 @@
 namespace vm {
 namespace cda {
 
-class TextRAM : public vm::ram::AHandler {
+class CDA : public IDevice {
+public:
+
+CDA()
+{ }
+
+virtual ~CDA()
+{ }
+
+byte_t dev_class() const    {return 0x0E;}   // Graphics device
+word_t builder() const      {return 0x0000;} // Generic builder
+word_t dev_id() const       {return 0x0001;} // CDA standard
+word_t dev_ver() const      {return 0x0000;} // Ver 0 -> CDA base standard
+
+private:
+unsigned videomode;
+
+
+};
+
+class TextRAM : public ram::AHandler {
 public:
     TextRAM () : AHandler(0xFF0A0000, 0xA3E80) 
     { }
