@@ -5,7 +5,7 @@ Using this [specs](https://github.com/Zardoz89/Trillek-Computer)
 
 COMPILING
 ---------
-Actually I'm using CMake, and I need SFML for graphics/events/timing
+Actually I'm using CMake and C++ 11. Needs std::chrono compilance for timings 
 
     mkdir build
     cd build
@@ -17,20 +17,24 @@ If all it's OK, should generate a executable called **vm**, and in ./src/ should
 WHAT DOES ACTUALLY
 ------------------
 
-- Can load a little endian binary file with a program, as BIOS. 64KiB of RAM
-  begins at 0x10000
-- Debugin mode working with a on-line dissambler. Each time that you presss a
-  key, one isntruction is executed, and the status of registers and stack, is
+- Can load a little endian binary file with a program. Have a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
+- Step mode working with a on-line disassembler. Each time that you press a
+  key, one instruction is executed, and the status of registers and stack, is
   showed. 'q' ends the execution.
-- Run mode (but not shows anything yet)
+- Run mode at what you computer can give (Not try to run at CPU specs speed), and only stops doing 'Ctrl+C'
+
+HOW I CAN CREATE PROGRAMS ?
+---------------------------
+Actually you can use <a href="https://github.com/Meisaka/WaveAsm
+" target="_blank">Misaka's WaveAsm</a> to generate RC3200 machine code.
 
 ### TODO
 
 - Check that all instructions works as should be.
 - Check that software interrupts works as should be.
-- Redo the memmory mapper as now is prety inefiecient.
-- Implment devices and check hardware interrupts
-- Encapsultae the VM in a class with a documented API, so can be linked by any
+- Improve the memory mapper as now is pretty inefficient if we add a lot of devices.
+- Implement devices and check hardware interrupts
+- Encapsulate the VM in a class with a documented API, so can be linked by any
   software that will use it. This class should allow to construct the base
   computer and add devices.
 
