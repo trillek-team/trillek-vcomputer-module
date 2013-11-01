@@ -25,8 +25,7 @@ WHAT DOES ACTUALLY
 
 HOW I CAN CREATE PROGRAMS ?
 ---------------------------
-Actually you can use <a href="https://github.com/Meisaka/WaveAsm
-" target="_blank">Misaka's WaveAsm</a> to generate RC3200 machine code.
+Actually you can use <a href="https://github.com/Meisaka/WaveAsm" target="_blank">Misaka's WaveAsm</a> to generate RC3200 machine code.
 
 ### TODO
 
