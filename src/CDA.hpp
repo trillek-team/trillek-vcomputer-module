@@ -37,27 +37,58 @@ word_t builder() const      {return 0x0000;} // Generic builder
 word_t dev_id() const       {return 0x0001;} // CDA standard
 word_t dev_ver() const      {return 0x0000;} // Ver 0 -> CDA base standard
 
+virtual void tick (cpu::RC3200* cpu, unsigned n=1)
+{ }
+
+virtual std::vector<ram::AHandler*> memoryBlocks() const
+{ 
+    auto handlers = IDevice::memoryBlocks(); 
+    handlers.push_back((ram::AHandler*)&vram);
+    handlers.push_back((ram::AHandler*)&setupr);
+
+    return handlers;
+}
+
 private:
+    class VideoRAM : public ram::AHandler {
+    public:
+        VideoRAM () : AHandler(0xFF0A0000, 0x4400) 
+        { }
+
+        byte_t rb (dword_t addr)
+        {
+            return 0x55;
+        }
+
+        void wb (dword_t addr, byte_t val)
+        {
+            std::printf("CDA -> ADDR: %08Xh VAL : 0x%08X\n", addr, val);
+        }
+    };
+
+    class SETUPreg : public ram::AHandler {
+    public:
+        SETUPreg () : AHandler(0xFF0ACC00, 1) 
+        { }
+
+        byte_t rb (dword_t addr)
+        {
+            return 0x55;
+        }
+
+        void wb (dword_t addr, byte_t val)
+        {
+            std::printf("CDA -> ADDR: %08Xh VAL : 0x%08X\n", addr, val);
+        }
+    };
+
 unsigned videomode;
 
+CDA::VideoRAM vram;
+CDA::SETUPreg setupr;
 
 };
 
-class TextRAM : public ram::AHandler {
-public:
-    TextRAM () : AHandler(0xFF0A0000, 0xA3E80) 
-    { }
-
-    byte_t rb (dword_t addr)
-    {
-        return 0x55;
-    }
-
-    void wb (dword_t addr, byte_t val)
-    {
-        std::printf("CDA -> ADDR: %08Xh VAL : 0x%08X\n", addr, val);
-    }
-};
 
 } // End of namespace cda
 } // End of namespace vm

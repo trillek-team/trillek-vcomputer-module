@@ -64,8 +64,9 @@ int main(int argc, char* argv[])
 
     RC3200 cpu(rom, rom_size);
 
-    auto t = std::make_shared<cda::TextRAM>();
-    cpu.ram.addBlock(t);
+    cda::CDA gcard;
+    auto blocks = gcard.memoryBlocks();
+    cpu.ram.addBlock(blocks);
 
     cpu.reset();
     std::printf("Size of CPU state : %zu bytes \n", sizeof(cpu.getState()) );
