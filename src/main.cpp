@@ -1,5 +1,5 @@
 #include "types.hpp"
-#include "cpu.hpp"
+#include "vcomputer.hpp"
 #include "dis_rc3200.hpp"
 
 #include "CDA.hpp"
@@ -60,18 +60,19 @@ int main(int argc, char* argv[])
         std::printf("Read %u bytes and stored in ROM\n", count);
         rom_size = count;
     }
-   
+  
+    VirtualComputer vm;
+    vm.WriteROM(rom, rom_size);
 
-    RC3200 cpu(rom, rom_size);
-
+    // Add devices
     cda::CDA gcard;
-    auto blocks = gcard.MemoryBlocks();
-    cpu.ram.AddBlock(blocks);
+    vm.AddDevice(gcard);
 
-    cpu.Reset();
-    std::printf("Size of CPU state : %zu bytes \n", sizeof(cpu.State()) );
+    vm.Reset();
     
-	std::cout << "Run program (r) or Step Mode (s) ?\n";
+    std::printf("Size of CPU state : %zu bytes \n", sizeof(vm.CPUState()) );
+    
+  std::cout << "Run program (r) or Step Mode (s) ?\n";
     char mode;
     std::cin >> mode;
     std::getchar();
@@ -95,16 +96,18 @@ int main(int argc, char* argv[])
     while ( 1) {
         
         if (debug) {
-            print_pc(cpu.State(), cpu.ram);
-            if (cpu.State().skiping)
+            print_pc(vm.CPUState(), vm.RAM());
+            if (vm.CPUState().skiping)
                 std::printf("Skiping!\n");
-            if (cpu.State().sleeping)
+            if (vm.CPUState().sleeping)
                 std::printf("ZZZZzzzz...\n");
         }
 
         if (!debug) {
-            cpu.Tick(ticks);
+            // cpu.Tick(ticks);
+            vm.Tick(ticks);
             ticks_count += ticks;
+            
 
             auto oldClock = clock;
             clock = high_resolution_clock::now();
@@ -115,14 +118,14 @@ int main(int argc, char* argv[])
 
             ticks = delta/100.0f + 0.5f; // Rounding bug correction
         } else
-            ticks = cpu.Step();
+            ticks = vm.Step(); // cpu.Step();
 
 
         // Speed info
         if (!debug && ticks_count > 5000000) {
             std::cout << "Running " << ticks << " cycles in " << delta << " nS"
                       << " Speed of " 
-                      << 100.0f * (((ticks * 1000000000.0) / cpu.Clock()) / delta)
+                      << 100.0f * (((ticks * 1000000000.0) / vm.Clock()) / delta)
                       << "% \n";
             std::cout << std::endl;
             ticks_count -= 5000000;
@@ -130,9 +133,9 @@ int main(int argc, char* argv[])
 
 
         if (debug) {
-            std::printf("Takes %u cycles\n", cpu.State().wait_cycles);
-            print_regs(cpu.State());
-            print_stack(cpu.State(), cpu.ram);
+            std::printf("Takes %u cycles\n", vm.CPUState().wait_cycles);
+            print_regs(vm.CPUState());
+            print_stack(vm.CPUState(), vm.RAM());
             c = std::getchar();
             if (c == 'q' || c == 'Q')
                 break;

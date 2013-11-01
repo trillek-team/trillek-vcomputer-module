@@ -3,6 +3,7 @@
 #include(SDL2)
 
 set(rc3200_SRCS
+    ./vcomputer.cpp
     ./cpu.cpp
     ./dis_rc3200.cpp
     ./CDA.cpp
@@ -27,7 +28,7 @@ include_directories(rc3200_lib
     
 # Main executable
 add_executable(vm
-    vm.cpp
+    main.cpp
 )
 
 include_directories(vm

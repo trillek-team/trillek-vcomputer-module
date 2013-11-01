@@ -76,7 +76,7 @@ struct CpuState {
 class RC3200 {
 public:
     
-RC3200(const byte_t* rom, size_t rom_size, size_t ram_size = 128*1024);
+RC3200(size_t ram_size = 128*1024);
 
 virtual ~RC3200();
 

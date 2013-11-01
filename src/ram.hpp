@@ -90,27 +90,30 @@ class Mem {
 public:
 
 /**
- * Generates a memmory mapping of RAM/ROM here the ROM resides in the first 
- * addreses of the addres space and fills the ROM with some data
- * @param *rom Ptr to the data to be copied to the ROM
- * @param rom_size Size of the ROM data that must be less or equal to 64KiB. Big sizes will be ignored
+ * Generates a memory mapping of RAM/ROM where the ROM resides in the lowest addresses
  * @param ram_size Size of the RAM. By default is 128KiB
  */
-Mem (const byte_t* rom, size_t rom_size, size_t ram_size = 128*1024) : 
-    ram_size(ram_size), buffer(NULL)
-{
+Mem (size_t ram_size = 128*1024) : 
+    ram_size(ram_size), buffer(NULL) {
+}
+
+~Mem() {
+    if (buffer != NULL)
+        delete[] buffer;
+}
+
+/**
+ * Writes the ROM data to the internal array
+ * @param *rom Ptr to the data to be copied to the ROM
+ * @param rom_size Size of the ROM data that must be less or equal to 64KiB. Big sizes will be ignored
+ */
+void WriteROM (const byte_t* rom, size_t rom_size) {
     if (rom_size > 64*1024)
         rom_size = 64*1024;
     this->rom_size = rom_size;
 
     buffer =  new byte_t[64*1024 + this->ram_size];
     std::copy_n(rom, this->rom_size, buffer); // Copy ROM
-}
-
-~Mem()
-{
-    if (buffer != NULL)
-        delete[] buffer;
 }
 
 /**

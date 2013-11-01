@@ -84,7 +84,7 @@ void Jmp2(byte_t val) {
  * @param cpu Ptr to the CPU, if needs to thorow a interrupt
  * @param n Number of clock ticks executing
  */
-virtual void Tick (cpu::RC3200* cpu, unsigned n=1) = 0;
+virtual void Tick (cpu::RC3200& cpu, unsigned n=1) = 0;
 
 /**
  * Return an vector of ptrs AHandler that uses this device
