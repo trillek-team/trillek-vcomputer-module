@@ -63,6 +63,7 @@ int main(int argc, char* argv[])
   
     VirtualComputer vm;
     vm.WriteROM(rom, rom_size);
+    delete[] rom;
 
     // Add devices
     cda::CDA gcard;
