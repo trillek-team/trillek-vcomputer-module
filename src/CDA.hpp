@@ -26,63 +26,66 @@ namespace cda {
 class CDA : public IDevice {
 public:
 
-CDA()
-{ }
+CDA() {
+}
 
-virtual ~CDA()
-{ }
+virtual ~CDA() {
+}
 
-byte_t dev_class() const    {return 0x0E;}   // Graphics device
-word_t builder() const      {return 0x0000;} // Generic builder
-word_t dev_id() const       {return 0x0001;} // CDA standard
-word_t dev_ver() const      {return 0x0000;} // Ver 0 -> CDA base standard
+byte_t DevClass() const     {return 0x0E;}   // Graphics device
+word_t Builder() const      {return 0x0000;} // Generic builder
+word_t DevId() const        {return 0x0001;} // CDA standard
+word_t DevVer() const       {return 0x0000;} // Ver 0 -> CDA base standard
 
-virtual void tick (cpu::RC3200* cpu, unsigned n=1)
-{ }
+virtual void Tick (cpu::RC3200* cpu, unsigned n=1) {
+    // TODO V-Sync interrupt generation
+}
 
-virtual std::vector<ram::AHandler*> memoryBlocks() const
-{ 
-    auto handlers = IDevice::memoryBlocks(); 
+virtual std::vector<ram::AHandler*> MemoryBlocks() const { 
+    auto handlers = IDevice::MemoryBlocks(); 
     handlers.push_back((ram::AHandler*)&vram);
     handlers.push_back((ram::AHandler*)&setupr);
 
     return handlers;
 }
 
-private:
-    class VideoRAM : public ram::AHandler {
-    public:
-        VideoRAM () : AHandler(0xFF0A0000, 0x4400) 
-        { }
+protected:
 
-        byte_t rb (dword_t addr)
-        {
-            return 0x55;
-        }
+/**
+ * Address Handler that manages the VideoRAM
+ */
+class VideoRAM : public ram::AHandler {
+public:
+    VideoRAM () : AHandler(0xFF0A0000, 0x4400) {
+    }
 
-        void wb (dword_t addr, byte_t val)
-        {
-            std::printf("CDA -> ADDR: %08Xh VAL : 0x%08X\n", addr, val);
-        }
-    };
+    byte_t RB (dword_t addr) {
+        return 0x55;
+    }
 
-    class SETUPreg : public ram::AHandler {
-    public:
-        SETUPreg () : AHandler(0xFF0ACC00, 1) 
-        { }
+    void WB (dword_t addr, byte_t val) {
+        std::printf("CDA -> ADDR: %08Xh VAL : 0x%08X\n", addr, val);
+    }
+};
 
-        byte_t rb (dword_t addr)
-        {
-            return 0x55;
-        }
+/**
+ * Address block that manages the SETUP register
+ */
+class SETUPreg : public ram::AHandler {
+public:
+    SETUPreg () : AHandler(0xFF0ACC00, 1) {
+    }
 
-        void wb (dword_t addr, byte_t val)
-        {
-            std::printf("CDA -> ADDR: %08Xh VAL : 0x%08X\n", addr, val);
-        }
-    };
+    byte_t RB (dword_t addr) {
+        return 0x55;
+    }
 
-unsigned videomode;
+    void WB (dword_t addr, byte_t val) {
+        std::printf("CDA -> ADDR: %08Xh VAL : 0x%08X\n", addr, val);
+    }
+};
+
+unsigned videomode;     /// Actual video mode
 
 CDA::VideoRAM vram;
 CDA::SETUPreg setupr;

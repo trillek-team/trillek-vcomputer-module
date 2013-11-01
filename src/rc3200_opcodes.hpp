@@ -30,9 +30,9 @@
 #define HAVE_LITERAL(x)     (((x) & 0x00800000) != 0)
 
 /// Extract operands
-#define RD(x)               ( (x)       & 0x1F) 
-#define RS(x)               (((x) >> 5) & 0x1F) 
-#define RN(x)               (((x) >> 10)& 0x1F) 
+#define GRD(x)              ( (x)       & 0x1F) 
+#define GRS(x)              (((x) >> 5) & 0x1F) 
+#define GRN(x)              (((x) >> 10)& 0x1F) 
 
 #define LIT13(x)            (((x) >> 10)& 0x1FFF) 
 #define LIT18(x)            (((x) >> 5) & 0x3FFFF) 

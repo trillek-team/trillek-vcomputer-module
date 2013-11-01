@@ -65,11 +65,11 @@ int main(int argc, char* argv[])
     RC3200 cpu(rom, rom_size);
 
     cda::CDA gcard;
-    auto blocks = gcard.memoryBlocks();
-    cpu.ram.addBlock(blocks);
+    auto blocks = gcard.MemoryBlocks();
+    cpu.ram.AddBlock(blocks);
 
-    cpu.reset();
-    std::printf("Size of CPU state : %zu bytes \n", sizeof(cpu.getState()) );
+    cpu.Reset();
+    std::printf("Size of CPU state : %zu bytes \n", sizeof(cpu.State()) );
     
 	std::cout << "Run program (r) or Step Mode (s) ?\n";
     char mode;
@@ -95,15 +95,15 @@ int main(int argc, char* argv[])
     while ( 1) {
         
         if (debug) {
-            print_pc(cpu.getState(), cpu.ram);
-            if (cpu.getState().skiping)
+            print_pc(cpu.State(), cpu.ram);
+            if (cpu.State().skiping)
                 std::printf("Skiping!\n");
-            if (cpu.getState().sleeping)
+            if (cpu.State().sleeping)
                 std::printf("ZZZZzzzz...\n");
         }
 
         if (!debug) {
-            cpu.tick(ticks);
+            cpu.Tick(ticks);
             ticks_count += ticks;
 
             auto oldClock = clock;
@@ -115,14 +115,14 @@ int main(int argc, char* argv[])
 
             ticks = delta/100.0f + 0.5f; // Rounding bug correction
         } else
-            ticks = cpu.step();
+            ticks = cpu.Step();
 
 
         // Speed info
         if (!debug && ticks_count > 5000000) {
             std::cout << "Running " << ticks << " cycles in " << delta << " nS"
                       << " Speed of " 
-                      << 100.0f * (((ticks * 1000000000.0) / cpu.getClock()) / delta)
+                      << 100.0f * (((ticks * 1000000000.0) / cpu.Clock()) / delta)
                       << "% \n";
             std::cout << std::endl;
             ticks_count -= 5000000;
@@ -130,9 +130,9 @@ int main(int argc, char* argv[])
 
 
         if (debug) {
-            std::printf("Takes %u cycles\n", cpu.getState().wait_cycles);
-            print_regs(cpu.getState());
-            print_stack(cpu.getState(), cpu.ram);
+            std::printf("Takes %u cycles\n", cpu.State().wait_cycles);
+            print_regs(cpu.State());
+            print_stack(cpu.State(), cpu.ram);
             c = std::getchar();
             if (c == 'q' || c == 'Q')
                 break;
@@ -170,24 +170,18 @@ void print_regs(const vm::cpu::CpuState& state)
 
 void print_pc(const vm::cpu::CpuState& state, const vm::ram::Mem&  ram)
 {
-    vm::dword_t val = ram.rb(state.pc);
-    val |= ram.rb(state.pc +1) << 8;
-    val |= ram.rb(state.pc +2) << 16;
-    val |= ram.rb(state.pc +3) << 24;
+    vm::dword_t val = ram.RD(state.pc);
     
     std::printf("\tPC : 0x%08X > 0x%08X ", state.pc, val); 
-    std::cout << vm::cpu::disassembly(ram,  state.pc) << std::endl;  
+    std::cout << vm::cpu::Disassembly(ram,  state.pc) << std::endl;  
 }
 
 void print_stack(const vm::cpu::CpuState& state, const vm::ram::Mem& ram)
 {
     std::printf("STACK:\n");
 
-    for (size_t i =0; i <5*4;) {
-        vm::dword_t val = ram.rb(state.r[SP]+(i++));
-        val |= ram.rb(state.r[SP]+(i++)) << 8;
-        val |= ram.rb(state.r[SP]+(i++)) << 16;
-        val |= ram.rb(state.r[SP]+(i++)) << 24;
+    for (size_t i =0; i <5*4; i +=4) {
+        auto val = ram.RD(state.r[SP]+ i);
 
         std::printf("0x%08X\n", val);
         if (((size_t)(state.r[SP]) + i) >= 0xFFFFFFFF)

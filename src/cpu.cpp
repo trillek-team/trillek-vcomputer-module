@@ -15,16 +15,14 @@ namespace vm {
 namespace cpu {
 
 RC3200::RC3200(const byte_t* rom, size_t rom_size, size_t ram_size) : 
-    ram(rom, rom_size, ram_size), tot_cycles(0)
-{
-    reset();    
+    ram(rom, rom_size, ram_size), tot_cycles(0) {
+    Reset();    
 }
 
-RC3200::~RC3200()
-{ }
+RC3200::~RC3200() {
+}
 
-void RC3200::reset()
-{
+void RC3200::Reset() {
     std::fill_n(state.r, N_GPRS-1, 0);
 
     state.pc = 0;
@@ -41,31 +39,29 @@ void RC3200::reset()
     state.step_mode = false;
 }
 
-unsigned RC3200::step()
-{
+unsigned RC3200::Step() {
     if (!state.sleeping) {
-        auto cyc = realStep();
+        auto cyc = RealStep();
         tot_cycles += cyc;
         return cyc;
     } else {
         tot_cycles++;
-        processInterrupt();
+        ProcessInterrupt();
         return 1;
     }
 }
 
-void RC3200::tick (unsigned n)
-{
+void RC3200::Tick (unsigned n) {
 
     for (unsigned i=0; i < n; i++) {
         if (state.wait_cycles <=0 && !state.sleeping) {
-            realStep();
+            RealStep();
         }
         
         if (!state.sleeping)
             state.wait_cycles--;
         else
-            processInterrupt();
+            ProcessInterrupt();
 
         tot_cycles++;
     }
@@ -76,11 +72,10 @@ void RC3200::tick (unsigned n)
  * Executes a RC3200 instruction
  * @return Number of cycles that takes to do it
  */
-unsigned RC3200::realStep()
-{
+unsigned RC3200::RealStep() {
     state.wait_cycles = 0;
 
-    dword_t inst = ram.rd(state.pc);
+    dword_t inst = ram.RD(state.pc);
     state.pc +=4;
 
     dword_t opcode, rd, rs, rn;
@@ -88,8 +83,8 @@ unsigned RC3200::realStep()
 
     qword_t ltmp;
 
-    rd = RD(inst);
-    rs = RS(inst);
+    rd = GRD(inst);
+    rs = GRS(inst);
 
     // Check if we are skiping a instruction
     
@@ -134,14 +129,14 @@ unsigned RC3200::realStep()
         if (literal) {
             rn = LIT13(inst);
             if (IS_BIG_LITERAL_L13(rn)) { // Next dword is literal value 
-                rn = ram.rd(state.pc);
+                rn = ram.RD(state.pc);
                 state.pc +=4;
                 state.wait_cycles++;
             } else if (O13_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
                 rn |= 0xFFFFF000;
             }
         } else {
-            rn = state.r[RN(inst)];
+            rn = state.r[GRN(inst)];
         }
         rs = state.r[rs];
             
@@ -184,7 +179,7 @@ unsigned RC3200::realStep()
                         // Overflow happens
                         SET_ON_OF(FLAGS);
                         if (GET_EOE(FLAGS)) {
-                            throwInterrupt(4);
+                            ThrowInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(FLAGS);
@@ -206,7 +201,7 @@ unsigned RC3200::realStep()
                         // Overflow happens
                         SET_ON_OF(FLAGS);
                         if (GET_EOE(FLAGS)) {
-                            throwInterrupt(4);
+                            ThrowInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(FLAGS);
@@ -228,7 +223,7 @@ unsigned RC3200::realStep()
                         // Overflow happens
                         SET_ON_OF(FLAGS);
                         if (GET_EOE(FLAGS)) {
-                            throwInterrupt(4);
+                            ThrowInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(FLAGS);
@@ -250,7 +245,7 @@ unsigned RC3200::realStep()
                         // Overflow happens
                         SET_ON_OF(FLAGS);
                         if (GET_EOE(FLAGS)) {
-                            throwInterrupt(4);
+                            ThrowInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(FLAGS);
@@ -272,7 +267,7 @@ unsigned RC3200::realStep()
                         // Overflow happens
                         SET_ON_OF(FLAGS);
                         if (GET_EOE(FLAGS)) {
-                            throwInterrupt(4);
+                            ThrowInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(FLAGS);
@@ -294,7 +289,7 @@ unsigned RC3200::realStep()
                         // Overflow happens
                         SET_ON_OF(FLAGS);
                         if (GET_EOE(FLAGS)) {
-                            throwInterrupt(4);
+                            ThrowInterrupt(4);
                         }
                     } else {
                         SET_OFF_OF(FLAGS);
@@ -379,7 +374,7 @@ unsigned RC3200::realStep()
                 } else { // Division by 0
                     SET_ON_DE(FLAGS);
                     if ( GET_EDE(FLAGS)) {
-                        throwInterrupt(0);
+                        ThrowInterrupt(0);
                     }
                 }
                 SET_OFF_OF(FLAGS);
@@ -399,7 +394,7 @@ unsigned RC3200::realStep()
                     } else { // Division by 0
                         SET_ON_DE(FLAGS);
                         if ( GET_EDE(FLAGS)) {
-                            throwInterrupt(0);
+                            ThrowInterrupt(0);
                         }
                     }
                     SET_OFF_OF(FLAGS);
@@ -410,36 +405,36 @@ unsigned RC3200::realStep()
 
 
             case P3_OPCODE::LOAD :
-                state.r[rd] = ram.rd(rs+rn);
+                state.r[rd] = ram.RD(rs+rn);
                 state.wait_cycles++;
                 break;
 
             case P3_OPCODE::LOADW :
-                state.r[rd] = ram.rw(rs+rn);
+                state.r[rd] = ram.RW(rs+rn);
                 state.wait_cycles++;
                 break;
 
             case P3_OPCODE::LOADB :
-                state.r[rd] = ram.rb(rs+rn);
+                state.r[rd] = ram.RB(rs+rn);
                 state.wait_cycles++;
                 break;
             
             case P3_OPCODE::STORE :
-                ram.wb(rs+rn   , state.r[rd]);
-                ram.wb(rs+rn +1, state.r[rd] >> 8);
-                ram.wb(rs+rn +2, state.r[rd] >> 16);
-                ram.wb(rs+rn +3, state.r[rd] >> 24);
+                ram.WB(rs+rn   , state.r[rd]);
+                ram.WB(rs+rn +1, state.r[rd] >> 8);
+                ram.WB(rs+rn +2, state.r[rd] >> 16);
+                ram.WB(rs+rn +3, state.r[rd] >> 24);
                 state.wait_cycles++;
                 break;
             
             case P3_OPCODE::STOREW :
-                ram.wb(rs+rn   , state.r[rd]);
-                ram.wb(rs+rn +1, state.r[rd] >> 8);
+                ram.WB(rs+rn   , state.r[rd]);
+                ram.WB(rs+rn +1, state.r[rd] >> 8);
                 state.wait_cycles++;
                 break;
 
             case P3_OPCODE::STOREB :
-                ram.wb(rs+rn   , state.r[rd]);
+                ram.WB(rs+rn   , state.r[rd]);
                 state.wait_cycles++;
                 break;
 
@@ -457,14 +452,14 @@ unsigned RC3200::realStep()
         if (literal) {
             rn = LIT18(inst);
             if (IS_BIG_LITERAL_L18(rn)) { // Next dword is literal value 
-                rn = ram.rd(state.pc);
+                rn = ram.RD(state.pc);
                 state.pc +=4;
                 state.wait_cycles++;
             } else if (O18_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
                 rn |= 0xFFFC0000;
             }
         } else {
-            rn = state.r[RS(inst)];
+            rn = state.r[GRS(inst)];
         }
 
         switch (opcode) {
@@ -502,36 +497,36 @@ unsigned RC3200::realStep()
             
 
             case P2_OPCODE::LOAD2 :
-                state.r[rd] = ram.rd(rn);
+                state.r[rd] = ram.RD(rn);
                 state.wait_cycles++;
                 break;
 
             case P2_OPCODE::LOADW2 :
-                state.r[rd] = ram.rw(rn);
+                state.r[rd] = ram.RW(rn);
                 state.wait_cycles++;
                 break;
 
             case P2_OPCODE::LOADB2 :
-                state.r[rd] = ram.rb(rn);
+                state.r[rd] = ram.RB(rn);
                 state.wait_cycles++;
                 break;
             
             case P2_OPCODE::STORE2 :
-                ram.wb(rn   , state.r[rd]);
-                ram.wb(rn +1, state.r[rd] >> 8);
-                ram.wb(rn +2, state.r[rd] >> 16);
-                ram.wb(rn +3, state.r[rd] >> 24);
+                ram.WB(rn   , state.r[rd]);
+                ram.WB(rn +1, state.r[rd] >> 8);
+                ram.WB(rn +2, state.r[rd] >> 16);
+                ram.WB(rn +3, state.r[rd] >> 24);
                 state.wait_cycles++;
                 break;
             
             case P2_OPCODE::STOREW2 :
-                ram.wb(rn   , state.r[rd]);
-                ram.wb(rn +1, state.r[rd] >> 8);
+                ram.WB(rn   , state.r[rd]);
+                ram.WB(rn +1, state.r[rd] >> 8);
                 state.wait_cycles++;
                 break;
 
             case P2_OPCODE::STOREB2 :
-                ram.wb(rn   , state.r[rd]);
+                ram.WB(rn   , state.r[rd]);
                 state.wait_cycles++;
                 break;
 
@@ -607,10 +602,10 @@ unsigned RC3200::realStep()
             case P2_OPCODE::CALL2 : // Absolute call
                 state.wait_cycles++;
                 // push to the stack register pc value
-                ram.wb(--state.r[SP], state.pc >> 24);
-                ram.wb(--state.r[SP], state.pc >> 16);
-                ram.wb(--state.r[SP], state.pc >> 8);
-                ram.wb(--state.r[SP], state.pc); // Little Endian
+                ram.WB(--state.r[SP], state.pc >> 24);
+                ram.WB(--state.r[SP], state.pc >> 16);
+                ram.WB(--state.r[SP], state.pc >> 8);
+                ram.WB(--state.r[SP], state.pc); // Little Endian
                 state.pc = (state.r[rd] + rn) & 0xFFFFFFFC;
                 break;
 
@@ -629,14 +624,14 @@ unsigned RC3200::realStep()
         if (literal) {
             rn = LIT22(inst);
             if (IS_BIG_LITERAL_L22(rn)) { // Next dword is literal value 
-                rn = ram.rd(state.pc);
+                rn = ram.RD(state.pc);
                 state.pc +=4;
                 state.wait_cycles++;
             } else if (O22_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
                 rn |= 0xFF800000;
             }
         } else {
-            rn = RD(inst);
+            rn = GRD(inst);
         }
 
         switch (opcode) {
@@ -667,7 +662,7 @@ unsigned RC3200::realStep()
                 if (!literal) {
                     // SP always points to the last pushed element
                     state.wait_cycles++;
-                    state.r[rn]  = ram.rd(state.r[SP]);
+                    state.r[rn]  = ram.RD(state.r[SP]);
                     state.r[SP] += 4;
                 }
                 break;
@@ -677,10 +672,10 @@ unsigned RC3200::realStep()
                 if (!literal)
                     rn = state.r[rn]; 
                 state.wait_cycles++;
-                ram.wb(--state.r[SP] , rn >> 24);
-                ram.wb(--state.r[SP] , rn >> 16);
-                ram.wb(--state.r[SP] , rn >> 8 );
-                ram.wb(--state.r[SP] , rn      );
+                ram.WB(--state.r[SP] , rn >> 24);
+                ram.WB(--state.r[SP] , rn >> 16);
+                ram.WB(--state.r[SP] , rn >> 8 );
+                ram.WB(--state.r[SP] , rn      );
                 break;
 
 
@@ -693,10 +688,10 @@ unsigned RC3200::realStep()
             case P1_OPCODE::CALL :  // Absolute call
                 state.wait_cycles++;
                 // push to the stack register pc value
-                ram.wb(--state.r[SP], state.pc >> 24);
-                ram.wb(--state.r[SP], state.pc >> 16);
-                ram.wb(--state.r[SP], state.pc >> 8);
-                ram.wb(--state.r[SP], state.pc); // Little Endian
+                ram.WB(--state.r[SP], state.pc >> 24);
+                ram.WB(--state.r[SP], state.pc >> 16);
+                ram.WB(--state.r[SP], state.pc >> 8);
+                ram.WB(--state.r[SP], state.pc); // Little Endian
                 if (!literal)
                     rn = state.r[rn]; 
                 state.pc = rn & 0xFFFFFFFC;
@@ -711,10 +706,10 @@ unsigned RC3200::realStep()
             case P1_OPCODE::RCALL : // Relative call
                 state.wait_cycles++;
                 // push to the stack register pc value
-                ram.wb(--state.r[SP], state.pc >> 24);
-                ram.wb(--state.r[SP], state.pc >> 16);
-                ram.wb(--state.r[SP], state.pc >> 8);
-                ram.wb(--state.r[SP], state.pc); // Little Endian
+                ram.WB(--state.r[SP], state.pc >> 24);
+                ram.WB(--state.r[SP], state.pc >> 16);
+                ram.WB(--state.r[SP], state.pc >> 8);
+                ram.WB(--state.r[SP], state.pc); // Little Endian
                 if (!literal)
                     rn = state.r[rn]; 
                 state.pc = (state.pc + rn) & 0xFFFFFFFC;
@@ -725,7 +720,7 @@ unsigned RC3200::realStep()
                 state.wait_cycles += 3;
                 if (!literal)
                     rn = state.r[rn]; 
-                throwInterrupt(rn);
+                ThrowInterrupt(rn);
                 break;
 
             default:
@@ -745,10 +740,10 @@ unsigned RC3200::realStep()
             case NP_OPCODE::RET:
                 state.wait_cycles = 4;
                 // Pop PC
-                state.pc = ram.rb(state.r[SP]++);
-                state.pc |= ram.rb(state.r[SP]++) << 8;
-                state.pc |= ram.rb(state.r[SP]++) << 16;
-                state.pc |= ram.rb(state.r[SP]++) << 24;
+                state.pc = ram.RB(state.r[SP]++);
+                state.pc |= ram.RB(state.r[SP]++) << 8;
+                state.pc |= ram.RB(state.r[SP]++) << 16;
+                state.pc |= ram.RB(state.r[SP]++) << 24;
                 state.pc &= 0xFFFFFFFC;
                 break;
 
@@ -756,17 +751,17 @@ unsigned RC3200::realStep()
                 state.wait_cycles = 6;
                 
                 // Pop PC
-                state.pc = ram.rb(state.r[SP]++);
-                state.pc |= ram.rb(state.r[SP]++) << 8;
-                state.pc |= ram.rb(state.r[SP]++) << 16;
-                state.pc |= ram.rb(state.r[SP]++) << 24;
+                state.pc = ram.RB(state.r[SP]++);
+                state.pc |= ram.RB(state.r[SP]++) << 8;
+                state.pc |= ram.RB(state.r[SP]++) << 16;
+                state.pc |= ram.RB(state.r[SP]++) << 24;
                 state.pc &= 0xFFFFFFFC;
                 
                 // Pop %r0
-                state.r[0] = ram.rb(state.r[SP]++);
-                state.r[0] |= ram.rb(state.r[SP]++) << 8;
-                state.r[0] |= ram.rb(state.r[SP]++) << 16;
-                state.r[0] |= ram.rb(state.r[SP]++) << 24;
+                state.r[0] = ram.RB(state.r[SP]++);
+                state.r[0] |= ram.RB(state.r[SP]++) << 8;
+                state.r[0] |= ram.RB(state.r[SP]++) << 16;
+                state.r[0] |= ram.RB(state.r[SP]++) << 24;
 
                 SET_OFF_IF(FLAGS);
                 state.iacq = false;
@@ -780,11 +775,11 @@ unsigned RC3200::realStep()
         }
     }
     
-    // If step-mode is enable, throw the adequate exception
+    // If step-mode is enable, Throw the adequate exception
     if (state.step_mode)
-        throwInterrupt(1);
+        ThrowInterrupt(1);
 
-    processInterrupt(); // Here we check if a interrupt happens
+    ProcessInterrupt(); // Here we check if a interrupt happens
     
 
     return state.wait_cycles;
@@ -794,22 +789,21 @@ unsigned RC3200::realStep()
 /**
  * Check if there is an interrupt to be procesed
  */
-void RC3200::processInterrupt()
-{
+void RC3200::ProcessInterrupt() {
     if (GET_EI(FLAGS) && state.interrupt && !state.iacq) {
         state.iacq = true;
 
         // push %r0
-        ram.wb(--state.r[SP], state.r[0] >> 24);
-        ram.wb(--state.r[SP], state.r[0] >> 16);
-        ram.wb(--state.r[SP], state.r[0] >> 8);
-        ram.wb(--state.r[SP], state.r[0]); // Little Endian
+        ram.WB(--state.r[SP], state.r[0] >> 24);
+        ram.WB(--state.r[SP], state.r[0] >> 16);
+        ram.WB(--state.r[SP], state.r[0] >> 8);
+        ram.WB(--state.r[SP], state.r[0]); // Little Endian
 
         // push PC
-        ram.wb(--state.r[SP], state.pc >> 24);
-        ram.wb(--state.r[SP], state.pc >> 16);
-        ram.wb(--state.r[SP], state.pc >> 8);
-        ram.wb(--state.r[SP], state.pc); // Little Endian
+        ram.WB(--state.r[SP], state.pc >> 24);
+        ram.WB(--state.r[SP], state.pc >> 16);
+        ram.WB(--state.r[SP], state.pc >> 8);
+        ram.WB(--state.r[SP], state.pc); // Little Endian
 
         state.r[0] = state.int_msg;
         state.pc = IA;

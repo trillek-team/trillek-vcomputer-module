@@ -76,62 +76,70 @@ struct CpuState {
 class RC3200 {
 public:
     
-    RC3200(const byte_t* rom, size_t rom_size, size_t ram_size = 128*1024);
+RC3200(const byte_t* rom, size_t rom_size, size_t ram_size = 128*1024);
 
-    virtual ~RC3200();
+virtual ~RC3200();
 
-    /**
-     * Return the actual CPU model clock speed
-     */
-    virtual unsigned getClock() const {return 1000000;}
+/**
+ * Return the actual CPU model clock speed
+ */
+virtual unsigned Clock() const {
+    return 1000000;
+}
 
-    /**
-     * Resets the CPU state
-     */
-    void reset();
+/**
+ * Number of CPU cycles executed
+ */
+std::size_t TotalCycles () const {
+    return tot_cycles;
+}
 
-    /**
-     * Executes a singe instrucction of the CPU
-     * @return Number of CPU cycles used
-     */
-    unsigned step();
+/**
+ * Resets the CPU state
+ */
+void Reset();
 
-    /**
-     * Executes one or more CPU clock cycles
-     * @param n Number of cycles (default=1)
-     */
-    void tick(unsigned n=1);
+/**
+ * Executes a singe instrucction of the CPU
+ * @return Number of CPU cycles used
+ */
+unsigned Step();
 
-    /**
-     * Return the actual CPU state
-     */
-    const CpuState& getState() const
-    {
-        return state;
+/**
+ * Executes one or more CPU clock cycles
+ * @param n Number of cycles (default=1)
+ */
+void Tick(unsigned n=1);
+
+/**
+ * Return the actual CPU state
+ */
+const CpuState& State() const {
+    return state;
+}
+
+/**
+ * Throws a interrupt to the CPU
+ */
+void ThrowInterrupt (dword_t msg) {
+    if (!state.iacq && GET_EI(FLAGS)) {
+        // The CPU accepts a new interrupt
+        state.interrupt = true;
+        state.int_msg = msg;
     }
+}
 
-    /**
-     * Throws a interrupt to the CPU
-     */
-    void throwInterrupt (dword_t msg)
-    {
-        if (!state.iacq && GET_EI(FLAGS)) {
-            // The CPU accepts a new interrupt
-            state.interrupt = true;
-            state.int_msg = msg;
-        }
-    }
-
-    ram::Mem ram;               /// Handles the RAM mapings / access 
+ram::Mem ram;               /// Handles the RAM mapings / access 
 
 protected:
-    CpuState state;             /// CPU actual state
-    std::size_t tot_cycles;     /// Total number of cpu cycles executed
 
-    unsigned realStep();
+CpuState state;             /// CPU actual state
+std::size_t tot_cycles;     /// Total number of cpu cycles executed
 
-    void processInterrupt();
-    
+unsigned RealStep();
+
+void ProcessInterrupt();
+
 };
 
 } // End of namespace cpu
