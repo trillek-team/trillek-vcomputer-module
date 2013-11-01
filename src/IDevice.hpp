@@ -9,8 +9,10 @@
 #define __IDEVICE_HPP__ 1
 
 #include "types.hpp"
+#include "cpu.hpp"
 
 #include <memory>
+#include <vector>
 
 #include <cassert>
 
@@ -79,6 +81,22 @@ word_t getJmp2() const
 void setJmp2(byte_t val)
 {
     jmp2 = val;
+}
+
+/**
+ * Does Hardware stuff in sync with the CPU clock
+ * @param cpu Ptr to the CPU, if needs to thorow a interrupt
+ * @param n Number of clock ticks executing
+ */
+virtual void tick (cpu::RC3200* cpu, unsigned n=1) = 0;
+
+/**
+ * Return an array of AHandler that uses this device
+ */
+virtual std::vector<ram::AHandler*> memoryBlocks() const
+{
+    std::vector<ram::AHandler*> output;
+    return output;
 }
 
 protected:

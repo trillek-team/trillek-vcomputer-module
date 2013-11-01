@@ -84,7 +84,7 @@ protected:
 
 /**
  * Represents the memmory address space of the computer
- * TODO Usea better container to make lighting fast the search of a address handler. Could be a interval tree or similar
+ * TODO Usea better container to make lighting fast the search of an address handler. Could be a interval tree or similar
  */
 class Mem {
 public:
@@ -208,7 +208,7 @@ public:
             buffer[addr] = val;
             return;
         } 
-		
+	
         // Search the apropiated block
 		for (auto it= blocks.begin(); it != blocks.end(); ++it) {
 			if ( (*it)->begin() <= addr	&& ((*it)->end() > addr) ){
@@ -226,10 +226,23 @@ public:
      * @param block Address Handler
      * @returns False if was any problem
      */
-	bool addBlock(std::shared_ptr<AHandler> block)
+	bool addBlock(AHandler* block)
 	{
         // TODO Use other data structure to contains the blocks
 		blocks.push_back(block);
+        return true;
+	}
+
+    /**
+     * Addss Address block handlers
+     * @param iblocks Vector of Address Handlers
+     * @returns False if was any problem
+     */
+	bool addBlock(const std::vector<AHandler*>& iblocks)
+	{
+        // TODO Use other data structure to contains the blocks
+        for (auto iblock : iblocks )
+            blocks.push_back(iblock);
         return true;
 	}
 
@@ -239,7 +252,7 @@ private:
 
     byte_t* buffer; /// Contains the ROM + RAM as are contigous
 
-	std::vector<std::shared_ptr<AHandler>> blocks; ///Contains address space blocks
+	std::vector<AHandler*> blocks; ///Contains address space blocks
 
 };
 
