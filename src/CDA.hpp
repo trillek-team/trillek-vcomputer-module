@@ -26,7 +26,7 @@ namespace cda {
 class CDA : public IDevice {
 public:
 
-CDA() {
+CDA() : videomode(0), textmode(true), blink(false), userfont(false), e_vsync(false), vram(this), setupr(this) {
 }
 
 virtual ~CDA() {
@@ -56,16 +56,36 @@ protected:
  */
 class VideoRAM : public ram::AHandler {
 public:
-    VideoRAM () : AHandler(0xFF0A0000, 0x4400) {
+    VideoRAM (CDA* cda) : AHandler(0xFF0A0000, 0x4400), vram(NULL) {
+        this->cda = cda;
+        vram = new byte_t[this->size]();
+    }
+
+    virtual ~VideoRAM() {
+        if (vram != NULL)
+            delete[] vram;
     }
 
     byte_t RB (dword_t addr) {
-        return 0x55;
+        addr -= this->begin;
+        assert(addr < this->size);
+        assert(addr >= 0);
+
+        return vram[addr];
     }
 
     void WB (dword_t addr, byte_t val) {
-        std::printf("CDA -> ADDR: %08Xh VAL : 0x%08X\n", addr, val);
+        std::printf("CDA -> ADDR: %08Xh VAL : 0x%02X\n", addr, val);
+        addr -= this->begin;
+        assert(addr < this->size);
+        assert(addr >= 0);
+        
+        vram[addr] = val;
     }
+
+    byte_t* vram;
+
+    CDA* cda; // Self-reference
 };
 
 /**
@@ -73,19 +93,31 @@ public:
  */
 class SETUPreg : public ram::AHandler {
 public:
-    SETUPreg () : AHandler(0xFF0ACC00, 1) {
+    SETUPreg (CDA* cda) : AHandler(0xFF0ACC00, 1), reg(0) {
+        this->cda = cda;
     }
 
     byte_t RB (dword_t addr) {
-        return 0x55;
+        return reg;
     }
 
     void WB (dword_t addr, byte_t val) {
         std::printf("CDA -> ADDR: %08Xh VAL : 0x%08X\n", addr, val);
+        reg = val;
+        cda->videomode = val & 3; 
+        cda->textmode = (val & 4) == 0; 
     }
+
+    byte_t reg;
+    CDA* cda; // Self-reference
+
 };
 
 unsigned videomode;     /// Actual video mode
+bool textmode;          /// Is text mode ?
+bool blink;             /// Blink attribute in textmode ?
+bool userfont;          /// User Font ?
+bool e_vsync;           /// Enable V-Sync interrupt ?
 
 CDA::VideoRAM vram;
 CDA::SETUPreg setupr;
