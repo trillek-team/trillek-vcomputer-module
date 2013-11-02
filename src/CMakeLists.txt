@@ -27,20 +27,34 @@ include_directories(rc3200_lib
 
     
 # Main executable
-add_executable(vm
+add_executable( vm
     main.cpp
 )
 
-include_directories(vm
+
+include_directories( vm
     ${rc3200_INCLUDE_DIRS}
 #    ${OPENGL_INCLUDE_DIR}
 #    ${SFML_INCLUDE_DIR}
 )
 
-target_link_libraries(vm
+target_link_libraries( vm
     rc3200_lib_static
 #    ${OPENGL_LIBRARIES}
 #    ${SFML_LIBRARIES}
+)
+
+# Benchmark executable
+add_executable( benchmark
+    benchmark.cpp
+)
+
+include_directories( benchmark
+    ${rc3200_INCLUDE_DIRS}
+)
+
+target_link_libraries( benchmark
+    rc3200_lib_static
 )
 
 
