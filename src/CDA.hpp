@@ -23,10 +23,12 @@
 namespace vm {
 namespace cda {
 
+unsigned const VSYNC = 25; // Vertical refresh frecuency
+
 class CDA : public IDevice {
 public:
 
-CDA() : videomode(0), textmode(true), blink(false), userfont(false), e_vsync(false), vram(this), setupr(this) {
+CDA() : count(0), videomode(0), textmode(true), blink(false), userfont(false), e_vsync(false), vram(this), setupr(this) {
 }
 
 virtual ~CDA() {
@@ -38,7 +40,12 @@ word_t DevId() const        {return 0x0001;} // CDA standard
 word_t DevVer() const       {return 0x0000;} // Ver 0 -> CDA base standard
 
 virtual void Tick (cpu::RC3200& cpu, unsigned n=1) {
-    // TODO V-Sync interrupt generation
+    count += n;
+    if (count >= (cpu.Clock()/VSYNC)) { // V-Sync Event
+        count -= cpu.Clock()/VSYNC;
+        if (e_vsync)
+            cpu.ThrowInterrupt(0x0000005A);
+    }
 }
 
 virtual std::vector<ram::AHandler*> MemoryBlocks() const { 
@@ -75,7 +82,7 @@ public:
     }
 
     void WB (dword_t addr, byte_t val) {
-        std::printf("CDA -> ADDR: %08Xh VAL : 0x%02X\n", addr, val);
+        //std::printf("CDA -> ADDR: %08Xh VAL : 0x%02X\n", addr, val);
         addr -= this->begin;
         assert(addr < this->size);
         assert(addr >= 0);
@@ -102,7 +109,7 @@ public:
     }
 
     void WB (dword_t addr, byte_t val) {
-        std::printf("CDA -> ADDR: %08Xh VAL : 0x%08X\n", addr, val);
+        //std::printf("CDA -> ADDR: %08Xh VAL : 0x%08X\n", addr, val);
         reg = val;
         cda->videomode = val & 3; 
         cda->textmode = (val & 4) == 0; 
@@ -112,6 +119,8 @@ public:
     CDA* cda; // Self-reference
 
 };
+
+unsigned count;         /// Cycle counter
 
 unsigned videomode;     /// Actual video mode
 bool textmode;          /// Is text mode ?
