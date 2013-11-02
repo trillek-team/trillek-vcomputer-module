@@ -84,7 +84,7 @@ virtual ~RC3200();
  * Return the actual CPU model clock speed
  */
 virtual unsigned Clock() const {
-    return 1000000;
+    return 100000;
 }
 
 /**
