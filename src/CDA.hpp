@@ -23,15 +23,32 @@
 namespace vm {
 namespace cda {
 
-unsigned const VSYNC = 25; // Vertical refresh frecuency
+unsigned const VSYNC = 25;              /// Vertical refresh frecuency
+unsigned const VRAM_SIZE = 0x4400;      /// VRAM size
+dword_t  const SETUP_OFFSET = 0xCC00;   /// SETUP register offset
+
+dword_t INT_MSG[] = {                   /// Interrupt message value
+    0x0000005A, 
+    0x0000105A, 
+    0x0000205A, 
+    0x0000305A};
+
+dword_t BASE_ADDR[] = {                 /// VRAM base address
+    0xFF0A0000, 
+    0xFF0B0000, 
+    0xFF0C0000, 
+    0xFF0D0000};
 
 class CDA : public IDevice {
 public:
 
-CDA() : count(0), videomode(0), textmode(true), blink(false), userfont(false), e_vsync(false), vram(this), setupr(this) {
+CDA() : count(0), videomode(0), textmode(true), blink(false), userfont(false), e_vsync(false), vram(this), setupr(this), obuffer(NULL) {
+    obuffer = new byte_t[VRAM_SIZE]();
 }
 
 virtual ~CDA() {
+    if (obuffer != NULL)
+        delete[] obuffer;
 }
 
 byte_t DevClass() const     {return 0x0E;}   // Graphics device
@@ -43,8 +60,14 @@ virtual void Tick (cpu::RC3200& cpu, unsigned n=1) {
     count += n;
     if (count >= (cpu.Clock()/VSYNC)) { // V-Sync Event
         count -= cpu.Clock()/VSYNC;
+        
+        std::copy_n(vram.vram, VRAM_SIZE, obuffer); // Puts the VRAM to the output buffer
+        // This should minimize graphics artifacts related of being drawing the
+        // screen when the graphics external code, grabs the vram dump to 
+        // update a texture
+
         if (e_vsync)
-            cpu.ThrowInterrupt(0x0000005A);
+            cpu.ThrowInterrupt(INT_MSG[this->Jmp1() &3]);
     }
 }
 
@@ -56,6 +79,42 @@ virtual std::vector<ram::AHandler*> MemoryBlocks() const {
     return handlers;
 }
 
+/**
+ * Video RAM buffer
+ */
+const byte_t* VRAM() const {
+    return obuffer;
+}
+
+/**
+ * Actual videomode
+ */
+unsigned VideoMode() const {
+    return videomode;
+}
+
+/**
+ * Is using a Text Videomode ?
+ */
+bool isTextMode() const {
+    return textmode;
+}
+
+/**
+ * Bright backgroudn color attribute is blink, for Text videomode ?
+ */
+bool isBlinkAttr() const {
+    return blink;
+}
+
+/**
+ * Is using User defined font in a Text videomode ?
+ */
+bool isUserFont() const {
+    return userfont;
+}
+
+
 protected:
 
 /**
@@ -63,9 +122,11 @@ protected:
  */
 class VideoRAM : public ram::AHandler {
 public:
-    VideoRAM (CDA* cda) : AHandler(0xFF0A0000, 0x4400), vram(NULL) {
+    VideoRAM (CDA* cda) {
         this->cda = cda;
-        vram = new byte_t[this->size]();
+        this->begin = BASE_ADDR[cda->Jmp1() &3];
+        this->size = VRAM_SIZE;
+        vram = new byte_t[VRAM_SIZE]();
     }
 
     virtual ~VideoRAM() {
@@ -100,7 +161,9 @@ public:
  */
 class SETUPreg : public ram::AHandler {
 public:
-    SETUPreg (CDA* cda) : AHandler(0xFF0ACC00, 1), reg(0) {
+    SETUPreg (CDA* cda) {
+        this->begin = BASE_ADDR[cda->Jmp1() &3] + SETUP_OFFSET;
+        this->size = 1;
         this->cda = cda;
     }
 
@@ -130,6 +193,8 @@ bool e_vsync;           /// Enable V-Sync interrupt ?
 
 CDA::VideoRAM vram;
 CDA::SETUPreg setupr;
+
+byte_t* obuffer;        /// Visible video ram buffer for grpahics representation of screen
 
 };
 
