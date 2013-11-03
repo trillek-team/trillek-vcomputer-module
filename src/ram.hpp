@@ -31,11 +31,14 @@ class Mem;
 class AHandler {
 public:
 
-AHandler(dword_t begin, dword_t size = 1) :  begin(begin), size(size)
-{ }
+AHandler() : begin(0), size(1) {
+}
 
-virtual ~AHandler()
-{ }
+AHandler(dword_t begin, dword_t size = 1) :  begin(begin), size(size) {
+}
+
+virtual ~AHandler() {
+}
 
 /**
  * Begin of address block
