@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
     cda::CDA gcard[N_CPUS];
     
     for (auto i=0; i< N_CPUS; i++) {
-        vm[i].AddDevice(gcard[i]);
+        vm[i].AddDevice(0, gcard[i]);
         vm[i].Reset();
     }
     

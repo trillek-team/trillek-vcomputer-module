@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 
     // Add devices
     cda::CDA gcard;
-    vm.AddDevice(gcard);
+    vm.AddDevice(0, gcard);
 
     vm.Reset();
     
