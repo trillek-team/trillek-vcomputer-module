@@ -10,6 +10,7 @@
 #include "types.hpp"
 #include "ram.hpp"
 #include "rc3200_opcodes.hpp"
+#include "config.h"
 
 #include <vector>
 
