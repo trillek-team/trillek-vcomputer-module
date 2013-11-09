@@ -30,7 +30,7 @@ begin:
         MOV %r28, 28
         MOV %r29, 29
         MOV %r30, 30
-        MOV %r31, 31        ; Addr: 084h
+        MOV %r31, 31        ; Addr: 07Ch
         MOV %bp, 0        
         MOV %sp, 0x30000    ; Sets Stack Pointer to the end of the 128KiB RAM     
         MOV %ia, 0                 
@@ -45,7 +45,7 @@ begin:
         XCHGW %r5           ; %r5 = 0x50000
 
         ;Test IFx operations **************************************************
-test_ifx:                       ; PC = 0x00A4
+test_ifx:                       ; PC = 0x00B0
         IFEQ %r1, 0         ; %r1 = 0xBEBECAFE, so skips
             JMP crash
         IFNEQ %r1, 0xBEBECAFE ; " ", so skips
@@ -75,7 +75,7 @@ next:
                     JMP crash         ; This never should be executed
 
         ; Test ALU operations *************************************************
-test_alu:                       ; PC = 0x0100
+test_alu:                       ; PC = 0x010C
         ; Testing BOOLEAN instructions
         MOV %r7, 0x5555AAAA
         MOV %r6, 0xAAFFFF55
@@ -193,6 +193,12 @@ test_alu:                       ; PC = 0x0100
         IFNEQ %y, 1
             JMP crash
         ; TODO Signed Multiplication/Division
+        ; TODO Check Division error flag
+
+        ; TODO Check LOAD/STORE
+        ; TODO Check Stack instrucctions
+        ; TODO Check CALL functions
+        ; TODO Check other instrucctions
 
         JMP begin           ; Begin again in a endless loop
 crash:
