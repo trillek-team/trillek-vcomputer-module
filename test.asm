@@ -39,7 +39,7 @@ begin:
         ; Tested seting registers and using bit literal
 
         MOV %r10 , %r1      ; %r10 = 0xBEBECAFE
-        SWP %r29, %r9       ; %r9 = 29 ; %r29 = 9
+        SWP %r7, %r9        ; %r9 = 7 ; %r7 = 9
         NOT %r0, %r0        ; %r0 = 0xFFFFFFFF = -1
         XCHGB %r4           ; %r4 = 0x400
         XCHGW %r5           ; %r5 = 0x50000
@@ -51,9 +51,9 @@ test_ifx:                       ; PC = 0x00A4
         IFNEQ %r1, 0xBEBECAFE ; " ", so skips
             JMP crash
 
-        IFL %r2, %r6        ; 2 < 6 = false, so skips
+        IFL %r6, %r2        ; 6 < 2 = false, so skips
             JMP crash
-        IFLE %r2, %r6       ; 2 < 6 = false, so skips
+        IFLE %r6, %r2       ; 6 < 2 = false, so skips
             JMP crash
 
         IFSL %r2, %r0       ; 2 < -1 = false, so skips
@@ -61,9 +61,10 @@ test_ifx:                       ; PC = 0x00A4
         IFSLE %r2, %r0      ; 2 < -1 = false, so skips
             JMP crash
 
-        IFBITS %r4, 0x404   ; (0x400 & 0x404) != 0
-            JMP next    
+        IFBITS %r4, 0x404   ; (0x400 & 0x404) != 0 so execute
+            JMP next
         JMP crash
+
 next:        
         IFCLEAR %r4, 0x404  ; (0x400 & 0x404) != 0 so skips
             JMP crash
@@ -90,8 +91,8 @@ test_alu:                       ; PC = 0x0100
         IFNEQ %r12, 0xFFFFFFFF
             JMP crash
 
-        XOR %r12, %r7, %r6      ; %r12 = 0xFF0000FF
-        IFNEQ %r12, 0xFF0000FF
+        XOR %r12, %r7, %r6      ; %r12 = 0xFFAA55FF
+        IFNEQ %r12, 0xFFAA55FF
             JMP crash
 
         BITC %r12, %r7, %r6     ; %r12 = 0x550000AA
@@ -104,11 +105,11 @@ test_alu:                       ; PC = 0x0100
             JMP crash
 
         ADD %r0, %r8, 1         ; %r0 = %r8 +1 = 9
-        IFNEQ %r0, 98
+        IFNEQ %r0, 9
             JMP crash
         
         SUB %r22, %r12, %r0     ; %r22 = %r12 - %r0 = 0x3FF
-        IFNEQ %r22, 0x2FF
+        IFNEQ %r22, 0x3FF
             JMP crash
 
         SUB %r22, %r24, 4       ; %r22 = %r24 -4 = 20 = 0x14
@@ -144,36 +145,37 @@ test_alu:                       ; PC = 0x0100
         IFNEQ %r25, 0x102
             JMP crash
         
-        ; Result of addtion must be 0xFFFFFFF1_FFFFFFFE
+        ; Result of addtion must be 0xFFFFFF01_FFFFFFFE
         SUB %r24, %r20, %r22    ; Subs LSB
         SUBB %r25, %r21, %r23   ; Subs MSB
         IFNEQ %r24, 0xFFFFFFFE
             JMP crash
-        IFNEQ %r25, 0xFFFFFFF1
+        IFNEQ %r25, 0xFFFFFF01
             JMP crash
 
         ; Testing Shift instructions
-        LLS %r12, %r7, 8        ; %r12 = 0xAA555500
-        IFNEQ %r12, 0xAA555500
+        ; %r6 = 0xAAFFFF55
+        LLS %r12, %r6, 8        ; %r12 = 0xFFFF5500
+        IFNEQ %r12, 0xFFFF5500
             JMP crash
 
-        LRS %r12, %r7, 8        ; %r12 = 0x00AAAA55
-        IFNEQ %r12, 0x00AAAA55
+        LRS %r12, %r6, 8        ; %r12 = 0x00AAFFFF
+        IFNEQ %r12, 0x00AAFFFF
             JMP crash
         
-        ARS %r12, %r7, 8        ; %r12 = 0xFFAAAA55
-        IFNEQ %r12, 0xFFAAAA55
+        ARS %r12, %r6, 8        ; %r12 = 0xFFAAFFFF
+        IFNEQ %r12, 0xFFAAFFFF
             JMP crash
-        ARS %r12, %r6, 8        ; %r12 = 0x005555AA
+        ARS %r12, %r7, 8        ; %r12 = 0x005555AA
         IFNEQ %r12, 0x005555AA
             JMP crash
 
-        ROTL %r12, %r7, 8       ; %r12 = 0xAA5555AA
-        IFNEQ %r12, 0xFFAAAA55
+        ROTL %r12, %r6, 8       ; %r12 = 0xFFFF55AA
+        IFNEQ %r12, 0xFFFF55AA
             JMP crash
 
-        ROTR %r12, %r7, 8       ; %r12 = 0x55AAAA55
-        IFNEQ %r12, 0xFFAAAA55
+        ROTR %r12, %r6, 8       ; %r12 = 0x55AAFFFF
+        IFNEQ %r12, 0x55AAFFFF
             JMP crash
 
         ; Testing Multiplication/Division
