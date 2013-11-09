@@ -26,84 +26,173 @@ begin:
         MOV %r24, 24
         MOV %r25, 25
         MOV %r26, 26
-        MOV %r27, 27
+        MOV %r27, 27        ; This are special registers!
         MOV %r28, 28
         MOV %r29, 29
         MOV %r30, 30
         MOV %r31, 31        ; Addr: 084h
-        MOV %r30, 0        
-        MOV %r31, 0        
+        MOV %bp, 0        
+        MOV %sp, 0x30000    ; Sets Stack Pointer to the end of the 128KiB RAM     
+        MOV %ia, 0                 
+        MOV %flags, 0                 
         MOV %r1, 0xBEBECAFE   
         ; Tested seting registers and using bit literal
 
-        MOV %r10 , %r1      ; Addr 090h
-        NOT %r0, %r0
-        XCHGB %r4
-        XCHGW %r5
+        MOV %r10 , %r1      ; %r10 = 0xBEBECAFE
+        SWP %r29, %r9       ; %r9 = 29 ; %r29 = 9
+        NOT %r0, %r0        ; %r0 = 0xFFFFFFFF = -1
+        XCHGB %r4           ; %r4 = 0x400
+        XCHGW %r5           ; %r5 = 0x50000
 
-        MOV %r7, -1
-        MOV %r6, -2
-        ADD %r12, %r8, %r4 
-        ADD %r0, %r8, 1 
-        SUB %r22, %r22, %r20 
-        SUB %r22, %r24, 4
-        SUB %r22, %r24, -4
+        ;Test IFx operations **************************************************
+test_ifx:                       ; PC = 0x00A4
+        IFEQ %r1, 0         ; %r1 = 0xBEBECAFE, so skips
+            JMP crash
+        IFNEQ %r1, 0xBEBECAFE ; " ", so skips
+            JMP crash
 
-        MOV %r0 , 0         ; Addr 0C0h
-loop:
-        NOP                 ; Addr 0C4h
-        ADD %r0, %r0, 1
+        IFL %r2, %r6        ; 2 < 6 = false, so skips
+            JMP crash
+        IFLE %r2, %r6       ; 2 < 6 = false, so skips
+            JMP crash
 
-        IFL %r0, 10         ; Addr 0CCh
-            JMP loop            ; Jumps to 0C4h
+        IFSL %r2, %r0       ; 2 < -1 = false, so skips
+            JMP crash
+        IFSLE %r2, %r0      ; 2 < -1 = false, so skips
+            JMP crash
 
-end_loop:        
-        MOV %sp, 0x20000    ; (Stack pointer to the last address of RAM)
-    
-        PUSH -13570         ; push 0xFFFFCAFE
-        PUSH %r6
-        POP  %r29
-        POP  %r28           ; Addr 0E8h   %r29 = 0xFFFFCAFE
-    
-        MOV %r0, 2
-        MOV %r1, 4
-        CALL function_pow   ; Should return %r0 = 2^4 = 16
+        IFBITS %r4, 0x404   ; (0x400 & 0x404) != 0
+            JMP next    
+        JMP crash
+next:        
+        IFCLEAR %r4, 0x404  ; (0x400 & 0x404) != 0 so skips
+            JMP crash
 
-        JMP begin           ; Jumps to 0
-table:  .DAT 0x55,0x1234,65,33,12
-        .DAT 4,0xAA,2,0x12345678
-        .DAT 0x00, 0x00, 0x00   ; Padding
-        MOV %r11, 0x11
+        IFEQ %r1, 0         ; False, so must skip
+            IFNEQ %r1, 0              ; True but is Chained and skiped
+                IFEQ %r1, 0xBEBACAFE  ; True but is Chained and skiped
+                    JMP crash         ; This never should be executed
 
+        ; Test ALU operations *************************************************
+test_alu:                       ; PC = 0x0100
+        ; Testing BOOLEAN instructions
+        MOV %r7, 0x5555AAAA
+        MOV %r6, 0xAAFFFF55
+        NOT %r12, %r6           ; %r12 = 0x550000AA
+        IFNEQ %r12, 0x550000AA
+            JMP crash
 
-; Function naive interger power
-; Params :
-;  %r0 base
-;  %r1 poitive exponent
-; Return :
-;  %r0 = base ^ exponent
-function_pow:
-        PUSH %r4
-        PUSH %r5
-        PUSH %y
-        PUSH %flags
+        AND %r12, %r7, %r6      ; %r12 = 0x0055AA00
+        IFNEQ %r12, 0x0055AA00
+            JMP crash
 
-        MOV %r4, 0
-        MOV %r5, %r0
-        MOV %r0, 1              ; x^0 = 1
-    
-function_pow_beginloop:
-        IFLE %r1, %r4            ; While %r1 >= %r4 (exponent >= counter)
-            RJMP function_pow_endloop
-        MUL %r0, %r0, %r5       ; %r0 = %r0 * base
-        ADD %r4, %r4, 1         ; %r4++
-        RJMP function_pow_beginloop
+        OR %r12, %r7, %r6       ; %r12 = 0xFFFFFFFF
+        IFNEQ %r12, 0xFFFFFFFF
+            JMP crash
 
-function_pow_endloop:
+        XOR %r12, %r7, %r6      ; %r12 = 0xFF0000FF
+        IFNEQ %r12, 0xFF0000FF
+            JMP crash
 
-        POP %flags
-        POP %y
-        POP %r5
-        POP %r4
+        BITC %r12, %r7, %r6     ; %r12 = 0x550000AA
+        IFNEQ %r12, 0x550000AA
+            JMP crash
 
-        RET
+        ; Testing Addition/Substraction instructions
+        ADD %r12, %r8, %r4      ; %r12 = %r8 + %r4 = 0x408
+        IFNEQ %r12, 0x408
+            JMP crash
+
+        ADD %r0, %r8, 1         ; %r0 = %r8 +1 = 9
+        IFNEQ %r0, 98
+            JMP crash
+        
+        SUB %r22, %r12, %r0     ; %r22 = %r12 - %r0 = 0x3FF
+        IFNEQ %r22, 0x2FF
+            JMP crash
+
+        SUB %r22, %r24, 4       ; %r22 = %r24 -4 = 20 = 0x14
+        IFNEQ %r22, 20
+            JMP crash
+
+        SUB %r22, %r24, -4      ; %r22 = %r24 -(-4) = 28 = 0x1C
+        IFNEQ %r22, 28
+            JMP crash
+
+        RSB %r22, %r24, -4      ; %r22 = -4 - %r24 = -28 = 0xFFFFFFE4
+        IFNEQ %r22, -28
+            JMP crash
+
+        ; Testing Overflow
+        MOV %r22, 0x40000000
+        MOV %r23, 0x60000000
+        ADD %r24, %r22, %r23    ; %r24 = 0x40000000 + 0x60000000 = 0xA0000000 (negative)
+        IFCLEAR %flags, 2       ; If OF == 0 -> Jump to crash
+            JMP crash
+        ; TODO Overflow with substraction
+
+        ; Testing Carry doing 64 bit addition and substraction
+        MOV %r20, 0xFFFFFFFF    ; LSB op1
+        MOV %r21, 0x00000001    ; MSB op1
+        MOV %r22, 0x00000001    ; LSB op2
+        MOV %r23, 0x00000100    ; MSB op2
+        ; Result of addtion must be 0x00000102_00000000
+        ADD %r24, %r20, %r22    ; Adds LSB
+        ADDC %r25, %r21, %r23   ; Adds MSB
+        IFNEQ %r24, 0
+            JMP crash
+        IFNEQ %r25, 0x102
+            JMP crash
+        
+        ; Result of addtion must be 0xFFFFFFF1_FFFFFFFE
+        SUB %r24, %r20, %r22    ; Subs LSB
+        SUBB %r25, %r21, %r23   ; Subs MSB
+        IFNEQ %r24, 0xFFFFFFFE
+            JMP crash
+        IFNEQ %r25, 0xFFFFFFF1
+            JMP crash
+
+        ; Testing Shift instructions
+        LLS %r12, %r7, 8        ; %r12 = 0xAA555500
+        IFNEQ %r12, 0xAA555500
+            JMP crash
+
+        LRS %r12, %r7, 8        ; %r12 = 0x00AAAA55
+        IFNEQ %r12, 0x00AAAA55
+            JMP crash
+        
+        ARS %r12, %r7, 8        ; %r12 = 0xFFAAAA55
+        IFNEQ %r12, 0xFFAAAA55
+            JMP crash
+        ARS %r12, %r6, 8        ; %r12 = 0x005555AA
+        IFNEQ %r12, 0x005555AA
+            JMP crash
+
+        ROTL %r12, %r7, 8       ; %r12 = 0xAA5555AA
+        IFNEQ %r12, 0xFFAAAA55
+            JMP crash
+
+        ROTR %r12, %r7, 8       ; %r12 = 0x55AAAA55
+        IFNEQ %r12, 0xFFAAAA55
+            JMP crash
+
+        ; Testing Multiplication/Division
+        MOV %r22, 100
+        MOV %r23, 4000000001
+        MUL %r24, %r23, %r22     ; %y:%r24 = 400000000100
+        IFNEQ %r24, 0x21DBA064
+            JMP crash
+        IFNEQ %y, 0x5D
+            JMP crash
+
+        DIV %r24, %r23, %r22     ; %r24 = 40000000 ; %y = 1
+        IFNEQ %r24, 0x02625A00
+            JMP crash
+        IFNEQ %y, 1
+            JMP crash
+        ; TODO Signed Multiplication/Division
+
+        JMP begin           ; Begin again in a endless loop
+crash:
+        SLEEP               ; Sleeps because something goes wrong
+
