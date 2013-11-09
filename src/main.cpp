@@ -153,18 +153,18 @@ void print_regs(const vm::cpu::CpuState& state)
 {
     // Print registers
     for (int i=0; i < 27; i++) {
-        std::printf("%%r%2d= 0x%08x ", i, state.r[i]);
+        std::printf("%%r%2d= 0x%08X ", i, state.r[i]);
         if (i == 3 || i == 7 || i == 11 || i == 15 || i == 19 || i == 23 || i == 27 || i == 31)
             std::printf("\n");
     }
-    std::printf("%%y= 0x%08x\n", Y);
+    std::printf("%%y= 0x%08X\n", Y);
     
-    std::printf("%%ia= 0x%08x ", IA);
-    std::printf("%%flags= 0x%08x ", FLAGS);
-    std::printf("%%bp= 0x%08x ", state.r[BP]);
-    std::printf("%%sp= 0x%08x\n", state.r[SP]);
+    std::printf("%%ia= 0x%08X ", IA);
+    std::printf("%%flags= 0x%08X ", FLAGS);
+    std::printf("%%bp= 0x%08X ", state.r[BP]);
+    std::printf("%%sp= 0x%08X\n", state.r[SP]);
 
-    std::printf("%%pc= 0x%08x \n", state.pc);
+    std::printf("%%pc= 0x%08X \n", state.pc);
     std::printf("EDE: %d EOE: %d ESS: %d EI: %d \t IF: %d DE %d OF: %d CF: %d\n",
             GET_EDE(FLAGS), GET_EOE(FLAGS), GET_ESS(FLAGS), GET_EI(FLAGS),
             GET_IF(FLAGS) , GET_DE(FLAGS) , GET_OF(FLAGS) , GET_CF(FLAGS));

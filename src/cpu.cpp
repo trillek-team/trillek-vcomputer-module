@@ -22,7 +22,7 @@ RC3200::~RC3200() {
 }
 
 void RC3200::Reset() {
-    std::fill_n(state.r, N_GPRS-1, 0);
+    std::fill_n(state.r, N_GPRS, 0);
 
     state.pc = 0;
 
@@ -159,14 +159,14 @@ unsigned RC3200::RealStep() {
                 break;
 
             case P3_OPCODE::BITC :
-                state.r[rd] = rs | (~rn);
+                state.r[rd] = rs & (~rn);
                 SET_OFF_CF(FLAGS);
                 SET_OFF_OF(FLAGS);
                 break;
 
             
             case P3_OPCODE::ADD :
-                ltmp = (qword_t)(rs + rn);
+                ltmp = ((qword_t)rs) + rn;
                 if (CARRY_BIT(ltmp)) // We grab carry bit
                     SET_ON_CF(FLAGS);
                 else
@@ -174,7 +174,7 @@ unsigned RC3200::RealStep() {
 
                 // If operands have same sign, check overflow
                 if (DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn)) {
-                    if (DW_SIGN_BIT(rs) != DW_SIGN_BIT(ltmp) ) { 
+                    if (DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) { 
                         // Overflow happens
                         SET_ON_OF(FLAGS);
                         if (GET_EOE(FLAGS)) {
@@ -188,7 +188,7 @@ unsigned RC3200::RealStep() {
                 break;
 
             case P3_OPCODE::ADDC :
-                ltmp = (qword_t)(rs + rn) + GET_CF(FLAGS);
+                ltmp = ((qword_t)rs) + rn + GET_CF(FLAGS);
                 if (CARRY_BIT(ltmp)) // We grab carry bit
                     SET_ON_CF(FLAGS);
                 else
@@ -196,7 +196,7 @@ unsigned RC3200::RealStep() {
 
                 // If operands have same sign, check overflow
                 if (DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn)) {
-                    if (DW_SIGN_BIT(rs) != DW_SIGN_BIT(ltmp) ) { 
+                    if (DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) { 
                         // Overflow happens
                         SET_ON_OF(FLAGS);
                         if (GET_EOE(FLAGS)) {
@@ -210,15 +210,15 @@ unsigned RC3200::RealStep() {
                 break;
             
             case P3_OPCODE::SUB :
-                ltmp = (qword_t)(rs - rn);
+                ltmp = ((qword_t)rs) - rn;
                 if (rs < rn) // We grab carry bit
                     SET_ON_CF(FLAGS);
                 else
                     SET_OFF_CF(FLAGS);
 
-                // If operands have same sign, check overflow
-                if (DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn)) {
-                    if (DW_SIGN_BIT(rs) != DW_SIGN_BIT(ltmp) ) { 
+                // If operands have distint sign, check overflow
+                if (DW_SIGN_BIT(rs) != DW_SIGN_BIT(rn)) {
+                    if (DW_SIGN_BIT(rn) == DW_SIGN_BIT(ltmp) ) { 
                         // Overflow happens
                         SET_ON_OF(FLAGS);
                         if (GET_EOE(FLAGS)) {
@@ -232,15 +232,15 @@ unsigned RC3200::RealStep() {
                 break;
 
             case P3_OPCODE::SUBB :
-                ltmp = (qword_t)(rs - (rn + GET_CF(FLAGS)));
+                ltmp = ((qword_t)rs) - (rn + GET_CF(FLAGS));
                 if (rs < (rn + GET_CF(FLAGS)) ) // We grab carry bit
                     SET_ON_CF(FLAGS);
                 else
                     SET_OFF_CF(FLAGS);
 
-                // If operands have same sign, check overflow
-                if (DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn)) {
-                    if (DW_SIGN_BIT(rs) != DW_SIGN_BIT(ltmp) ) { 
+                // If operands have distint sign, check overflow
+                if (DW_SIGN_BIT(rs) != DW_SIGN_BIT(rn)) {
+                    if (DW_SIGN_BIT(rn) == DW_SIGN_BIT(ltmp) ) { 
                         // Overflow happens
                         SET_ON_OF(FLAGS);
                         if (GET_EOE(FLAGS)) {
@@ -254,7 +254,7 @@ unsigned RC3200::RealStep() {
                 break;
 
             case P3_OPCODE::RSB :
-                ltmp = (qword_t)(rn - rs);
+                ltmp = ((qword_t)rn) - rs;
                 if (rn < rs) // We grab carry bit
                     SET_ON_CF(FLAGS);
                 else
@@ -262,7 +262,7 @@ unsigned RC3200::RealStep() {
 
                 // If operands have same sign, check overflow
                 if (DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn)) {
-                    if (DW_SIGN_BIT(rs) != DW_SIGN_BIT(ltmp) ) { 
+                    if (DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) { 
                         // Overflow happens
                         SET_ON_OF(FLAGS);
                         if (GET_EOE(FLAGS)) {
@@ -276,7 +276,7 @@ unsigned RC3200::RealStep() {
                 break;
 
             case P3_OPCODE::RSBB :
-                ltmp = (qword_t)(rn - (rs + GET_CF(FLAGS)));
+                ltmp = ((qword_t)rn) - (rs + GET_CF(FLAGS));
                 if (rn < (rs + GET_CF(FLAGS)) ) // We grab carry bit
                     SET_ON_CF(FLAGS);
                 else
@@ -284,7 +284,7 @@ unsigned RC3200::RealStep() {
 
                 // If operands have same sign, check overflow
                 if (DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn)) {
-                    if (DW_SIGN_BIT(rs) != DW_SIGN_BIT(ltmp) ) { 
+                    if (DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) { 
                         // Overflow happens
                         SET_ON_OF(FLAGS);
                         if (GET_EOE(FLAGS)) {
@@ -318,10 +318,11 @@ unsigned RC3200::RealStep() {
                 break;
            
             case P3_OPCODE::ARS : {
-                    sword_t srs = rs;
-                    sword_t srn = rn;
+                    sdword_t srs = rs;
+                    sdword_t srn = rn;
 
-                    sqword_t result = ((sqword_t)srs << 1) >> srn; // Enforce to do arithmetic shift
+                    sqword_t result = (((sqword_t)srs) << 1) >> srn; // Enforce to do arithmetic shift
+
                     if (result & 1) // We grab output bit
                         SET_ON_CF(FLAGS);
                     else
