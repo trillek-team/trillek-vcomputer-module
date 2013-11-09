@@ -101,7 +101,7 @@ bool isTextMode() const {
 }
 
 /**
- * Bright backgroudn color attribute is blink, for Text videomode ?
+ * Bright background color attribute is blink, for Text videomode ?
  */
 bool isBlinkAttr() const {
     return blink;
@@ -114,6 +114,99 @@ bool isUserFont() const {
     return userfont;
 }
 
+/**
+ * Generates/Updates a RGBA texture (4 byte per pixel) of the screen state
+ * @param texture Ptr. to the texture. Must have a size enought to containt a 640x200 RGBA texture.
+ */
+void RGBATexture (dword_t* texture) const {
+    assert(texture != NULL);
+
+    dword_t fg, bg;
+    unsigned addr;
+
+    if (textmode) {
+        // Text mode
+        if (videomode == 0) {
+            // 40x25 -> 320x200
+
+        } else if (videomode == 1) {
+            // 80x25 -> 640x200
+
+        } // else -> Unknow videomode. Not supported
+    } else {
+        // Graphics mode
+        byte_t attr, pixels, pix;
+        if (videomode == 0) {
+            // 320x200
+            // (X,Y) = ((X % 320)/8) + (320 * Y / 8)     pixel bit (X) = X%8
+            // attribute (X,Y) = 8000 + ((X % 320)/8) + (320 * Y / 8)/8
+            
+            for (unsigned y = 0; y < 200; y++ ) {
+                for (unsigned x = 0; x < 320; x++ ) {
+                    pix = x % 8;
+
+                    if (x % 8 == 0) { // Update color only when we fin the next 8x8 cell
+                        // 1 - Get Fg and Bg colors
+                        addr = 8000 + (x / 8) + (320/8) * y /8;
+                        attr = obuffer[addr];
+                        fg = attr & 7;
+                        if (!blink) {
+                            fg = (attr & 8) ? fg +9 : fg;
+                        } // TODO Blink
+                        bg = attr & 0xF;
+
+                        // 2 - Get the 8 pixel row from VRAM
+                        addr = x / 8 + (320/8) * y;
+                        pixels = obuffer[addr];
+                    }
+
+                    // 3 - Put the pixel in the texture
+                    if (pixels & (1 << pix)) {  // Active   -> Foreground
+                        texture[x + y*320] = fg;
+                    } else {                    // Unactive -> Background
+                        texture[x + y*320] = bg;
+                    }
+                }
+            }
+
+        } else if (videomode == 1) {
+            // 640x200
+            // (X,Y) = ((X % 640)/8) + (640 * Y / 8) pixel bit (X) = X%8
+            // attribute (X,Y) = 16000 + ((X % 640)/8) + (640 * Y / 8)/8
+
+            for (unsigned y = 0; y < 200; y++ ) {
+                for (unsigned x = 0; x < 640; x++ ) {
+                    pix = x % 8;
+
+                    if (x % 8 == 0) { // Update color only when we fin the next 8x8 cell
+                        // 1 - Get Fg and Bg colors
+                        addr = 16000 + (x / 8) + (640/8) * y /8;
+                        attr = obuffer[addr];
+                        fg = attr & 7;
+                        if (!blink) {
+                            fg = (attr & 8) ? fg +9 : fg;
+                        } // TODO Blink
+                        bg = attr & 0xF;
+
+                        // 2 - Get the 8 pixel row from VRAM
+                        addr = x / 8 + (640/8) * y;
+                        pixels = obuffer[addr];
+                    }
+
+                    // 3 - Put the pixel in the texture
+                    if (pixels & (1 << pix)) {  // Active   -> Foreground
+                        texture[x + y*640] = fg;
+                    } else {                    // Unactive -> Background
+                        texture[x + y*640] = bg;
+                    }
+                }
+            }
+
+        } // else -> Unknow videomode. Not supported
+    }
+}
+
+const static dword_t pallete[]; /// Fixed Color pallette
 
 protected:
 
@@ -172,10 +265,13 @@ public:
     }
 
     void WB (dword_t addr, byte_t val) {
-        //std::printf("CDA -> ADDR: %08Xh VAL : 0x%08X\n", addr, val);
         reg = val;
-        cda->videomode = val & 3; 
-        cda->textmode = (val & 4) == 0; 
+        cda->videomode = val & 7; 
+        cda->textmode = (val & 8) == 0;
+        cda->blink = (val & 0x20 ) != 0;
+        cda->userfont = (val & 0x40 ) != 0;
+        cda->e_vsync = (val & 0x80 ) != 0;
+        
     }
 
     byte_t reg;
