@@ -10,6 +10,9 @@
 #define SDL2_ENABLE @SDL2_ENABLE@
 #if SDL2_ENABLE == 0
     #undef SDL2_ENABLE
+#else
+    #include <SDL2/SDL.h>
+    #include <SDL2/SDL_opengl.h>
 #endif
 
 

@@ -1,5 +1,4 @@
 #include(GL)
-#include(SDL2)
 
 set(rc3200_SRCS
     ./vcomputer.cpp
@@ -56,6 +55,12 @@ else (NOT SDL2_FOUND)
     set (SDL2_ENABLE 1)
 endif (NOT SDL2_FOUND)
 
+find_package(OpenGL)
+if (NOT OPENGL_FOUND)
+    message("OpenGL not found! main executable will not display screen and virtual keyboard")
+    set (SDL2_ENABLE 0)
+endif (NOT OPENGL_FOUND)
+
 # Main executable config file
 configure_file (./config_main.hpp.in
                 "${PROJECT_BINARY_DIR}/config_main.hpp" )
@@ -66,11 +71,13 @@ add_executable( vm
 
 include_directories( vm
     ${rc3200_INCLUDE_DIRS}
+    ${OPENGL_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIR}
 )
 
 target_link_libraries( vm
     rc3200_lib_static
+    ${OPENGL_LIBRARIES}
     ${SDL2_LIBRARY}
 )
 
