@@ -26,3 +26,7 @@ build/
 # vim/kate/nano backup files
 *.swp
 *.~
+
+# Generated config files in include
+include/config.hpp
+

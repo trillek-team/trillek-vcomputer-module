@@ -1,0 +1,17 @@
+#pragma once
+#ifndef ___CONFIG_MAIN_HPP__
+#define ___CONFIG_MAIN_HPP__ 1
+/**
+ * RC3200 VM - config_main.hpp
+ * Compilation time generated stuff related to version, OS, etc...
+ * All related to main.cpp, like if SDL2 is there  etc...
+ */
+
+#define SDL2_ENABLE @SDL2_ENABLE@
+#if SDL2_ENABLE == 0
+    #undef SDL2_ENABLE
+#endif
+
+
+
+#endif // ___CONFIG_MAIN_HPP__

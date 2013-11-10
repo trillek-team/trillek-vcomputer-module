@@ -1,8 +1,4 @@
-#include "types.hpp"
-#include "vcomputer.hpp"
-#include "dis_rc3200.hpp"
-
-#include "CDA.hpp"
+#include <vm.hpp>
 
 #include <iostream>
 #include <fstream>
