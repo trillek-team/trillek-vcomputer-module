@@ -1,5 +1,5 @@
 if (CMAKE_HOST_APPLE)
-    set(DCPU_VM_SEARCH_PATHS
+    set(rc32000_SEARCH_PATHS
         /usr
         /Applications/Xcode.app/Contents/Developer/Platforms.MacOSX.platform/Developer/SDKs
         /Library/Frameworks
@@ -9,7 +9,7 @@ if (CMAKE_HOST_APPLE)
 else (CMAKE_HOST_APPLE)
     # OS X is a Unix, but it's not a normal Unix as far as search paths go.
     if (CMAKE_HOST_UNIX)
-        set(DCPU_VM_SEARCH_PATHS
+        set(rc32000_SEARCH_PATHS
             /usr
             /usr/local
             /opt/local
@@ -24,6 +24,7 @@ if (MSVC)
     set(PLATFORM_FLAGS)
     set(DCPU_VM_SEARCH_PATHS
         "C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC"
+        "C:/Program Files (x86)/Microsoft Visual Studio 12.0/VC"
     )
 else (MSVC)
     set(PLATFORM_FLAGS "-Wall" ) # Generic flags

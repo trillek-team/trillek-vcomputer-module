@@ -1,6 +1,7 @@
+cmake_minimum_required(VERSION 2.6)
+
 project(rc3200)
 
-cmake_minimum_required(VERSION 2.6)
 set(PACKAGE_BUGREPORT "luis.panader@gmail.com")
 set(PACKAGE_NAME "rc3200_vm")
 set(PACKAGE_VERSION "0.1")
@@ -15,9 +16,14 @@ else (CMAKE_BUILD_TYPE STREQUAL "Release")
     set (LOG_ENABLE 1)
 endif (CMAKE_BUILD_TYPE STREQUAL "Release")
 
+# Set the directory where to find FindSLD2.cmake
 set(CMAKE_MODULE_PATH ${rc3200_SOURCE_DIR}/cmake)
 
-set(DCPU-VM_INCLUDE_DIRS
+# Outpit the compiler ID.
+message("Compiler ID: " ${CMAKE_CXX_COMPILER_ID})
+
+# Include dirs
+set(rc3200_INCLUDE_DIRS
     ${PROJECT_BINARY_DIR}
     ${rc3200_SOURCE_DIR}/include
 )

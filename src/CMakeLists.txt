@@ -1,5 +1,4 @@
 #include(GL)
-#include(SFML)
 #include(SDL2)
 
 set(rc3200_SRCS
@@ -25,6 +24,10 @@ include_directories(rc3200_lib
     ${rc3200_INCLUDE_DIRS}
 )
 
+include_directories(rc3200_lib_static
+    ${rc3200_INCLUDE_DIRS}
+)
+
     
 # Main executable
 add_executable( vm
@@ -34,14 +37,10 @@ add_executable( vm
 
 include_directories( vm
     ${rc3200_INCLUDE_DIRS}
-#    ${OPENGL_INCLUDE_DIR}
-#    ${SFML_INCLUDE_DIR}
 )
 
 target_link_libraries( vm
     rc3200_lib_static
-#    ${OPENGL_LIBRARIES}
-#    ${SFML_LIBRARIES}
 )
 
 # Benchmark executable
