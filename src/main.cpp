@@ -16,20 +16,39 @@
 #include <chrono>
 
 #ifdef SDL2_ENABLE
-/**
- * Generates a perspective frustrum
- */
-void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar ) {
-    const GLdouble pi = 3.1415926535897932384626433832795;
-    GLdouble fW, fH;
 
-    //fH = tan( (fovY / 2) / 180 * pi ) * zNear;
-    fH = tan( fovY / 360 * pi ) * zNear;
-    fW = fH * aspect;
+unsigned sdl_width = 800;
+unsigned sdl_height = 600;
+int sdl_other_flags = 0;
+SDL_Window* pwin = nullptr;
+SDL_Renderer* prend = nullptr;
 
-    glFrustum( -fW, fW, -fH, fH, zNear, zFar );
-}
+GLuint screenVBO; // ID of screen VBO
+
+// Handler of shader program
+GLuint shaderProgram;
+ 
+// Ptrs to source doe of shaders
+GLchar *vertexSource = nullptr;
+GLchar *fragmentSource = nullptr;
+
+// Handlers of the shader programs
+GLuint vertexShader, fragmentShader;
+
+const unsigned int shaderAttribute = 0;
+ 
+static const GLfloat N_VERTICES=4;
+float vdata[] = {
+            1.0,  0.5, 0.0, // Top Right
+           -1.0,  0.5, 0.0, // Top Left
+            1.0, -1.0, 0.0, // Botton Right
+           -1.0, -1.0, 0.0, // Bottom Left
+};
+
+void initSDL();
+void initGL();
 #endif
+
 
 
 void print_regs(const vm::cpu::CpuState& state);
@@ -104,63 +123,9 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
     unsigned long ticks_count = 0;
 
 #ifdef SDL2_ENABLE
-    // Init SDL2 / OpenGL stuff
-    if (SDL_Init(SDL_INIT_VIDEO) == -1){
-        std::cout << SDL_GetError() << std::endl;
-        return 1;
-    }
-    
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,0);
+    initSDL();
 
-    unsigned sdl_width = 800;
-    unsigned sdl_height = 600;
-
-    int sdl_other_flags = 0;
-    SDL_Window* pwin = nullptr;
-    SDL_Renderer* prend = nullptr;
-    SDL_RendererInfo rend_info;
-
-    SDL_CreateWindowAndRenderer(sdl_width, sdl_height, SDL_WINDOW_OPENGL | sdl_other_flags, &pwin, &prend);
-    SDL_SetWindowTitle(pwin, "RC3200 VM");
-    SDL_GetRendererInfo(prend, &rend_info);
-
-    if ((rend_info.flags & SDL_RENDERER_ACCELERATED) == 0 || 
-        (rend_info.flags & SDL_RENDERER_TARGETTEXTURE) == 0 ) {
-        std::cout << "Can't create OpenGL context" << std::endl;
-        SDL_Quit();
-        return 1;
-    } 
-
-    // Init OpenGL ************************************************************
-    // Enable smoth shading
-    glShadeModel (GL_SMOOTH);
-
-    // Clear buffers
-    glClearColor (0.0f, 0.0f, 0.0f, 0.0f );
-    glClearDepth (1.0f);
-
-    glEnable (GL_DEPTH_TEST);
-    glDepthFunc (GL_LEQUAL);
-
-    glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
-    // Set ViewPort
-    GLfloat ratio = ((GLfloat)sdl_width) / sdl_height;
-    glViewport (0, 0, sdl_width, sdl_height);
-
-    // Proyection matrix
-    glMatrixMode (GL_PROJECTION);
-    glLoadIdentity();
-
-    // Generate frustum perspective 
-    //gluPerspective (45.0f, ratio, 0.1f, 100.0f);
-    perspectiveGL (45.0f, ratio, 0.1f, 100.0f);
- 
-    // Make sure we're chaning the model view and not the projection
-    glMatrixMode (GL_MODELVIEW);
-    glLoadIdentity( );
-
+    initGL();
 #endif
 
     using namespace std::chrono;
@@ -232,33 +197,40 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
 
 #ifdef SDL2_ENABLE
         // TODO Rendering stuff here
-        glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+        glClearColor( 0.1f, 0.1f, 0.1f, 0.0f );
         // Clear The Screen And The Depth Buffer
-        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // ...
         
-        /* Move Left 1.5 Units And Into The Screen 6.0 */
         glLoadIdentity();
-        glTranslatef( -1.5f, 0.0f, -6.0f );
+/*
+        //glTranslatef( 3.0f, 0.0f, -10.0f );
 
-        glBegin( GL_TRIANGLES ); /* Drawing Using Triangles */
-        glVertex3f( 0.0f, 1.0f, 0.0f ); /* Top */
-        glVertex3f( -1.0f, -1.0f, 0.0f ); /* Bottom Left */
-        glVertex3f( 1.0f, -1.0f, 0.0f ); /* Bottom Right */
-        glEnd( ); /* Finished Drawing The Triangle */
+        glBegin( GL_QUADS ); // Draw A Quad
+        glVertex3f( -1.0f, 1.0f, 0.0f ); // Top Left
+        glVertex3f( 1.0f, 0.5f, 0.0f ); // Top Right
+        glVertex3f( 1.0f, -1.0f, 0.0f ); // Bottom Right
+        glVertex3f( -1.0f, -1.0f, 0.0f ); // Bottom Left
+        glEnd( ); // Done Drawing The Quad
 
-        /* Move Right 3 Units */
-        glTranslatef( 3.0f, 0.0f, 0.0f );
+       
+*/
+        glUseProgram(shaderProgram);
+        // Enable attribute index 0(shaderAttribute) as being used
+        glEnableVertexAttribArray(shaderAttribute);
+        glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+        // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
+        glVertexAttribPointer(
+            shaderAttribute, 
+            3, 
+            GL_FLOAT, 
+            GL_FALSE, 
+            0, 
+            0 );
 
-        glBegin( GL_QUADS ); /* Draw A Quad */
-        glVertex3f( -1.0f, 1.0f, 0.0f ); /* Top Left */
-        glVertex3f( 1.0f, 1.0f, 0.0f ); /* Top Right */
-        glVertex3f( 1.0f, -1.0f, 0.0f ); /* Bottom Right */
-        glVertex3f( -1.0f, -1.0f, 0.0f ); /* Bottom Left */
-        glEnd( ); /* Done Drawing The Quad */
+        glDrawArrays(GL_TRIANGLE_STRIP, shaderAttribute, N_VERTICES);
 
-        // ...
+        glDisableVertexAttribArray(shaderAttribute);
 
         SDL_RenderPresent(prend);
         SDL_GL_SwapWindow(pwin);
@@ -266,6 +238,7 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
     }
 
 #ifdef SDL2_ENABLE
+
     //SDL_GL_DeleteContext(mainGLContext);
     SDL_DestroyWindow(pwin);
     SDL_Quit();
@@ -315,4 +288,118 @@ void print_stack(const vm::cpu::CpuState& state, const vm::ram::Mem& ram) {
                     break;
     }
 }
+
+
+#ifdef SDL2_ENABLE
+
+void initSDL() {
+    // Init SDL2 / OpenGL stuff
+    if (SDL_Init(SDL_INIT_VIDEO) == -1){
+        std::cout << SDL_GetError() << std::endl;
+        exit(-1);
+    }
+    
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,0);
+
+
+    SDL_RendererInfo rend_info;
+
+    SDL_CreateWindowAndRenderer(sdl_width, sdl_height, SDL_WINDOW_OPENGL | sdl_other_flags, &pwin, &prend);
+    SDL_SetWindowTitle(pwin, "RC3200 VM");
+    SDL_GetRendererInfo(prend, &rend_info);
+
+    if ((rend_info.flags & SDL_RENDERER_ACCELERATED) == 0 || 
+        (rend_info.flags & SDL_RENDERER_TARGETTEXTURE) == 0 ) {
+        std::cout << "Can't create OpenGL context" << std::endl;
+        SDL_Quit();
+        exit(-1);
+    } 
+}
+
+void initGL() {
+    // Init OpenGL ************************************************************
+    
+    // Initialize VBO *********************************************************
+    glGenBuffers(1, &screenVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+    // Upload data to VBO
+    glBufferData(GL_ARRAY_BUFFER, N_VERTICES * 3 * sizeof(GLfloat), vdata, GL_STATIC_DRAW);
+    
+    
+    // Loading shaders ********************************************************
+    auto f_vs = std::fopen("./assets/shaders/basic_vs.vert", "r");
+    if (f_vs != nullptr) {
+      fseek(f_vs, 0L, SEEK_END);
+      size_t bufsize = ftell(f_vs);
+      vertexSource = new GLchar[bufsize + 1]();
+
+      fseek(f_vs, 0L, SEEK_SET);
+      fread(vertexSource, sizeof(GLchar), bufsize, f_vs);
+      
+      fclose(f_vs);
+      vertexSource[bufsize] = 0; // Enforce null char
+    }
+
+    auto f_fs = std::fopen("./assets/shaders/basic_fs.frag", "r");
+    if (f_fs != nullptr) {
+      fseek(f_fs, 0L, SEEK_END);
+      size_t bufsize = ftell(f_fs);
+      fragmentSource = new GLchar[bufsize +1 ]();
+
+      fseek(f_fs, 0L, SEEK_SET);
+      fread(fragmentSource, sizeof(GLchar), bufsize, f_fs);
+      
+      fclose(f_fs);
+      fragmentSource[bufsize] = 0; // Enforce null char
+    }
+
+
+    // Assign our handles a "name" to new shader objects
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+ 
+    // Associate the source code buffers with each handle
+    glShaderSource(vertexShader, 1, (const GLchar**)&vertexSource, 0);
+    glShaderSource(fragmentShader, 1, (const GLchar**)&fragmentSource, 0);
+
+    // Compile our shader objects
+    glCompileShader(vertexShader);
+    glCompileShader(fragmentShader);
+
+    if (vertexSource != nullptr)
+      delete[] vertexSource;
+
+    if (fragmentSource != nullptr)
+      delete[] fragmentSource;
+   
+    /*
+    GLint Result = GL_FALSE;
+    int InfoLogLength;
+    
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &Result);
+    glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &InfoLogLength);
+    std::vector<char> VertexShaderErrorMessage(InfoLogLength);
+    glGetShaderInfoLog(vertexShader, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
+    std::printf(stdout, "%s\n", &VertexShaderErrorMessage[0]);
+    */
+
+    // Assign our program handle a "name"
+    shaderProgram = glCreateProgram();
+ 
+    // Attach our shaders to our program
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+
+    // Bind attribute index 0 (shaderAttribute) to in_Position
+    //glBindAttribLocation(shaderProgram, shaderAttribute, "in_Position");
+ 
+    // Link shader program
+    glLinkProgram(shaderProgram);
+     
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+}
+
+#endif
 
