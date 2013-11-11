@@ -30,11 +30,16 @@
 * THE SOFTWARE.
 *
 */
-#ifndef __ENDIAN_H__
-#define __ENDIAN_H__ 1
+#ifndef __ENDIAN_HPP__
+#define __ENDIAN_HPP__ 1
 
+// Avoid clash with SDL2
+#ifndef LITTLE_ENDIAN
 #define LITTLE_ENDIAN 			1234
+#endif
+#ifndef BIG_ENDIAN
 #define BIG_ENDIAN              4321
+#endif
 
 #define LITTLE_ENDIAN_NAME 		"litte endian"
 #define BIG_ENDIAN_NAME 		"big endian"
@@ -91,4 +96,4 @@
 
 #endif // BYTE_ORDER_NAM
 
-#endif
+#endif // __ENDIAN_HPP__

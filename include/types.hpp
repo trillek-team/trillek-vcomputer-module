@@ -7,7 +7,7 @@
 #ifndef __TYPES_HPP__
 #define __TYPES_HPP__ 1
 
-#include "endian.h"
+#include "endian.hpp"
 
 #if (! defined(_MSC_VER) || (_MSC_VER >= 1700))
 #include <cstdint>
