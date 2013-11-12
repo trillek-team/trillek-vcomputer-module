@@ -61,6 +61,18 @@ if (NOT OPENGL_FOUND)
     set (SDL2_ENABLE 0)
 endif (NOT OPENGL_FOUND)
 
+find_package(GLEW)
+if(NOT GLEW_FOUND)
+  message("GLEW not found! main executable will not display screen and virtual keyboard")
+  set (SDL2_ENABLE 0)
+endif(NOT GLEW_FOUND)
+
+#find_package(GLM)
+#if(NOT GLM_FOUND)
+#  message("GLM not found! main executable will not display screen and virtual keyboard")
+#  set (SDL2_ENABLE 0)
+#endif(NOT GLM_FOUND)
+
 # Main executable config file
 configure_file (./config_main.hpp.in
                 "${PROJECT_BINARY_DIR}/config_main.hpp" )
@@ -72,12 +84,16 @@ add_executable( vm
 include_directories( vm
     ${rc3200_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
+    ${GLEW_INCLUDE_DIR}
+    ${GLM_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIR}
 )
 
 target_link_libraries( vm
     rc3200_lib_static
     ${OPENGL_LIBRARIES}
+    ${GLEW_LIBRARIES}
+    ${GLM_LIBRARIES}
     ${SDL2_LIBRARY}
 )
 

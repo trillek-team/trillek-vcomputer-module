@@ -19,9 +19,10 @@
 
 unsigned sdl_width = 800;
 unsigned sdl_height = 600;
-int sdl_other_flags = 0;
+int sdl_other_flags = SDL_WINDOW_SHOWN;
 SDL_Window* pwin = nullptr;
 SDL_Renderer* prend = nullptr;
+SDL_GLContext ogl_context;
 
 GLuint screenVBO; // ID of screen VBO
 
@@ -196,25 +197,11 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
         }
 
 #ifdef SDL2_ENABLE
-        // TODO Rendering stuff here
-        glClearColor( 0.1f, 0.1f, 0.1f, 0.0f );
         // Clear The Screen And The Depth Buffer
+        glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        
-        glLoadIdentity();
-/*
-        //glTranslatef( 3.0f, 0.0f, -10.0f );
-
-        glBegin( GL_QUADS ); // Draw A Quad
-        glVertex3f( -1.0f, 1.0f, 0.0f ); // Top Left
-        glVertex3f( 1.0f, 0.5f, 0.0f ); // Top Right
-        glVertex3f( 1.0f, -1.0f, 0.0f ); // Bottom Right
-        glVertex3f( -1.0f, -1.0f, 0.0f ); // Bottom Left
-        glEnd( ); // Done Drawing The Quad
-
-       
-*/
+        // Drawing ... 
         glUseProgram(shaderProgram);
         // Enable attribute index 0(shaderAttribute) as being used
         glEnableVertexAttribArray(shaderAttribute);
@@ -232,6 +219,7 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
 
         glDisableVertexAttribArray(shaderAttribute);
 
+        // Update host window
         SDL_RenderPresent(prend);
         SDL_GL_SwapWindow(pwin);
 #endif
@@ -239,7 +227,7 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
 
 #ifdef SDL2_ENABLE
 
-    //SDL_GL_DeleteContext(mainGLContext);
+    SDL_GL_DeleteContext(ogl_context);
     SDL_DestroyWindow(pwin);
     SDL_Quit();
 #endif
@@ -300,21 +288,24 @@ void initSDL() {
     }
     
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,0);
-
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,1);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     SDL_RendererInfo rend_info;
 
-    SDL_CreateWindowAndRenderer(sdl_width, sdl_height, SDL_WINDOW_OPENGL | sdl_other_flags, &pwin, &prend);
-    SDL_SetWindowTitle(pwin, "RC3200 VM");
-    SDL_GetRendererInfo(prend, &rend_info);
+    pwin = SDL_CreateWindow("RC3200 VM", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+              sdl_width, sdl_height, SDL_WINDOW_OPENGL | sdl_other_flags);
 
-    if ((rend_info.flags & SDL_RENDERER_ACCELERATED) == 0 || 
-        (rend_info.flags & SDL_RENDERER_TARGETTEXTURE) == 0 ) {
-        std::cout << "Can't create OpenGL context" << std::endl;
-        SDL_Quit();
-        exit(-1);
-    } 
+    ogl_context = SDL_GL_CreateContext(pwin);
+
+    GLenum status = glewInit();
+    if (status != GLEW_OK) {
+        std::cerr << "GLEW Error: " << glewGetErrorString(status) << "\n";
+        exit(1);
+    }
+    
+    // sync buffer swap with monitor's vertical refresh rate
+    SDL_GL_SetSwapInterval(1);
 }
 
 void initGL() {
@@ -328,7 +319,7 @@ void initGL() {
     
     
     // Loading shaders ********************************************************
-    auto f_vs = std::fopen("./assets/shaders/basic_vs.vert", "r");
+    auto f_vs = std::fopen("./assets/shaders/mvp_template.vert", "r");
     if (f_vs != nullptr) {
       fseek(f_vs, 0L, SEEK_END);
       size_t bufsize = ftell(f_vs);
@@ -373,16 +364,24 @@ void initGL() {
     if (fragmentSource != nullptr)
       delete[] fragmentSource;
    
-    /*
+    
     GLint Result = GL_FALSE;
     int InfoLogLength;
     
+    // Vertex Shader compiling error messages
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &Result);
     glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &InfoLogLength);
-    std::vector<char> VertexShaderErrorMessage(InfoLogLength);
+    std::vector<char> VertexShaderErrorMessage(InfoLogLength); 
     glGetShaderInfoLog(vertexShader, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-    std::printf(stdout, "%s\n", &VertexShaderErrorMessage[0]);
-    */
+    std::printf("%s\n", &VertexShaderErrorMessage[0]);
+    
+    // Fragment Shader compiling error messages
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &Result);
+    glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &InfoLogLength);
+    std::vector<char> FragmentShaderErrorMessage(InfoLogLength); 
+    glGetShaderInfoLog(fragmentShader, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
+    std::printf("%s\n", &FragmentShaderErrorMessage[0]);
+    
 
     // Assign our program handle a "name"
     shaderProgram = glCreateProgram();
@@ -392,7 +391,7 @@ void initGL() {
     glAttachShader(shaderProgram, fragmentShader);
 
     // Bind attribute index 0 (shaderAttribute) to in_Position
-    //glBindAttribLocation(shaderProgram, shaderAttribute, "in_Position");
+    glBindAttribLocation(shaderProgram, shaderAttribute, "in_Position");
  
     // Link shader program
     glLinkProgram(shaderProgram);
