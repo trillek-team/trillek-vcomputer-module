@@ -17,12 +17,10 @@ out vec2 ex_UV;
  
 void main(void) {
 
-    gl_Position.xyz = in_Position.xyz;
-    gl_Position.w = 1.0;
     ex_Color = vec3(1.0, 0.5, 0.0);
-    //gl_Position = in_Proj * (in_View * (in_Model * vec4(in_Position, 1.0)));
+    gl_Position = in_Proj * (in_View * (in_Model * vec4(in_Position, 1.0)));
     //ex_Color = vec3(1.0, 1.0, 1.0) * vec3(in_Color);
-    //ex_Normal = (in_Model * vec4(in_Normal, 0)).xyz;
+    ex_Normal = (in_Model * vec4(in_Normal, 0)).xyz;
     ex_UV = in_UV;
 }
 

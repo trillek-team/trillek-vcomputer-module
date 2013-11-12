@@ -36,6 +36,8 @@ GLchar *fragmentSource = nullptr;
 // Handlers of the shader programs
 GLuint vertexShader, fragmentShader;
 
+GLuint modelId, viewId, projId; // Handle for uniform inputs to the shader
+
 const unsigned int shaderAttribute = 0;
  
 static const GLfloat N_VERTICES=4;
@@ -45,6 +47,8 @@ float vdata[] = {
             1.0, -1.0, 0.0, // Botton Right
            -1.0, -1.0, 0.0, // Bottom Left
 };
+
+glm::mat4 proj, view, model; // MVP Matrixes
 
 void initSDL();
 void initGL();
@@ -201,6 +205,9 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
         glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Model matrix <- Identity
+        model = glm::mat4(1.0f); 
+        
         // Drawing ... 
         glUseProgram(shaderProgram);
         // Enable attribute index 0(shaderAttribute) as being used
@@ -214,6 +221,11 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
             GL_FALSE, 
             0, 
             0 );
+
+        // Send M, V, P matrixes to the uniform inputs,
+        glUniformMatrix4fv(modelId, 1, GL_FALSE, &model[0][0]);
+        glUniformMatrix4fv(viewId, 1, GL_FALSE, &view[0][0]);
+        glUniformMatrix4fv(projId, 1, GL_FALSE, &proj[0][0]);
 
         glDrawArrays(GL_TRIANGLE_STRIP, shaderAttribute, N_VERTICES);
 
@@ -290,8 +302,6 @@ void initSDL() {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,1);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-    SDL_RendererInfo rend_info;
 
     pwin = SDL_CreateWindow("RC3200 VM", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
               sdl_width, sdl_height, SDL_WINDOW_OPENGL | sdl_other_flags);
@@ -390,14 +400,32 @@ void initGL() {
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
 
-    // Bind attribute index 0 (shaderAttribute) to in_Position
-    glBindAttribLocation(shaderProgram, shaderAttribute, "in_Position");
- 
     // Link shader program
     glLinkProgram(shaderProgram);
+    
+
+    // Bind attribute index 0 (shaderAttribute) to in_Position
+    glBindAttribLocation(shaderProgram, shaderAttribute, "in_Position");
+    
+    modelId = glGetUniformLocation(shaderProgram, "in_Model");
+    viewId  = glGetUniformLocation(shaderProgram, "in_View");
+    projId  = glGetUniformLocation(shaderProgram, "in_Proj");
+
      
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+
+    // Projection matrix : 45° Field of View
+    proj = glm::perspective(45.0f,  (GLfloat)(sdl_width) / sdl_height, 0.1f, 100.0f);
+    
+    // Camera matrix
+    view = glm::lookAt(
+        glm::vec3(4,3,3), // Camera is at (4,3,3), in World Space
+        glm::vec3(0,0,0), // and looks at the origin
+        glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+      );
+
+
 }
 
 #endif
