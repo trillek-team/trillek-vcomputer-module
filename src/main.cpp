@@ -24,7 +24,7 @@ SDL_Window* pwin = nullptr;
 SDL_Renderer* prend = nullptr;
 SDL_GLContext ogl_context;
 
-GLuint screenVBO; // ID of screen VBO
+GLuint screenPBO; // ID of screen PBO
 
 // Handler of shader program
 GLuint shaderProgram;
@@ -38,14 +38,33 @@ GLuint vertexShader, fragmentShader;
 
 GLuint modelId, viewId, projId; // Handle for uniform inputs to the shader
 
-const unsigned int shaderAttribute = 0;
+const unsigned int sh_in_Position = 0;
+const unsigned int sh_in_Color = 1;
+const unsigned int sh_in_UV = 3;
  
 static const GLfloat N_VERTICES=4;
-float vdata[] = {
-            1.0,  0.5, 0.0, // Top Right
-           -1.0,  0.5, 0.0, // Top Left
-            1.0, -1.0, 0.0, // Botton Right
-           -1.0, -1.0, 0.0, // Bottom Left
+GLuint vertexbuffer;
+static const float vdata[] = {
+            3.2,  2.4, 0.0, // Top Right
+           -3.2,  2.4, 0.0, // Top Left
+            3.2, -2.4, 0.0, // Botton Right
+           -3.2, -2.4, 0.0, // Bottom Left
+};
+
+GLuint colorbuffer;
+static const float color_data[] = {
+            1.0,  1.0, 1.0, // Top Right
+            1.0,  1.0, 1.0, // Top Left
+            1.0,  1.0, 1.0, // Botton Right
+            1.0,  1.0, 1.0, // Bottom Left
+};
+
+GLuint uvbuffer;
+static const float uv_data[] = {
+            1.0,  0.0,      // Top Right
+            0.0,  0.0,      // Top Left
+            1.0,  1.0,      // Botton Right
+            0.0,  1.0,      // Bottom Left
 };
 
 glm::mat4 proj, view, model; // MVP Matrixes
@@ -210,13 +229,45 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
         
         // Drawing ... 
         glUseProgram(shaderProgram);
-        // Enable attribute index 0(shaderAttribute) as being used
-        glEnableVertexAttribArray(shaderAttribute);
-        glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+        // Set sampler to user Texture Unit 0
+        glUniform1i(glGetUniformLocation( shaderProgram, "texture0" ), 0);
+    
+        // Bind texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, screenPBO);
+
+
+        // Enable attribute in_Position as being used
+        glEnableVertexAttribArray(sh_in_Position);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
         // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
         glVertexAttribPointer(
-            shaderAttribute, 
+            sh_in_Position, 
             3, 
+            GL_FLOAT, 
+            GL_FALSE, 
+            0, 
+            0 );
+
+        // Enable attribute in_Color as being used
+        glEnableVertexAttribArray(sh_in_Color);
+        glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+        // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
+        glVertexAttribPointer(
+            sh_in_Color, 
+            3, 
+            GL_FLOAT, 
+            GL_FALSE, 
+            0, 
+            0 );
+
+        // Enable attribute in_UV as being used
+        glEnableVertexAttribArray(sh_in_UV);
+        glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+        // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
+        glVertexAttribPointer(
+            sh_in_UV, 
+            2, 
             GL_FLOAT, 
             GL_FALSE, 
             0, 
@@ -227,9 +278,11 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
         glUniformMatrix4fv(viewId, 1, GL_FALSE, &view[0][0]);
         glUniformMatrix4fv(projId, 1, GL_FALSE, &proj[0][0]);
 
-        glDrawArrays(GL_TRIANGLE_STRIP, shaderAttribute, N_VERTICES);
+        glDrawArrays(GL_TRIANGLE_STRIP, sh_in_Position, N_VERTICES);
 
-        glDisableVertexAttribArray(shaderAttribute);
+        glDisableVertexAttribArray(sh_in_Position);
+        glDisableVertexAttribArray(sh_in_Color);
+        glDisableVertexAttribArray(sh_in_UV);
 
         // Update host window
         SDL_RenderPresent(prend);
@@ -321,13 +374,42 @@ void initSDL() {
 void initGL() {
     // Init OpenGL ************************************************************
     
-    // Initialize VBO *********************************************************
-    glGenBuffers(1, &screenVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+    // Initialize VBOs ********************************************************
+    glGenBuffers(1, &vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     // Upload data to VBO
-    glBufferData(GL_ARRAY_BUFFER, N_VERTICES * 3 * sizeof(GLfloat), vdata, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vdata), vdata, GL_STATIC_DRAW);
     
+    glGenBuffers(1, &colorbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+    // Upload data to VBO
+    glBufferData(GL_ARRAY_BUFFER, sizeof(color_data), color_data, GL_STATIC_DRAW);
     
+    glGenBuffers(1, &uvbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+    // Upload data to VBO
+    glBufferData(GL_ARRAY_BUFFER, sizeof(uv_data), uv_data, GL_STATIC_DRAW);
+   
+    // Initialize Texture *****************************************************
+    vm::byte_t tdata[32*32*4] = {
+    // R    G    B    A
+      255, 255, 255, 255,
+      128, 128, 128, 255,
+      0  ,   0, 255, 255,
+      0  , 255,   0, 255,
+      255,   0,   0, 255,
+      128, 128, 128, 255,
+    };
+
+    glGenTextures(1, &screenPBO);
+    glBindTexture(GL_TEXTURE_2D, screenPBO);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 32, 32, 0, GL_RGBA, GL_UNSIGNED_BYTE, tdata);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
     // Loading shaders ********************************************************
     auto f_vs = std::fopen("./assets/shaders/mvp_template.vert", "r");
     if (f_vs != nullptr) {
@@ -342,7 +424,7 @@ void initGL() {
       vertexSource[bufsize] = 0; // Enforce null char
     }
 
-    auto f_fs = std::fopen("./assets/shaders/basic_fs.frag", "r");
+    auto f_fs = std::fopen("./assets/shaders/basic_texture.frag", "r");
     if (f_fs != nullptr) {
       fseek(f_fs, 0L, SEEK_END);
       size_t bufsize = ftell(f_fs);
@@ -404,8 +486,10 @@ void initGL() {
     glLinkProgram(shaderProgram);
     
 
-    // Bind attribute index 0 (shaderAttribute) to in_Position
-    glBindAttribLocation(shaderProgram, shaderAttribute, "in_Position");
+    // Bind attributes indexes 
+    glBindAttribLocation(shaderProgram, sh_in_Position, "in_Position");
+    glBindAttribLocation(shaderProgram, sh_in_Color, "in_Color");
+    glBindAttribLocation(shaderProgram, sh_in_UV, "in_UV");
     
     modelId = glGetUniformLocation(shaderProgram, "in_Model");
     viewId  = glGetUniformLocation(shaderProgram, "in_View");
@@ -420,12 +504,15 @@ void initGL() {
     
     // Camera matrix
     view = glm::lookAt(
-        glm::vec3(4,3,3), // Camera is at (4,3,3), in World Space
+        glm::vec3(3,3,7), // Camera is at (3,3,7), in World Space
         glm::vec3(0,0,0), // and looks at the origin
         glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
       );
 
-
+    // Enable depth test
+    glEnable(GL_DEPTH_TEST);
+    // Accept fragment if it closer to the camera than the former one
+    glDepthFunc(GL_LESS);
 }
 
 #endif
