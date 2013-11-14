@@ -229,7 +229,7 @@ bool v_sync_int;
 void RGBATextureCDA (CDA& cda, dword_t* texture);
 void RGBATexture (const byte_t* vram, unsigned vmode, bool userfont, bool userpal, bool textmode, dword_t* texture);
 
-static const dword_t pallete[] = {  /// Default color palette  
+static const dword_t palette[] = {  /// Default color palette  
 #if (BYTE_ORDER != LITTLE_ENDIAN)
 // Big Endian -> RGBA
     0x000000FF, // Black
