@@ -120,13 +120,17 @@ const CpuState& State() const {
 
 /**
  * Throws a interrupt to the CPU
+ * @param msg Interrupt message
+ * @return True if the CPU accepts the interrupt
  */
-void ThrowInterrupt (dword_t msg) {
+bool ThrowInterrupt (dword_t msg) {
     if (!state.iacq && GET_EI(FLAGS)) {
         // The CPU accepts a new interrupt
         state.interrupt = true;
         state.int_msg = msg;
+        return true;
     }
+    return false;
 }
 
 ram::Mem ram;               /// Handles the RAM mapings / access 

@@ -23,17 +23,17 @@
 namespace vm {
 namespace cda {
 
-unsigned const VSYNC = 25;              /// Vertical refresh frecuency
-unsigned const VRAM_SIZE = 0x4400;      /// VRAM size
-dword_t  const SETUP_OFFSET = 0xCC00;   /// SETUP register offset
+static const unsigned VSYNC = 25;              /// Vertical refresh frecuency
+static const unsigned VRAM_SIZE = 0x2580;      /// VRAM size
+static const dword_t  SETUP_OFFSET = 0xCC00;   /// SETUP register offset
 
-dword_t INT_MSG[] = {                   /// Interrupt message value
+static const dword_t INT_MSG[] = {                   /// Interrupt message value
     0x0000005A, 
     0x0000105A, 
     0x0000205A, 
     0x0000305A};
 
-dword_t BASE_ADDR[] = {                 /// VRAM base address
+static const dword_t BASE_ADDR[] = {                 /// VRAM base address
     0xFF0A0000, 
     0xFF0B0000, 
     0xFF0C0000, 
@@ -49,7 +49,7 @@ typedef void (*VSync_CBack)(CDA*, const byte_t*); /// Callback for virtual VSync
 class CDA : public IDevice {
 public:
 
-CDA() : count(0), videomode(0), textmode(true), blink(false), userfont(false), e_vsync(false), vram(this), setupr(this), buffer(nullptr), vsync_cb(nullptr) {
+CDA() : count(0), videomode(0), textmode(true), userpal(false), userfont(false), e_vsync(false), vram(this), setupr(this), buffer(nullptr), vsync_cb(nullptr), v_sync_int(false) {
     buffer = new byte_t[VRAM_SIZE]();
 }
 
@@ -73,8 +73,13 @@ virtual void Tick (cpu::RC3200& cpu, unsigned n=1) {
     if (vsync_cb != nullptr)
       vsync_cb (this, buffer);
 
-    if (e_vsync)
-      cpu.ThrowInterrupt(INT_MSG[this->Jmp1() &3]);
+    if (e_vsync || v_sync_int) {
+      auto ret = cpu.ThrowInterrupt(INT_MSG[this->Jmp1() &3]);
+      if (!ret) // If the CPU not accepts the interrupt, try again in the next tick
+        v_sync_int = true;
+      else
+        v_sync_int = false;
+    }
   }
 }
 
@@ -108,10 +113,10 @@ bool isTextMode() const {
 }
 
 /**
- * Bright background color attribute is blink, for Text videomode ?
+ * Is using User defined palette ?
  */
-bool isBlinkAttr() const {
-  return blink;
+bool isUserPalette() const {
+  return userpal;
 }
 
 /**
@@ -130,100 +135,6 @@ bool isUserFont() const {
 void VSyncCallBack (VSync_CBack new_cb) {
   vsync_cb = new_cb;
 }
-
-/**
- * Generates/Updates a RGB texture (3 byte per pixel) of the screen state
- * @param texture Ptr. to the texture. Must have a size enought to containt a 640x200 RGBA texture.
- */
-void RGBTexture (dword_t* texture) const {
-  assert(texture != NULL);
-
-  dword_t fg, bg;
-  unsigned addr;
-
-  if (textmode) {
-    // Text mode
-    if (videomode == 0) {
-        // 40x25 -> 320x200
-
-    } else if (videomode == 1) {
-        // 80x25 -> 640x200
-
-    } // else -> Unknow videomode. Not supported
-  } else {
-    // Graphics mode
-    byte_t attr, pixels, pix;
-    if (videomode == 0) {
-      // 320x200
-      // (X,Y) = ((X % 320)/8) + (320 * Y / 8)     pixel bit (X) = X%8
-      // attribute (X,Y) = 8000 + ((X % 320)/8) + (320 * Y / 8)/8
-      
-      for (unsigned y = 0; y < 200; y++ ) {
-        for (unsigned x = 0; x < 320; x++ ) {
-          pix = x % 8;
-
-          if (x % 8 == 0) { // Update color only when we fin the next 8x8 cell
-            // 1 - Get Fg and Bg colors
-            addr = 8000 + (x / 8) + (320/8) * y /8;
-            attr = buffer[addr];
-            fg = attr & 7;
-            if (!blink) {
-                fg = (attr & 8) ? fg +9 : fg;
-            } // TODO Blink
-            bg = attr & 0xF;
-
-            // 2 - Get the 8 pixel row from VRAM
-            addr = x / 8 + (320/8) * y;
-            pixels = buffer[addr];
-          }
-
-          // 3 - Put the pixel in the texture
-          if (pixels & (1 << pix)) {  // Active   -> Foreground
-            texture[x + y*320] = fg;
-          } else {                    // Unactive -> Background
-            texture[x + y*320] = bg;
-          }
-        }
-      }
-
-    } else if (videomode == 1) {
-      // 640x200
-      // (X,Y) = ((X % 640)/8) + (640 * Y / 8) pixel bit (X) = X%8
-      // attribute (X,Y) = 16000 + ((X % 640)/8) + (640 * Y / 8)/8
-
-      for (unsigned y = 0; y < 200; y++ ) {
-        for (unsigned x = 0; x < 640; x++ ) {
-          pix = x % 8;
-
-          if (x % 8 == 0) { // Update color only when we fin the next 8x8 cell
-            // 1 - Get Fg and Bg colors
-            addr = 16000 + (x / 8) + (640/8) * y /8;
-            attr = buffer[addr];
-            fg = attr & 7;
-            if (!blink) {
-                fg = (attr & 8) ? fg +9 : fg;
-            } // TODO Blink
-            bg = attr & 0xF;
-
-            // 2 - Get the 8 pixel row from VRAM
-            addr = x / 8 + (640/8) * y;
-            pixels = buffer[addr];
-          }
-
-          // 3 - Put the pixel in the texture
-          if (pixels & (1 << pix)) {  // Active   -> Foreground
-            texture[x + y*640] = fg;
-          } else {                    // Unactive -> Background
-            texture[x + y*640] = bg;
-          }
-        }
-      }
-
-    } // else -> Unknow videomode. Not supported
-  }
-}
-
-const static dword_t pallete[]; /// Fixed Color pallette
 
 protected:
 
@@ -280,8 +191,8 @@ protected:
       reg = val;
       cda->videomode = val & 7; 
       cda->textmode = (val & 8) == 0;
-      cda->blink = (val & 0x20 ) != 0;
-      cda->userfont = (val & 0x40 ) != 0;
+      cda->userfont = (val & 0x20 ) != 0;
+      cda->userpal = (val & 0x40 ) != 0;
       cda->e_vsync = (val & 0x80 ) != 0;
     }
 
@@ -294,7 +205,7 @@ unsigned count;         /// Cycle counter
 
 unsigned videomode;     /// Actual video mode
 bool textmode;          /// Is text mode ?
-bool blink;             /// Blink attribute in textmode ?
+bool userpal;           /// User palette ?
 bool userfont;          /// User Font ?
 bool e_vsync;           /// Enable V-Sync interrupt ?
 
@@ -305,8 +216,61 @@ byte_t* buffer;        /// Visible video ram buffer for grpahics representation 
 
 VSync_CBack vsync_cb;
 
+bool v_sync_int;
+
 };
 
+
+/**
+ * Generates/Updates a RGBA texture (4 byte per pixel) of the screen state
+ * @param cda Ref. to the CDA card from were generate the texture.
+ * @param texture Ptr. to the texture. Must have a size enought to containt a 320x240 RGB texture.
+ */
+void RGBATextureCDA (CDA& cda, dword_t* texture);
+void RGBATexture (const byte_t* vram, unsigned vmode, bool userfont, bool userpal, bool textmode, dword_t* texture);
+
+static const dword_t pallete[] = {  /// Default color palette  
+#if (BYTE_ORDER != LITTLE_ENDIAN)
+// Big Endian -> RGBA
+    0x000000FF, // Black
+    0x0000CDFF, // Dark Blue
+    0x00CD00FF, // Dark Green
+    0x00CDCDFF, // Dark Cyan
+    0xCD0000FF, // Dark Red
+    0xCD00CDFF, // Dark Magenta
+    0xAA5500FF, // Brown
+    0xCDCDCDFF, // Light Gray
+    // Bright colors
+    0x555555FF, // Dark Grey
+    0x0000FFFF, // Blue
+    0x00FF00FF, // Green
+    0x00FFFFFF, // Cyan
+    0xFF0000FF, // Red
+    0xFF00FFFF, // Magenta
+    0xFFFF00FF, // Yellow
+    0xFFFFFFFF, // White
+};
+#else
+// Little Endian -> ABGR
+    0xFF000000, // Black
+    0xFFCD0000, // Dark Blue
+    0xFF00CD00, // Dark Green
+    0xFFCDCD00, // Dark Cyan
+    0xFF0000CD, // Dark Red
+    0xFFCD00CD, // Dark Magenta
+    0xFF0055AA, // Brown
+    0xFFCDCDCD, // Light Gray
+    // Bright colors
+    0xFF555555, // Dark Grey
+    0xFFFF0000, // Blue
+    0xFF00FF00, // Green
+    0xFFFFFF00, // Cyan
+    0xFF0000FF, // Red
+    0xFFFF00FF, // Magenta
+    0xFF00FFFF, // Yellow
+    0xFFFFFFFF, // White
+};
+#endif
 
 } // End of namespace cda
 } // End of namespace vm
