@@ -12,7 +12,7 @@
 #define SP (31)
 
 // Alias to Ym Flags and IA registers
-#define Y       state.r[27]
+#define RY      state.r[27]
 #define IA      state.r[28]
 #define FLAGS   state.r[29]
 

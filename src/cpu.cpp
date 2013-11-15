@@ -349,7 +349,7 @@ unsigned RC3200::RealStep() {
             case P3_OPCODE::MUL :
                 state.wait_cycles += 17;
                 ltmp = ((qword_t)rs) * rn;
-                Y = (dword_t)(ltmp >> 32);       // 32bit MSB of the 64 bit result
+                RY = (dword_t)(ltmp >> 32);      // 32bit MSB of the 64 bit result
                 state.r[rd] = (dword_t)ltmp;     // 32bit LSB of the 64 bit result
                 SET_OFF_OF(FLAGS);
                 SET_OFF_CF(FLAGS);
@@ -359,7 +359,7 @@ unsigned RC3200::RealStep() {
                     state.wait_cycles += 27;
                     sqword_t lword = (sqword_t)rs;
                     lword *= rn;
-                    Y = (dword_t)(lword >> 32);      // 32bit MSB of the 64 bit result
+                    RY = (dword_t)(lword >> 32);     // 32bit MSB of the 64 bit result
                     state.r[rd] = (dword_t)lword;    // 32bit LSB of the 64 bit result
                     SET_OFF_OF(FLAGS);
                     SET_OFF_CF(FLAGS);
@@ -370,7 +370,7 @@ unsigned RC3200::RealStep() {
                 state.wait_cycles += 27;
                 if (rn != 0) {
                     state.r[rd] = rs / rn;
-                    Y = rs % rn; // Compiler should optimize this and use a single instruction
+                    RY = rs % rn; // Compiler should optimize this and use a single instruction
                 } else { // Division by 0
                     SET_ON_DE(FLAGS);
                     if ( GET_EDE(FLAGS)) {
@@ -390,7 +390,7 @@ unsigned RC3200::RealStep() {
                         sdword_t result = srs / srn;
                         state.r[rd] = result;
                         result = srs % srn;
-                        Y = result;
+                        RY = result;
                     } else { // Division by 0
                         SET_ON_DE(FLAGS);
                         if ( GET_EDE(FLAGS)) {

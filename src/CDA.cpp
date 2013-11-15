@@ -47,7 +47,7 @@ void RGBATexture (const byte_t* buffer, unsigned vmode, bool userfont, bool user
               addr = x + col*8 + (40*8 * (y + row*8)); // Addres of the pixel in the buffer
               if ((pixels & (1 << x)) != 0) { // Active     -> Fg
                 texture[addr] = fg;
-              } else {                      // Unactive   -> Bg
+              } else {                        // Unactive   -> Bg
                 texture[addr] = bg;
               }
             }
