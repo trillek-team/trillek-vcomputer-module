@@ -272,6 +272,11 @@ static const dword_t palette[] = {  /// Default color palette
 };
 #endif
 
+static const dword_t def_font[256*8] = {  /// Default font
+  0
+};
+
+
 } // End of namespace cda
 } // End of namespace vm
 

@@ -19,7 +19,42 @@ void RGBATexture (const byte_t* buffer, unsigned vmode, bool userfont, bool user
   if (textmode) {
     // Text mode
     if (vmode == 0) {
-      // Mode 0 40x30 -> 320x240
+      // Mode 0 40x30 8x8 -> 320x240
+      // address = video ram address + (column % 40)*2 + (40*2 * row)
+      const dword_t* pal = (userpal) ? (dword_t*)(buffer + 0x480) : palette;
+      const dword_t* font = (userfont) ? (dword_t*)(buffer + 0x4DB) : def_font;
+
+      for (unsigned row = 0; row < 30; row++) {
+        for (unsigned col = 0; col < 40; col++) {
+          addr = col*2 + (40*2 * row);
+          char c = buffer[addr];
+          fg = (buffer[addr] >> 8 ) & 0xF;
+          bg = (buffer[addr] >> 12) & 0xF;
+            // Grab colors
+#if (BYTE_ORDER != LITTLE_ENDIAN)
+            fg = pal[fg] << 8 | 0xFF;
+            bg = pal[fg] << 8 | 0xFF;
+#else
+            fg = pal[fg] | 0xFF000000;
+            bg = pal[fg] | 0xFF000000;
+#endif
+          
+          // Copy the glyph to the buffer
+          byte_t pixels;
+          for (unsigned y= 0; y < 8 ; y++) {
+            pixels = font[c*8 + y];
+            for (unsigned x= 0; x < 8 ; x++) {
+              addr = x + col*8 + (40*8 * (y + row*8)); // Addres of the pixel in the buffer
+              if ((pixels & (1 << x)) != 0) { // Active     -> Fg
+                texture[addr] = fg;
+              } else {                      // Unactive   -> Bg
+                texture[addr] = bg;
+              }
+            }
+          }
+
+        } 
+      }
 
     } // else -> Unknow videomode. Not supported
   } else {
