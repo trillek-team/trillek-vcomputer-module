@@ -22,21 +22,21 @@ void RGBATexture (const byte_t* buffer, unsigned vmode, bool userfont, bool user
       // Mode 0 40x30 8x8 -> 320x240
       // address = video ram address + (column % 40)*2 + (40*2 * row)
       const dword_t* pal = (userpal) ? (dword_t*)(buffer + 0x480) : palette;
-      const dword_t* font = (userfont) ? (dword_t*)(buffer + 0x4DB) : def_font;
+      const byte_t* font = (userfont) ? (buffer + 0x4DB) : def_font;
 
       for (unsigned row = 0; row < 30; row++) {
         for (unsigned col = 0; col < 40; col++) {
           addr = col*2 + (40*2 * row);
-          char c = buffer[addr];
+          byte_t c = buffer[addr];
           fg = (buffer[addr] >> 8 ) & 0xF;
           bg = (buffer[addr] >> 12) & 0xF;
             // Grab colors
 #if (BYTE_ORDER != LITTLE_ENDIAN)
             fg = pal[fg] << 8 | 0xFF;
-            bg = pal[fg] << 8 | 0xFF;
+            bg = pal[bg] << 8 | 0xFF;
 #else
             fg = pal[fg] | 0xFF000000;
-            bg = pal[fg] | 0xFF000000;
+            bg = pal[bg] | 0xFF000000;
 #endif
           
           // Copy the glyph to the buffer
@@ -90,10 +90,10 @@ void RGBATexture (const byte_t* buffer, unsigned vmode, bool userfont, bool user
             // Grab colors
 #if (BYTE_ORDER != LITTLE_ENDIAN)
             fg = pal[fg] << 8 | 0xFF;
-            bg = pal[fg] << 8 | 0xFF;
+            bg = pal[bg] << 8 | 0xFF;
 #else
             fg = pal[fg] | 0xFF000000;
-            bg = pal[fg] | 0xFF000000;
+            bg = pal[bg] | 0xFF000000;
 #endif
           }
 
@@ -153,10 +153,10 @@ void RGBATexture (const byte_t* buffer, unsigned vmode, bool userfont, bool user
             // Grab colors
 #if (BYTE_ORDER != LITTLE_ENDIAN)
             fg = pal[fg] << 8 | 0xFF;
-            bg = pal[fg] << 8 | 0xFF;
+            bg = pal[bg] << 8 | 0xFF;
 #else
             fg = pal[fg] | 0xFF000000;
-            bg = pal[fg] | 0xFF000000;
+            bg = pal[bg] | 0xFF000000;
 #endif
           }
 
