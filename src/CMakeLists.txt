@@ -72,4 +72,11 @@ target_link_libraries( vm
     ${SDL2_LIBRARY}
 )
 
+#pbm2font tool
+add_executable( pbm2font
+    pbm2font.cpp
+)
 
+include_directories( pbm2font
+    ${rc3200_INCLUDE_DIRS}
+)
