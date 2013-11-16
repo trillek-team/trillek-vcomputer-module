@@ -32,6 +32,33 @@ include(Platform)
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+# Find SDL2 and OpenGL libs
+find_package(SDL2)
+if (NOT SDL2_FOUND)
+    message("SDL2 not found! main executable will not display screen and virtual keyboard")
+    set (SDL2_ENABLE 0)
+else (NOT SDL2_FOUND)
+    set (SDL2_ENABLE 1)
+endif (NOT SDL2_FOUND)
+
+find_package(OpenGL)
+if (NOT OPENGL_FOUND)
+    message("OpenGL not found! main executable will not display screen and virtual keyboard")
+    set (SDL2_ENABLE 0)
+endif (NOT OPENGL_FOUND)
+
+find_package(GLEW)
+if(NOT GLEW_FOUND)
+  message("GLEW not found! main executable will not display screen and virtual keyboard")
+  set (SDL2_ENABLE 0)
+endif(NOT GLEW_FOUND)
+
+#find_package(GLM)
+#if(NOT GLM_FOUND)
+#  message("GLM not found! main executable will not display screen and virtual keyboard")
+#  set (SDL2_ENABLE 0)
+#endif(NOT GLM_FOUND)
+
 message( "Procesing Source Code")
 #add_subdirectory(include)
 add_subdirectory(src)
@@ -41,6 +68,7 @@ add_subdirectory(assets)
 
 
 if(BUILD_tests)
-    # Some day....
+  message( "Procesing Tests")
+  add_subdirectory(tests)
 endif(BUILD_tests)
 
