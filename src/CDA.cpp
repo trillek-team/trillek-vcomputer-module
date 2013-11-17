@@ -3,8 +3,8 @@
 namespace vm {
 namespace cda {
 
-void RGBATextureCDA (CDA& cda, dword_t* texture) {
-  RGBATexture (cda.VRAM(), cda.VideoMode(), cda.isUserFont(), cda.isUserPalette(), cda.isTextMode() , texture);
+void RGBATextureCDA (const CDA* cda, dword_t* texture) {
+  RGBATexture (cda->VRAM(), cda->VideoMode(), cda->isUserFont(), cda->isUserPalette(), cda->isTextMode() , texture);
 }
 
 void RGBATexture (const byte_t* buffer, unsigned vmode, bool userfont, bool userpal, bool textmode, dword_t* texture) {

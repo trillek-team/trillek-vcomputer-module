@@ -25,6 +25,7 @@ SDL_Renderer* prend = nullptr;
 SDL_GLContext ogl_context;
 
 GLuint screenTex; // ID of screen Texture
+GLuint tex_pbo;     // ID of the screen texture PBO
 
 // Handler of shader program
 GLuint shaderProgram;
@@ -71,9 +72,12 @@ glm::mat4 proj, view, model; // MVP Matrixes
 
 void initSDL();
 void initGL();
+
+void updatePBO (vm::cda::CDA*);
+
 #endif
 
-
+vm::cda::CDA* cda_ptr = nullptr;
 
 void print_regs(const vm::cpu::CpuState& state);
 void print_pc(const vm::cpu::CpuState& state, const vm::ram::Mem& ram);
@@ -124,6 +128,7 @@ int main(int argc, char* argv[]) {
 
     // Add devices to tue Virtual Machine
     cda::CDA gcard;
+    cda_ptr = &gcard;
     vm.AddDevice(0, gcard);
 
     vm.Reset();
@@ -150,6 +155,7 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
     initSDL();
 
     initGL();
+    std::printf("Initiated OpenGL\n");
 #endif
 
     using namespace std::chrono;
@@ -227,6 +233,16 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
         // Model matrix <- Identity
         model = glm::mat4(1.0f); 
         
+        // Camera Matrix
+        view = glm::lookAt(
+          glm::vec3(
+            0,//(float)(zoom * sin(yaw)*cos(pith)), 
+            3,//(float)(zoom * sin(pith)), 
+            10),//(float)(zoom * cos(yaw))*cos(pith)), // Were is the camera
+          glm::vec3(0,0,0), // and looks at the origin
+          glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+        );
+
         // Drawing ... 
         glUseProgram(shaderProgram);
         // Set sampler to user Texture Unit 0
@@ -236,6 +252,7 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, screenTex);
 
+        updatePBO(cda_ptr); // Stream the texture
 
         // Enable attribute in_Position as being used
         glEnableVertexAttribArray(sh_in_Position);
@@ -390,16 +407,15 @@ void initGL() {
     // Upload data to VBO
     glBufferData(GL_ARRAY_BUFFER, sizeof(uv_data), uv_data, GL_STATIC_DRAW);
    
+    // Initialize PBO *********************************************************
+    glGenBuffers(1, &tex_pbo);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, 320*240*4, nullptr, GL_STREAM_DRAW);
+    
     // Initialize Texture *****************************************************
-    vm::byte_t vram[9600] = {
-      0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3, 0xC3,
-    };
-    vm::dword_t tdata[320*240] = {0};
-    vm::cda::RGBATexture(vram, 2, false, false, false, tdata);
-
     glGenTextures(1, &screenTex);
     glBindTexture(GL_TEXTURE_2D, screenTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, tdata);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -510,6 +526,31 @@ void initGL() {
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
 }
+
+
+void updatePBO (vm::cda::CDA* cda) {
+  using namespace vm;
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, screenTex);
+  
+  // Stream the texture *************************************************
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
+
+  // Copy the PBO to the texture
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 320, 240, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+  // Updates the PBO with the new texture
+  auto tdata = (dword_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+  if (tdata != nullptr) {
+    RGBATextureCDA(cda, tdata);
+    
+    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+  }
+
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO 
+}
+
 
 #endif
 

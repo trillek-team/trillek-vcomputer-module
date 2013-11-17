@@ -200,7 +200,21 @@ test_alu:                       ; PC = 0x010C
         ; TODO Check CALL functions
         ; TODO Check other instrucctions
 
+        CALL print_ok
+
         JMP begin           ; Begin again in a endless loop
 crash:
         SLEEP               ; Sleeps because something goes wrong
+
+
+; *****************************************************************************
+print_ok:                   ; Prints OK in CDA text mode 0
+       MOV %r0, 0
+       STORE.B 0xFF0ACC00, %r0 ; Text mode 0, default font and palette, no vsync
+       
+       MOV %r0, 0x0F6B0A4F
+       STORE 0xFF0A0000, %r0   ; Writes Ok in VRRAM
+
+       RET
+
 

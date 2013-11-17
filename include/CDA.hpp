@@ -226,7 +226,7 @@ bool v_sync_int;
  * @param cda Ref. to the CDA card from were generate the texture.
  * @param texture Ptr. to the texture. Must have a size enought to containt a 320x240 RGB texture.
  */
-void RGBATextureCDA (CDA& cda, dword_t* texture);
+void RGBATextureCDA (const CDA* cda, dword_t* texture);
 void RGBATexture (const byte_t* vram, unsigned vmode, bool userfont, bool userpal, bool textmode, dword_t* texture);
 
 static const dword_t palette[] = {  /// Default color palette  
