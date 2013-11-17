@@ -35,8 +35,9 @@ SDL_Renderer* prend = nullptr;
 SDL_GLContext ogl_context;
 
 
-GLuint screenVTex[3]; // ID of screen Texture in Video mode X
-GLuint screenTTex[1]; // ID of screen Texture in Text mode 0
+GLuint screenTex;   // ID of screen Texture
+GLuint tex_pbo;     // ID of the screen texture PBO
+
 
 // Handler of shader program
 GLuint shaderProgram;
@@ -161,6 +162,8 @@ int main(int argc, char* argv[]) {
     std::printf("Initiated OpenGL\n");
     std::printf("Initial VideoMode %u\n", vmode);
 
+    unsigned char count = 0;
+    vm::dword_t* tdata = nullptr;
     bool loop = true;
     while ( loop) {
             
@@ -203,6 +206,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
+
         // Clear The Screen And The Depth Buffer
         glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -227,11 +231,36 @@ int main(int argc, char* argv[]) {
     
         // Bind texture
         glActiveTexture(GL_TEXTURE0);
-        if (text_mode) {
-          glBindTexture(GL_TEXTURE_2D, screenTTex[0]);
-        } else {
-          glBindTexture(GL_TEXTURE_2D, screenVTex[vmode]);
+        
+        // Stream the texture *************************************************
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
+
+        glBindTexture(GL_TEXTURE_2D, screenTex);
+        // Copy the PBO to the texture
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 320, 240, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+        // Updates the PBO with the new texture
+        tdata = (vm::dword_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+        
+        if (tdata != nullptr) {
+          if (text_mode) {
+            vram_t0[2] = count++;
+            vm::cda::RGBATexture(vram_t0, 0, false, false, true, tdata);
+          } else if (vmode == 0){
+            vram_0[2] = count++;
+            vm::cda::RGBATexture(vram_0, 0, false, false, false, tdata);
+          } else if (vmode == 1){
+            vram_1[2] = count++;
+            vm::cda::RGBATexture(vram_1, 1, false, false, false, tdata);
+          } else if (vmode == 2){
+            vram_2[2] = count++;
+            vm::cda::RGBATexture(vram_2, 2, false, false, false, tdata);
+          }
+
+          glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
         }
+
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO 
 
         // Enable attribute in_Position as being used
         glEnableVertexAttribArray(sh_in_Position);
@@ -339,55 +368,24 @@ void initGL() {
     glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
     // Upload data to VBO
     glBufferData(GL_ARRAY_BUFFER, sizeof(uv_data), uv_data, GL_STATIC_DRAW);
-   
+  
+    // Initialize PBO
+    glGenBuffers(1, &tex_pbo);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, 320*240*4, nullptr, GL_STREAM_DRAW);
+
     // Initialize Texture *****************************************************
-    vm::dword_t tdata[320*240] = {0};
 
-    glGenTextures(3, screenVTex);
-    glGenTextures(1, screenTTex);
+    glGenTextures(1, &screenTex);
     
-    // Textmode 0
-    vm::cda::RGBATexture(vram_t0, 0, false, false, true, tdata);
-    glBindTexture(GL_TEXTURE_2D, screenTTex[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, tdata);
+    // Screen Texture
+    glBindTexture(GL_TEXTURE_2D, screenTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-
-    // Videomode 0
-    vm::cda::RGBATexture(vram_0, 0, false, false, false, tdata);
-    glBindTexture(GL_TEXTURE_2D, screenVTex[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, tdata);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
-    // Videomode 1
-    vm::cda::RGBATexture(vram_1, 1, false, false, false, tdata);
-    glBindTexture(GL_TEXTURE_2D, screenVTex[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, tdata);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
-    // Videomode 2
-    vm::cda::RGBATexture(vram_2, 2, false, false, false, tdata);
-    glBindTexture(GL_TEXTURE_2D, screenVTex[2]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, tdata);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-
 
     // Loading shaders ********************************************************
     auto f_vs = std::fopen("./assets/shaders/mvp_template.vert", "r");
