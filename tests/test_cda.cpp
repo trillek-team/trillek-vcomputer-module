@@ -19,15 +19,13 @@
 
 #include <chrono>
 
-vm::byte_t vram_t0[0xCDB] = {0};
+vm::byte_t vram_t0[0x1190] = {0};
 
 vm::byte_t vram_0[0x1B31] = {0};
 
 vm::byte_t vram_1[0x2431] = {0};
 
-vm::byte_t vram_2[0x2580] = {
-#include "../tests/cda_vm2_vram.inc"
-    };
+vm::byte_t vram_2[0x2580] = {0};
 
 unsigned sdl_width = 800;
 unsigned sdl_height = 600;
@@ -83,10 +81,10 @@ static const float uv_data[] = {
 
 glm::mat4 proj, view, model; // MVP Matrixes
 
+float yaw, pith, zoom; // Camara orientation
+
 void initSDL();
 void initGL();
-
-
 
 int main(int argc, char* argv[]) {
     using namespace vm;
@@ -94,6 +92,67 @@ int main(int argc, char* argv[]) {
 
     unsigned vmode = 2;
     bool text_mode = false;
+
+    // Fill vram buffers ******************************************************
+    // Text Mode 0
+    for(auto i=0; i< 40*30; i++) {
+      vram_t0[i*2] = i % 255;
+      vram_t0[i*2+1] = 0x0F | ((i % 16) << 4); // White ink, rainbow background
+    }
+
+    // Video Mode 0 and 1
+    for(auto i=0; i< 32*193; i++) {
+      if (i % 4 == 0) {
+        vram_0[i] = 0;
+        vram_1[i] = 0;
+      } else {
+        vram_0[i] = 0xC3;
+        vram_1[i] = 0xC3;
+      } 
+    }
+    for (auto i=0; i < 32; i++) {
+        vram_0[32*30 +i] = 0xFF; // Fills a line in y = 30
+        vram_0[32*191 +i] = 0xFF; // Fills a line in y = 191
+
+        vram_1[32*30 +i] = 0xFF; // Fills a line in y = 30
+        vram_1[32*191 +i] = 0xFF; // Fills a line in y = 191
+    }
+
+    // Border color
+    vram_0[0x1B00] = 12; // Pure Red
+    vram_1[0x2400] = 6; // Brown
+    
+    // Attrbutes of Video mode 0
+    for(auto i=0; i< 32*4; i++) {
+      vram_0[0x1800 + i] = i % 16;
+    }
+    for(auto i=32*4; i< 32*8; i++) {
+      vram_0[0x1800 + i] = ((i % 16) << 4) | 7;
+    }
+    for(auto i=32*8; i< 32*24; i++) {
+      vram_0[0x1800 + i] = i% 256;
+    }
+    
+    // Attrbutes of Video mode 1
+    for(auto i=0; i< 64*4; i++) {
+      vram_1[0x1800 + i] = i % 16;
+    }
+    for(auto i=64*4; i< 64*8; i++) {
+      vram_1[0x1800 + i] = ((i % 16) << 4) | 7;
+    }
+    for(auto i=64*8; i< 64*48; i++) {
+      vram_1[0x1800 + i] = i% 256;
+    }
+
+
+    // Video mode 2
+    for(auto i=0; i< 40*240; i++) {
+      if (i % 4 == 0) {
+        vram_2[i] = 0;
+      } else {
+        vram_2[i] = 0xC3;
+      } 
+    }
 
     initSDL();
 
@@ -127,8 +186,20 @@ int main(int argc, char* argv[]) {
                     std::printf("Set Videomode %u\n", vmode);
                 }
 
-              }
+              } else if (e.key.keysym.sym == SDLK_a) { // Turn to left
+                yaw -= 0.1; 
+              } else if (e.key.keysym.sym == SDLK_d) { // Turn to right
+                yaw += 0.1; 
+              } else if (e.key.keysym.sym == SDLK_w) { // Turn to up
+                pith += 0.1; 
+              } else if (e.key.keysym.sym == SDLK_s) { // Turn to down
+                pith -= 0.1; 
 
+              } else if (e.key.keysym.sym == SDLK_r) { // Zoom In
+                zoom = (zoom > 2.0)? zoom - 0.1 : zoom; 
+              } else if (e.key.keysym.sym == SDLK_f) { // Zoom out
+                zoom += 0.1; 
+              }
             }
         }
 
@@ -138,6 +209,16 @@ int main(int argc, char* argv[]) {
 
         // Model matrix <- Identity
         model = glm::mat4(1.0f); 
+        
+        // Camera Matrix
+        view = glm::lookAt(
+          glm::vec3(
+            (float)(zoom * sin(yaw)*cos(pith)), 
+            (float)(zoom * sin(pith)), 
+            (float)(zoom * cos(yaw))*cos(pith)), // Were is the camera
+          glm::vec3(0,0,0), // and looks at the origin
+          glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+        );
         
         // Drawing ... 
         glUseProgram(shaderProgram);
@@ -401,8 +482,10 @@ void initGL() {
     proj = glm::perspective(45.0f,  (GLfloat)(sdl_width) / sdl_height, 0.1f, 100.0f);
     
     // Camera matrix
+    pith = yaw = 0;
+    zoom = 10.f;
     view = glm::lookAt(
-        glm::vec3(3,3,7), // Camera is at (3,3,7), in World Space
+        glm::vec3(zoom*sin(yaw), zoom*sin(pith), zoom*cos(yaw)), // Were is the camera
         glm::vec3(0,0,0), // and looks at the origin
         glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
       );

@@ -273,8 +273,7 @@ static const dword_t palette[] = {  /// Default color palette
 #endif
 
 static const byte_t def_font[256*8] = {  /// Default font
-  0,0,0,0,0,0,0,0,
-  0,0xFF,0x2, 0x2, 0,0,0,0,
+#include "CDAfont.inc"
 };
 
 
