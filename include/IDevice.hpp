@@ -83,8 +83,9 @@ void Jmp2(byte_t val) {
  * Does Hardware stuff in sync with the CPU clock
  * @param cpu Ptr to the CPU, if needs to thorow a interrupt
  * @param n Number of clock ticks executing
+ * @param delta Number microseconds since the last call
  */
-virtual void Tick (cpu::RC3200& cpu, unsigned n=1) = 0;
+virtual void Tick (cpu::RC3200& cpu, unsigned n=1, long delta = 0) = 0;
 
 /**
  * Return an vector of ptrs AHandler that uses this device

@@ -3,15 +3,9 @@
 namespace vm {
 namespace cda {
 
-void RGBATextureCDA (const CDA* cda, dword_t* texture) {
-  RGBATexture (cda->VRAM(), cda->VideoMode(), cda->isUserFont(), cda->isUserPalette(), cda->isTextMode() , texture);
-}
-
-void RGBATexture (const byte_t* buffer, unsigned vmode, bool userfont, bool userpal, bool textmode, dword_t* texture) {
+void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool userfont, bool userpal, dword_t* texture) {
   assert(texture != nullptr);
   assert(buffer != nullptr);
-
-#define BORDER_OFFSET (320*24)
 
   dword_t fg, bg;
   unsigned addr;
@@ -213,8 +207,8 @@ void RGBATexture (const byte_t* buffer, unsigned vmode, bool userfont, bool user
       }
 
     }// else -> Unknow videomode. Not supported
+
   }
-#undef BORDER_OFFSET 
 }
 
 } // End of namespace cda

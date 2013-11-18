@@ -23,7 +23,6 @@
 namespace vm {
 namespace cda {
 
-static const unsigned VSYNC = 25;              /// Vertical refresh frecuency
 static const unsigned VRAM_SIZE = 0x2580;      /// VRAM size
 static const dword_t  SETUP_OFFSET = 0xCC00;   /// SETUP register offset
 
@@ -39,9 +38,19 @@ static const dword_t BASE_ADDR[] = {                 /// VRAM base address
     0xFF0C0000, 
     0xFF0D0000};
 
-class CDA;
+/**
+ * Generates/Updates a RGBA texture (4 byte per pixel) of the screen state
+ * @param vram Ptr. to the VRAM buffer
+ * @param textmode True to indicate if we are using a Text Mode or a Graphics mode
+ * @param vmode Video Mode number
+ * @param userfont True to indicate that we use User defined font in text mode
+ * @param userpal True to indicate that we use User defined palette.
+ * @param texture Ptr. to the texture. Must have a size enought to containt a 320x240 RGB texture.
+ */
+void RGBATexture (const byte_t* vram, bool textmode, unsigned vmode, bool userfont, bool userpal, dword_t* texture);
 
-typedef void (*VSync_CBack)(CDA*, const byte_t*); /// Callback for virtual VSync (to upload video data to GPU or send it by network)
+
+class CDA;
 
 /**
  * Color Display Adapter device
@@ -49,7 +58,7 @@ typedef void (*VSync_CBack)(CDA*, const byte_t*); /// Callback for virtual VSync
 class CDA : public IDevice {
 public:
 
-CDA() : count(0), videomode(0), textmode(true), userpal(false), userfont(false), e_vsync(false), vram(this), setupr(this), buffer(nullptr), vsync_cb(nullptr), v_sync_int(false) {
+CDA() : videomode(0), textmode(true), userpal(false), userfont(false),vram(this), setupr(this), buffer(nullptr), e_vsync(false), vsync_int(false) {
     buffer = new byte_t[VRAM_SIZE]();
 }
 
@@ -63,23 +72,11 @@ word_t Builder() const      {return 0x0000;} // Generic builder
 word_t DevId() const        {return 0x0001;} // CDA standard
 word_t DevVer() const       {return 0x0000;} // Ver 0 -> CDA base standard
 
-virtual void Tick (cpu::RC3200& cpu, unsigned n=1) {
-  // TODO Make VSync async respect CPU clock speed and use realtime 25 Hz
-  count += n;
-  if (count >= (cpu.Clock()/VSYNC)) { // V-Sync Event
-    count -= cpu.Clock()/VSYNC;
-       
-    // try to call to the callback
-    if (vsync_cb != nullptr)
-      vsync_cb (this, buffer);
-
-    if (e_vsync || v_sync_int) {
-      auto ret = cpu.ThrowInterrupt(INT_MSG[this->Jmp1() &3]);
-      if (!ret) // If the CPU not accepts the interrupt, try again in the next tick
-        v_sync_int = true;
-      else
-        v_sync_int = false;
-    }
+virtual void Tick (cpu::RC3200& cpu, unsigned n=1, long delta = 0) {
+  if (e_vsync && vsync_int) {
+    auto ret = cpu.ThrowInterrupt(INT_MSG[this->Jmp1() &3]);
+    if (ret) // If the CPU not accepts the interrupt, try again in the next tick
+      vsync_int = false;
   }
 }
 
@@ -127,13 +124,18 @@ bool isUserFont() const {
 }
 
 /**
- * Sets the VSync callback function
- * Set it to allow do stuff every time that a vsync event happens, like upload 
- * vram to GPU or send VRAM to a remote client
- * @param new_cb Callback function. Set to nullptr to disable it.
+ * Launch a VSync event
  */
-void VSyncCallBack (VSync_CBack new_cb) {
-  vsync_cb = new_cb;
+void VSync() {
+  this->vsync_int = true;
+}
+
+/**
+ * Converts CDA/VRAM state to a RGBA8 320x240 texture
+ * @param texture Ptr were write the RGBA texture, must have the correct size
+ */
+void ToRGBATexture (dword_t* texture) const {
+  RGBATexture (buffer, textmode, videomode, userfont, userpal, texture);
 }
 
 protected:
@@ -201,33 +203,21 @@ protected:
 
   };
 
-unsigned count;         /// Cycle counter
-
 unsigned videomode;     /// Actual video mode
 bool textmode;          /// Is text mode ?
 bool userpal;           /// User palette ?
 bool userfont;          /// User Font ?
-bool e_vsync;           /// Enable V-Sync interrupt ?
 
 CDA::VideoRAM vram;
 CDA::SETUPreg setupr;
 
-byte_t* buffer;        /// Visible video ram buffer for grpahics representation of screen
+byte_t* buffer;         /// Visible video ram buffer for grpahics representation of screen
 
-VSync_CBack vsync_cb;
-
-bool v_sync_int;
+bool e_vsync;           /// Enable V-Sync interrupt by user program ?
+bool vsync_int;         /// Thorow a V-Sync interrupt if true
 
 };
 
-
-/**
- * Generates/Updates a RGBA texture (4 byte per pixel) of the screen state
- * @param cda Ref. to the CDA card from were generate the texture.
- * @param texture Ptr. to the texture. Must have a size enought to containt a 320x240 RGB texture.
- */
-void RGBATextureCDA (const CDA* cda, dword_t* texture);
-void RGBATexture (const byte_t* vram, unsigned vmode, bool userfont, bool userpal, bool textmode, dword_t* texture);
 
 static const dword_t palette[] = {  /// Default color palette  
 #if (BYTE_ORDER != LITTLE_ENDIAN)

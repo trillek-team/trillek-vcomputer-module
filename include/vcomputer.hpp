@@ -50,7 +50,7 @@ class VirtualComputer {
 public:
 
 VirtualComputer (std::size_t ram_size = 128*1024) : cpu(ram_size), n_devices(0), enumerator(this) {
-    cpu.ram.AddBlock(&enumerator); // Add Enumerator device
+  cpu.ram.AddBlock(&enumerator); // Add Enumerator device
 }
 
 ~VirtualComputer () {
@@ -60,7 +60,7 @@ VirtualComputer (std::size_t ram_size = 128*1024) : cpu(ram_size), n_devices(0),
  * Resets the CPU
  */
 void Reset() {
-        cpu.Reset();
+  cpu.Reset();
 }
 
 /**
@@ -69,7 +69,7 @@ void Reset() {
  * @param rom_size Size of the ROM data that must be less or equal to 64KiB. Big sizes will be ignored
  */
 void WriteROM (const byte_t* rom, size_t rom_size) {
-        cpu.ram.WriteROM(rom, rom_size);
+  cpu.ram.WriteROM(rom, rom_size);
 }
 
 /**
@@ -79,17 +79,17 @@ void WriteROM (const byte_t* rom, size_t rom_size) {
  * @return False if the slot havea device or the slot is invalid.
  */
 bool AddDevice (unsigned slot , IDevice& dev) {
-        if (slot >= MAX_N_DEVICES)
-                return false;
+  if (slot >= MAX_N_DEVICES)
+    return false;
 
-        if (devices[slot] != NULL)
-                return false;
+  if (devices[slot] != nullptr)
+    return false;
 
-        devices[slot] = &dev;
-        n_devices++;
-        cpu.ram.AddBlock(dev.MemoryBlocks()); // Add Address handlerss
+  devices[slot] = &dev;
+  n_devices++;
+  cpu.ram.AddBlock(dev.MemoryBlocks()); // Add Address handlerss
 
-        return true;
+  return true;
 }
 
 /**
@@ -97,11 +97,11 @@ bool AddDevice (unsigned slot , IDevice& dev) {
  * @param slot Slot were unplug the device
  */
 void RemoveDevice (unsigned slot) {
-        if (slot < MAX_N_DEVICES && devices[slot] != NULL) {
-                devices[slot] = NULL;
-                n_devices--;
-                assert(n_devices >= 0);
-        }
+  if (slot < MAX_N_DEVICES && devices[slot] != nullptr) {
+    devices[slot] = nullptr;
+    n_devices--;
+    assert(n_devices >= 0);
+  }
 }
 
 
@@ -109,46 +109,48 @@ void RemoveDevice (unsigned slot) {
  * Returns the actual CPU state
  */
 const CpuState& CPUState () const {
-        return cpu.State();
+  return cpu.State();
 }
 
 /**
  * Returns the actual RAM image
  */
 const Mem& RAM () const {
-        return cpu.ram;
+  return cpu.ram;
 }
 
 /**
  * Virtual Clock speed
  */
 unsigned Clock() const {
-        return cpu.Clock();
+  return cpu.Clock();
 }
 
 /**
  * Executes one instruction
+ * @param delta Number of microseconds since the last call
  * @return number of cycles executed
  */
-unsigned Step() {
-        auto cycles = cpu.Step();
-        for (std::size_t i=0; i > MAX_N_DEVICES; i++) {
-                if (devices[i] != NULL)
-                        devices[i]->Tick(cpu, cycles);
-        }
-        return cycles;
+unsigned Step(long delta = 0) {
+  auto cycles = cpu.Step();
+  for (std::size_t i=0; i > MAX_N_DEVICES; i++) {
+    if (devices[i] != nullptr)
+      devices[i]->Tick(cpu, cycles, delta);
+  }
+  return cycles;
 }
 
 /**
  * Executes N clock ticks
  * @param n nubmer of clock ticks, by default 1
+ * @param delta Number of microseconds since the last call
  */
-void Tick(unsigned n=1) {
-        cpu.Tick(n);
-        for (std::size_t i=0; i > MAX_N_DEVICES; i++) {
-                if (devices[i] != NULL)
-                        devices[i]->Tick(cpu, n);
-        }
+void Tick(unsigned n=1, long delta = 0) {
+  cpu.Tick(n);
+  for (std::size_t i=0; i > MAX_N_DEVICES; i++) {
+    if (devices[i] != nullptr)
+      devices[i]->Tick(cpu, n, delta);
+  }
 }
 
 private:
@@ -158,87 +160,87 @@ RC3200 cpu; /// Virtual CPU
 IDevice* devices[MAX_N_DEVICES] = {nullptr}; /// Devices atached to the virtual computer
 unsigned n_devices;
 
-        /**
-         * Hardware enumerator
-         */
-        class HWN : public ram::AHandler {
-        public:
-        HWN (VirtualComputer* vm) {
-                this->vm = vm;
-                this->begin = 0xFF000000;
-                this->size = 2;
-                ndev = 0;
-                read = 0;
-        }
+  /**
+   * Hardware enumerator
+   */
+  class HWN : public ram::AHandler {
+  public:
+  HWN (VirtualComputer* vm) {
+    this->vm = vm;
+    this->begin = 0xFF000000;
+    this->size = 2;
+    ndev = 0;
+    read = 0;
+  }
 
-        virtual ~HWN () {
-        }
+  virtual ~HWN () {
+  }
 
-        byte_t RB (dword_t addr) {
-                addr -= this->begin;
-                if (addr == 0)
-                        return read & 0xFF;
-                else
-                        return read >> 8;
-        }
+  byte_t RB (dword_t addr) {
+    addr -= this->begin;
+    if (addr == 0)
+      return read & 0xFF;
+    else
+      return read >> 8;
+  }
 
-        /**
-         * Gets the commad value for the enumarator
-         */
-        void WB (dword_t addr, byte_t val) {
-                addr -= this->begin;
-                if (addr == 0) {
-                        ndev = val;
-                } else {
-                        if (val == HWN_CMD::GET_NUMBER) { // Get number of devices commad
-                                        read = vm->n_devices;
-                                        return;
-                        }
+  /**
+   * Gets the commad value for the enumarator
+   */
+  void WB (dword_t addr, byte_t val) {
+    addr -= this->begin;
+    if (addr == 0) {
+      ndev = val;
+    } else {
+      if (val == HWN_CMD::GET_NUMBER) { // Get number of devices commad
+        read = vm->n_devices;
+        return;
+      }
 
-                        if (ndev >= MAX_N_DEVICES || vm->devices[ndev] == NULL)
-                                return; // Invalid device
+      if (ndev >= MAX_N_DEVICES || vm->devices[ndev] == nullptr)
+        return; // Invalid device
 
-                        // Updates the read value
-                        switch (val) {
-                                case HWN_CMD::GET_CLASS : 
-                                        read = vm->devices[ndev]->DevClass();
-                                     break; 
+      // Updates the read value
+      switch (val) {
+        case HWN_CMD::GET_CLASS : 
+          read = vm->devices[ndev]->DevClass();
+          break; 
 
-                                case HWN_CMD::GET_BUILDER : 
-                                        read = vm->devices[ndev]->Builder();
-                                     break; 
-                                
-                                case HWN_CMD::GET_ID : 
-                                        read = vm->devices[ndev]->DevId();
-                                     break; 
-
-                                case HWN_CMD::GET_VERSION : 
-                                        read = vm->devices[ndev]->DevVer();
-                                     break; 
-
-                                case HWN_CMD::GET_JMP1 : 
-                                        read = vm->devices[ndev]->Jmp1();
-                                     break; 
-
-                                case HWN_CMD::GET_JMP2 : 
-                                        read = vm->devices[ndev]->Jmp2();
-                                     break; 
-
-                                default:
-                                     break;
-
-                        }
-                }
-        }
+        case HWN_CMD::GET_BUILDER : 
+          read = vm->devices[ndev]->Builder();
+          break; 
         
-        private:
-                VirtualComputer* vm;
+        case HWN_CMD::GET_ID : 
+          read = vm->devices[ndev]->DevId();
+          break; 
 
-                byte_t ndev;    /// Device Index of the HWN command
-                word_t read;    /// Value to be read
-                
+        case HWN_CMD::GET_VERSION : 
+          read = vm->devices[ndev]->DevVer();
+          break; 
 
-        };
+        case HWN_CMD::GET_JMP1 : 
+          read = vm->devices[ndev]->Jmp1();
+          break; 
+
+        case HWN_CMD::GET_JMP2 : 
+          read = vm->devices[ndev]->Jmp2();
+          break; 
+
+        default:
+          break;
+
+      }
+    }
+  }
+  
+  private:
+          VirtualComputer* vm;
+
+          byte_t ndev;    /// Device Index of the HWN command
+          word_t read;    /// Value to be read
+          
+
+  };
 
 HWN enumerator;
 

@@ -245,16 +245,16 @@ int main(int argc, char* argv[]) {
         if (tdata != nullptr) {
           if (text_mode) {
             vram_t0[2] = count++;
-            vm::cda::RGBATexture(vram_t0, 0, false, false, true, tdata);
+            vm::cda::RGBATexture(vram_t0, true, 0, false, false, tdata);
           } else if (vmode == 0){
             vram_0[2] = count++;
-            vm::cda::RGBATexture(vram_0, 0, false, false, false, tdata);
+            vm::cda::RGBATexture(vram_0, false, 0, false, false, tdata);
           } else if (vmode == 1){
             vram_1[2] = count++;
-            vm::cda::RGBATexture(vram_1, 1, false, false, false, tdata);
+            vm::cda::RGBATexture(vram_1, false, 1, false, false, tdata);
           } else if (vmode == 2){
             vram_2[2] = count++;
-            vm::cda::RGBATexture(vram_2, 2, false, false, false, tdata);
+            vm::cda::RGBATexture(vram_2, false, 2, false, false, tdata);
           }
 
           glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);

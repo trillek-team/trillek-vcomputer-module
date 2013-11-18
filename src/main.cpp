@@ -128,7 +128,6 @@ int main(int argc, char* argv[]) {
 
     // Add devices to tue Virtual Machine
     cda::CDA gcard;
-    cda_ptr = &gcard;
     vm.AddDevice(0, gcard);
 
     vm.Reset();
@@ -147,9 +146,6 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
     }
  
 
-    std::cout << "Running!\n";
-    unsigned ticks = 2000;
-    unsigned long ticks_count = 0;
 
 #ifdef SDL2_ENABLE
     initSDL();
@@ -158,60 +154,62 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
     std::printf("Initiated OpenGL\n");
 #endif
 
+    std::cout << "Running!\n";
+    unsigned ticks = 1675;
+    unsigned long ticks_count = 0;
+    
     using namespace std::chrono;
     auto clock = high_resolution_clock::now();
-    double delta;
+    double delta, updt_scr_acu; // Time Deltas
 
     int c = ' ';
     bool loop = true;
     while ( loop) {
-            
+      // Calcs delta time 
+
+      auto oldClock = clock;
+      clock = high_resolution_clock::now();
+      delta = duration_cast<microseconds>(clock - oldClock).count();
+
+      updt_scr_acu += delta;
+
+
 #ifdef SDL2_ENABLE
-        SDL_Event e;
-        while (SDL_PollEvent(&e)){
-            //If user closes he window
-            if (e.type == SDL_QUIT)
-                loop = false;
-            //else if (e.type == SDL_KEYDOWN) {
-            
-            //}
-        }
+      SDL_Event e;
+      while (SDL_PollEvent(&e)){
+        //If user closes he window
+        if (e.type == SDL_QUIT)
+          loop = false;
+        //else if (e.type == SDL_KEYDOWN) {
+        
+        //}
+      }
 #endif
 
         if (debug) {
-            print_pc(vm.CPUState(), vm.RAM());
-            if (vm.CPUState().skiping)
-                std::printf("Skiping!\n");
-            if (vm.CPUState().sleeping)
-                std::printf("ZZZZzzzz...\n");
+          print_pc(vm.CPUState(), vm.RAM());
+          if (vm.CPUState().skiping)
+            std::printf("Skiping!\n");
+          if (vm.CPUState().sleeping)
+            std::printf("ZZZZzzzz...\n");
         }
 
         if (!debug) {
-            // cpu.Tick(ticks);
-            vm.Tick(ticks);
-            ticks_count += ticks;
-            
-
-            auto oldClock = clock;
-            clock = high_resolution_clock::now();
-            if (ticks <= 0) // Compensates if is too quick
-                    delta += duration_cast<nanoseconds>(clock - oldClock).count();
-            else
-                    delta = duration_cast<nanoseconds>(clock - oldClock).count();
-
-            ticks = delta/100.0f + 0.5f; // Rounding bug correction
+          ticks_count += ticks;
+          vm.Tick(ticks);
+          //ticks = 26700000.0f / delta + 0.5f; // Rounding bug correction
         } else
-            ticks = vm.Step(); // cpu.Step();
+          ticks = vm.Step(); // cpu.Step();
 
 
         // Speed info
-        if (!debug && ticks_count > 5000000) {
+        if (!debug && ticks_count > 100000) {
             std::cout << "Running " << ticks << " cycles in " << delta << " nS"
                                 << " Speed of " 
-                                << 100.0f * (((ticks * 1000000000.0) / vm.Clock()) / delta)
+                                << 100.0f * (((ticks * 1000000.0) / vm.Clock()) / delta)
                                 << "% \n";
             std::cout << std::endl;
-            ticks_count -= 5000000;
+            ticks_count -= 100000;
         }
 
 
@@ -252,7 +250,25 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, screenTex);
 
-        updatePBO(cda_ptr); // Stream the texture
+        if (updt_scr_acu >= 50000) { // Updates screen texture at a rate of 20 Hz
+          updt_scr_acu -= 50000;
+          // Stream the texture *************************************************
+          glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
+
+          // Copy the PBO to the texture
+          glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 320, 240, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+          // Updates the PBO with the new texture
+          auto tdata = (dword_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+          if (tdata != nullptr) {
+            gcard.ToRGBATexture(tdata);
+            
+            glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+          }
+
+          glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO
+          gcard.VSync();
+        }
 
         // Enable attribute in_Position as being used
         glEnableVertexAttribArray(sh_in_Position);
@@ -531,24 +547,6 @@ void initGL() {
 void updatePBO (vm::cda::CDA* cda) {
   using namespace vm;
 
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, screenTex);
-  
-  // Stream the texture *************************************************
-  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
-
-  // Copy the PBO to the texture
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 320, 240, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-
-  // Updates the PBO with the new texture
-  auto tdata = (dword_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-  if (tdata != nullptr) {
-    RGBATextureCDA(cda, tdata);
-    
-    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-  }
-
-  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO 
 }
 
 

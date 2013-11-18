@@ -202,7 +202,22 @@ test_alu:                       ; PC = 0x010C
 
         CALL print_ok
 
-        JMP begin           ; Begin again in a endless loop
+        LOAD.B %r3, 0x10000     ; Load countervar
+        
+        ADD %r3, %r3, 1
+        DIV %r4, %r3, 10
+        MOV %r3, %y             ; %r3 = %r3 % 10
+
+        STORE.B 0x10000, %r3    ; Stores counter new value TODO Fails
+        
+        ADD %r0, %r3, 0x30      ; + '0'
+        MOV %r1, 0x0100         ; Column 0, Row 1
+        MOV %r2, 0x70           ; Light gray paper, black Ink
+        CALL print_chr
+
+
+        
+        JMP begin               ; Begin again in a endless loop
 crash:
         SLEEP               ; Sleeps because something goes wrong
 
@@ -216,5 +231,27 @@ print_ok:                   ; Prints OK in CDA text mode 0
        STORE 0xFF0A0000, %r0   ; Writes Ok in VRRAM
 
        RET
+
+
+; Prints a %r0 digit in screen 0 with textmode 0, at column %r1[0:7], row %r1[8:15]
+;       attribute  %r2
+; Asummes that row < 30 and column < 40
+print_chr:
+      PUSH %r4
+      PUSH %r5
+      AND %r4, %r1, 0x3F          ; Grabs column and puts in %r4
+      LRS %r5, %r1, 8             ; Grabs row and puts in %r5
+      MUL %r5, %r5, 0x28
+      ADD %r4, %r4, %r5           ; %r4 = row*40 + column
+      LLS %r4, %r4, 1             ; %r4 *= 2
+      ADD %r4, %r4 ,0xFF0A0000
+      STORE.B %r4, %r0            ; Write character
+      ADD %r4, %r4, 1
+      STORE.B %r4, %r2            ; Write Attribute
+
+      POP %r5
+      POP %r4
+
+      RET
 
 
