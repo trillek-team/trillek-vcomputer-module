@@ -69,6 +69,9 @@ static const float uv_data[] = {
 };
 
 glm::mat4 proj, view, model; // MVP Matrixes
+float yaw  = 0.0;
+float pith = 0.0;
+float zoom = 10.0;
 
 void initSDL();
 void initGL();
@@ -161,6 +164,7 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
     using namespace std::chrono;
     auto clock = high_resolution_clock::now();
     double delta, updt_scr_acu; // Time Deltas
+    updt_scr_acu = 0;
 
     int c = ' ';
     bool loop = true;
@@ -180,9 +184,19 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
         //If user closes he window
         if (e.type == SDL_QUIT)
           loop = false;
-        //else if (e.type == SDL_KEYDOWN) {
-        
-        //}
+        else if (e.type == SDL_MOUSEMOTION) {
+          yaw += (- e.motion.xrel ) / 400.0f;
+          pith += (e.motion.yrel ) / 400.0f;
+        } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+
+        } else if (e.type == SDL_MOUSEWHEEL) {
+          zoom += e.wheel.y / 10.0f;
+          if (zoom < 2.0f)
+            zoom = 2.0f;
+        } else if (e.type == SDL_KEYDOWN) {
+          if (e.key.keysym.sym == SDLK_q )
+            loop = false;
+        }
       }
 #endif
 
@@ -234,9 +248,9 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
         // Camera Matrix
         view = glm::lookAt(
           glm::vec3(
-            0,//(float)(zoom * sin(yaw)*cos(pith)), 
-            3,//(float)(zoom * sin(pith)), 
-            10),//(float)(zoom * cos(yaw))*cos(pith)), // Were is the camera
+            (float)(zoom * sin(yaw)*cos(pith)), 
+            (float)(zoom * sin(pith)), 
+            (float)(zoom * cos(yaw))*cos(pith)), // Were is the camera
           glm::vec3(0,0,0), // and looks at the origin
           glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
         );
@@ -402,6 +416,7 @@ void initSDL() {
     
     // sync buffer swap with monitor's vertical refresh rate
     SDL_GL_SetSwapInterval(1);
+    SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
 void initGL() {
