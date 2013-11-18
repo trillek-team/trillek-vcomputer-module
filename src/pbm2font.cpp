@@ -162,13 +162,14 @@ int main (int argc, char **argv)
     unsigned glyph = 0;
     // TODO Check that this is working as it must be
     while ((c = fin.get()) != std::char_traits<char>::eof() ) {
+      using namespace std;
       if (c == '\r' || c == '\n' ) {
         comment = false;
         continue;
       } else if (c == '#') {
         comment = true;
         continue;
-      } else if (comment || ! std::isalnum(c)) {
+      } else if (comment || ! isalnum(c)) {
         continue;
       }
      

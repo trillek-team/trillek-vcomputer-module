@@ -51,6 +51,7 @@ public:
 
 VirtualComputer (std::size_t ram_size = 128*1024) : cpu(ram_size), n_devices(0), enumerator(this) {
   cpu.ram.AddBlock(&enumerator); // Add Enumerator device
+  std::fill_n(devices, MAX_N_DEVICES, nullptr);
 }
 
 ~VirtualComputer () {
@@ -157,7 +158,7 @@ private:
 
 RC3200 cpu; /// Virtual CPU
 
-IDevice* devices[MAX_N_DEVICES] = {nullptr}; /// Devices atached to the virtual computer
+IDevice* devices[MAX_N_DEVICES]; /// Devices atached to the virtual computer
 unsigned n_devices;
 
   /**
