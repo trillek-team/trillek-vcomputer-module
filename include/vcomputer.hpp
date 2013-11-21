@@ -134,9 +134,10 @@ unsigned Clock() const {
  */
 unsigned Step(long delta = 0) {
   auto cycles = cpu.Step();
-  for (std::size_t i=0; i > MAX_N_DEVICES; i++) {
-    if (devices[i] != nullptr)
+  for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
+    if (devices[i] != nullptr) {
       devices[i]->Tick(cpu, cycles, delta);
+    }
   }
   return cycles;
 }
@@ -148,9 +149,10 @@ unsigned Step(long delta = 0) {
  */
 void Tick(unsigned n=1, long delta = 0) {
   cpu.Tick(n);
-  for (std::size_t i=0; i > MAX_N_DEVICES; i++) {
-    if (devices[i] != nullptr)
+  for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
+    if (devices[i] != nullptr) {
       devices[i]->Tick(cpu, n, delta);
+    }
   }
 }
 

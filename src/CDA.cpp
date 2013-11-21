@@ -7,7 +7,7 @@ void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool user
   assert(texture != nullptr);
   assert(buffer != nullptr);
 
-  dword_t fg, bg;
+  dword_t fg = 0, bg = 0;
   unsigned addr;
 
   if (textmode) {
@@ -53,7 +53,7 @@ void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool user
     } // else -> Unknow videomode. Not supported
   } else {
     // Graphics mode
-    byte_t pixels, pix;
+    byte_t pixels = 0, pix = 0;
     if (vmode == 0) {
       // Video Mode 0 256x192 8x8 atr. cells
       // (X,Y) = ((X % 256)/8) + (256 * Y / 8)     pixel bit (X) = X%8
