@@ -27,14 +27,12 @@ begin:
         MOV %r25, 25
         MOV %r26, 26
         MOV %r27, 27        ; This are special registers!
-        MOV %r28, 28
-        MOV %r29, 29
         MOV %r30, 30
         MOV %r31, 31        ; Addr: 07Ch
         MOV %bp, 0        
         MOV %sp, 0x30000    ; Sets Stack Pointer to the end of the 128KiB RAM     
-        MOV %ia, 0                 
-        MOV %flags, 0                 
+        MOV %ia, isr                 
+        MOV %flags, 0x100    ; Enable interrupts           
         MOV %r1, 0xBEBECAFE   
         ; Tested seting registers and using bit literal
 
@@ -214,8 +212,8 @@ test_alu:                       ; PC = 0x010C
         MOV %r1, 0x0100         ; Column 0, Row 1
         MOV %r2, 0x70           ; Light gray paper, black Ink
         CALL print_chr
-
-
+        
+        ;INT 0x9
         
         JMP begin               ; Begin again in a endless loop
 crash:
@@ -224,10 +222,10 @@ crash:
 
 ; *****************************************************************************
 print_ok:                   ; Prints OK in CDA text mode 0
-       MOV %r0, 0
-       STORE.B 0xFF0ACC00, %r0 ; Text mode 0, default font and palette, no vsync
+       MOV %r0, 0x80            
+       STORE.B 0xFF0ACC00, %r0 ; Text mode 0, default font and palette, vsync
        
-       MOV %r0, 0x0F6B0A4F
+       MOV %r0, 0x706B724F
        STORE 0xFF0A0000, %r0   ; Writes Ok in VRRAM
 
        RET
@@ -254,4 +252,13 @@ print_chr:
 
       RET
 
+; *****************************************************************************
+isr:
+      
+      ADD %r0, %r0, 0x20      ; + ' '
+      MOV %r1, 0x020A         ; Column 10, Row 2
+      MOV %r2, 0x70           ; Light gray paper, black Ink
+      CALL print_chr
+      
+      RFI
 
