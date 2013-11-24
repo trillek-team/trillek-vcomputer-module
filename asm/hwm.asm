@@ -4,6 +4,11 @@
         MOV %r0, 0x80
         STORE.B 0xFF0ACC00, %r0 ; Text mode 0, default font and palette, no vsync
 
+        MOV %r0, 0xFF0A0000
+        MOV %r1, 0x70
+        CALL clr_screen  ; Clear the screen
+
+        ; Print "Nº Dev :"
         MOV %r0, str01
         MOV %r1, 0xFF0A0000
         MOV %r2, 0x70
@@ -25,7 +30,19 @@
         ADD %r0, %y, '0'
         MOV %r1, 9
         CALL print_chr
+       
+        ; Print Header
+        MOV %r0, str02
+        MOV %r1, 0xFF0A0050 ; Second row
+        MOV %r2, 0x70
+        CALL print
         
+        MOV %r0, str03
+        MOV %r1, 0xFF0A00A0 ; Third row
+        MOV %r2, 0x70
+        CALL print
+
+        ; TODO Ask for the 32 posible devices and print a list of connected devices
 
 
         SLEEP  ; End of program
@@ -79,4 +96,28 @@ print_end:
         
         RET
 
+; Clear screen. Fills the scren with spaces and a particular color attribute
+; %r0 <- Ptr to text screen buffer
+; %r1 <- Color atributte
+clr_screen:
+        MOV %r3, 2400 ; Ptr to the end of the screen
+        ADD %r3, %r3, %r0
+
+        LLS %r1, %r1, 8
+        OR %r1, %r1, 0x20  ; Prepare fill word
+
+clr_screen_loop:
+        STORE.W %r0, %r1
+        ADD %r0, %r0, 2
+
+        IFLE %r0, %r3
+          RJMP clr_screen_loop
+
+        RET
+
+; *****************************************************************************
+; Strings
+
 str01:  .DB 'N', 'º', 0x20, 'D', 'e', 'v', ':', 0x20, 0 
+str02:  .DB 'S', 20h, 20h, 'C', 'l', 20h, 20h, 'B', 'u', 'i', 'l', 20h, 20h, 'I' ,'D', 20h, 20h, 20h, 20h, 'V', 'e', 'r', 20h, 20h, 20h, 'J', '1', 20h, 20h, 20h, 20h, 'J', '2', 0
+str03:  .DB '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 0

@@ -200,8 +200,10 @@ unsigned n_devices;
         return;
       }
 
-      if (ndev >= MAX_N_DEVICES || vm->devices[ndev] == nullptr)
-        return; // Invalid device
+      if (ndev >= MAX_N_DEVICES || vm->devices[ndev] == nullptr) {
+        read = 0;   // Invalid device. Reads 0
+        return;          
+      }
 
       // Updates the read value
       switch (val) {
