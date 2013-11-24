@@ -44,6 +44,11 @@
 
         ; TODO Ask for the 32 posible devices and print a list of connected devices
 
+        MOV %r0, 0xCAFE
+        MOV %r1, 0xFF0A00F0
+        MOV %r2, 0x70
+        CALL print_hex_w
+
 
         SLEEP  ; End of program
 
@@ -95,6 +100,104 @@ print_loop:
 print_end:
         
         RET
+
+
+; Print HEX byte function
+; %r0 <- Byte to print
+; %r1 <- Ptr to text screen buffer palce to print
+; %r2 <- Color atributte
+; return nothing
+print_hex_b:
+        PUSH %r5
+
+        LLS %r2, %r2, 8
+        LRS %r5, %r0, 4         ; MS nible to %r5
+        AND %r0, %r0, 0x0000000F      ; LS nible to %r0
+
+        ; Print MS nible first
+        ; 0xA + 55 = 'A'
+        ; 0x9 + 55 = 64 -> 64 -7 = 57 = '9'
+        ADD %r5, %r5, 55
+        IFL %r5, 'A'
+          SUB %r5, %r5, 7
+
+        OR %r5, %r5, %r2
+        STORE.W %r1, %r5
+
+        ; Print LS nible first
+        ADD %r1, %r1, 2
+        ADD %r5, %r0, 55
+        IFL %r5, 'A'
+          SUB %r5, %r5, 7
+
+        OR %r5, %r5, %r2
+        STORE.W %r1, %r5
+        
+        POP %r5
+
+        RET
+
+
+; Print HEX word function
+; %r0 <- Word to print
+; %r1 <- Ptr to text screen buffer palce to print
+; %r2 <- Color atributte
+; return nothing
+print_hex_w:
+        PUSH %r5
+
+        LLS %r2, %r2, 8
+        LRS %r5, %r0, 12         ; MS nible to %r5
+
+        ; Print MS nible first
+        ; 0xA + 55 = 'A'
+        ; 0x9 + 55 = 64 -> 64 -7 = 57 = '9'
+        ADD %r5, %r5, 55
+        IFL %r5, 'A'
+          SUB %r5, %r5, 7
+
+        OR %r5, %r5, %r2
+        STORE.W %r1, %r5
+
+        ; Print next nible first
+        LRS %r5, %r0, 8
+        AND %r5, %r5, 0x0F
+
+        ADD %r1, %r1, 2
+        ADD %r5, %r5, 55
+        IFL %r5, 'A'
+          SUB %r5, %r5, 7
+
+        OR %r5, %r5, %r2
+        STORE.W %r1, %r5
+        
+        ; Print next nible first
+        LRS %r5, %r0, 4
+        AND %r5, %r5, 0x0F
+
+        ADD %r1, %r1, 2
+        ADD %r5, %r5, 55
+        IFL %r5, 'A'
+          SUB %r5, %r5, 7
+
+        OR %r5, %r5, %r2
+        STORE.W %r1, %r5
+        
+        ; Print next nible first
+        AND %r5, %r0, 0x0F
+
+        ADD %r1, %r1, 2
+        ADD %r5, %r5, 55
+        IFL %r5, 'A'
+          SUB %r5, %r5, 7
+
+        OR %r5, %r5, %r2
+        STORE.W %r1, %r5
+        
+        POP %r5
+
+        RET
+
 
 ; Clear screen. Fills the scren with spaces and a particular color attribute
 ; %r0 <- Ptr to text screen buffer
