@@ -43,12 +43,91 @@
         CALL print
 
         ; TODO Ask for the 32 posible devices and print a list of connected devices
+        ; %r10 as device counter
+        ; %r11 as screen pointer
+        MOV %r10, -1
+        MOV %r1, 0xFF0A00F0 ; Forth row
 
-        MOV %r0, 0xCAFE
-        MOV %r1, 0xFF0A00F0
+loop_dev:
+        ADD %r10, %r10, 1
+        IFL %r10, 32          ; if >= 32 then finish
+          RJMP loop_dev_cont
+        RJMP loop_dev_end
+
+loop_dev_cont:
+        ; 1 Ask Dev class
+        OR %r3, %r10, 0x0100
+        STORE.W 0xFF000000, %r3
+        LOAD.B %r3, 0xFF000000
+        IFEQ %r3, 0
+          RJMP loop_dev       ; Not atached, so skips
+
+        ; Print Dev Slot
+        MOV %r0, %r10
+        MOV %r2, 0x70
+        CALL print_hex_b
+
+        ; Print Dev Class
+        MOV %r0, %r3
+        ADD %r1, %r1, 4
+        MOV %r2, 0x70
+        CALL print_hex_b
+
+        ; Ask Builder
+        OR %r3, %r10, 0x0200
+        STORE.W 0xFF000000, %r3
+        LOAD.W %r0, 0xFF000000
+
+        ; Print Dev Builder
+        ADD %r1, %r1, 6
         MOV %r2, 0x70
         CALL print_hex_w
 
+        ; Ask ID
+        OR %r3, %r10, 0x0300
+        STORE.W 0xFF000000, %r3
+        LOAD.W %r0, 0xFF000000
+
+        ; Print Dev ID
+        ADD %r1, %r1, 6
+        MOV %r2, 0x70
+        CALL print_hex_w
+
+        ; Ask Version
+        OR %r3, %r10, 0x0400
+        STORE.W 0xFF000000, %r3
+        LOAD.W %r0, 0xFF000000
+
+        ; Print Dev Version
+        ADD %r1, %r1, 6
+        MOV %r2, 0x70
+        CALL print_hex_w
+
+        ; Ask JMP1
+        OR %r3, %r10, 0x1000
+        STORE.W 0xFF000000, %r3
+        LOAD.W %r0, 0xFF000000
+
+        ; Print Dev Jmp 1
+        ADD %r1, %r1, 6
+        MOV %r2, 0x70
+        CALL print_hex_w
+
+        ; Ask JMP2
+        OR %r3, %r10, 0x2000
+        STORE.W 0xFF000000, %r3
+        LOAD.W %r0, 0xFF000000
+
+        ; Print Dev Jmp 2
+        ADD %r1, %r1, 6
+        MOV %r2, 0x70
+        CALL print_hex_w
+
+        ADD %r1, %r1, 10    ; Jumps to the next row
+        RJMP loop_dev         ; Next dev to ask
+
+
+loop_dev_end:
 
         SLEEP  ; End of program
 
