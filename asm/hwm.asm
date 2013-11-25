@@ -123,7 +123,7 @@ loop_dev_cont:
         MOV %r2, 0x70
         CALL print_hex_w
 
-        ADD %r1, %r1, 10    ; Jumps to the next row
+        ADD %r1, %r1, 12    ; Jumps to the next row
         RJMP loop_dev         ; Next dev to ask
 
 
