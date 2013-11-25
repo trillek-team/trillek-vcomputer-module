@@ -25,6 +25,8 @@ namespace vm {
 class IDevice {
 public:
 
+// TODO Constructor that sets Jumper values
+
 IDevice() : jmp1(0), jmp2(0) {
 }
 
