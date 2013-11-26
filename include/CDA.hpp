@@ -50,8 +50,6 @@ static const dword_t BASE_ADDR[] = {                 /// VRAM base address
 void RGBATexture (const byte_t* vram, bool textmode, unsigned vmode, bool userfont, bool userpal, dword_t* texture);
 
 
-class CDA;
-
 /**
  * Color Display Adapter device
  */
