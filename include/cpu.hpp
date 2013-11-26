@@ -64,6 +64,7 @@ struct CpuState {
 #define SET_ON_ESS(x)      (x |= 0x200)
 #define SET_OFF_ESS(x)     (x &= 0xFFFFFDFF)
 
+/*
 #define GET_EOE(x)         (((x) & 0x400) >> 10)
 #define SET_ON_EOE(x)      (x |= 0x400)
 #define SET_OFF_EOE(x)     (x &= 0xFFFFFBFF)
@@ -71,7 +72,7 @@ struct CpuState {
 #define GET_EDE(x)         (((x) & 0x800) >> 11)
 #define SET_ON_EDE(x)      (x |= 0x800)
 #define SET_OFF_EDE(x)     (x &= 0xFFFFF7FF)
-
+*/
 
 class RC3200 {
 public:

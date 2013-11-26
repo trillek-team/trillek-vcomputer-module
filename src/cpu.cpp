@@ -177,9 +177,9 @@ unsigned RC3200::RealStep() {
                     if (DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) { 
                         // Overflow happens
                         SET_ON_OF(FLAGS);
-                        if (GET_EOE(FLAGS)) {
-                            ThrowInterrupt(4);
-                        }
+                        //if (GET_EOE(FLAGS)) {
+                        //    ThrowInterrupt(4);
+                        //}
                     } else {
                         SET_OFF_OF(FLAGS);
                     }
@@ -199,9 +199,9 @@ unsigned RC3200::RealStep() {
                     if (DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) { 
                         // Overflow happens
                         SET_ON_OF(FLAGS);
-                        if (GET_EOE(FLAGS)) {
-                            ThrowInterrupt(4);
-                        }
+                        //if (GET_EOE(FLAGS)) {
+                        //    ThrowInterrupt(4);
+                        //}
                     } else {
                         SET_OFF_OF(FLAGS);
                     }
@@ -221,9 +221,9 @@ unsigned RC3200::RealStep() {
                     if (DW_SIGN_BIT(rn) == DW_SIGN_BIT(ltmp) ) { 
                         // Overflow happens
                         SET_ON_OF(FLAGS);
-                        if (GET_EOE(FLAGS)) {
-                            ThrowInterrupt(4);
-                        }
+                        //if (GET_EOE(FLAGS)) {
+                        //    ThrowInterrupt(4);
+                        //}
                     } else {
                         SET_OFF_OF(FLAGS);
                     }
@@ -243,9 +243,9 @@ unsigned RC3200::RealStep() {
                     if (DW_SIGN_BIT(rn) == DW_SIGN_BIT(ltmp) ) { 
                         // Overflow happens
                         SET_ON_OF(FLAGS);
-                        if (GET_EOE(FLAGS)) {
-                            ThrowInterrupt(4);
-                        }
+                        //if (GET_EOE(FLAGS)) {
+                        //    ThrowInterrupt(4);
+                        //}
                     } else {
                         SET_OFF_OF(FLAGS);
                     }
@@ -265,9 +265,9 @@ unsigned RC3200::RealStep() {
                     if (DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) { 
                         // Overflow happens
                         SET_ON_OF(FLAGS);
-                        if (GET_EOE(FLAGS)) {
-                            ThrowInterrupt(4);
-                        }
+                        //if (GET_EOE(FLAGS)) {
+                        //    ThrowInterrupt(4);
+                        //}
                     } else {
                         SET_OFF_OF(FLAGS);
                     }
@@ -287,9 +287,9 @@ unsigned RC3200::RealStep() {
                     if (DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) { 
                         // Overflow happens
                         SET_ON_OF(FLAGS);
-                        if (GET_EOE(FLAGS)) {
-                            ThrowInterrupt(4);
-                        }
+                        //if (GET_EOE(FLAGS)) {
+                        //    ThrowInterrupt(4);
+                        //}
                     } else {
                         SET_OFF_OF(FLAGS);
                     }
@@ -373,9 +373,9 @@ unsigned RC3200::RealStep() {
                     RY = rs % rn; // Compiler should optimize this and use a single instruction
                 } else { // Division by 0
                     SET_ON_DE(FLAGS);
-                    if ( GET_EDE(FLAGS)) {
-                        ThrowInterrupt(0);
-                    }
+                    //if ( GET_EDE(FLAGS)) {
+                    //    ThrowInterrupt(0);
+                    //}
                 }
                 SET_OFF_OF(FLAGS);
                 SET_OFF_CF(FLAGS);
@@ -393,9 +393,9 @@ unsigned RC3200::RealStep() {
                         RY = result;
                     } else { // Division by 0
                         SET_ON_DE(FLAGS);
-                        if ( GET_EDE(FLAGS)) {
-                            ThrowInterrupt(0);
-                        }
+                        //if ( GET_EDE(FLAGS)) {
+                        //    ThrowInterrupt(0);
+                        //}
                     }
                     SET_OFF_OF(FLAGS);
                     SET_OFF_CF(FLAGS);
@@ -406,17 +406,14 @@ unsigned RC3200::RealStep() {
 
             case P3_OPCODE::LOAD :
                 state.r[rd] = ram.RD(rs+rn);
-                state.wait_cycles++;
                 break;
 
             case P3_OPCODE::LOADW :
                 state.r[rd] = ram.RW(rs+rn);
-                state.wait_cycles++;
                 break;
 
             case P3_OPCODE::LOADB :
                 state.r[rd] = ram.RB(rs+rn);
-                state.wait_cycles++;
                 break;
             
             case P3_OPCODE::STORE :
@@ -424,18 +421,15 @@ unsigned RC3200::RealStep() {
                 ram.WB(rs+rn +1, state.r[rd] >> 8);
                 ram.WB(rs+rn +2, state.r[rd] >> 16);
                 ram.WB(rs+rn +3, state.r[rd] >> 24);
-                state.wait_cycles++;
                 break;
             
             case P3_OPCODE::STOREW :
                 ram.WB(rs+rn   , state.r[rd]);
                 ram.WB(rs+rn +1, state.r[rd] >> 8);
-                state.wait_cycles++;
                 break;
 
             case P3_OPCODE::STOREB :
                 ram.WB(rs+rn   , state.r[rd]);
-                state.wait_cycles++;
                 break;
 
             default:
@@ -498,17 +492,14 @@ unsigned RC3200::RealStep() {
 
             case P2_OPCODE::LOAD2 :
                 state.r[rd] = ram.RD(rn);
-                state.wait_cycles++;
                 break;
 
             case P2_OPCODE::LOADW2 :
                 state.r[rd] = ram.RW(rn);
-                state.wait_cycles++;
                 break;
 
             case P2_OPCODE::LOADB2 :
                 state.r[rd] = ram.RB(rn);
-                state.wait_cycles++;
                 break;
             
             case P2_OPCODE::STORE2 :
@@ -516,18 +507,15 @@ unsigned RC3200::RealStep() {
                 ram.WB(rn +1, state.r[rd] >> 8);
                 ram.WB(rn +2, state.r[rd] >> 16);
                 ram.WB(rn +3, state.r[rd] >> 24);
-                state.wait_cycles++;
                 break;
             
             case P2_OPCODE::STOREW2 :
                 ram.WB(rn   , state.r[rd]);
                 ram.WB(rn +1, state.r[rd] >> 8);
-                state.wait_cycles++;
                 break;
 
             case P2_OPCODE::STOREB2 :
                 ram.WB(rn   , state.r[rd]);
-                state.wait_cycles++;
                 break;
 
 
@@ -580,7 +568,6 @@ unsigned RC3200::RealStep() {
                 }
             
             case P2_OPCODE::IFBITS :
-                state.wait_cycles++;
                 if (! ((state.r[rd] & rn) != 0)) {
                     state.skiping = true;
                     state.wait_cycles++;
@@ -588,7 +575,6 @@ unsigned RC3200::RealStep() {
                 break;
             
             case P2_OPCODE::IFCLEAR :
-                state.wait_cycles++;
                 if (! ((state.r[rd] & rn) == 0)) {
                     state.skiping = true;
                     state.wait_cycles++;
@@ -661,7 +647,6 @@ unsigned RC3200::RealStep() {
             case P1_OPCODE::POP :
                 if (!literal) {
                     // SP always points to the last pushed element
-                    state.wait_cycles++;
                     state.r[rn]  = ram.RD(state.r[SP]);
                     state.r[SP] += 4;
                 }
@@ -671,7 +656,6 @@ unsigned RC3200::RealStep() {
                 // SP always points to the last pushed element
                 if (!literal)
                     rn = state.r[rn]; 
-                state.wait_cycles++;
                 ram.WB(--state.r[SP] , rn >> 24);
                 ram.WB(--state.r[SP] , rn >> 16);
                 ram.WB(--state.r[SP] , rn >> 8 );
@@ -776,8 +760,8 @@ unsigned RC3200::RealStep() {
     }
     
     // If step-mode is enable, Throw the adequate exception
-    if (state.step_mode)
-        ThrowInterrupt(1);
+    if (state.step_mode && ! GET_IF(FLAGS))
+        ThrowInterrupt(0);
 
     ProcessInterrupt(); // Here we check if a interrupt happens
     

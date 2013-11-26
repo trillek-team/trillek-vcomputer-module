@@ -363,9 +363,13 @@ void print_regs(const vm::cpu::CpuState& state) {
     std::printf("%%sp= 0x%08X\n", state.r[SP]);
 
     std::printf("%%pc= 0x%08X \n", state.pc);
+/*
     std::printf("EDE: %d EOE: %d ESS: %d EI: %d \t IF: %d DE %d OF: %d CF: %d\n",
                     GET_EDE(FLAGS), GET_EOE(FLAGS), GET_ESS(FLAGS), GET_EI(FLAGS),
                     GET_IF(FLAGS) , GET_DE(FLAGS) , GET_OF(FLAGS) , GET_CF(FLAGS));
+*/
+    std::printf("ESS: %d EI: %d \t IF: %d DE %d OF: %d CF: %d\n",
+                    GET_ESS(FLAGS), GET_EI(FLAGS), GET_IF(FLAGS) , GET_DE(FLAGS) , GET_OF(FLAGS) , GET_CF(FLAGS));
     std::printf("\n");
 
 }
