@@ -14,8 +14,11 @@
 #include "IDevice.hpp"
 #include "vcomputer.hpp"
 
+// Devices
 #include "CDA.hpp"
+#include "GKeyboard.hpp"
 
+// Misc
 #include "dis_rc3200.hpp"
 
 

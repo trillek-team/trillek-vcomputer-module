@@ -131,7 +131,9 @@ int main(int argc, char* argv[]) {
 
     // Add devices to tue Virtual Machine
     cda::CDA gcard(0, 10);
+    keyboard::GKeyboard keyb;
     vm.AddDevice(0, gcard);
+    vm.AddDevice(5, keyb);
 
     vm.Reset();
     
