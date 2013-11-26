@@ -58,7 +58,7 @@ class CDA;
 class CDA : public IDevice {
 public:
 
-CDA() : videomode(0), textmode(true), userpal(false), userfont(false),vram(this), setupr(this), buffer(nullptr), e_vsync(false), vsync_int(false) {
+CDA(dword_t j1 = 0, dword_t j2 = 0) : IDevice(j1, j2), videomode(0), textmode(true), userpal(false), userfont(false),vram(this), setupr(this), buffer(nullptr), e_vsync(false), vsync_int(false) {
     buffer = new byte_t[VRAM_SIZE]();
 }
 

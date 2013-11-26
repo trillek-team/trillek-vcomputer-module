@@ -27,7 +27,7 @@ public:
 
 // TODO Constructor that sets Jumper values
 
-IDevice() : jmp1(0), jmp2(0) {
+IDevice(dword_t j1 = 0, dword_t j2 = 0) : jmp1(j1), jmp2(j2) {
 }
 
 virtual ~IDevice() {
@@ -61,24 +61,10 @@ word_t Jmp1() const {
 }
 
 /**
- * Sets Jumper 1
- */
-void Jmp1(byte_t val) {
-    jmp1 = val;
-}
-
-/**
  * Return Jumper 2 value
  */
 word_t Jmp2() const {
     return jmp2;
-}
-
-/**
- * Sets Jumper 2
- */
-void Jmp2(byte_t val) {
-    jmp2 = val;
 }
 
 /**

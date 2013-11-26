@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
     delete[] rom;
 
     // Add devices to tue Virtual Machine
-    cda::CDA gcard;
+    cda::CDA gcard(0, 10);
     vm.AddDevice(0, gcard);
 
     vm.Reset();
