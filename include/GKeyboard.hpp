@@ -60,7 +60,7 @@ enum SCANCODES {                                    /// Scancodes of keyevents
 class GKeyboard : public IDevice {
 public:
 
-GKeyboard (dword_t j1 = 0, dword_t j2 = 0) : IDevice(j1, j2) {
+GKeyboard (dword_t j1 = 0, dword_t j2 = 0) : IDevice(j1, j2), k_status(0), e_int(false), do_int(false), reg_handler(this) {
   keybuffer.clear();
 }
 
@@ -75,14 +75,17 @@ word_t DevVer() const       {return 0x0000;} // Ver 0
 
 virtual void Tick (cpu::RC3200& cpu, unsigned n=1, long delta = 0) {
   // Does nothing
+  if (e_int && do_int) {
+    auto ret = cpu.ThrowInterrupt(INT_MSG[this->Jmp1() &3]);
+    if (ret) // If the CPU not accepts the interrupt, try again in the next tick
+      do_int = false;
+  }
 }
 
 
 virtual std::vector<ram::AHandler*> MemoryBlocks() const { 
   auto handlers = IDevice::MemoryBlocks(); 
-  // TODO create a handler for the 3 byte registers
-  //handlers.push_back((ram::AHandler*)&vram);
-  //handlers.push_back((ram::AHandler*)&setupr);
+  handlers.push_back((ram::AHandler*)&reg_handler);
 
   return handlers;
 }
@@ -91,14 +94,80 @@ void PushKeyEvent (bool keydown, byte_t scancode) {
   if (keybuffer.size() < BSIZE ) {
     word_t k = scancode | ( keydown ? 0x0100 : 0x0000 );
     keybuffer.push_front(k);
-    // TODO Throw interrupt here if are enable
+    do_int = e_int; // Will try to throw a interrupt
   }
 }
 
 protected:
   std::deque<uint16_t> keybuffer;   /// Stores the key events
 
-private:
+  byte_t k_status;
+  bool e_int, do_int;
+
+  /**
+   * Address Handler that manages 3 registers
+   */
+  class KeybReg : public ram::AHandler {
+  public:
+    KeybReg (GKeyboard* gkey): read(0) {
+      this->gkey = gkey;
+      this->begin = BASE_ADDR[gkey->Jmp1() &3];
+      this->size = 3;
+    }
+
+    virtual ~KeybReg() {
+    }
+
+    byte_t RB (dword_t addr) {
+      addr &= 3; // We only are interesed in the two least significant bits
+      if (addr == 0) { // KEY_REG
+        auto ret = gkey->keybuffer.back();
+        gkey->keybuffer.pop_back();
+        return ret;
+
+      } else if (addr == 1) { // KEY_STATUS
+        return gkey->k_status;
+
+      } else if (addr == 2) { // KEY_CMD
+        return read;
+
+      } else
+        return 0;
+    }
+
+    void WB (dword_t addr, byte_t val) {
+      // TODO
+      addr &= 3; // We only are interesed in the two least significant bits
+      if (addr == 0) { // KEY_REG
+        if (gkey->keybuffer.size() < BSIZE ) {
+          gkey->keybuffer.push_back(val);
+        }
+
+      } else if (addr == 1) { // KEY_STATUS
+        gkey->k_status = val;
+
+      } else if (addr == 2) { // KEY_CMD
+        read = 0;
+        if (val == 0) { // Clear buffer command
+          gkey->keybuffer.clear();
+
+        } else if (val == 1) { // Disable Interrupt
+          gkey->e_int = false;
+        
+        } else if (val == 2) { // Enable Interrupt
+          gkey->e_int = true;
+        
+        } else if (val == 3) { // Num of elements in buffer
+          read = (byte_t) gkey->keybuffer.size();
+        }
+      }
+    }
+
+    GKeyboard* gkey;
+    byte_t read; // What return when we read KEY_CMD
+  };
+
+  GKeyboard::KeybReg reg_handler;
 
 };
 
