@@ -24,6 +24,8 @@ SDL_Window* pwin = nullptr;
 SDL_Renderer* prend = nullptr;
 SDL_GLContext ogl_context;
 
+bool capture_keyboard = false;
+
 GLuint screenTex; // ID of screen Texture
 GLuint tex_pbo;     // ID of the screen texture PBO
 
@@ -196,8 +198,27 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
           if (zoom < 2.0f)
             zoom = 2.0f;
         } else if (e.type == SDL_KEYDOWN) {
-          if (e.key.keysym.sym == SDLK_q )
-            loop = false;
+          if (e.key.keysym.sym == SDLK_F3 ) { // F3 togles capture keyboard
+            capture_keyboard = ! capture_keyboard;
+          }
+
+          if (capture_keyboard && e.key.repeat == 0) {
+            if (e.key.keysym.sym >= SDLK_a && e.key.keysym.sym <= SDLK_z) {
+              keyb.PushKeyEvent( true, e.key.keysym.sym);
+            }
+          } else {
+            if (e.key.keysym.sym == SDLK_q ) {
+              loop = false;
+            }
+          }
+
+        } else if (e.type == SDL_KEYUP) {
+          if (capture_keyboard) {
+            if (e.key.keysym.sym >= SDLK_a && e.key.keysym.sym <= SDLK_z) {
+              keyb.PushKeyEvent( false, e.key.keysym.sym);
+            }
+          }
+
         }
       }
 #endif

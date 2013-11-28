@@ -22,10 +22,10 @@ WHAT IT DOES ACTUALLY
 - Can load a little endian binary file with a program. Has a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
 - Step mode working with a on-line disassembler. Each time that you press a
   key, one instruction is executed, and the status of registers and stack, is
-  shown. 'q' ends the execution.
-- Run mode at what your computer can give. It does not enforce a particular speed, but it does compare the real speed against a CPU speed of 100KHz. Only stops by doing 'Ctrl+C.
+  shown. '**q**' ends the execution.
+- Run mode at what your computer can give. It does not enforce a particular speed, but it does compare the real speed against a CPU speed of 100KHz. Only stops by doing '**Ctrl+C**'.
 - If SDL2, GLM and OpenGL libs headers are found, then it will create a window of 800x600 showing a virtual screen. This
-  add the posibility of end the execution closing the window or pressing 'q'.
+  add the possibility of end the execution closing the window or pressing '**q**'. Additionally '**F3**' key toggles keyboard capturing to virtual keyboard. In other words, '**F3**' toggles typing  a virtual keyboard.
 
 ### benchmark
 

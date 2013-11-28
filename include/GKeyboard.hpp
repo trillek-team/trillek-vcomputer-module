@@ -74,8 +74,7 @@ word_t DevId() const        {return 0x0001;} // Keyboard standard
 word_t DevVer() const       {return 0x0000;} // Ver 0
 
 virtual void Tick (cpu::RC3200& cpu, unsigned n=1, long delta = 0) {
-  // Does nothing
-  if (e_int && do_int) {
+  if (e_int && do_int) { // Try to thorow a interrupt
     auto ret = cpu.ThrowInterrupt(INT_MSG[this->Jmp1() &3]);
     if (ret) // If the CPU not accepts the interrupt, try again in the next tick
       do_int = false;
@@ -95,6 +94,7 @@ void PushKeyEvent (bool keydown, byte_t scancode) {
     word_t k = scancode | ( keydown ? 0x0100 : 0x0000 );
     keybuffer.push_front(k);
     do_int = e_int; // Will try to throw a interrupt
+    std::printf("\tPush Key %u, %u\n", scancode, keydown);
   }
 }
 
@@ -136,7 +136,6 @@ protected:
     }
 
     void WB (dword_t addr, byte_t val) {
-      // TODO
       addr &= 3; // We only are interesed in the two least significant bits
       if (addr == 0) { // KEY_REG
         if (gkey->keybuffer.size() < BSIZE ) {
