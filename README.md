@@ -55,9 +55,9 @@ ADJUNT RC3200 ASM PROGRAMS
 --------------------------
 There is some RC3200 ASM programs, source code and binary files, in /asm directory. Actually are :
 
-- hwm.asm : List the number of attached devices and dispplay his enumeration information
+- hwm.asm : List the number of attached devices and display his enumeration information
 - hello.asm : Hello world
-- test.asm : Some tests of RC3200 compilance.
+- test.asm : Some tests of RC3200 compliance.
 
 IMPLEMENTED DEVICES
 -------------------
@@ -69,10 +69,11 @@ IMPLEMENTED DEVICES
 TODO
 ----
 
-- Check that all instructions work as they should. -> Add more cases to test.asm
+- Check that all instructions work as they should (tested around 66%). -> Add more cases to test.asm
 - Improve the memory mapper as it is currently pretty inefficient if we add a lot of devices.
 - Implement more devices.
 - Improve the vm API and document it better
 - Create a vm factory class
+- Fix the virtual keyboard. Actually SDL2 key event weirdness make this lees straightforward that should be.
 - Probably remove SDL2 dependency and use directly GLFW
 
