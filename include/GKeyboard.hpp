@@ -91,15 +91,14 @@ virtual std::vector<ram::AHandler*> MemoryBlocks() const {
 
 void PushKeyEvent (bool keydown, byte_t scancode) {
   if (keybuffer.size() < BSIZE ) {
-    word_t k = scancode | ( keydown ? 0x0100 : 0x0000 );
+    word_t k = scancode | ( keydown ? 0x80 : 0x00 );
     keybuffer.push_front(k);
     do_int = e_int; // Will try to throw a interrupt
-    std::printf("\tPush Key %u, %u\n", scancode, keydown);
   }
 }
 
 protected:
-  std::deque<uint16_t> keybuffer;   /// Stores the key events
+  std::deque<byte_t> keybuffer;   /// Stores the key events
 
   byte_t k_status;
   bool e_int, do_int;
@@ -120,7 +119,7 @@ protected:
 
     byte_t RB (dword_t addr) {
       addr &= 3; // We only are interesed in the two least significant bits
-      if (addr == 0) { // KEY_REG
+      if (addr == 0 && gkey->keybuffer.size() > 0) { // KEY_REG
         auto ret = gkey->keybuffer.back();
         gkey->keybuffer.pop_back();
         return ret;
