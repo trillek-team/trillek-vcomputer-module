@@ -58,6 +58,7 @@ There is some RC3200 ASM programs, source code and binary files, in /asm directo
 - hwm.asm : List the number of attached devices and display his enumeration information
 - hello.asm : Hello world
 - test.asm : Some tests of RC3200 compliance.
+- type.asm : Basic type program
 
 IMPLEMENTED DEVICES
 -------------------
