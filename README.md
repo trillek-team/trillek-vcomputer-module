@@ -25,7 +25,7 @@ WHAT IT DOES ACTUALLY
   shown. '**q**' ends the execution.
 - Run mode at what your computer can give. It does not enforce a particular speed, but it does compare the real speed against a CPU speed of 100KHz. Only stops by doing '**Ctrl+C**'.
 - If SDL2, GLM and OpenGL libs headers are found, then it will create a window of 800x600 showing a virtual screen. This
-  add the possibility of end the execution closing the window or pressing '**q**'. Additionally '**F3**' key toggles keyboard capturing to virtual keyboard. In other words, '**F3**' toggles typing  a virtual keyboard.
+  adds the possibility of end the execution closing the window or pressing '**q**'. Additionally '**F3**' key toggles virtual keyboard. When Virtual Keyboard is enabled, 'q' key types to it instead of ending the emulation.
 
 ### benchmark
 
@@ -65,6 +65,7 @@ IMPLEMENTED DEVICES
 
 - CDA (need verification that user palette and font works)
 - Hardware Enumerator
+- Virtual Keyboard, but keeps to interface SDL2 key events better as actually does and probably the specs will be change soon.
 
 
 TODO

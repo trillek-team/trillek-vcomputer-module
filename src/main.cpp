@@ -200,11 +200,10 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
         } else if (e.type == SDL_KEYDOWN) {
           if (e.key.keysym.sym == SDLK_F3 ) { // F3 togles capture keyboard
             capture_keyboard = ! capture_keyboard;
-          }
 
-          if (capture_keyboard && e.key.repeat == 0) {
+          } else if (capture_keyboard && e.key.repeat == 0) {
             auto k = e.key.keysym.sym;
-            // std::printf("\tkey: '%c'\n", k);
+            //std::printf("\tkey: '%c' %u\n", k, k);
             // Shit SDL! TODO Do a function that maps key to ascii
             if (k >= 'a' && k <= 'z') {
               if (e.key.keysym.mod & (KMOD_SHIFT | KMOD_CAPS))
@@ -216,7 +215,7 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
                 k = k -'0' + '!';
               
               keyb.PushKeyEvent( true, k);
-            } else if (k == ' ') {
+            } else if (k == ' ' || k == 8 || k == 13) {
               keyb.PushKeyEvent( true, k);
             }
 
@@ -239,7 +238,7 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
                 k = k -'0' + '!';
               
               keyb.PushKeyEvent( false, k);
-            } else if (k == ' ') {
+            } else if (k == ' ' || k == 8 || k == 13) {
               keyb.PushKeyEvent( false, k);
             }
 
