@@ -12,13 +12,13 @@
             MOV %r11, 0 ; Row
             MOV %r12, 0 ; Col
 loop:       
-            LOAD.B %r0, 0xFF000060  ; Reads KEY_REG
+            LOAD.W %r0, 0xFF000060  ; Reads KEY_REG
             IFEQ %r0, 0
               RJMP loop
 
-            IFCLEAR %r0, 0b10000000  ; Igonres Key Up
+            IFCLEAR %r0, 0x100  ; Ignores Key Up
               RJMP loop
-            AND %r0, %r0, 0x7F
+            AND %r0, %r0, 0xFF
            
             IFEQ %r0, 13
               RJMP return
