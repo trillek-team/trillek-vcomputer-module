@@ -73,7 +73,7 @@ word_t Builder() const      {return 0x0000;} // Generic builder
 word_t DevId() const        {return 0x0001;} // Keyboard standard
 word_t DevVer() const       {return 0x0000;} // Ver 0
 
-virtual void Tick (cpu::RC3200& cpu, unsigned n=1, long delta = 0) {
+virtual void Tick (cpu::RC3200& cpu, unsigned n=1, const double delta = 0) {
   if (e_int && do_int) { // Try to thorow a interrupt
     auto ret = cpu.ThrowInterrupt(INT_MSG[this->Jmp1() &3]);
     if (ret) // If the CPU not accepts the interrupt, try again in the next tick
