@@ -164,7 +164,8 @@ inline word_t RW(dword_t addr) const
     // Search the apropiated block
     for (auto it= blocks.begin(); it != blocks.end(); ++it) {
         if ( (*it)->Begin() <= addr && ((*it)->End() > addr)) {
-            return (*it)->RB(addr) | ((*it)->RB(addr+1) << 8);
+          auto tmp = ((*it)->RB(addr+1) << 8); // We must enforce a proper order of reading
+          return  (*it)->RB(addr) | tmp ;
         }
     }
 
