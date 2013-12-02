@@ -129,10 +129,10 @@ unsigned Clock() const {
 
 /**
  * Executes one instruction
- * @param delta Number of microseconds since the last call
+ * @param delta Number of milliseconds since the last call
  * @return number of cycles executed
  */
-unsigned Step(long delta = 0) {
+unsigned Step( const double delta = 0) {
   auto cycles = cpu.Step();
   for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
     if (devices[i] != nullptr) {
@@ -145,9 +145,9 @@ unsigned Step(long delta = 0) {
 /**
  * Executes N clock ticks
  * @param n nubmer of clock ticks, by default 1
- * @param delta Number of microseconds since the last call
+ * @param delta Number of milliseconds since the last call
  */
-void Tick(unsigned n=1, long delta = 0) {
+void Tick( unsigned n=1, const double delta = 0) {
   cpu.Tick(n);
   for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
     if (devices[i] != nullptr) {
