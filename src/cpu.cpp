@@ -14,7 +14,7 @@
 namespace vm {
 namespace cpu {
 
-RC3200::RC3200(size_t ram_size) : ram(ram_size), tot_cycles(0) {
+RC3200::RC3200(size_t ram_size, unsigned clock) : ram(ram_size), tot_cycles(0), clock(clock) {
     Reset();    
 }
 
