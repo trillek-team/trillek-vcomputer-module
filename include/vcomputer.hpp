@@ -49,8 +49,9 @@ enum HWN_CMD {
 class VirtualComputer {
 public:
 
-VirtualComputer (std::size_t ram_size = 128*1024) : cpu(ram_size), n_devices(0), enumerator(this) {
-  cpu.ram.AddBlock(&enumerator); // Add Enumerator device
+VirtualComputer (std::size_t ram_size = 128*1024) : cpu(ram_size), n_devices(0), enumerator(this), timers(this) {
+  cpu.ram.AddBlock(&enumerator);  // Add Enumerator address handler
+  cpu.ram.AddBlock(&timers);      // Add PIT address handler
   std::fill_n(devices, MAX_N_DEVICES, nullptr);
 }
 
@@ -134,6 +135,8 @@ unsigned Clock() const {
  */
 unsigned Step( const double delta = 0) {
   auto cycles = cpu.Step();
+  timers.Update(cycles);
+  
   for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
     if (devices[i] != nullptr) {
       devices[i]->Tick(cpu, cycles, delta);
@@ -149,6 +152,8 @@ unsigned Step( const double delta = 0) {
  */
 void Tick( unsigned n=1, const double delta = 0) {
   cpu.Tick(n);
+  timers.Update(n);
+  
   for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
     if (devices[i] != nullptr) {
       devices[i]->Tick(cpu, n, delta);
@@ -164,7 +169,8 @@ IDevice* devices[MAX_N_DEVICES]; /// Devices atached to the virtual computer
 unsigned n_devices;
 
   /**
-   * Hardware enumerator
+   * Addres handler of Hardware enumerator
+   * Also implementes the HWN itself as the HWN not does nothing outside responding commands
    */
   class HWN : public ram::AHandler {
   public:
@@ -239,15 +245,182 @@ unsigned n_devices;
   }
   
   private:
-          VirtualComputer* vm;
+  VirtualComputer* vm;
 
-          byte_t ndev;    /// Device Index of the HWN command
-          word_t read;    /// Value to be read
+  byte_t ndev;    /// Device Index of the HWN command
+  word_t read;    /// Value to be read
           
 
   };
 
 HWN enumerator;
+
+  /**
+   * Addres handler that setups the PIT (timers)
+   */
+  class PIT : public ram::AHandler {
+  public:
+
+
+  PIT (VirtualComputer* vm) : tmr0(0), tmr1(0), re0(0), re1(0), cfg(0) {
+    this->vm = vm;
+    this->begin = 0xFF000040;
+    this->size = 17;
+  }
+
+  virtual ~PIT () {
+  }
+
+  byte_t RB (dword_t addr) {
+    addr &= 0x7F; // We only need to analize address 40 to 50
+    switch (addr) {
+      // Read TMR0_VAL
+      case 0x40 :
+        return (byte_t)tmr0;
+
+      case 0x41 :
+        return (byte_t)(tmr0>>8);
+
+      case 0x42 :
+        return (byte_t)(tmr0>>16);
+      
+      case 0x43 :
+        return (byte_t)(tmr0>>24);
+
+      // Read TMR0_RELOAD
+      case 0x44 :
+        return (byte_t)(re0);
+
+      case 0x45 :
+        return (byte_t)(re0>>8);
+
+      case 0x46 :
+        return (byte_t)(re0>>16);
+
+      case 0x47 :
+        return (byte_t)(re0>>24);
+
+      // Read TMR1_VAL
+      case 0x48 :
+        return (byte_t)tmr1;
+
+      case 0x49 :
+        return (byte_t)(tmr1>>8);
+
+      case 0x4A :
+        return (byte_t)(tmr1>>16);
+      
+      case 0x4B :
+        return (byte_t)(tmr1>>24);
+
+      // Read TMR1_RELOAD
+      case 0x4C :
+        return (byte_t)(re1);
+
+      case 0x4D :
+        return (byte_t)(re1>>8);
+
+      case 0x4E :
+        return (byte_t)(re1>>16);
+
+      case 0x4F :
+        return (byte_t)(re1>>24);
+
+      // Read TMR_CFG
+      case 0x50 :
+        return cfg;
+
+      default:
+        return 0;
+    }
+  }
+
+  void WB (dword_t addr, byte_t val) {
+    addr &= 0x7F; // We only need to analize address 40 to 50
+    switch (addr) {
+      // Write TMR0_RELOAD
+      case 0x44 :
+        re0 = (re0 & 0xFFFFFF00) | val;
+
+      case 0x45 :
+        re0 = (re0 & 0xFFFF00FF) | (val<<8);
+
+      case 0x46 :
+        re0 = (re0 & 0xFF00FFFF) | (val<<16);
+
+      case 0x47 :
+        re0 = (re0 & 0x00FFFFFF) | (val<<24);
+
+      // Write TMR1_RELOAD
+      case 0x4C :
+        re1 = (re1 & 0xFFFFFF00) | val;
+
+      case 0x4D :
+        re1 = (re1 & 0xFFFF00FF) | (val<<8);
+
+      case 0x4E :
+        re1 = (re1 & 0xFF00FFFF) | (val<<16);
+
+      case 0x4F :
+        re1 = (re1 & 0x00FFFFFF) | (val<<24);
+
+      // Write TMR_CFG
+      case 0x50 :
+        cfg = val;
+      
+      default:
+        ;
+    }
+  }
+ 
+  /**
+   * Update the timers and generate the interrupt if underflow hapens
+   * @param n Number of cycles executed
+   */
+  void Update(unsigned n) {
+    dword_t tmp;
+    if ((cfg & 1) != 0) {
+      tmp = tmr0;
+      tmr0 -= n;
+      if (tmr0 > tmp) { // Underflow of TMR0
+        tmr0 = re0 - (0xFFFFFFFF - tmr0);
+        do_int_tmr0 = (cfg & 2) != 0;
+      }
+    }
+
+    if ((cfg & 8) != 0) {
+      tmp = tmr1;
+      tmr1 -= n;
+      if (tmr1 > tmp) { // Underflow of TMR1
+        tmr1 = re1 - (0xFFFFFFFF - tmr1);
+        do_int_tmr1 = (cfg & 16) != 0;
+      }
+    }
+
+    if (((cfg & 2) != 0) && do_int_tmr0) { // Try to throw TMR0 interrupt
+      do_int_tmr0 = ! vm->cpu.ThrowInterrupt(0x0001);
+    } else if (((cfg & 16) != 0) && do_int_tmr1) { // Try to thorow TMR1 interrupt 
+      do_int_tmr1 = ! vm->cpu.ThrowInterrupt(0x1001);
+    }
+  }
+
+  private:
+  VirtualComputer* vm;
+    
+  dword_t tmr0;     /// Timer 0
+  dword_t tmr1;     /// Timer 1
+  
+  dword_t re0;      /// Reload value of Timer 0
+  dword_t re1;      /// Reload value of Timer 1
+
+  byte_t cfg;       /// Config byte of PIT
+
+  bool do_int_tmr0; /// Try to thorow interrupt of TMR0 ?
+  bool do_int_tmr1; /// Try to thorow interrupt of TMR1 ?
+
+  };
+
+PIT timers;
 
 };
 
