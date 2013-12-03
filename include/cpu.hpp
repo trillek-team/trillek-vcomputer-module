@@ -77,7 +77,7 @@ struct CpuState {
 class RC3200 {
 public:
     
-RC3200(size_t ram_size = 128*1024);
+RC3200(size_t ram_size = 128*1024, unsigned clock = 100000 );
 
 virtual ~RC3200();
 
@@ -85,7 +85,7 @@ virtual ~RC3200();
  * Return the actual CPU model clock speed
  */
 virtual unsigned Clock() const {
-    return 100000;
+    return this->clock;;
 }
 
 /**
@@ -140,6 +140,8 @@ protected:
 
 CpuState state;             /// CPU actual state
 std::size_t tot_cycles;     /// Total number of cpu cycles executed
+
+unsigned clock;             /// CPU clock speed
 
 unsigned RealStep();
 
