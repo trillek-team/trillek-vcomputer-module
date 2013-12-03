@@ -258,10 +258,10 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
 
         if (!debug) {
           ticks_count += ticks;
-          vm.Tick(ticks);
+          vm.Tick(ticks, delta * 0.001f );
           //ticks = 26700000.0f / delta + 0.5f; // Rounding bug correction
         } else
-          ticks = vm.Step(); // cpu.Step();
+          ticks = vm.Step(delta * 0.001f); 
 
 
         // Speed info
@@ -513,7 +513,9 @@ void initGL() {
       vertexSource = new GLchar[bufsize + 1]();
 
       fseek(f_vs, 0L, SEEK_SET);
-      fread(vertexSource, sizeof(GLchar), bufsize, f_vs);
+      auto t = fread(vertexSource, sizeof(GLchar), bufsize, f_vs);
+      if (t <= 0)
+        std::cerr << "Error reading Vertex Shader\n";
       
       fclose(f_vs);
       vertexSource[bufsize] = 0; // Enforce null char
@@ -526,7 +528,9 @@ void initGL() {
       fragmentSource = new GLchar[bufsize +1 ]();
 
       fseek(f_fs, 0L, SEEK_SET);
-      fread(fragmentSource, sizeof(GLchar), bufsize, f_fs);
+      auto t = fread(fragmentSource, sizeof(GLchar), bufsize, f_fs);
+      if (t <= 0)
+        std::cerr << "Error reading Fragment Shader\n";
       
       fclose(f_fs);
       fragmentSource[bufsize] = 0; // Enforce null char
