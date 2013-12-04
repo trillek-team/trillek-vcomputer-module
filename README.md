@@ -59,26 +59,26 @@ There is some RC3200 ASM programs, source code and binary files, in /asm directo
 - hello.asm : Hello world
 - test.asm : Some tests of RC3200 compliance.
 - type.asm : Basic type program
+- clock.asm : Basic clock that prints hours minutes seconds in hexadecimal, and uses PIT TMR0 interrupt plus sleeps waiting it.
 
 IMPLEMENTED DEVICES
 -------------------
 
 - CDA (need verification that user palette and font works)
 - Hardware Enumerator
-- PIT (Timers) but not tested yet
-- Virtual Keyboard, but keeps to interface SDL2 key events better as actually does and probably the specs will be change soon.
+- PIT (Timers) 
+- Virtual Keyboard, but need to do better interface with SDL2 key events as actually does.
 
 
 TODO
 ----
 
-- Do a clock.asm to check and be a little example of how using the PIT timers
 - Check that all instructions work as they should (tested around 66%). -> Add more cases to test.asm
 - Improve the memory mapper as it is currently pretty inefficient if we add a lot of devices.
 - Implement more devices.
 - Improve the vm API and document it better
 - Create a vm factory class
-- Fix the virtual keyboard. Actually SDL2 key event weirdness make this lees straightforward that should be. This means that actually only works alphanumeric hcaracters and a few symbols.
+- Fix the virtual keyboard. Actually SDL2 key event weirdness make this lees straightforward that should be. This means that actually only works alphanumeric characters and a few symbols.
 - Probably remove SDL2 dependency and use directly GLFW
-- Possibly change interrupt behaviour to be more similar to Z80/x86 assembly, using a vector table pointed by IA register. It should make more easy developing OS and Drivers, and make more quick interrupt handling.
+- Possibly change interrupt behavior to be more similar to Z80/x86 assembly, using a vector table pointed by IA register. It should make more easy developing OS and Drivers, and make more quick interrupt handling.
 
