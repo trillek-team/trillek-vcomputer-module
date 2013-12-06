@@ -7,4 +7,5 @@ configure_file(shaders/mvp_template.vert ${CMAKE_CURRENT_BINARY_DIR}/shaders/mvp
 # Fragment Shaders
 configure_file(shaders/basic_fs.frag ${CMAKE_CURRENT_BINARY_DIR}/shaders/basic_fs.frag COPYONLY)
 configure_file(shaders/basic_texture.frag ${CMAKE_CURRENT_BINARY_DIR}/shaders/basic_texture.frag COPYONLY)
+configure_file(shaders/retro_texture.frag ${CMAKE_CURRENT_BINARY_DIR}/shaders/retro_texture.frag COPYONLY)
 

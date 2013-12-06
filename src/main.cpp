@@ -521,7 +521,8 @@ void initGL() {
       vertexSource[bufsize] = 0; // Enforce null char
     }
 
-    auto f_fs = std::fopen("./assets/shaders/basic_texture.frag", "r");
+    //auto f_fs = std::fopen("./assets/shaders/basic_texture.frag", "r");
+    auto f_fs = std::fopen("./assets/shaders/retro_texture.frag", "r");
     if (f_fs != nullptr) {
       fseek(f_fs, 0L, SEEK_END);
       size_t bufsize = ftell(f_fs);
