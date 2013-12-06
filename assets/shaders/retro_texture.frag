@@ -1,4 +1,5 @@
-// Basic Fragment Shader that uses textures
+// Basic Fragment Shader that generates a Scanline/TV effect
+// Based from https://github.com/tacoe/detroit/blob/master/arthur/scanlines.glsl
 #version 140
 
 precision highp float; // needed only for version 1.30
