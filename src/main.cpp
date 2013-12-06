@@ -40,6 +40,7 @@ GLchar *fragmentSource = nullptr;
 GLuint vertexShader, fragmentShader;
 
 GLuint modelId, viewId, projId; // Handle for uniform inputs to the shader
+GLuint timeId;
 
 const unsigned int sh_in_Position = 0;
 const unsigned int sh_in_Color = 1;
@@ -159,6 +160,7 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
 
     initGL();
     std::printf("Initiated OpenGL\n");
+    float frame_count = 0; // Count frames
 #endif
 
     std::cout << "Running!\n";
@@ -287,6 +289,8 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
 
 #ifdef SDL2_ENABLE
         // Clear The Screen And The Depth Buffer
+        frame_count += 1.0;
+
         glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -373,6 +377,8 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
         glUniformMatrix4fv(viewId, 1, GL_FALSE, &view[0][0]);
         glUniformMatrix4fv(projId, 1, GL_FALSE, &proj[0][0]);
 
+        glUniform1f(timeId, (float)((int)frame_count +1));
+        
         glDrawArrays(GL_TRIANGLE_STRIP, sh_in_Position, N_VERTICES);
 
         glDisableVertexAttribArray(sh_in_Position);
@@ -500,8 +506,10 @@ void initGL() {
     glBindTexture(GL_TEXTURE_2D, screenTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -594,6 +602,8 @@ void initGL() {
     modelId = glGetUniformLocation(shaderProgram, "in_Model");
     viewId  = glGetUniformLocation(shaderProgram, "in_View");
     projId  = glGetUniformLocation(shaderProgram, "in_Proj");
+    
+    timeId = glGetUniformLocation(shaderProgram, "time");
 
      
     glDeleteShader(vertexShader);
