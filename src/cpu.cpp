@@ -775,6 +775,14 @@ unsigned RC3200::RealStep() {
  */
 void RC3200::ProcessInterrupt() {
     if (GET_EI(FLAGS) && state.interrupt && !state.iacq) {
+        byte_t index = state.int_msg;
+        std::printf("\tIndex %u\n", index);
+        dword_t addr = ram.RD(IA + index*4); // Get the address to jump from the Vector Table
+        std::printf("\tAddr %u\n", addr);
+        if (addr == 0) { // Null entry, does nothing
+          state.interrupt = false;
+          return;
+        }
         state.iacq = true;
 
         // push %r0
@@ -790,7 +798,7 @@ void RC3200::ProcessInterrupt() {
         ram.WB(--state.r[SP], state.pc); // Little Endian
 
         state.r[0] = state.int_msg;
-        state.pc = IA;
+        state.pc = addr;
         SET_ON_IF(FLAGS);
         state.sleeping = false; // WakeUp! 
     }

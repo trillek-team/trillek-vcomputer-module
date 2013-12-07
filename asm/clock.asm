@@ -9,8 +9,12 @@
             MOV %r1, 0x70
             CALL clr_screen
 
-            ; Config interrupts
-            MOV %ia , isr
+            ; Config interrupts (sets the Vector Table entry for TMR0)
+            MOV %ia , vtable
+            MOV %r0, isr
+            ADD %r1, %ia, 4
+            STORE %r1, %r0
+            ; And enable it
             MOV %flags, 0x100
 
             ; Sets TMR0 reload value
@@ -83,3 +87,4 @@ isr:
 sec:        .DB 0
 min:        .DB 0
 hour:       .DW 0
+vtable:     
