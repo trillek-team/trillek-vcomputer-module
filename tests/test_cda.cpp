@@ -50,6 +50,7 @@ GLchar *fragmentSource = nullptr;
 GLuint vertexShader, fragmentShader;
 
 GLuint modelId, viewId, projId; // Handle for uniform inputs to the shader
+GLuint timeId;
 
 const unsigned int sh_in_Position = 0;
 const unsigned int sh_in_Color = 1;
@@ -162,11 +163,13 @@ int main(int argc, char* argv[]) {
     std::printf("Initiated OpenGL\n");
     std::printf("Initial VideoMode %u\n", vmode);
 
+    long frm_count = 0;
     unsigned char count = 0;
     vm::dword_t* tdata = nullptr;
     bool loop = true;
     while ( loop) {
-            
+        frm_count += 1;
+        
         SDL_Event e;
         while (SDL_PollEvent(&e)){
             //If user closes he window
@@ -303,6 +306,8 @@ int main(int argc, char* argv[]) {
         glUniformMatrix4fv(viewId, 1, GL_FALSE, &view[0][0]);
         glUniformMatrix4fv(projId, 1, GL_FALSE, &proj[0][0]);
 
+        glUniform1f(timeId, (float)frm_count);
+
         glDrawArrays(GL_TRIANGLE_STRIP, sh_in_Position, N_VERTICES);
 
         glDisableVertexAttribArray(sh_in_Position);
@@ -382,8 +387,8 @@ void initGL() {
     glBindTexture(GL_TEXTURE_2D, screenTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -395,20 +400,24 @@ void initGL() {
       vertexSource = new GLchar[bufsize + 1]();
 
       fseek(f_vs, 0L, SEEK_SET);
-      fread(vertexSource, sizeof(GLchar), bufsize, f_vs);
+      auto t = fread(vertexSource, sizeof(GLchar), bufsize, f_vs);
+      if (t <= 0)
+        std::printf("Error reading vertex shader\n");
       
       fclose(f_vs);
       vertexSource[bufsize] = 0; // Enforce null char
     }
 
-    auto f_fs = std::fopen("./assets/shaders/basic_texture.frag", "r");
+    auto f_fs = std::fopen("./assets/shaders/retro_texture.frag", "r");
     if (f_fs != nullptr) {
       fseek(f_fs, 0L, SEEK_END);
       size_t bufsize = ftell(f_fs);
       fragmentSource = new GLchar[bufsize +1 ]();
 
       fseek(f_fs, 0L, SEEK_SET);
-      fread(fragmentSource, sizeof(GLchar), bufsize, f_fs);
+      auto t = fread(fragmentSource, sizeof(GLchar), bufsize, f_fs);
+      if (t <= 0)
+        std::printf("Error reading fragment shader\n");
       
       fclose(f_fs);
       fragmentSource[bufsize] = 0; // Enforce null char
@@ -471,6 +480,7 @@ void initGL() {
     modelId = glGetUniformLocation(shaderProgram, "in_Model");
     viewId  = glGetUniformLocation(shaderProgram, "in_View");
     projId  = glGetUniformLocation(shaderProgram, "in_Proj");
+    timeId = glGetUniformLocation(shaderProgram, "time");
 
      
     glDeleteShader(vertexShader);

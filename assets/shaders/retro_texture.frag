@@ -9,7 +9,7 @@
 precision highp float; // needed only for version 1.30
 
 // Base Color/Tint of the screen thing
-in vec3 ex_Color;
+//in vec3 ex_Color;
 // UV coord of the screen thing
 in vec2 ex_UV;
 
@@ -27,16 +27,16 @@ uniform float misalign = 0.4;
 
 // how much to boost the brightness of pixels to compensate for scanlines, 0-1
 // 0 = no increase, 1 = double brightness
-uniform float brightness = 0.25;
+uniform float brightness = 0.0;
  
 // how much a scanline should darken its line, 0-1
-uniform float scanIntensity = 0.05;
+uniform float scanIntensity = 0.125;
 
 // amount of noise, 0-1 (a little goes a long way)
 uniform float noise = 0.075;
 
 // Flicker intesity
-uniform float flicker = 0.07;
+//uniform float flicker = 0.07;
  
 // Time depedent FX
 uniform float time = 0.0;
@@ -91,16 +91,16 @@ void main(void) {
     result.xyz = clamp(result.xyz*0.5 + 0.5*result.xyz*result.xyz *1.2, 0.0 , 1.0);
     
     // scanlines
-    if (scanIntensity > 0.0 && mod(uv.y, pixelSize.y * 2) > pixelSize.y) {
+    if (scanIntensity > 0.0 && mod(uv.y, pixelSize.y ) > (pixelSize.y/2)) {
             result.r = max(result.r - scanIntensity, 0);
             result.g = max(result.g - scanIntensity, 0);
             result.b = max(result.b - scanIntensity, 0);
     };
 
     //flickering (semi-randomized)
-    result *= clamp(1.0 - flicker * rand(vec2(time, 1)), 0.7, 1.0);
+    //result *= clamp(1.0 - flicker * rand(vec2(time, 1)), 0.7, 1.0);
 
-    out_Color.xyz = (result * (1.0 + brightness)) * ex_Color;
+    out_Color.xyz = result * (1.0 + brightness);
     out_Color.w = 1.0;
     
 }
