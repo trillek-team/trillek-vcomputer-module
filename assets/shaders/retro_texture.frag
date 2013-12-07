@@ -45,7 +45,7 @@ uniform float time = 0.0;
 uniform sampler2D texture0;
 
 #define PI            3.14159265
-#define distortion    0.2
+#define distortion    0.08
 vec2 barrelDistortion(vec2 coord) {
   vec2 cc = coord - 0.5;
   float dist = dot(cc, cc) * distortion;

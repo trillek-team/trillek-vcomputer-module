@@ -27,8 +27,8 @@ vm::byte_t vram_1[0x2431] = {0};
 
 vm::byte_t vram_2[0x2580] = {0};
 
-unsigned sdl_width = 800;
-unsigned sdl_height = 600;
+unsigned sdl_width = 1024;
+unsigned sdl_height = 768;
 int sdl_other_flags = SDL_WINDOW_SHOWN;
 SDL_Window* pwin = nullptr;
 SDL_Renderer* prend = nullptr;
