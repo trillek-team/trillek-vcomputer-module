@@ -67,9 +67,11 @@ int main(int argc, char* argv[])
 
     // Add devices
     cda::CDA gcard[N_CPUS];
+    keyboard::GKeyboard keyb[N_CPUS];
     
     for (auto i=0; i< N_CPUS; i++) {
         vm[i].AddDevice(0, gcard[i]);
+        vm[i].AddDevice(2, keyb[i]);
         vm[i].Reset();
     }
     
