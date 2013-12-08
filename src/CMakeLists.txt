@@ -1,7 +1,6 @@
-#include(GL)
 
 set(rc3200_SRCS
-    ./vcomputer.cpp
+#    ./vcomputer.cpp
     ./cpu.cpp
     ./dis_rc3200.cpp
     ./CDA.cpp
