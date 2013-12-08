@@ -7,7 +7,7 @@
 #ifndef __VM_HPP_
 #define __VM_HPP_ 1
 
-#include "config.hpp"
+//#include "config.hpp"
 #include "types.hpp"
 
 #include "cpu.hpp"

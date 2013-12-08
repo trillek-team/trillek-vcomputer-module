@@ -8,8 +8,8 @@ set(rc3200_SRCS
 )
 
 # General Configuration file
-configure_file (./config.hpp.in
-                "${rc3200_SOURCE_DIR}/include/config.hpp" )
+#configure_file (./config.hpp.in
+#                "${rc3200_SOURCE_DIR}/include/config.hpp" )
 #                "${PROJECT_BINARY_DIR}/config.hpp" )
 
 # RC3200 VM core lib
