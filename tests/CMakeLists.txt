@@ -1,4 +1,18 @@
 
+# Benchmark executable
+add_executable( benchmark
+    benchmark.cpp
+)
+
+include_directories( benchmark
+    ${rc3200_INCLUDE_DIRS}
+)
+
+target_link_libraries( benchmark
+    rc3200_lib_static
+)
+
+
   if(SDL2_ENABLE)
     
     # Test CDA vram to texture and dispaly in OpenGL 

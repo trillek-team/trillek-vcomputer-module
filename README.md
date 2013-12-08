@@ -1,51 +1,66 @@
-RC3200 Computer Virtual Machine
-===============================
+RC3200 Computer Virtual Machine Lib
+===================================
 
 Using these [specs](https://github.com/Zardoz89/Trillek-Computer)
 
+This repo is composed by the RC3200-VM libs and some extra tools. The tools includes a program that loads a binary file to a VM ROM and executes it.
+
 COMPILING
 ---------
-Actually I'm using CMake and C++ 11. Needs std::chrono compilance for timings. SDL2 + GLFW + GLM + OpenGL 3.1 is needed if you desire to see the virtual screen.
+Actually I'm using CMake and C++ 11. 
 
     mkdir build
     cd build
     cmake ..
     make
- 
-If all is OK, it should generate executables called **vm** and **benchmark**, and in ./src/ should be created static and shared libs of the VM core.
 
+This will only generate the static and dynamic libs of the RC3200-VM libs.
+If you wish to compile the tools, then you should use "cmake -DBUILD_tools=True .."
+If you wish to compile the tests, then you should use "cmake -DBUILD_tests=True .."
+Plus you can control if you wish release or debug building using "-DCMAKE_BUILD_TYPE=Release" or "-DCMAKE_BUILD_TYPE=Debug" flag in cmake.
+ 
 WHAT IT DOES ACTUALLY
 ------------------
+### Tools
 
-### vm
+#### vm
+
+Is a program that uses RC3200-VM lib to run a RC3200 emulation. Can run in step mode or in "run mode" where executes all the program without stopping. Needs C++ 11 std::chrono compilance for timings; SDL2 + GLFW + GLM + OpenGL 3.1 is needed if you desire to see the virtual screen.
 
 - Can load a little endian binary file with a program. Has a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
 - Step mode working with a on-line disassembler. Each time that you press a
   key, one instruction is executed, and the status of registers and stack, is
   shown. '**q**' ends the execution.
-- Run mode at what your computer can give. It does not enforce a particular speed, but it does compare the real speed against a CPU speed of 100KHz. Only stops by doing '**Ctrl+C**'.
+- Run mode at what your computer can give. It does not enforce a particular speed, but it does compare the real speed against a CPU speed of 100KHz. Only stops by doing '**Ctrl+C**'. The run speed is tweaked by source code to run at 100% aprox. in my computer.
 - If SDL2, GLM and OpenGL libs headers are found, then it will create a window of 800x600 showing a virtual screen. This
   adds the possibility of end the execution closing the window or pressing '**q**'. Additionally '**F3**' key toggles virtual keyboard. When Virtual Keyboard is enabled, 'q' key types to it instead of ending the emulation.
 
-### benchmark
+#### benchmark
+
+Is a program that run a quick and dirty benchmark to measure the performance of the RC3200-VM lib. Needs C++ 11 std::chrono compilance for timings.
 
 - Can load a little endian binary file with a program. Has a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
 - Trys to execute 1000 RC3200 CPUs in a single thread at what your computer can give. It does not enforce a particular speed, but it does compare the real speed against a CPU speed of 100KHz. Only stops by doing 'Ctrl+C'.
 
-TESTS
------
+#### pbm2font
 
-If instead of running "cmake ..", you may run "cmake -DBUILD_tests=True .." and some test programs will be compiled.
+Is a small tool that can generate a hexadecimal representation of a user font for the CDA display card. Uses as source image, a b&w **pbm** file (Gimp can generate it). It expects that the image have a width and height multiple of 8, as it divides the image in cells of 8x8 pixels each being a glyph of the font.
 
-### test_cda
+### Tests
 
-It tests the CDA VRAM to RGBA Texture routines, PBO texture streaming, and displays it in a virtual screen in 3D. This requires OpenGL 3.1 to work.
+#### test_cda
+
+It tests the CDA VRAM to RGBA Texture routines, PBO texture streaming, and displays it in a virtual screen in 3D (in awindow of 1024x768). This requires SDL2 + GLFW + GLM + OpenGL 3.1 to work.
 It has these shortcuts:
 
 - 'n' Change to the next video/text mode
 - 'wasd' orbits the camera around the virtual screen
 - 'r' Zoom In
 - 'f' Zoom Out
+
+Example image of text mode :
+
+<a href="http://img856.imageshack.us/img856/683/fp7n.png" target="_blank"><img width="300px" src="http://img856.imageshack.us/img856/683/fp7n.png"/></a>
 
 HOW I CAN CREATE PROGRAMS ?
 ---------------------------
@@ -64,21 +79,22 @@ There is some RC3200 ASM programs, source code and binary files, in /asm directo
 IMPLEMENTED DEVICES
 -------------------
 
-- CDA (need verification that user palette and font works)
+- CDA (need verification that user palette and user font works)
 - Hardware Enumerator
 - PIT (Timers) 
-- Virtual Keyboard, but need to do better interface with SDL2 key events as actually does.
+- Virtual Keyboard. **vm** need to do better interface with SDL2 key events as actually does.
 
 
 TODO
 ----
 
-- Check that all instructions work as they should (tested around 66%). -> Add more cases to test.asm
+- Check that all instructions work as they should (tested around 66%). -> Add more cases and fix test.asm
 - Improve the memory mapper as it is currently pretty inefficient if we add a lot of devices.
+- Implement beeper
 - Implement more devices.
-- Improve the vm API and document it better
+- Improve the vm API and document it better -> doxygen
 - Create a vm factory class
 - Fix the virtual keyboard. Actually SDL2 key event weirdness make this lees straightforward that should be. This means that actually only works alphanumeric characters and a few symbols.
 - Probably remove SDL2 dependency and use directly GLFW
-- Possibly change interrupt behavior to be more similar to Z80/x86 assembly, using a vector table pointed by IA register. It should make more easy developing OS and Drivers, and make more quick interrupt handling.
+
 
