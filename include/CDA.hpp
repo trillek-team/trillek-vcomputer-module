@@ -56,85 +56,56 @@ void RGBATexture (const byte_t* vram, bool textmode, unsigned vmode, bool userfo
 class CDA : public IDevice {
 public:
 
-CDA(dword_t j1 = 0, dword_t j2 = 0) : IDevice(j1, j2), videomode(0), textmode(true), userpal(false), userfont(false),vram(this), setupr(this), buffer(nullptr), e_vsync(false), vsync_int(false) {
-    buffer = new byte_t[VRAM_SIZE]();
-}
+  CDA(dword_t j1 = 0, dword_t j2 = 0);
 
-virtual ~CDA() {
-    if (buffer != nullptr)
-      delete[] buffer;
-}
+  virtual ~CDA();
 
-byte_t DevClass() const     {return 0x0E;}   // Graphics device
-word_t Builder() const      {return 0x0000;} // Generic builder
-word_t DevId() const        {return 0x0001;} // CDA standard
-word_t DevVer() const       {return 0x0000;} // Ver 0 -> CDA base standard
+  byte_t DevClass() const     {return 0x0E;}   // Graphics device
+  word_t Builder() const      {return 0x0000;} // Generic builder
+  word_t DevId() const        {return 0x0001;} // CDA standard
+  word_t DevVer() const       {return 0x0000;} // Ver 0 -> CDA base standard
 
-virtual void Tick (cpu::RC3200& cpu, unsigned n=1, const double delta = 0) {
-  if (e_vsync && vsync_int) {
-    auto ret = cpu.ThrowInterrupt(INT_MSG[this->Jmp1() &3]);
-    if (ret) // If the CPU not accepts the interrupt, try again in the next tick
-      vsync_int = false;
+  virtual void Tick (cpu::RC3200& cpu, unsigned n=1, const double delta = 0);
+
+  virtual std::vector<ram::AHandler*> MemoryBlocks() const;
+
+  /**
+   * Video RAM buffer
+   */
+  const byte_t* VRAM() const;
+
+  /**
+   * Actual videomode
+   */
+  unsigned VideoMode() const;
+
+  /**
+   * Is using a Text Videomode ?
+   */
+  bool isTextMode() const;
+
+  /**
+   * Is using User defined palette ?
+   */
+  bool isUserPalette() const;
+
+  /**
+   * Is using User defined font in a Text videomode ?
+   */
+  bool isUserFont() const;
+
+  /**
+   * Launch a VSync event
+   */
+  void VSync();
+
+  /**
+   * Converts CDA/VRAM state to a RGBA8 320x240 texture
+   * @param texture Ptr were write the RGBA texture, must have the correct size
+   */
+  void ToRGBATexture (dword_t* texture) const {
+    RGBATexture (buffer, textmode, videomode, userfont, userpal, texture);
   }
-}
-
-virtual std::vector<ram::AHandler*> MemoryBlocks() const { 
-  auto handlers = IDevice::MemoryBlocks(); 
-  handlers.push_back((ram::AHandler*)&vram);
-  handlers.push_back((ram::AHandler*)&setupr);
-
-  return handlers;
-}
-
-/**
- * Video RAM buffer
- */
-const byte_t* VRAM() const {
-  return buffer;
-}
-
-/**
- * Actual videomode
- */
-unsigned VideoMode() const {
-  return videomode;
-}
-
-/**
- * Is using a Text Videomode ?
- */
-bool isTextMode() const {
-  return textmode;
-}
-
-/**
- * Is using User defined palette ?
- */
-bool isUserPalette() const {
-  return userpal;
-}
-
-/**
- * Is using User defined font in a Text videomode ?
- */
-bool isUserFont() const {
-  return userfont;
-}
-
-/**
- * Launch a VSync event
- */
-void VSync() {
-  this->vsync_int = true;
-}
-
-/**
- * Converts CDA/VRAM state to a RGBA8 320x240 texture
- * @param texture Ptr were write the RGBA texture, must have the correct size
- */
-void ToRGBATexture (dword_t* texture) const {
-  RGBATexture (buffer, textmode, videomode, userfont, userpal, texture);
-}
 
 protected:
 
@@ -143,32 +114,15 @@ protected:
    */
   class VideoRAM : public ram::AHandler {
   public:
-    VideoRAM (CDA* cda) {
-      this->cda = cda;
-      this->begin = BASE_ADDR[cda->Jmp1() &3];
-      this->size = VRAM_SIZE;
-    }
+    VideoRAM (CDA* cda);
 
-    virtual ~VideoRAM() {
-    }
+    virtual ~VideoRAM();
 
-    byte_t RB (dword_t addr) {
-      addr -= this->begin;
-      assert(addr < this->size);
-      assert(addr >= 0);
+    byte_t RB (dword_t addr);
 
-      return cda->buffer[addr];
-    }
+    void WB (dword_t addr, byte_t val);
 
-    void WB (dword_t addr, byte_t val) {
-      addr -= this->begin;
-      assert(addr < this->size);
-      assert(addr >= 0);
-      
-      cda->buffer[addr] = val;
-    }
-
-
+  protected:
     CDA* cda; // Self-reference
   };
 
@@ -177,42 +131,29 @@ protected:
    */
   class SETUPreg : public ram::AHandler {
   public:
-    SETUPreg (CDA* cda) {
-      this->begin = BASE_ADDR[cda->Jmp1() &3] + SETUP_OFFSET;
-      this->size = 1;
-      this->cda = cda;
-    }
+    SETUPreg (CDA* cda);
 
-    byte_t RB (dword_t addr) {
-      return reg;
-    }
+    byte_t RB (dword_t addr);
 
-    void WB (dword_t addr, byte_t val) {
-      reg = val;
-      cda->videomode = val & 7; 
-      cda->textmode = (val & 8) == 0;
-      cda->userfont = (val & 0x20 ) != 0;
-      cda->userpal = (val & 0x40 ) != 0;
-      cda->e_vsync = (val & 0x80 ) != 0;
-    }
+    void WB (dword_t addr, byte_t val);
 
+  protected:
     byte_t reg;
     CDA* cda; // Self-reference
-
   };
 
-unsigned videomode;     /// Actual video mode
-bool textmode;          /// Is text mode ?
-bool userpal;           /// User palette ?
-bool userfont;          /// User Font ?
+  unsigned videomode;     /// Actual video mode
+  bool textmode;          /// Is text mode ?
+  bool userpal;           /// User palette ?
+  bool userfont;          /// User Font ?
 
-CDA::VideoRAM vram;
-CDA::SETUPreg setupr;
+  CDA::VideoRAM vram;     /// VideoRAM Handler
+  CDA::SETUPreg setupr;   /// Setup register handler
 
-byte_t* buffer;         /// Visible video ram buffer for grpahics representation of screen
+  byte_t* buffer;         /// Visible video ram buffer for grpahics representation of screen
 
-bool e_vsync;           /// Enable V-Sync interrupt by user program ?
-bool vsync_int;         /// Thorow a V-Sync interrupt if true
+  bool e_vsync;           /// Enable V-Sync interrupt by user program ?
+  bool vsync_int;         /// Thorow a V-Sync interrupt if true
 
 };
 

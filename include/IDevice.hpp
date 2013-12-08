@@ -14,9 +14,6 @@
 #include <memory>
 #include <vector>
 
-#include <cassert>
-
-
 namespace vm {
 
 /** 
@@ -25,13 +22,14 @@ namespace vm {
 class IDevice {
 public:
 
-// TODO Constructor that sets Jumper values
+/**
+ * Build a device setting his jumper values
+ * @param j1 Jumper 1 value
+ * @param j2 Jumper 2 value
+ */
+IDevice(dword_t j1 = 0, dword_t j2 = 0);
 
-IDevice(dword_t j1 = 0, dword_t j2 = 0) : jmp1(j1), jmp2(j2) {
-}
-
-virtual ~IDevice() {
-}
+virtual ~IDevice();
 
 /**
  * Device Class
@@ -56,16 +54,12 @@ virtual word_t DevVer() const = 0;
 /**
  * Return Jumper 1 value
  */
-word_t Jmp1() const {
-    return jmp1;
-}
+word_t Jmp1() const;
 
 /**
  * Return Jumper 2 value
  */
-word_t Jmp2() const {
-    return jmp2;
-}
+word_t Jmp2() const;
 
 /**
  * Does Hardware stuff in sync with the CPU clock
@@ -78,10 +72,7 @@ virtual void Tick (cpu::RC3200& cpu, unsigned n=1, const double delta = 0) = 0;
 /**
  * Return an vector of ptrs AHandler that uses this device
  */
-virtual std::vector<ram::AHandler*> MemoryBlocks() const {
-    std::vector<ram::AHandler*> output;
-    return output;
-}
+virtual std::vector<ram::AHandler*> MemoryBlocks() const;
 
 protected:
 unsigned jmp1;

@@ -1,9 +1,11 @@
 
 set(rc3200_SRCS
-#    ./vcomputer.cpp
+    ./vcomputer.cpp
+    ./IDevice.cpp
     ./cpu.cpp
-    ./dis_rc3200.cpp
     ./CDA.cpp
+    ./GKeyboard.cpp
+    ./dis_rc3200.cpp
 )
 
 # General Configuration file

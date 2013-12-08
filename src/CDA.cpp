@@ -3,6 +3,114 @@
 namespace vm {
 namespace cda {
 
+CDA::CDA(dword_t j1, dword_t j2) : IDevice(j1, j2), videomode(0), textmode(true), userpal(false), userfont(false),vram(this), setupr(this), buffer(nullptr), e_vsync(false), vsync_int(false) {
+    buffer = new byte_t[VRAM_SIZE]();
+}
+
+CDA::~CDA() {
+    if (buffer != nullptr)
+      delete[] buffer;
+}
+
+void CDA::Tick (cpu::RC3200& cpu, unsigned n, const double delta) {
+  if (e_vsync && vsync_int) {
+    auto ret = cpu.ThrowInterrupt(INT_MSG[this->Jmp1() &3]);
+    if (ret) // If the CPU not accepts the interrupt, try again in the next tick
+      vsync_int = false;
+  }
+}
+
+std::vector<ram::AHandler*> CDA::MemoryBlocks() const { 
+  auto handlers = IDevice::MemoryBlocks(); 
+  handlers.push_back((ram::AHandler*)&vram);
+  handlers.push_back((ram::AHandler*)&setupr);
+
+  return handlers;
+}
+
+
+const byte_t* CDA::VRAM() const {
+  return buffer;
+}
+
+unsigned CDA::VideoMode() const {
+  return videomode;
+}
+
+bool CDA::isTextMode() const {
+  return textmode;
+}
+
+bool CDA::isUserPalette() const {
+  return userpal;
+}
+
+bool CDA::isUserFont() const {
+  return userfont;
+}
+
+void CDA::VSync() {
+  this->vsync_int = true;
+}
+
+// Class VideoRAM inside of CDA class
+
+CDA::VideoRAM::VideoRAM (CDA* cda) {
+  assert(cda != nullptr);
+
+  this->cda = cda;
+  this->begin = BASE_ADDR[cda->Jmp1() &3];
+  this->size = VRAM_SIZE;
+}
+
+CDA::VideoRAM::~VideoRAM () {
+}
+
+byte_t CDA::VideoRAM::RB (dword_t addr) {
+  addr -= this->begin;
+  assert(addr < this->size);
+  assert(addr >= 0);
+
+  return cda->buffer[addr];
+}
+
+void CDA::VideoRAM::WB (dword_t addr, byte_t val) {
+  addr -= this->begin;
+  assert(addr < this->size);
+  assert(addr >= 0);
+
+  cda->buffer[addr] = val;
+}
+
+// Class SETUPReg inside of CDA Class
+
+CDA::SETUPreg::SETUPreg (CDA* cda) {
+  assert(cda != nullptr);
+  
+  this->begin = BASE_ADDR[cda->Jmp1() &3] + SETUP_OFFSET;
+  this->size = 1;
+  this->cda = cda;
+}
+
+byte_t CDA::SETUPreg::RB (dword_t addr) {
+  return reg;
+}
+
+void CDA::SETUPreg::WB (dword_t addr, byte_t val) {
+  reg = val;
+  cda->videomode = val & 7; 
+  cda->textmode = (val & 8) == 0;
+  cda->userfont = (val & 0x20 ) != 0;
+  cda->userpal = (val & 0x40 ) != 0;
+  cda->e_vsync = (val & 0x80 ) != 0;
+}
+
+
+
+
+
+
+
 void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool userfont, bool userpal, dword_t* texture) {
   assert(texture != nullptr);
   assert(buffer != nullptr);

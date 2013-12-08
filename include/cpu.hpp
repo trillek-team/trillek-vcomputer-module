@@ -64,88 +64,76 @@ struct CpuState {
 #define SET_ON_ESS(x)      (x |= 0x200)
 #define SET_OFF_ESS(x)     (x &= 0xFFFFFDFF)
 
-/*
-#define GET_EOE(x)         (((x) & 0x400) >> 10)
-#define SET_ON_EOE(x)      (x |= 0x400)
-#define SET_OFF_EOE(x)     (x &= 0xFFFFFBFF)
-
-#define GET_EDE(x)         (((x) & 0x800) >> 11)
-#define SET_ON_EDE(x)      (x |= 0x800)
-#define SET_OFF_EDE(x)     (x &= 0xFFFFF7FF)
-*/
-
 class RC3200 {
 public:
-    
-RC3200(size_t ram_size = 128*1024, unsigned clock = 100000 );
+  
+  /**
+   * Builds a RC3200 CPU
+   * @param ram_size Size of the Ram in BYTES
+   * @param clock CPU clock speed
+   */
+  RC3200(size_t ram_size = 128*1024, unsigned clock = 100000 );
 
-virtual ~RC3200();
+  virtual ~RC3200();
 
-/**
- * Return the actual CPU model clock speed
- */
-virtual unsigned Clock() const {
-    return this->clock;;
-}
+  /**
+   * Return the actual CPU model clock speed
+   */
+  virtual unsigned Clock() const;
 
-/**
- * Number of CPU cycles executed
- */
-std::size_t TotalCycles () const {
-    return tot_cycles;
-}
+  /**
+   * Number of CPU cycles executed
+   */
+  std::size_t TotalCycles () const;
 
-/**
- * Resets the CPU state
- */
-void Reset();
+  /**
+   * Resets the CPU state
+   */
+  void Reset();
 
-/**
- * Executes a singe instrucction of the CPU
- * @return Number of CPU cycles used
- */
-unsigned Step();
+  /**
+   * Executes a singe instrucction of the CPU
+   * @return Number of CPU cycles used
+   */
+  unsigned Step();
 
-/**
- * Executes one or more CPU clock cycles
- * @param n Number of cycles (default=1)
- */
-void Tick(unsigned n=1);
+  /**
+   * Executes one or more CPU clock cycles
+   * @param n Number of cycles (default=1)
+   */
+  void Tick(unsigned n=1);
 
-/**
- * Return the actual CPU state
- */
-const CpuState& State() const {
-    return state;
-}
+  /**
+   * Return the actual CPU state
+   */
+  const CpuState& State() const;
 
-/**
- * Throws a interrupt to the CPU
- * @param msg Interrupt message
- * @return True if the CPU accepts the interrupt
- */
-bool ThrowInterrupt (dword_t msg) {
-    if (!state.iacq && GET_EI(FLAGS)) {
-        // The CPU accepts a new interrupt
-        state.interrupt = true;
-        state.int_msg = msg;
-        return true;
-    }
-    return false;
-}
+  /**
+   * Throws a interrupt to the CPU
+   * @param msg Interrupt message
+   * @return True if the CPU accepts the interrupt
+   */
+  bool ThrowInterrupt (dword_t msg);
 
-ram::Mem ram;               /// Handles the RAM mapings / access 
+  ram::Mem ram;               /// Handles the RAM mapings / access 
 
 protected:
 
-CpuState state;             /// CPU actual state
-std::size_t tot_cycles;     /// Total number of cpu cycles executed
+  CpuState state;             /// CPU actual state
+  std::size_t tot_cycles;     /// Total number of cpu cycles executed
 
-unsigned clock;             /// CPU clock speed
+  unsigned clock;             /// CPU clock speed
 
-unsigned RealStep();
+  /**
+   * Does the real work of executing a instrucction
+   * @param Numvber of cycles tha requires to execute an instrucction
+   */
+  unsigned RealStep();
 
-void ProcessInterrupt();
+  /**
+   * Process if an interrupt is waiting
+   */
+  void ProcessInterrupt();
 
 };
 
