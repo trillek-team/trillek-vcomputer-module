@@ -17,8 +17,8 @@
 
 #ifdef SDL2_ENABLE
 
-unsigned sdl_width = 800;
-unsigned sdl_height = 600;
+unsigned sdl_width = 1024;
+unsigned sdl_height = 768;
 int sdl_other_flags = SDL_WINDOW_SHOWN;
 SDL_Window* pwin = nullptr;
 SDL_Renderer* prend = nullptr;
@@ -188,11 +188,8 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
       SDL_Event e;
       while (SDL_PollEvent(&e)){
         //If user closes he window
-        if (e.type == SDL_QUIT)
+        if (e.type == SDL_QUIT) {
           loop = false;
-        else if (e.type == SDL_MOUSEMOTION) {
-          yaw += (- e.motion.xrel ) / 400.0f;
-          pith += (e.motion.yrel ) / 400.0f;
         } else if (e.type == SDL_MOUSEBUTTONDOWN) {
 
         } else if (e.type == SDL_MOUSEWHEEL) {
@@ -224,7 +221,21 @@ std::cout << "Run program (r) or Step Mode (s) ?\n";
           } else {
             if (e.key.keysym.sym == SDLK_q ) {
               loop = false;
+            } else if (e.key.keysym.sym == SDLK_a) { // Turn to left
+              yaw -= 0.1; 
+            } else if (e.key.keysym.sym == SDLK_d) { // Turn to right
+              yaw += 0.1; 
+            } else if (e.key.keysym.sym == SDLK_w) { // Turn to up
+              pith += 0.1; 
+            } else if (e.key.keysym.sym == SDLK_s) { // Turn to down
+              pith -= 0.1; 
+
+            } else if (e.key.keysym.sym == SDLK_r) { // Zoom In
+              zoom = (zoom > 2.0)? zoom - 0.1 : zoom; 
+            } else if (e.key.keysym.sym == SDLK_f) { // Zoom out
+              zoom += 0.1; 
             }
+
           }
 
         } else if (e.type == SDL_KEYUP) {
