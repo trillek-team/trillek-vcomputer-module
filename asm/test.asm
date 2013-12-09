@@ -31,7 +31,7 @@ begin:
         MOV %r31, 31        ; Addr: 07Ch
         MOV %bp, 0        
         MOV %sp, 0x30000    ; Sets Stack Pointer to the end of the 128KiB RAM     
-        MOV %ia, isr                 
+        MOV %ia, vtable                 
         MOV %flags, 0x100    ; Enable interrupts           
         MOV %r1, 0xBEBECAFE   
         ; Tested seting registers and using bit literal
@@ -190,78 +190,124 @@ test_alu:                       ; PC = 0x010C
             JMP crash
         IFNEQ %y, 1
             JMP crash
+
+        ; Try LOAD and STORE
+        ;MOV %r10, countervar
+        ;STORE.W %r10, 0xBEBA
+        ;LOAD.W %r0, %r10
+        ;IFNEQ %r0, 0xBEBA
+        ;    JMP crash
+
         ; TODO Signed Multiplication/Division
         ; TODO Check Division error flag
 
-        ; TODO Check LOAD/STORE
-        ; TODO Check Stack instrucctions
-        ; TODO Check CALL functions
         ; TODO Check other instrucctions
 
-        CALL print_ok
+; Setup the Vector Table
+        MOV %r0, int_A0
+        MOV %r1, vtable
+        ADD %r1, %r1, 0x280 ; 0xA0 * 4
+        STORE %r1, %r0
 
+; Basic checks finished, inform about it
+
+        MOV %r0, 0xFF0A0000
+        MOV %r1, 0x07           ; Clear the screen with black border and light gray ink
+        CALL clr_screen
+
+        MOV %r0, str_basic_tests
+        MOV %r1, 0xFF0A0000
+        MOV %r2, 0x07
+        CALL print
+
+        MOV %r0, str_ok
+        MOV %r1, 0xFF0A0016
+        MOV %r2, 0x0A
+        RCALL print
+
+        ; Print RAM size
+        MOV %r1, 0
+        INT A0h
+        LRS %r0, %r1, 10
+        MOV %r1, 0xFF0A00A0         
+        MOV %r2, 0x0F
+        CALL print_hex_w
         
-        LOAD.B %r3, 0x10000     ; Load countervar
-        ADD %r0, %r3, 0x30      ; + '0'
-        MOV %r1, 0x0100         ; Column 0, Row 1
-        MOV %r2, 0x70           ; Light gray paper, black Ink
-        CALL print_chr
+        MOV %r0, str_kib
+        MOV %r1, 0xFF0A00AA
+        MOV %r2, 0x0F
+        RCALL print
+
+
+        MOV %r10, countervar
+for_ever_loop:        
+        LOAD.W %r0, %r10        ; Load countervar
+        ADD %r1, %r0, 0x1
+        STORE.W %r10, %r1
+
+        MOV %r1, 0xFF0A0050         
+        MOV %r2, 0x0E
+        CALL print_hex_w
         
-        ;INT 0x9
         
-        JMP begin               ; Begin again in a endless loop
+        RJMP for_ever_loop
+
 crash:
+        ; Try to print that the test fails (probably will not do it)
+        MOV %r0, 0xFF0A0000
+        MOV %r1, 0x07           ; Clear the screen with black border and light gray ink
+        CALL clr_screen
+
+        MOV %r0, str_basic_tests
+        MOV %r1, 0xFF0A0000
+        MOV %r2, 0x07
+        CALL print
+
+        MOV %r0, str_fail
+        MOV %r1, 0xFF0A0016
+        MOV %r2, 0x0C
+        CALL print
+
         SLEEP               ; Sleeps because something goes wrong
 
 
 ; *****************************************************************************
-print_ok:                   ; Prints OK in CDA text mode 0
-       MOV %r0, 0x80
-       STORE.B 0xFF0ACC00, %r0 ; Text mode 0, default font and palette, no vsync
-       
-       MOV %r0, 0x706B724F
-       STORE 0xFF0A0000, %r0   ; Writes Ok in VRRAM
+; Try to measure RAM in multiples of 128 KiB and return it in %r1
+int_A0:
+      PUSH %r2
+      PUSH %flags
 
-       RET
+      MOV %r1, 0x10000
+loop_int_A0:
+      ADD %r1, %r1, 0x20000
+      MOV %r2, 0xAA55
+      STORE.W %r1, %r2
+      LOAD.W %r0, %r1
+      IFEQ %r0, 0xAA55    ; We can read/write at that address so is RAM
+        RJMP loop_int_A0
 
+      SUB %r1, %r1, 0x10000   ; Now %r1 have the size of the RAM minus the ROM size
 
-; Prints a %r0 digit in screen 0 with textmode 0, at column %r1[0:7], row %r1[8:15]
-;       attribute  %r2
-; Asummes that row < 30 and column < 40
-print_chr:
-      PUSH %r4
-      PUSH %r5
-      AND %r4, %r1, 0x3F          ; Grabs column and puts in %r4
-      LRS %r5, %r1, 8             ; Grabs row and puts in %r5
-      MUL %r5, %r5, 0x28
-      ADD %r4, %r4, %r5           ; %r4 = row*40 + column
-      LLS %r4, %r4, 1             ; %r4 *= 2
-      ADD %r4, %r4 ,0xFF0A0000
-      STORE.B %r4, %r0            ; Write character
-      ADD %r4, %r4, 1
-      STORE.B %r4, %r2            ; Write Attribute
-
-      POP %r5
-      POP %r4
-
-      RET
-
-; *****************************************************************************
-isr:
-     
-      PUSH %r3
-      PUSH %r4
-
-      LOAD.B %r3, 0x10000     ; Load countervar
-      
-      ADD %r3, %r3, 1
-      DIV %r4, %r3, 10
-      MOV %r3, %y             ; %r3 = %r3 % 10
-
-      STORE.B 0x10000, %r3    ; Stores counter new value TODO Fails
-      
-      POP %r4
-      POP %r3
+      POP %flags
+      POP %r2
 
       RFI
+      
+      
 
+; *****************************************************************************
+      .include "lib.inc"
+
+; Strings
+str_ok:               .DB "OK",0
+str_fail:             .DB "FAIL",0
+
+str_kib:              .DB "KiB of RAM",0
+
+str_basic_tests:      .DB "BASIC TEST",0
+
+
+                      .ORG 0x10000
+countervar:           .DD 0
+; Vector table
+vtable:               
