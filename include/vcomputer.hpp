@@ -78,17 +78,26 @@ public:
   /**
    * Returns the actual CPU state
    */
-  const CpuState& CPUState () const;
+  const CpuState& CPUState () const {
+    return cpu.State();
+  }
+
 
   /**
    * Returns the actual RAM image
    */
-  const Mem& RAM () const;
+  const Mem& RAM () const {
+    return cpu.ram;
+  }
+
 
   /**
    * Virtual Clock speed
    */
-  unsigned Clock() const;
+  unsigned Clock() const {
+    return cpu.Clock();
+  }
+
 
   /**
    * Executes one instruction

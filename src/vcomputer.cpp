@@ -50,17 +50,6 @@ void VirtualComputer::RemoveDevice (unsigned slot) {
   }
 }
 
-const CpuState& VirtualComputer::CPUState () const {
-  return cpu.State();
-}
-const Mem& VirtualComputer::RAM () const {
-  return cpu.ram;
-}
-
-unsigned VirtualComputer::Clock() const {
-  return cpu.Clock();
-}
-
 unsigned VirtualComputer::Step( const double delta) {
   auto cycles = cpu.Step();
   timers.Update(cycles);

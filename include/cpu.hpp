@@ -106,7 +106,9 @@ public:
   /**
    * Return the actual CPU state
    */
-  const CpuState& State() const;
+  const CpuState& State() const {
+    return state;
+  }
 
   /**
    * Throws a interrupt to the CPU

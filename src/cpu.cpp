@@ -77,10 +77,6 @@ void RC3200::Tick (unsigned n) {
   }
 }
 
-const CpuState& RC3200::State() const {
-  return state;
-}
-
 bool RC3200::ThrowInterrupt (dword_t msg) {
   if (!state.iacq && GET_EI(FLAGS)) {
     // The CPU accepts a new interrupt
