@@ -1,4 +1,3 @@
-message( "Procesing Tools")
 # Main executable
 
 # Main executable config file

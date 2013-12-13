@@ -15,10 +15,21 @@ Actually I'm using CMake and C++ 11.
     make
 
 This will only generate the static and dynamic libs of the RC3200-VM libs.
-If you wish to compile the tools, then you should use "cmake -DBUILD_tools=True .."
-If you wish to compile the tests, then you should use "cmake -DBUILD_tests=True .."
-Plus you can control if you wish release or debug building using "-DCMAKE_BUILD_TYPE=Release" or "-DCMAKE_BUILD_TYPE=Debug" flag in cmake.
- 
+
+If you wish to compile the tools, then you should use **"cmake -DBUILD_tools=True .."**
+
+If you wish to compile the tests, then you should use **"cmake -DBUILD_tests=True .."**
+
+Plus you can control if you wish release or debug building using **"-DCMAKE_BUILD_TYPE=Release"** or **"-DCMAKE_BUILD_TYPE=Debug"** flag in cmake.
+
+
+### EMSCRIPTEN
+
+  cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Platform/Emscripten.cmake -DEMSCRIPTEN_ROOT_PATH=/usr/bin/ ..
+  make
+  
+Include vm_wrap.js inside a HTML page or other javascript.
+
 WHAT IT DOES ACTUALLY
 ------------------
 ### Tools
