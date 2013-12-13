@@ -10,24 +10,16 @@ int DumbTest () {
  * TODO CpuState:
       .field("r",           &vm::cpu::CpuState::r)
 
-    class IDeviceWrapper : public wrapper<vm::IDevice> {
-      EMSCRIPTEN_WRAPPER(IDeviceWrapper);
-      vm::byte_t DevClass() const {
-          return call<int>("DevClass");
-      }
-    };
-    class_<vm::IDevice>("IDevice")
-      .constructor<int, int>()
-      .function("DevClass", &vm::IDevice::DevClass)
-      ;
-      .allow_subclass<IDeviceWrapper>()
-
 */
+
+bool AddCDA_(vm::VirtualComputer& arr, unsigned slot, vm::cda::CDA& d ) {
+  return arr.AddDevice(slot, d);
+}
 
 EMSCRIPTEN_BINDINGS(rc3200_vm) {
     function("DumbTest", &DumbTest);
     
-    value_struct<vm::cpu::CpuState>("CpuState")
+    value_object<vm::cpu::CpuState>("CpuState")
       .field("pc",          &vm::cpu::CpuState::pc)
       .field("int_msg",     &vm::cpu::CpuState::int_msg)
       .field("wait_cycles", &vm::cpu::CpuState::wait_cycles)
@@ -38,16 +30,26 @@ EMSCRIPTEN_BINDINGS(rc3200_vm) {
       .field("step_mode",   &vm::cpu::CpuState::step_mode)
       ;
 
-
-
     class_<vm::VirtualComputer>("VirtualComputer")
       .constructor<int>()
-      .function("Reset",    &vm::VirtualComputer::Reset)
-      .function("WriteROM", &vm::VirtualComputer::WriteROM, allow_raw_pointers())
-      .function("CPUState", &vm::VirtualComputer::CPUState)
-      .function("Clock",    &vm::VirtualComputer::Clock)
-      .function("Step",     &vm::VirtualComputer::Step)
-      .function("Tick",     &vm::VirtualComputer::Tick)
+      .function("Reset",      &vm::VirtualComputer::Reset)
+      .function("WriteROM",   &vm::VirtualComputer::WriteROM, allow_raw_pointers())
+      .function("AddCDA",     &AddCDA_)
+      .function("RemoveDevice",  &vm::VirtualComputer::RemoveDevice)
+      .function("CPUState",   &vm::VirtualComputer::CPUState)
+      .function("Clock",      &vm::VirtualComputer::Clock)
+      .function("Step",       &vm::VirtualComputer::Step)
+      .function("Tick",       &vm::VirtualComputer::Tick)
+      ;
+
+    class_<vm::cda::CDA>("CDA")
+      .constructor<int, int>()
+      .function("VideoMode",  &vm::cda::CDA::VideoMode)
+      .function("isTextMode", &vm::cda::CDA::isTextMode)
+      .function("isUserPalette",  &vm::cda::CDA::isUserPalette)
+      .function("isUserFont", &vm::cda::CDA::isUserFont)
+      .function("VSync",      &vm::cda::CDA::VSync)
+      .function("ToRGBATexture",  &vm::cda::CDA::ToRGBATexture, allow_raw_pointers())
       ;
 
 }
