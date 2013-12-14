@@ -1,0 +1,289 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"> 
+</head>
+<body>
+<canvas id="canvas1" style="border: none;" width="500" height="500"></canvas>
+a
+
+<script type="text/javascript" src="js/glMatrix-0.9.5.min.js"></script>
+<script type="text/javascript" src="js/webgl-utils.js"></script>
+
+<script type="text/javascript" src="vm_wrap.js"></script>
+
+<script id="shader-fs" type="x-shader/x-fragment">
+    precision mediump float;
+
+    varying vec2 vTextureCoord;
+
+    uniform sampler2D uSampler;
+
+    void main(void) {
+        gl_FragColor =  vec4(vTextureCoord.s, vTextureCoord.t, 1.0, 1.0); 
+        //texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+    }
+</script>
+
+<script id="shader-vs" type="x-shader/x-vertex">
+    attribute vec3 aVertexPosition;
+    attribute vec2 aTextureCoord;
+
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
+
+    varying vec2 vTextureCoord;
+
+
+    void main(void) {
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+        vTextureCoord = aTextureCoord;
+    }
+</script>
+
+<script type="text/javascript" >
+
+  document.write('DumbTest result: ' + Module.DumbTest() );
+
+  var vm = new Module.VirtualComputer(128*1024);
+  var cda = new Module.CDA(0,0);
+  var key = new Module.GKeyboard(0,0);
+  vm.AddKeyboard(0, key);
+  vm.AddCDA(1, cda);
+
+  // Get data byte size, allocate memory on Emscripten heap, and get pointer
+  var nBytes = 320*240*4;
+  var texturePtr = Module._malloc(nBytes);
+
+  // Copy data to Emscripten heap (directly accessed from Module.HEAPU8)
+  var textureHeap = new Uint32Array(Module.HEAPU8.buffer, texturePtr, nBytes);
+
+  // WebGL stuff
+
+  var gl;
+  function initGL(canvas) {
+    try {
+      gl = canvas.getContext("experimental-webgl");
+      gl.viewportWidth = canvas.width;
+      gl.viewportHeight = canvas.height;
+    } catch (e) {
+    }
+
+    if (!gl) {
+      alert("Could not initialise WebGL, sorry :-(");
+    }
+  }
+
+  function getShader(gl, id) {
+      var shaderScript = document.getElementById(id);
+      if (!shaderScript) {
+          return null;
+      }
+
+      var str = "";
+      var k = shaderScript.firstChild;
+      while (k) {
+          if (k.nodeType == 3) {
+              str += k.textContent;
+          }
+          k = k.nextSibling;
+      }
+
+      var shader;
+      if (shaderScript.type == "x-shader/x-fragment") {
+          shader = gl.createShader(gl.FRAGMENT_SHADER);
+      } else if (shaderScript.type == "x-shader/x-vertex") {
+          shader = gl.createShader(gl.VERTEX_SHADER);
+      } else {
+          return null;
+      }
+
+      gl.shaderSource(shader, str);
+      gl.compileShader(shader);
+
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          alert(gl.getShaderInfoLog(shader));
+          return null;
+      }
+
+      return shader;
+  }
+
+
+  var shaderProgram;
+
+  function initShaders() {
+      var fragmentShader = getShader(gl, "shader-fs");
+      var vertexShader = getShader(gl, "shader-vs");
+
+      shaderProgram = gl.createProgram();
+      gl.attachShader(shaderProgram, vertexShader);
+      gl.attachShader(shaderProgram, fragmentShader);
+      gl.linkProgram(shaderProgram);
+
+      if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+          alert("Could not initialise shaders");
+      }
+
+      gl.useProgram(shaderProgram);
+
+      shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+      gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+      shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+      gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+
+      shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+      shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+      shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+  }
+
+
+  function handleLoadedTexture(texture) {
+      //gl.bindTexture(gl.TEXTURE_2D, texture);
+      //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      // Call function and get result
+      //cda.ToRGBATexture(textureHeap.byteOffset);
+    
+      //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureHeap);
+      //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      
+      //gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+
+  var glTexture;
+
+  function initTexture() {
+    glTexture = gl.createTexture();
+    handleLoadedTexture(glTexture)
+
+  }
+
+  var mvMatrix = mat4.create();
+  var mvMatrixStack = [];
+  var pMatrix = mat4.create();
+
+  function mvPushMatrix() {
+      var copy = mat4.create();
+      mat4.set(mvMatrix, copy);
+      mvMatrixStack.push(copy);
+  }
+
+  function mvPopMatrix() {
+      if (mvMatrixStack.length == 0) {
+          throw "Invalid popMatrix!";
+      }
+      mvMatrix = mvMatrixStack.pop();
+  }
+
+
+  function setMatrixUniforms() {
+      gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+      gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+  }
+
+  var VPBuffer;
+  var VTexCoordBuffer;
+  var VIndexBuffer;
+
+  function initBuffers() {
+      VPBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, VPBuffer);
+      vertices = [
+          // Front face
+          -1.0, -1.0,  1.0,
+           1.0, -1.0,  1.0,
+           1.0,  1.0,  1.0,
+          -1.0,  1.0,  1.0,
+      ];
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+      VPBuffer.itemSize = 3;
+      VPBuffer.numItems = 4;
+
+      VTexCoordBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, VTexCoordBuffer);
+      var textureCoords = [
+        // Front face
+        0.0, 0.0,
+        1.0, 0.0,
+        1.0, 1.0,
+        0.0, 1.0,
+      ];
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+      VTexCoordBuffer.itemSize = 2;
+      VTexCoordBuffer.numItems = 4;
+
+      VIndexBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, VIndexBuffer);
+      var vertexIndices = [
+          0, 1, 2,      0, 2, 3,    // Front face
+      ];
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW);
+      VIndexBuffer.itemSize = 1;
+      VIndexBuffer.numItems = 6;
+  }
+
+  function drawScene() {
+    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  // Call function and get result
+  //cda.ToRGBATexture(textureHeap.byteOffset);
+
+    mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+
+    mat4.identity(mvMatrix);
+
+    mat4.translate(mvMatrix, [0.0, 0.0, -5.0]);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, VPBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, VPBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, VTexCoordBuffer);
+    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, VTexCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, glTexture);
+    gl.uniform1i(shaderProgram.samplerUniform, 0);
+    
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, VIndexBuffer);
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, VIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+  }
+
+  var lastTime = 0;
+
+  function tick() {
+    requestAnimFrame(tick);
+
+    var timeNow = new Date().getTime(); 
+    if (lastTime != 0) {
+      var elapsed = timeNow - lastTime
+    }
+
+    drawScene();
+    
+    lastTime = timeNow;
+  }
+
+
+  var canvas = document.getElementById('canvas1');
+  initGL(canvas);
+  initShaders();
+  initBuffers();
+  initTexture();
+
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.enable(gl.DEPTH_TEST);
+
+  tick();
+  
+  // Free memory
+  Module._free(textureHeap.byteOffset);
+
+</script>
+</body>
+</html>
+
