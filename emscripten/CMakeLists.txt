@@ -15,5 +15,5 @@ include_directories( vm
 )
 
 # GOTCHA: If your project has custom link flags, these must be set *before* calling any of the em_link_xxx functions!
-set_target_properties(vm_wrap PROPERTIES LINK_FLAGS " --bind ")
+set_target_properties(vm_wrap PROPERTIES LINK_FLAGS " --bind -s EXPORTED_FUNCTIONS=\"['_multiply_array']\" ")
 

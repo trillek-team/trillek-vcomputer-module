@@ -1,4 +1,5 @@
 #include <emscripten/bind.h>
+#include <string>
 
 #include "vm.hpp"
 using namespace emscripten;
@@ -11,9 +12,21 @@ int DumbTest () {
       .field("r",           &vm::cpu::CpuState::r)
 
 */
+extern "C" {
+  int multiply_array(int factor, int *arr, int length) {
+    for (int i = 0; i <  length; i++) {
+      arr[i] = factor * arr[i];
+    }
+    return 0;
+  }
+}
 
 bool AddCDA_(vm::VirtualComputer& arr, unsigned slot, vm::cda::CDA& d ) {
   return arr.AddDevice(slot, d);
+}
+
+void WriteTexture_(vm::cda::CDA& arr, long ptr) {
+  arr.ToRGBATexture((vm::dword_t *) ptr);
 }
 
 EMSCRIPTEN_BINDINGS(rc3200_vm) {
@@ -49,7 +62,7 @@ EMSCRIPTEN_BINDINGS(rc3200_vm) {
       .function("isUserPalette",  &vm::cda::CDA::isUserPalette)
       .function("isUserFont", &vm::cda::CDA::isUserFont)
       .function("VSync",      &vm::cda::CDA::VSync)
-      .function("ToRGBATexture",  &vm::cda::CDA::ToRGBATexture, allow_raw_pointers())
+      .function("ToRGBATexture",  &WriteTexture_, allow_raw_pointers())
       ;
 
 }
