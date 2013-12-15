@@ -49,7 +49,6 @@ static const dword_t BASE_ADDR[] = {                 /// VRAM base address
  */
 void RGBATexture (const byte_t* vram, bool textmode, unsigned vmode, bool userfont, bool userpal, dword_t* texture);
 
-
 /**
  * Color Display Adapter device
  */
@@ -159,7 +158,7 @@ protected:
 
 
 static const dword_t palette[] = {  /// Default color palette  
-#if (BYTE_ORDER != LITTLE_ENDIAN)
+#if ((BYTE_ORDER != LITTLE_ENDIAN) && ! EMSCRIPTEN)
 // Big Endian -> RGBA
     0x000000FF, // Black
     0x0000CDFF, // Dark Blue

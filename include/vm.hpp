@@ -32,6 +32,7 @@
 
 // Misc
 #include "dis_rc3200.hpp"
+#include "aux.hpp"
 
 
 #endif // ___VM_HPP__

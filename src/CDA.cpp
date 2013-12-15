@@ -117,6 +117,19 @@ void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool user
 
   dword_t fg = 0, bg = 0;
   unsigned addr;
+  // TODO Probably we will need a less endian depednet version for EMSCRIPTEN
+/*
+#ifdef EMSCRIPTEN
+  const dword_t* pal = (userpal) ? (dword_t*)(buffer + 0x960) : palette;
+  for (unsigned y = 0; y < 240; y++) {
+    for (unsigned x = 0; x < 320; x++) {
+      // In a AMD machine looks that emscripten acts like ABGR
+      texture[x + y*320] = pal[y % 16];
+    }
+  }
+
+#else // def EMSCRIPTEN
+*/
 
   if (textmode) {
     // Text mode
@@ -133,7 +146,7 @@ void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool user
           fg = buffer[addr+1]  & 0xF;
           bg = (buffer[addr+1] >> 4) & 0xF;
             // Grab colors
-#if (BYTE_ORDER != LITTLE_ENDIAN)
+#if ((BYTE_ORDER != LITTLE_ENDIAN) && ! EMSCRIPTEN)
             fg = pal[fg] << 8 | 0xFF;
             bg = pal[bg] << 8 | 0xFF;
 #else
@@ -170,7 +183,7 @@ void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool user
       dword_t b_color = pal[buffer[0x1B00] & 0x0F];
 
       if (userpal) { // Add Alpha to border color
-#if (BYTE_ORDER != LITTLE_ENDIAN)
+#if ((BYTE_ORDER != LITTLE_ENDIAN) && ! EMSCRIPTEN)
         b_color = b_color << 8 | 0xFF;
 #else
         b_color = b_color | 0xFF000000;
@@ -190,7 +203,7 @@ void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool user
             fg = buffer[addr] & 0xF;
             bg = buffer[addr] >> 4;
             // Grab colors
-#if (BYTE_ORDER != LITTLE_ENDIAN)
+#if ((BYTE_ORDER != LITTLE_ENDIAN) && ! EMSCRIPTEN)
             fg = pal[fg] << 8 | 0xFF;
             bg = pal[bg] << 8 | 0xFF;
 #else
@@ -234,7 +247,7 @@ void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool user
       dword_t b_color = pal[buffer[0x2400] & 0x0F];
 
       if (userpal) { // Add Alpha to border color
-#if (BYTE_ORDER != LITTLE_ENDIAN)
+#if ((BYTE_ORDER != LITTLE_ENDIAN) && ! EMSCRIPTEN)
         b_color = b_color << 8 | 0xFF;
 #else
         b_color = b_color | 0xFF000000;
@@ -255,7 +268,7 @@ void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool user
             fg = buffer[addr] & 0xF;
             bg = buffer[addr] >> 4;
             // Grab colors
-#if (BYTE_ORDER != LITTLE_ENDIAN)
+#if ((BYTE_ORDER != LITTLE_ENDIAN) && ! EMSCRIPTEN)
             fg = pal[fg] << 8 | 0xFF;
             bg = pal[bg] << 8 | 0xFF;
 #else
@@ -305,7 +318,7 @@ void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool user
           if (pixels & (1 << pix)) {  // Active
             texture[x + y*320] = 0xFFFFFFFF;
           } else {                    // Unactive
-#if (BYTE_ORDER != LITTLE_ENDIAN)
+#if ((BYTE_ORDER != LITTLE_ENDIAN) && ! EMSCRIPTEN)
             texture[x + y*320] = 0x000000FF;
 #else
             texture[x + y*320] = 0xFF000000;
@@ -317,6 +330,7 @@ void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool user
     }// else -> Unknow videomode. Not supported
 
   }
+//#endif // def EMSCRIPTEN
 }
 
 } // End of namespace cda

@@ -1,25 +1,23 @@
+#include <emscripten.h>
 #include <emscripten/bind.h>
+
 #include <string>
+#include <cstdio>
 
 #include "vm.hpp"
 using namespace emscripten;
 
-int DumbTest () {
-  return 1;
-}
 /*
  * TODO CpuState:
       .field("r",           &vm::cpu::CpuState::r)
 
 */
-extern "C" {
-  int multiply_array(int factor, int *arr, int length) {
-    for (int i = 0; i <  length; i++) {
-      arr[i] = factor * arr[i];
-    }
-    return 0;
-  }
+
+void WriteROM_ (vm::VirtualComputer& arr,long ptr, size_t rom_size) {
+  auto p = (vm::byte_t *)ptr;
+  arr.WriteROM(p, rom_size);
 }
+
 
 bool AddGKey_(vm::VirtualComputer& arr, unsigned slot, vm::keyboard::GKeyboard& d ) {
   return arr.AddDevice(slot, d);
@@ -30,11 +28,12 @@ bool AddCDA_(vm::VirtualComputer& arr, unsigned slot, vm::cda::CDA& d ) {
 }
 
 void WriteTexture_(vm::cda::CDA& arr, long ptr) {
-  arr.ToRGBATexture((vm::dword_t *) ptr);
+  auto p = (vm::byte_t *)ptr;
+  arr.ToRGBATexture((vm::dword_t*)p); // TODO Perhaps we need a special function for this case
 }
 
 EMSCRIPTEN_BINDINGS(rc3200_vm) {
-    function("DumbTest", &DumbTest);
+    function("LoadROM", &vm::aux::LoadROM);
     
     value_object<vm::cpu::CpuState>("CpuState")
       .field("pc",          &vm::cpu::CpuState::pc)
@@ -50,7 +49,7 @@ EMSCRIPTEN_BINDINGS(rc3200_vm) {
     class_<vm::VirtualComputer>("VirtualComputer")
       .constructor<int>()
       .function("Reset",      &vm::VirtualComputer::Reset)
-      .function("WriteROM",   &vm::VirtualComputer::WriteROM, allow_raw_pointers())
+      .function("WriteROM",   &WriteROM_)
       .function("AddKeyboard",&AddGKey_)
       .function("AddCDA",     &AddCDA_)
       .function("RemoveDevice",  &vm::VirtualComputer::RemoveDevice)

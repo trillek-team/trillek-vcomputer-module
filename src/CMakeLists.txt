@@ -6,6 +6,7 @@ set(rc3200_SRCS
     ./CDA.cpp
     ./GKeyboard.cpp
     ./dis_rc3200.cpp
+    ./aux.cpp
 )
 
 # General Configuration file
