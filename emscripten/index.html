@@ -2,13 +2,31 @@
 <html>
 <head>
 <meta charset="utf-8"> 
+<title>RC3200 Virtual Computer - ALPHA!</title>
 </head>
 <body>
+<h1>RC3200 Virtual Computer for browser - ALPHA version!</h1>
+
 <input type="file" name="rom" id="romfile"></input>
 <br/>
 <canvas id="canvas1" style="border: none;" width="640" height="480"></canvas>
-
-<script type="text/javascript" >
+<br/>
+<p>
+Advice : This a quick & dirty conversion to JS. there many things that are not checked so expect a lot of weird things.
+</p>
+<p>
+To use, load a binary ROM file. You can download some basic programs from here:
+<ul>
+  <li><a href="test.asm.bin">test.asm</a> A simple basic autocheck. Shows total RAM (in hexadecimal) and a counter if is working </li>
+  <li><a href="hello.asm.bin">hello.asm</a> Hello World</li>
+  <li><a href="hwn.asm.bin">hwn.asm</a> Display a list of attached hardware cards</li>  
+  <li><a href="clock.asm.bin">clock.asm</a> A example clock using the internal timer. Actually is not realiable as emulation speed is variable</li>
+  <li><a href="type.asm.bin">type.asm</a> A basic type program</li>
+</ul>
+</p>
+<footer>
+Powered by <a href="https://github.com/kripken/emscripten/wiki" >emscripten</a>
+</footer><script type="text/javascript" >
   /* Trace (console.log) ================================================== */
   var debug_trace = true;
   function trace( msg ) {
