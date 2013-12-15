@@ -25,7 +25,9 @@
 
 var Module = {
   'print' : trace,
+  'printErr' : trace,
 };
+
 </script>
 
 
@@ -138,9 +140,9 @@ var Module = {
 
   var vm = new Module.VirtualComputer(128*1024);
   var cda = new Module.CDA(0,0);
-  var key = new Module.GKeyboard(0,0);
-  vm.AddKeyboard(0, key);
-  vm.AddCDA(1, cda);
+  var key = new Module.GKeyboard(0,2);
+  vm.AddKeyboard(3, key);
+  vm.AddCDA(5, cda);
 
   // Generate a Buffer that bridges ToRGBATexture and WebGL texture 
   // Get data byte size, allocate memory on Emscripten heap, and get pointer
@@ -417,6 +419,25 @@ var Module = {
 
   gl.clearColor(0.2, 0.2, 0.2, 1.0);
   gl.enable(gl.DEPTH_TEST);
+
+  document.onkeydown = function (evt) {
+    var k = evt.keyCode;
+    if (loop) {
+      evt.preventDefault();
+      key.PushKeyEvent (true, k);
+    }
+    return false;
+  };
+  
+document.onkeyup = function (evt) {
+    var k = evt.keyCode;
+    if (loop) {
+      evt.preventDefault();
+      key.PushKeyEvent (false, k);
+    }
+    return false;
+  };
+
 
   var selector = document.getElementById('romfile');
   selector.addEventListener('change', function(evt){
