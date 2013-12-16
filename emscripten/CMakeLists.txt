@@ -22,8 +22,10 @@ include_directories( vm
 )
 
 configure_file(./index.html ${CMAKE_BINARY_DIR}/index.html COPYONLY)
+configure_file(./js/jquery-1.10.2.min.js ${CMAKE_BINARY_DIR}/js/jquery-1.10.2.min.js COPYONLY)
 configure_file(./js/glMatrix-0.9.5.min.js ${CMAKE_BINARY_DIR}/js/glMatrix-0.9.5.min.js COPYONLY)
 configure_file(./js/webgl-utils.js ${CMAKE_BINARY_DIR}/js/webgl-utils.js COPYONLY)
+configure_file(./js/main.js ${CMAKE_BINARY_DIR}/js/main.js COPYONLY)
 
 # GOTCHA: If your project has custom link flags, these must be set *before* calling any of the em_link_xxx functions!
 set_target_properties(vm PROPERTIES LINK_FLAGS  "${linkFlags}" )
