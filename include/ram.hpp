@@ -97,12 +97,20 @@ public:
  * @param ram_size Size of the RAM. By default is 128KiB
  */
 Mem (size_t ram_size = 128*1024) : 
-    ram_size(ram_size), buffer(NULL) {
+    ram_size(ram_size), buffer(nullptr) {
+    buffer =  new byte_t[64*1024 + this->ram_size];
 }
 
 ~Mem() {
-    if (buffer != NULL)
+    if (buffer != nullptr)
         delete[] buffer;
+}
+
+/**
+ * Sets all RAM to 0
+ */
+void Reset () {
+  std::fill_n(buffer + 64*1024, this->ram_size, 0);
 }
 
 /**
@@ -115,7 +123,6 @@ void WriteROM (const byte_t* rom, size_t rom_size) {
         rom_size = 64*1024;
     this->rom_size = rom_size;
 
-    buffer =  new byte_t[64*1024 + this->ram_size];
     std::copy_n(rom, this->rom_size, buffer); // Copy ROM
 }
 

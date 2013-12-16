@@ -46,6 +46,8 @@ void RC3200::Reset() {
   state.iacq = false;
 
   state.step_mode = false;
+
+  ram.Reset();
 }
 
 unsigned RC3200::Step() {
