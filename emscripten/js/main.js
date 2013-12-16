@@ -147,6 +147,21 @@
     gl.bindTexture(gl.TEXTURE_2D, null);
     cda.VSync();
   }
+  
+  /**
+   * Cleans the texture
+   */
+  function cleanTexture(texture) {
+    for (var i=0; i < 320*240*4; i = i + 4) // Fill screen texture of black
+      texture.rawdata.set([0, 0 ,0 ,0], i);
+    
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 
+        0, 0 , 320, 240,
+        gl.RGBA, gl.UNSIGNED_BYTE, texture.rawdata);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+
 
   // Sets the texture parameters and load a initial image
   function handleLoadedTexture(texture) {
@@ -277,6 +292,7 @@
       var elapsed = timeNow - lastTime;
       //trace("PC:" + vm.CPUState().pc);
       if (step_mode) {
+        step_mode = false;
         var ticks = vm.Step(elapsed);
         // TODO Update VM machine state display
       } else {
@@ -341,10 +357,8 @@
   // Reset button
   $('#reset_btn').on('click', function (evt) {
     vm.Reset();
-    for (var i=0; i < 320*240*4; i = i + 4) // Fill screen texture of black
-      textureHeap.set([0, 0 ,0 ,0], i);
 
-    updateTexture(glTexture, cda);
+    cleanTexture(glTexture);
     drawScene();
   });
 
