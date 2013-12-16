@@ -20,7 +20,7 @@
   </div>
 
   <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-8">
       <ul class="list-inline">
         <li>
           <label for="romfile">Binary ROM file:</label>
@@ -28,9 +28,15 @@
         <li>
           <input type="file" name="rom" id="romfile" />
         </li>
+        <li>
+          <label for="webgl">Use WebGL (Danger!):</label>
+        </li>
+        <li>
+          <input type="checkbox" name="webgl" id="webgl" value="1" />
+        </li>
       </ul>
     </div>
-    <div class="col-md-4 col-md-offset-4">
+    <div class="col-md-4">
       <ul class="list-inline">
         <li>
           <button type="button" class="btn btn-default" disabled="disabled" id="run_btn">

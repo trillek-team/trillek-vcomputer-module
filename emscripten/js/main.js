@@ -35,7 +35,9 @@
   
   var canvas;         // Canvas were to write
   var mode2d = false; // We must use canvas 2D ?
-
+  var context;        // Canvas 2D context
+  var imageData;
+  
   // WebGL stuff
   var gl;                       // WebGL context
   
@@ -53,57 +55,51 @@
 
   /**
    * Inits WebGL stuff
-   * \return True if can initiate a WebGL context
    */
   function initGL(canvas) {
-    try {
-      gl = canvas.getContext("experimental-webgl");
-      gl.viewportWidth = canvas.width;
-      gl.viewportHeight = canvas.height;
-    } catch (e) {
-      trace(e);
-    }
+    gl = canvas.getContext("experimental-webgl");
+    gl.viewportWidth = canvas.width;
+    gl.viewportHeight = canvas.height;
+    
     if (!gl) {
-      alert("Could not initialise WebGL, sorry :-(");
-      return false;
+      throw("Could not initialise WebGL, sorry :-(");
     }
-    return true;
   }
 
   // Grabs teh shader and compiles it
   function getShader(gl, id) {
-      var shaderScript = document.getElementById(id);
-      if (!shaderScript) {
-          return null;
+    var shaderScript = document.getElementById(id);
+    if (!shaderScript) {
+      return null;
+    }
+
+    var str = "";
+    var k = shaderScript.firstChild;
+    while (k) {
+      if (k.nodeType == 3) {
+        str += k.textContent;
       }
+      k = k.nextSibling;
+    }
 
-      var str = "";
-      var k = shaderScript.firstChild;
-      while (k) {
-          if (k.nodeType == 3) {
-              str += k.textContent;
-          }
-          k = k.nextSibling;
-      }
+    var shader;
+    if (shaderScript.type == "x-shader/x-fragment") {
+      shader = gl.createShader(gl.FRAGMENT_SHADER);
+    } else if (shaderScript.type == "x-shader/x-vertex") {
+      shader = gl.createShader(gl.VERTEX_SHADER);
+    } else {
+      return null;
+    }
 
-      var shader;
-      if (shaderScript.type == "x-shader/x-fragment") {
-          shader = gl.createShader(gl.FRAGMENT_SHADER);
-      } else if (shaderScript.type == "x-shader/x-vertex") {
-          shader = gl.createShader(gl.VERTEX_SHADER);
-      } else {
-          return null;
-      }
+    gl.shaderSource(shader, str);
+    gl.compileShader(shader);
 
-      gl.shaderSource(shader, str);
-      gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      throw gl.getShaderInfoLog(shader);
+      return null;
+    }
 
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-          alert(gl.getShaderInfoLog(shader));
-          return null;
-      }
-
-      return shader;
+    return shader;
   }
 
   // Initialize and load the shaders
@@ -117,7 +113,7 @@
       gl.linkProgram(shaderProgram);
 
       if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-          alert("Could not initialise shaders");
+          throw "Could not initialise shaders";
       }
 
       gl.useProgram(shaderProgram);
@@ -135,16 +131,30 @@
 
   /**
    * Updated Texture with CDA last state
+   * Also In Canvas 2d API redraws it
    */
   function updateTexture(texture, cda) {
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    // Call function and get result
-    cda.ToRGBATexture(texture.rawdata.byteOffset);
-  
-    gl.texSubImage2D(gl.TEXTURE_2D, 0, 
-        0, 0 , 320, 240,
-        gl.RGBA, gl.UNSIGNED_BYTE, texture.rawdata);
-    gl.bindTexture(gl.TEXTURE_2D, null);
+    if (mode2d) {
+      cda.ToRGBATexture(texture.rawdata.byteOffset);
+      var buf8 = new Uint8ClampedArray(texture.rawdata);
+      imageData.data.set(buf8);
+      // We paint in a temporal canvas to use canvas scale
+      var newCanvas = $("<canvas>")
+        .attr("width", 320)
+        .attr("height", 240)[0];
+      newCanvas.getContext("2d").putImageData(imageData, 0, 0);
+      context.drawImage(newCanvas, 0, 0); 
+
+    } else {
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      
+      cda.ToRGBATexture(texture.rawdata.byteOffset);
+    
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 
+          0, 0 , 320, 240,
+          gl.RGBA, gl.UNSIGNED_BYTE, texture.rawdata);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
     cda.VSync();
   }
   
@@ -182,9 +192,13 @@
 
   // Init the texture
   function initTexture() {
-    glTexture = gl.createTexture();
-    glTexture.rawdata = textureHeap;
-    handleLoadedTexture(glTexture)
+    if (mode2d) {
+      glTexture = {'rawdata' : textureHeap};
+    } else {
+      glTexture = gl.createTexture();
+      glTexture.rawdata = textureHeap;
+      handleLoadedTexture(glTexture)
+    }
   }
 
   function mvPushMatrix() {
@@ -244,7 +258,7 @@
   }
 
   // Update WebGL scene
-  function drawScene() {
+  function drawSceneGL() {
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -268,7 +282,25 @@
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, VIndexBuffer);
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, VIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    var error = gl.getError();
+    if (error != gl.NO_ERROR && error != gl.CONTEXT_LOST_WEBGL) {
+      trace ("WebGL error!");
+      //mode2d = true;
+    }
   }
+
+  // Do the inital setup of the canvas for WebGL
+  function setupWebGL(canvas) {
+    initGL(canvas);
+    initShaders(gl);
+    initBuffers();
+    initTexture();
+
+    gl.clearColor(0.2, 0.2, 0.2, 1.0);
+    gl.enable(gl.DEPTH_TEST);
+  }
+
 
   // Main code to execute here ************************************************
 
@@ -313,7 +345,8 @@
       }
     }
 
-    drawScene();
+    if (! mode2d)
+      drawSceneGL();
     
     lastTime = timeNow;
   }
@@ -327,14 +360,44 @@
   $('#reset_btn').button();
 
   canvas = document.getElementById('canvas1');
-  
-  if (initGL(canvas)) {
-    initShaders(gl);
-    initBuffers();
-    initTexture();
+  canvas.addEventListener("webglcontextlost", function(evt) {
+    evt.preventDefault();
+  }, false);
 
-    gl.clearColor(0.2, 0.2, 0.2, 1.0);
-    gl.enable(gl.DEPTH_TEST);
+  canvas.addEventListener("webglcontextrestored", function(evt) {
+    try {
+      setupWebGL(canvas);
+    } catch (e) {
+      trace(e);
+      trace("Using canvas 2d API")
+      mode2d = true;
+    }
+    
+    if(mode2d) {
+      initTexture();
+      context = canvas.getContext('2d');
+      context.scale(canvas.width / 320.0, canvas.height / 240.0);
+      imageData = context.createImageData(320, 240);;
+    }
+  }, false);
+
+  if ($('#webgl').prop('checked')) {
+    try {
+      setupWebGL(canvas);
+    } catch (e) {
+      trace(e);
+      trace("Using canvas 2d API")
+      mode2d = true;
+    }
+  } else {
+    mode2d = true;
+  }
+
+  if(mode2d) {
+    initTexture();
+    context = canvas.getContext('2d');
+    context.scale(canvas.width / 320.0, canvas.height / 240.0);
+    imageData = context.createImageData(320, 240);;
   }
 
   // Attach event listeners ***************************************************
@@ -358,8 +421,13 @@
   $('#reset_btn').on('click', function (evt) {
     vm.Reset();
 
-    cleanTexture(glTexture);
-    drawScene();
+    if (!mode2d) {
+      cleanTexture(glTexture);
+      drawSceneGL();
+    } else {
+      context.fillStyle="#000000";
+      context.fillRect(0,0, canvas.width, canvas.height);
+    }
   });
 
   // Step button
@@ -370,6 +438,37 @@
     } 
   });
 
+  // WebGL checkbox
+  $('#webgl').on('change', function (evt) {
+    if ($('#webgl').prop('checked')) {
+      try {
+        var tmp = initGL(canvas);
+        if (tmp) {
+        
+          initShaders(gl);
+          initBuffers();
+          initTexture();
+
+          gl.clearColor(0.2, 0.2, 0.2, 1.0);
+          gl.enable(gl.DEPTH_TEST);
+        } else {
+          mode2d = true;
+        }
+      } catch (e) {
+        trace(e);
+        trace("Using canvas 2d API")
+        mode2d = true;
+      }
+    } else {
+      mode2d = true;
+    }
+    if(mode2d) {
+      initTexture();
+      context = tcanvas.getContext('2d');
+      context.scale(canvas.width / 320.0, canvas.height / 240.0);
+      imageData = context.createImageData(320, 240);;
+    }
+  });
 
   document.onkeydown = function (evt) {
     var k = evt.keyCode;

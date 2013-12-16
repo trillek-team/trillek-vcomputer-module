@@ -30,16 +30,6 @@ bool AddCDA_(vm::VirtualComputer& arr, unsigned slot, vm::cda::CDA& d ) {
 void WriteTexture_(vm::cda::CDA& arr, long ptr) {
   auto p = (vm::byte_t *)ptr;
   arr.ToRGBATexture((vm::dword_t*)p); // TODO Perhaps we need a special function for this case
-  p[0] = 255;
-  p[1] = 255;
-  p[2] = 255;
-  p[3] = 255;
-
-
-  p[2600] = 255;
-  p[2601] = 255;
-  p[2602] = 255;
-  p[2603] = 255;
 }
 
 EMSCRIPTEN_BINDINGS(rc3200_vm) {
