@@ -6,13 +6,14 @@
 </head>
 <body>
 <h1>RC3200 Virtual Computer for browser - ALPHA version!</h1>
-
-<input type="file" name="rom" id="romfile"></input>
+<form>
+<input type="file" name="rom" id="romfile"\>
+</form>
 <br/>
 <canvas id="canvas1" style="border: none;" width="640" height="480"></canvas>
 <br/>
 <p>
-Advice : This a quick & dirty conversion to JS. there many things that are not checked so expect a lot of weird things.
+Advice : This a quick &amp; dirty conversion to JS. there many things that are not checked so expect a lot of weird things.
 </p>
 <p>
 To use, load a binary ROM file. You can download some basic programs from here:
@@ -26,33 +27,12 @@ To use, load a binary ROM file. You can download some basic programs from here:
 </p>
 <footer>
 Powered by <a href="https://github.com/kripken/emscripten/wiki" >emscripten</a>
-</footer><script type="text/javascript" >
-  /* Trace (console.log) ================================================== */
-  var debug_trace = true;
-  function trace( msg ) {
-    if (typeof debug_trace != 'undefined' && debug_trace) {
-      if (window.console) {
-          console.log(msg);
-      } else if ( typeof( jsTrace ) != 'undefined' ) {
-          jsTrace.send( msg );
-      } else {
-          //alert(msg);
-      }
-    }
-  };
-
-var Module = {
-  'print' : trace,
-  'printErr' : trace,
-};
-
-</script>
-
+</footer>
 
 <script type="text/javascript" src="js/glMatrix-0.9.5.min.js"></script>
 <script type="text/javascript" src="js/webgl-utils.js"></script>
 
-<script type="text/javascript" src="vm_wrap.js"></script>
+<script type="text/javascript" src="vm.js"></script>
 
 <script id="shader-fs" type="x-shader/x-fragment">
   precision mediump float;

@@ -105,12 +105,6 @@ void CDA::SETUPreg::WB (dword_t addr, byte_t val) {
   cda->e_vsync = (val & 0x80 ) != 0;
 }
 
-
-
-
-
-
-
 void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool userfont, bool userpal, dword_t* texture) {
   assert(texture != nullptr);
   assert(buffer != nullptr);
@@ -130,7 +124,6 @@ void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool user
 
 #else // def EMSCRIPTEN
 */
-
   if (textmode) {
     // Text mode
     if (vmode == 0) { 
