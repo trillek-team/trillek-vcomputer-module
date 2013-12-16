@@ -33,17 +33,17 @@
     <div class="col-md-4 col-md-offset-4">
       <ul class="list-inline">
         <li>
-          <button type="button" class="btn btn-default" id="run_btn">
+          <button type="button" class="btn btn-default" disabled="disabled" id="run_btn">
             <span class="glyphicon glyphicon glyphicon-play"></span> Run
           </button>
         </li>
         <li>
-          <button type="button" class="btn btn-default" id="step_btn">
-            <span class="glyphicon glyphicon glyphicon-stop"></span> Step
+          <button type="button" class="btn btn-default" disabled="disabled" id="step_btn">
+            <span class="glyphicon glyphicon glyphicon glyphicon-share-alt"></span> Step
           </button>
         </li>
         <li>
-          <button type="button" class="btn btn-default" id="reset_btn">
+          <button type="button" class="btn btn-default" disabled="disabled" id="reset_btn">
             <span class="glyphicon glyphicon glyphicon-refresh"></span> Reset
           </button>
         </li>
@@ -61,7 +61,7 @@
           <td>
             Speed:
           </td>
-          <td>
+          <td id="cpu_speed">
             0%
           </td>
         </tr>
@@ -69,16 +69,16 @@
           <td>
             Loaded ROM size :
           </td>
-          <td>
-            0 bytes
+          <td id="rom_size">
+            0 Bytes
           </td>
         </tr>
         <tr>
           <td>
             Total RAM size:
           </td>
-          <td>
-            128KiB
+          <td id="ram_size">
+            128 KiB
           </td>
         </tr>
       </table>

@@ -1,3 +1,19 @@
++function ($) { "use strict";
+
+  // Trace function to console
+  var debug_trace = true;
+  function trace( msg ) {
+    if (typeof debug_trace != 'undefined' && debug_trace) {
+      if (window.console) {
+          console.log(msg);
+      } else if ( typeof( jsTrace ) != 'undefined' ) {
+          jsTrace.send( msg );
+      } else {
+          //alert(msg);
+      }
+    }
+  };
+
 
   var vm = new Module.VirtualComputer(128*1024);
   var cda = new Module.CDA(0,0);
@@ -16,22 +32,45 @@
     textureHeap.set([0, 0 ,0 ,0], i);
 
 
+  
+  var canvas;         // Canvas were to write
+  var mode2d = false; // We must use canvas 2D ?
+
   // WebGL stuff
-  var gl;
-  // Inits WebGL stuff
+  var gl;                       // WebGL context
+  
+  var shaderProgram;            // Id of linked shader program
+  
+  var glTexture;                // Id of WebGL texture were to paint CDA screen
+  
+  var VPBuffer;                 // Vertex Position Buffer
+  var VTexCoordBuffer;          // Vertex UV coord Buffer
+  var VIndexBuffer;             // Vertex Index Buffer
+  
+  var mvMatrix = mat4.create(); // Model-View matrix
+  var mvMatrixStack = [];
+  var pMatrix = mat4.create();  // Proy matrix
+
+  /**
+   * Inits WebGL stuff
+   * \return True if can initiate a WebGL context
+   */
   function initGL(canvas) {
     try {
       gl = canvas.getContext("experimental-webgl");
       gl.viewportWidth = canvas.width;
       gl.viewportHeight = canvas.height;
     } catch (e) {
+      trace(e);
     }
-
     if (!gl) {
       alert("Could not initialise WebGL, sorry :-(");
+      return false;
     }
+    return true;
   }
 
+  // Grabs teh shader and compiles it
   function getShader(gl, id) {
       var shaderScript = document.getElementById(id);
       if (!shaderScript) {
@@ -67,11 +106,8 @@
       return shader;
   }
 
-
-  var shaderProgram;
-
   // Initialize and load the shaders
-  function initShaders() {
+  function initShaders(gl) {
       var fragmentShader = getShader(gl, "shader-fs");
       var vertexShader = getShader(gl, "shader-vs");
 
@@ -129,18 +165,12 @@
     gl.bindTexture(gl.TEXTURE_2D, null);
   }
 
-  var glTexture;
-
   // Init the texture
   function initTexture() {
     glTexture = gl.createTexture();
     glTexture.rawdata = textureHeap;
     handleLoadedTexture(glTexture)
   }
-
-  var mvMatrix = mat4.create();
-  var mvMatrixStack = [];
-  var pMatrix = mat4.create();
 
   function mvPushMatrix() {
       var copy = mat4.create();
@@ -155,21 +185,16 @@
       mvMatrix = mvMatrixStack.pop();
   }
 
-
   function setMatrixUniforms() {
       gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
       gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
   }
 
-  var VPBuffer;
-  var VTexCoordBuffer;
-  var VIndexBuffer;
-
   // Init Vertex Buffers
   function initBuffers() {
       VPBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, VPBuffer);
-      vertices = [
+      var vertices = [
           // Front face
           -3.2, -2.4,  0.0,
            3.2, -2.4,  0.0,
@@ -230,25 +255,33 @@
     gl.drawElements(gl.TRIANGLES, VIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
   }
 
-  // Use to control timings
-  var lastTime = 0;
-  var updTexTime = 0;
-  var updSpeed = 0;
+  // Main code to execute here ************************************************
 
-  var cycles = 1350; // How many cycles are being executed in a bath
+  // Use to control timings
+  var lastTime = new Date().getTime();
+  var updTexTime = 40;
+  var updSpeed = 3000;
+
+  var cycles = 1750; // How many cycles are being executed in a bath
   var tms = (cycles / 100000.0) * 1000; // Time in ms that should be running
 
-  var loop = false;
+  var running = false;  // Looping ?
+  var step_mode = false; // Step mode ?
+  
   function tick() { // This is executed every tick
-    if (loop)
+    if (running)
       requestAnimFrame(tick);
 
     var timeNow = new Date().getTime(); 
     if (lastTime != 0) {
       var elapsed = timeNow - lastTime;
       //trace("PC:" + vm.CPUState().pc);
-      //var ticks = vm.Step(elapsed);
-      vm.Tick(cycles, elapsed);
+      if (step_mode) {
+        var ticks = vm.Step(elapsed);
+        // TODO Update VM machine state display
+      } else {
+        vm.Tick(cycles, elapsed);
+      }
 
       updTexTime += elapsed;
       if (updTexTime >= 40) { // 25 FPS in milliseconds
@@ -257,10 +290,10 @@
       }
 
       updSpeed += elapsed;
-      if (updSpeed >= 2000) {
+      if (updSpeed >= 3000) {
         var speed = 100.0 * (tms / elapsed)
-        trace("Speed: " + speed);
-        updSpeed -= 2000;
+        $("#cpu_speed").text(speed.toPrecision(4) + " %");
+        updSpeed -= 3000;
       }
     }
 
@@ -272,27 +305,70 @@
   var filePtr;
   var fileHeap;
 
-  var canvas = document.getElementById('canvas1');
-  initGL(canvas);
-  initShaders();
-  initBuffers();
-  initTexture();
+  // Init all
+  $('#run_btn').button();
+  $('#step_btn').button();
+  $('#reset_btn').button();
 
-  gl.clearColor(0.2, 0.2, 0.2, 1.0);
-  gl.enable(gl.DEPTH_TEST);
+  canvas = document.getElementById('canvas1');
+  
+  if (initGL(canvas)) {
+    initShaders(gl);
+    initBuffers();
+    initTexture();
+
+    gl.clearColor(0.2, 0.2, 0.2, 1.0);
+    gl.enable(gl.DEPTH_TEST);
+  }
+
+  // Attach event listeners ***************************************************
+  // Run / Stop button
+  $('#run_btn').on('click', function (evt) {
+    if (running) {
+      running = false;
+      $('#run_btn').html('<span class="glyphicon glyphicon glyphicon-play"></span> Run');
+      $('#reset_btn').prop('disabled', false);
+      $('#step_btn').prop('disabled', false);
+    } else {
+      running = true;
+      tick();
+      $('#run_btn').html('<span class="glyphicon glyphicon glyphicon-stop"></span> Stop');
+      $('#reset_btn').prop('disabled', true);
+      $('#step_btn').prop('disabled', true);
+    }
+  });
+  
+  // Reset button
+  $('#reset_btn').on('click', function (evt) {
+    vm.Reset();
+    for (var i=0; i < 320*240*4; i = i + 4) // Fill screen texture of black
+      textureHeap.set([0, 0 ,0 ,0], i);
+
+    updateTexture(glTexture, cda);
+    drawScene();
+  });
+
+  // Step button
+  $('#step_btn').on('click', function (evt) {
+    if (! running) {
+      step_mode = true;
+      tick();
+    } 
+  });
+
 
   document.onkeydown = function (evt) {
     var k = evt.keyCode;
-    if (loop) {
+    if (running) {
       evt.preventDefault();
       key.PushKeyEvent (true, k);
     }
     return false;
   };
   
-document.onkeyup = function (evt) {
+  document.onkeyup = function (evt) {
     var k = evt.keyCode;
-    if (loop) {
+    if (running) {
       evt.preventDefault();
       key.PushKeyEvent (false, k);
     }
@@ -302,7 +378,7 @@ document.onkeyup = function (evt) {
 
   var selector = document.getElementById('romfile');
   selector.addEventListener('change', function(evt){
-    loop = false;
+    running = false;
     
     // Check for the various File API support.
     if (window.File && window.FileReader && window.FileList && window.Blob) {
@@ -320,6 +396,11 @@ document.onkeyup = function (evt) {
             bytes = 64*1024;
 
           trace("Loaded ROM file : " + theFile.name + " Size of : " + bytes);
+          if (bytes < 1024) {
+            $("#rom_size").text(bytes + " Bytes");
+          } else {
+            $("#rom_size").text((bytes/1024.0).toPrecision(4) + " KiB");
+          }
 
           // Get data byte size, allocate memory on Emscripten heap, and get pointer
           filePtr = Module._malloc(bytes); 
@@ -333,8 +414,9 @@ document.onkeyup = function (evt) {
       })(file);
       
       reader.readAsArrayBuffer(file)
-      loop = true;
-      tick();
+      $("#run_btn").prop('disabled', false);
+      $('#step_btn').prop('disabled', false);
+      $('#reset_btn').prop('disabled', true);
 
     } else {
       alert('The File APIs are not fully supported in this browser.');
@@ -343,3 +425,6 @@ document.onkeyup = function (evt) {
 
  // Free memory
  // Module._free(textureHeap.byteOffset);
+
+}(jQuery);
+
