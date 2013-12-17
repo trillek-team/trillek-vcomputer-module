@@ -103,7 +103,7 @@
   }
 
   // Initialize and load the shaders
-  function initShaders(gl) {
+  function initShaders() {
       var fragmentShader = getShader(gl, "shader-fs");
       var vertexShader = getShader(gl, "shader-vs");
 
@@ -290,15 +290,33 @@
     }
   }
 
-  // Do the inital setup of the canvas for WebGL
-  function setupWebGL(canvas) {
-    initGL(canvas);
-    initShaders(gl);
-    initBuffers();
-    initTexture();
 
-    gl.clearColor(0.2, 0.2, 0.2, 1.0);
-    gl.enable(gl.DEPTH_TEST);
+  var canvas_init = false;
+  // Init al canvas stuff and uses WebGL or 2d mode
+  function setupCanvas(canvas) {
+    if (!canvas_init) {
+      if (! mode2d) {
+        try {
+          initGL(canvas);
+          initShaders();
+          initBuffers();
+          initTexture();
+
+          gl.clearColor(0.2, 0.2, 0.2, 1.0);
+          gl.enable(gl.DEPTH_TEST);
+        } catch (e) {
+          trace(e);
+          mode2d = true;
+        }
+      }
+      if(mode2d) {
+        initTexture();
+        context = canvas.getContext('2d');
+        context.scale(canvas.width / 320.0, canvas.height / 240.0);
+        imageData = context.createImageData(320, 240);;
+      }
+      canvas_init = true;
+    }
   }
 
 
@@ -351,13 +369,15 @@
     lastTime = timeNow;
   }
 
-  var filePtr;
-  var fileHeap;
 
   // Init all
+  $('#load_btn').button();
   $('#run_btn').button();
+  $('#run_btn').prop('disabled', true);
   $('#step_btn').button();
+  $('#step_btn').prop('disabled', true);
   $('#reset_btn').button();
+  $('#reset_btn').prop('disabled', true);
 
   canvas = document.getElementById('canvas1');
   canvas.addEventListener("webglcontextlost", function(evt) {
@@ -365,39 +385,13 @@
   }, false);
 
   canvas.addEventListener("webglcontextrestored", function(evt) {
-    try {
-      setupWebGL(canvas);
-    } catch (e) {
-      trace(e);
-      trace("Using canvas 2d API")
-      mode2d = true;
-    }
-    
-    if(mode2d) {
-      initTexture();
-      context = canvas.getContext('2d');
-      context.scale(canvas.width / 320.0, canvas.height / 240.0);
-      imageData = context.createImageData(320, 240);;
-    }
+    setupCanvas(canvas);
   }, false);
 
   if ($('#webgl').prop('checked')) {
-    try {
-      setupWebGL(canvas);
-    } catch (e) {
-      trace(e);
-      trace("Using canvas 2d API")
-      mode2d = true;
-    }
+    mode2d = false;
   } else {
     mode2d = true;
-  }
-
-  if(mode2d) {
-    initTexture();
-    context = canvas.getContext('2d');
-    context.scale(canvas.width / 320.0, canvas.height / 240.0);
-    imageData = context.createImageData(320, 240);;
   }
 
   // Attach event listeners ***************************************************
@@ -408,12 +402,15 @@
       $('#run_btn').html('<span class="glyphicon glyphicon glyphicon-play"></span> Run');
       $('#reset_btn').prop('disabled', false);
       $('#step_btn').prop('disabled', false);
+      $('#load_btn').prop('disabled', false);
+    
     } else {
       running = true;
       tick();
       $('#run_btn').html('<span class="glyphicon glyphicon glyphicon-stop"></span> Stop');
       $('#reset_btn').prop('disabled', true);
       $('#step_btn').prop('disabled', true);
+      $('#load_btn').prop('disabled', true);
     }
   });
   
@@ -437,36 +434,88 @@
       tick();
     } 
   });
+ 
+  // File chooser
+  var selector = $('#romfile');
+  selector.on('change', function (evt) {
+    if (selector[0].files.length > 0) {
+      $('#load_btn').prop('disabled', false);
+    } else {
+      $('#load_btn').prop('disabled', true);
+    }
+  });
+
+  if (selector[0].files.length > 0) {
+    $('#load_btn').prop('disabled', false);
+  } else {
+    $('#load_btn').prop('disabled', true);
+  }
+
+  // Load button
+  $('#load_btn').on('click', function (evt) {
+    if (! running) { // Not running, we try to load the ROM file
+      var selector = $('#romfile');
+      // Check for the various File API support.
+      if (window.File && window.FileReader && window.FileList && window.Blob) {
+        var files = selector[0].files; // FileList object
+        var file = files[0];
+        var reader = new FileReader();
+
+        reader.onload = (function(theFile){
+          return function(e) {
+
+            var bytes = theFile.size;
+            if (bytes > 64*1024)
+              bytes = 64*1024;
+
+            trace("Loaded ROM file : " + theFile.name + " Size of : " + bytes);
+            if (bytes < 1024) {
+              $("#rom_size").text(bytes + " Bytes");
+            } else {
+              $("#rom_size").text((bytes/1024.0).toPrecision(4) + " KiB");
+            }
+
+            var filePtr;
+            var fileHeap;
+            // Get data byte size, allocate memory on Emscripten heap, and get pointer
+            filePtr = Module._malloc(bytes); 
+            // Creates a Type Array using this emscripten heap memory block
+            fileHeap = new Uint8Array(Module.HEAPU8.buffer, filePtr, bytes);
+            var tmp = new Uint8Array(reader.result, 0, bytes);
+            fileHeap.set(tmp);
+            vm.WriteROM(fileHeap.byteOffset, bytes);
+            // Free memory
+            Module._free(fileHeap.byteOffset);
+
+          };
+        })(file);
+        
+        reader.readAsArrayBuffer(file)
+        $("#run_btn").prop('disabled', false);
+        $('#step_btn').prop('disabled', false);
+        $('#reset_btn').prop('disabled', true);
+
+        setupCanvas(canvas);
+
+        $('#webgl').prop('disabled', true);
+        $('#webgl').prop('checked', ! mode2d);
+
+        vm.Reset(); // Enforces reset
+      } else {
+        trace('The File APIs are not fully supported in this browser.');
+      }
+
+    } else {
+    }
+  });
+
 
   // WebGL checkbox
   $('#webgl').on('change', function (evt) {
     if ($('#webgl').prop('checked')) {
-      try {
-        var tmp = initGL(canvas);
-        if (tmp) {
-        
-          initShaders(gl);
-          initBuffers();
-          initTexture();
-
-          gl.clearColor(0.2, 0.2, 0.2, 1.0);
-          gl.enable(gl.DEPTH_TEST);
-        } else {
-          mode2d = true;
-        }
-      } catch (e) {
-        trace(e);
-        trace("Using canvas 2d API")
-        mode2d = true;
-      }
+      mode2d = false;
     } else {
       mode2d = true;
-    }
-    if(mode2d) {
-      initTexture();
-      context = tcanvas.getContext('2d');
-      context.scale(canvas.width / 320.0, canvas.height / 240.0);
-      imageData = context.createImageData(320, 240);;
     }
   });
 
@@ -487,57 +536,6 @@
     }
     return false;
   };
-
-
-  var selector = document.getElementById('romfile');
-  selector.addEventListener('change', function(evt){
-    running = false;
-    
-    // Check for the various File API support.
-    if (window.File && window.FileReader && window.FileList && window.Blob) {
-      var files = evt.target.files; // FileList object
-      var file = files[0];
-      var reader = new FileReader();
-
-      reader.onload = (function(theFile){
-        return function(e) {
-          if (typeof (fileHeap) != 'undefined')
-            Module._free(fileHeap.byteOffset); // Free the Heap
-
-          var bytes = theFile.size;
-          if (bytes > 64*1024)
-            bytes = 64*1024;
-
-          trace("Loaded ROM file : " + theFile.name + " Size of : " + bytes);
-          if (bytes < 1024) {
-            $("#rom_size").text(bytes + " Bytes");
-          } else {
-            $("#rom_size").text((bytes/1024.0).toPrecision(4) + " KiB");
-          }
-
-          // Get data byte size, allocate memory on Emscripten heap, and get pointer
-          filePtr = Module._malloc(bytes); 
-          // Creates a Type Array using this emscripten heap memory block
-          fileHeap = new Uint8Array(Module.HEAPU8.buffer, filePtr, bytes);
-          var tmp = new Uint8Array(reader.result, 0, bytes);
-          fileHeap.set(tmp);
-          vm.WriteROM(fileHeap.byteOffset, bytes);
-
-        };
-      })(file);
-      
-      reader.readAsArrayBuffer(file)
-      $("#run_btn").prop('disabled', false);
-      $('#step_btn').prop('disabled', false);
-      $('#reset_btn').prop('disabled', true);
-
-    } else {
-      alert('The File APIs are not fully supported in this browser.');
-    }
-  }, false);
-
- // Free memory
- // Module._free(textureHeap.byteOffset);
 
 }(jQuery);
 

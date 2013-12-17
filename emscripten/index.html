@@ -29,10 +29,15 @@
           <input type="file" name="rom" id="romfile" />
         </li>
         <li>
+          <button type="button" class="btn btn-default" disabled="disabled" id="load_btn">
+            <span class="glyphicon glyphicon-floppy-open"></span> Load ROM
+          </button>
+        </li>
+        <li>
           <label for="webgl">Use WebGL (Danger!):</label>
         </li>
         <li>
-          <input type="checkbox" name="webgl" id="webgl" value="1" />
+          <input type="checkbox" name="webgl" id="webgl" value="0" />
         </li>
       </ul>
     </div>
@@ -40,17 +45,17 @@
       <ul class="list-inline">
         <li>
           <button type="button" class="btn btn-default" disabled="disabled" id="run_btn">
-            <span class="glyphicon glyphicon glyphicon-play"></span> Run
+            <span class="glyphicon glyphicon-play"></span> Run
           </button>
         </li>
         <li>
           <button type="button" class="btn btn-default" disabled="disabled" id="step_btn">
-            <span class="glyphicon glyphicon glyphicon glyphicon-share-alt"></span> Step
+            <span class="glyphicon glyphicon glyphicon-share-alt"></span> Step
           </button>
         </li>
         <li>
           <button type="button" class="btn btn-default" disabled="disabled" id="reset_btn">
-            <span class="glyphicon glyphicon glyphicon-refresh"></span> Reset
+            <span class="glyphicon glyphicon-refresh"></span> Reset
           </button>
         </li>
       </ul>
@@ -88,11 +93,13 @@
           </td>
         </tr>
       </table>
-      
-      <h3>Registers:</h3>
+      <div id="registers"> 
+        <h3>Registers:</h3>
+      </div>
     </div>
   </div>
   
+  <a href="https://github.com/Zardoz89/Trillek-Computer" >RC3200 specs</a><br/>
   <p>
   Advice : This a quick &amp; dirty conversion to JS. there many things that are not checked so expect a lot of weird things.
   </p>
@@ -108,7 +115,9 @@
   </p>
 
   <footer>
-    Powered by <a href="https://github.com/kripken/emscripten/wiki" >emscripten</a>
+    <a href="http://trillek.org/" >Trillek</a> project<br/>
+    Check my <a href="http://blog.zardoz.es/" >blog</a><br/>
+    Powered by <a href="https://github.com/kripken/emscripten/wiki" >emscripten</a><br/>
   </footer>
 </div>
 
