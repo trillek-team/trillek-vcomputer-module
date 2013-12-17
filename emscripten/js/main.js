@@ -29,6 +29,10 @@
     return hex;
   }
 
+  function isIE () {
+    var myNav = navigator.userAgent.toLowerCase();
+    return (myNav.indexOf('msie') != -1) ? parseInt(myNav.split('msie')[1]) : false;
+  }
 
 
   var vm = new Module.VirtualComputer(128*1024);
@@ -472,14 +476,28 @@
  
   // File chooser
   var selector = $('#romfile');
-  selector.on('change', function (evt) {
-    if (selector[0].files.length > 0) {
-      $('#load_btn').prop('disabled', false);
-    } else {
-      $('#load_btn').prop('disabled', true);
-    }
-  });
-
+  if (isIE()) { // Piece of crap of IE !!!
+    // IE suspends timeouts until after the file dialog closes
+    selector.click(function(event) {
+      setTimeout(function() {
+        if(selector.val().length > 0) {
+          if (selector[0].files.length > 0) {
+            $('#load_btn').prop('disabled', false);
+          } else {
+            $('#load_btn').prop('disabled', true);
+          }
+        }
+      }, 0);
+    });
+  } else {
+    selector.on('change', function (evt) {
+      if (selector[0].files.length > 0) {
+        $('#load_btn').prop('disabled', false);
+      } else {
+        $('#load_btn').prop('disabled', true);
+      }
+    });
+  }
   if (selector[0].files.length > 0) {
     $('#load_btn').prop('disabled', false);
   } else {
