@@ -14,6 +14,22 @@
     }
   };
 
+  // Beauty hexadecimal numbers
+  function decimalToHex(d, padding) {
+    if (d < 0)
+    	d = 0xFFFFFFFF + d + 1;
+
+    var hex = Number(d).toString(16).toUpperCase();
+    padding = typeof (padding) === "undefined" || padding === null ? padding = 8 : padding;
+
+    while (hex.length < padding) {
+        hex = "0" + hex;
+    }
+
+    return hex;
+  }
+
+
 
   var vm = new Module.VirtualComputer(128*1024);
   var cda = new Module.CDA(0,0);
@@ -350,8 +366,20 @@
       //trace("PC:" + vm.CPUState().pc);
       if (step_mode) {
         step_mode = false;
+        var state = vm.CPUState();
+        $('#pc_ex').text( decimalToHex(state.PC()) );
+        state.delete();
+        
         var ticks = vm.Step(elapsed);
+        
         // TODO Update VM machine state display
+        var state = vm.CPUState();
+        for (var i=0; i <= 26; i++ ) {
+          var r = state.R(i);
+          $('#r' + i.toString() ).text( decimalToHex(r) );
+        }
+        state.delete();
+
       } else {
         vm.Tick(cycles, elapsed);
       }
@@ -500,7 +528,7 @@
         reader.readAsArrayBuffer(file)
         $("#run_btn").prop('disabled', false);
         $('#step_btn').prop('disabled', false);
-        $('#reset_btn').prop('disabled', true);
+        $('#reset_btn').prop('disabled', false);
 
         setupCanvas(canvas);
 
@@ -543,6 +571,9 @@
     }
     return false;
   };
+
+  // Misc
+  $('[data-toggle="tooltip"]').tooltip({'placement': 'top'});
 
 }(jQuery);
 

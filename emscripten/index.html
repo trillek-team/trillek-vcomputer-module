@@ -32,7 +32,8 @@
         <label for="webgl">Use WebGL (Danger!):</label>
       </li>
       <li>
-        <input type="checkbox" name="webgl" id="webgl" value="0" />
+        <input type="checkbox" name="webgl" id="webgl" value="0" data-toggle="tooltip" data-original-title="Try to use
+        WebGL to render the screen. Fallbacks to canvas 2D API if fails"/>
       </li>
     </ul>
   </div>
@@ -42,7 +43,8 @@
   <div class="col-md-12">
     <div class="btn-toolbar" role="toolbar">
       <div class="btn-group" >
-        <button type="button" class="btn btn-default" disabled="disabled" id="load_btn">
+        <button type="button" class="btn btn-default" disabled="disabled" id="load_btn" data-toggle="tooltip"
+          data-original-title="Load the choose ROM file">
           <span class="glyphicon glyphicon-floppy-open"></span> Load ROM
         </button>
       </div>
@@ -72,14 +74,14 @@
         <div class="panel panel-default">
           <div class="panel-heading"> 
             <h4 class="panel-title">
-              <a data-toggle="collapse" data-parent="#vm_info" href="#status">Status:</a>
+              <a data-toggle="collapse"  href="#status">Status:</a>
             </h4>
           </div>
           <div id="status" class="panel-collapse collapse in">
             <div class="panel-body">
 
               <table class="table">
-                <tr>
+                <tr data-toggle="tooltip" data-original-title="VM speed emulation respect a 100KHz clock" >
                   <td>
                     Speed:
                   </td>
@@ -112,12 +114,144 @@
         <div class="panel panel-default">
           <div class="panel-heading"> 
             <h4 class="panel-title">
-              <a data-toggle="collapse" data-parent="#vm_info" href="#registers">Registers:</a>
+              <a data-toggle="collapse"  href="#registers">Registers:</a>
             </h4>
           </div>
           <div id="registers" class="panel-collapse collapse">
             <div class="panel-body">
-              TODO
+              
+<div class="row">
+  <div class="col-md-12">
+    <span id="pc_ex">00000000</span> : <span id="instr">???</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R0: <span id="r0">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R1: <span id="r1">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R2: <span id="r2">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R3: <span id="r3">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R4: <span id="r4">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R5: <span id="r5">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R6: <span id="r6">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R7: <span id="r7">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R8: <span id="r8">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R9: <span id="r9">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R10: <span id="r10">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R11: <span id="r11">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R12: <span id="r12">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R13: <span id="r13">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R14: <span id="r14">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R15: <span id="r15">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R16: <span id="r16">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R17: <span id="r17">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R18: <span id="r18">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R19: <span id="r19">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R20: <span id="r20">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R21: <span id="r21">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R22: <span id="r22">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R23: <span id="r23">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R24: <span id="r24">00000000</span>
+  </div>
+  <div class="col-md-6">
+    R25: <span id="r25">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    R26: <span id="r26">00000000</span>
+  </div>
+</div>
+<hr/>
+<div class="row">
+  <div class="col-md-6" data-toggle="tooltip" data-original-title="Base Pointer" >
+    BP: <span id="bp">00000000</span>
+  </div>
+  <div class="col-md-6" data-toggle="tooltip" data-original-title="Stack Pointer" >
+    SP: <span id="sp">00000000</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6" data-toggle="tooltip" data-original-title="Interrupt vector table Address">
+    IA: <span id="ia">00000000</span>
+  </div>
+  <div class="col-md-6" data-toggle="tooltip" data-original-title="Flags register" >
+    Fs: <span id="flags">00000000</span>
+  </div>
+</div>
+
             </div>
           </div>
         </div>
@@ -125,7 +259,7 @@
         <div class="panel panel-default">
           <div class="panel-heading"> 
             <h4 class="panel-title">
-              <a data-toggle="collapse" data-parent="#vm_info" href="#mem_dump">Mem Dump:</a>
+              <a data-toggle="collapse"  href="#mem_dump">Mem Dump:</a>
             </h4>
           </div>
           <div id="mem_dump" class="panel-collapse collapse">

@@ -7,11 +7,19 @@
 #include "vm.hpp"
 using namespace emscripten;
 
-/*
- * TODO CpuState:
-      .field("r",           &vm::cpu::CpuState::r)
+// Wrapper functions
 
-*/
+vm::dword_t r_(vm::cpu::CpuState& arr, unsigned n) {
+  if (n < vm::cpu::N_GPRS) {
+    return arr.r[n];
+  }
+  return -1;
+}
+
+vm::dword_t pc_(vm::cpu::CpuState& arr) {
+  return arr.pc;
+}
+
 
 void WriteROM_ (vm::VirtualComputer& arr,long ptr, size_t rom_size) {
   auto p = (vm::byte_t *)ptr;
@@ -33,17 +41,13 @@ void WriteTexture_(vm::cda::CDA& arr, long ptr) {
 }
 
 EMSCRIPTEN_BINDINGS(rc3200_vm) {
-    function("LoadROM", &vm::aux::LoadROM);
+    function("LoadROM",     &vm::aux::LoadROM);
+    function("Register",    &r_);
     
-    value_object<vm::cpu::CpuState>("CpuState")
-      .field("pc",          &vm::cpu::CpuState::pc)
-      .field("int_msg",     &vm::cpu::CpuState::int_msg)
-      .field("wait_cycles", &vm::cpu::CpuState::wait_cycles)
-      .field("skiping",     &vm::cpu::CpuState::skiping)
-      .field("sleeping",    &vm::cpu::CpuState::sleeping)
-      .field("interrupt",   &vm::cpu::CpuState::interrupt)
-      .field("iacq",        &vm::cpu::CpuState::iacq)
-      .field("step_mode",   &vm::cpu::CpuState::step_mode)
+    class_<vm::cpu::CpuState>("CpuState")
+      .constructor<>()
+      .function("R",          &r_)
+      .function("PC",         &pc_)
       ;
 
     class_<vm::VirtualComputer>("VirtualComputer")
