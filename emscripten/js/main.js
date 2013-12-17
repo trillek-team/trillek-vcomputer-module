@@ -304,6 +304,10 @@
 
           gl.clearColor(0.2, 0.2, 0.2, 1.0);
           gl.enable(gl.DEPTH_TEST);
+    
+          gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        
         } catch (e) {
           trace(e);
           mode2d = true;
@@ -313,7 +317,10 @@
         initTexture();
         context = canvas.getContext('2d');
         context.scale(canvas.width / 320.0, canvas.height / 240.0);
-        imageData = context.createImageData(320, 240);;
+        imageData = context.createImageData(320, 240);
+
+        context.fillStyle="#000000";
+        context.fillRect(0,0, canvas.width, canvas.height);
       }
       canvas_init = true;
     }
@@ -497,8 +504,8 @@
 
         setupCanvas(canvas);
 
-        $('#webgl').prop('disabled', true);
         $('#webgl').prop('checked', ! mode2d);
+        $('#webgl').prop('disabled', true);
 
         vm.Reset(); // Enforces reset
       } else {

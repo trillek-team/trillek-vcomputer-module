@@ -20,83 +20,126 @@
   </div>
 
   <div class="row">
-    <div class="col-md-8">
-      <ul class="list-inline">
-        <li>
-          <label for="romfile">Binary ROM file:</label>
-        </li>
-        <li>
-          <input type="file" name="rom" id="romfile" />
-        </li>
-        <li>
-          <button type="button" class="btn btn-default" disabled="disabled" id="load_btn">
-            <span class="glyphicon glyphicon-floppy-open"></span> Load ROM
-          </button>
-        </li>
-        <li>
-          <label for="webgl">Use WebGL (Danger!):</label>
-        </li>
-        <li>
-          <input type="checkbox" name="webgl" id="webgl" value="0" />
-        </li>
-      </ul>
-    </div>
-    <div class="col-md-4">
-      <ul class="list-inline">
-        <li>
-          <button type="button" class="btn btn-default" disabled="disabled" id="run_btn">
-            <span class="glyphicon glyphicon-play"></span> Run
-          </button>
-        </li>
-        <li>
-          <button type="button" class="btn btn-default" disabled="disabled" id="step_btn">
-            <span class="glyphicon glyphicon glyphicon-share-alt"></span> Step
-          </button>
-        </li>
-        <li>
-          <button type="button" class="btn btn-default" disabled="disabled" id="reset_btn">
-            <span class="glyphicon glyphicon-refresh"></span> Reset
-          </button>
-        </li>
-      </ul>
+  <div class="col-md-12">
+    <ul class="list-inline" >
+      <li>
+        <label for="romfile">Binary ROM file:</label>
+      </li>
+      <li>
+        <input type="file" name="rom" id="romfile" />
+      </li>
+      <li>
+        <label for="webgl">Use WebGL (Danger!):</label>
+      </li>
+      <li>
+        <input type="checkbox" name="webgl" id="webgl" value="0" />
+      </li>
+    </ul>
+  </div>
+  </div>
+
+  <div class="row">
+  <div class="col-md-12">
+    <div class="btn-toolbar" role="toolbar">
+      <div class="btn-group" >
+        <button type="button" class="btn btn-default" disabled="disabled" id="load_btn">
+          <span class="glyphicon glyphicon-floppy-open"></span> Load ROM
+        </button>
+      </div>
+    
+      <div class="btn-group" >
+        <button type="button" class="btn btn-default" disabled="disabled" id="run_btn">
+          <span class="glyphicon glyphicon-play"></span> Run
+        </button>
+        <button type="button" class="btn btn-default" disabled="disabled" id="step_btn">
+          <span class="glyphicon glyphicon glyphicon-share-alt"></span> Step
+        </button>
+        <button type="button" class="btn btn-default" disabled="disabled" id="reset_btn">
+          <span class="glyphicon glyphicon-refresh"></span> Reset
+        </button>
+      </div>
     </div>
   </div>
+  </div>
+
   <div class="row">
     <div class="col-md-8">
       <canvas id="canvas1" style="border: none;" width="640" height="480"></canvas>
     </div>
     <div class="col-md-4">
-      <h3>Status:</h3>
-      <table class="table">
-        <tr>
-          <td>
-            Speed:
-          </td>
-          <td id="cpu_speed">
-            0%
-          </td>
-        </tr>
-        <tr>
-          <td>
-            Loaded ROM size :
-          </td>
-          <td id="rom_size">
-            0 Bytes
-          </td>
-        </tr>
-        <tr>
-          <td>
-            Total RAM size:
-          </td>
-          <td id="ram_size">
-            128 KiB
-          </td>
-        </tr>
-      </table>
-      <div id="registers"> 
-        <h3>Registers:</h3>
+
+      <div class="panel-group" id="vm_info">
+        <div class="panel panel-default">
+          <div class="panel-heading"> 
+            <h4 class="panel-title">
+              <a data-toggle="collapse" data-parent="#vm_info" href="#status">Status:</a>
+            </h4>
+          </div>
+          <div id="status" class="panel-collapse collapse in">
+            <div class="panel-body">
+
+              <table class="table">
+                <tr>
+                  <td>
+                    Speed:
+                  </td>
+                  <td id="cpu_speed">
+                    0%
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    Loaded ROM size :
+                  </td>
+                  <td id="rom_size">
+                    0 Bytes
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    Total RAM size:
+                  </td>
+                  <td id="ram_size">
+                    128 KiB
+                  </td>
+                </tr>
+              </table>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading"> 
+            <h4 class="panel-title">
+              <a data-toggle="collapse" data-parent="#vm_info" href="#registers">Registers:</a>
+            </h4>
+          </div>
+          <div id="registers" class="panel-collapse collapse">
+            <div class="panel-body">
+              TODO
+            </div>
+          </div>
+        </div>
+        
+        <div class="panel panel-default">
+          <div class="panel-heading"> 
+            <h4 class="panel-title">
+              <a data-toggle="collapse" data-parent="#vm_info" href="#mem_dump">Mem Dump:</a>
+            </h4>
+          </div>
+          <div id="mem_dump" class="panel-collapse collapse">
+            <div class="panel-body">
+              TODO
+            </div>
+          </div>
+        </div>
+
+
+
       </div>
     </div>
+
   </div>
   
   <a href="https://github.com/Zardoz89/Trillek-Computer" >RC3200 specs</a><br/>
