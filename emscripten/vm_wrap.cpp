@@ -40,6 +40,10 @@ void WriteTexture_(vm::cda::CDA& arr, long ptr) {
   arr.ToRGBATexture((vm::dword_t*)p); // TODO Perhaps we need a special function for this case
 }
 
+std::string Disassembly_(vm::VirtualComputer& arr) {
+  return vm::cpu::Disassembly(arr.RAM(), arr.CPUState().pc);
+}
+
 EMSCRIPTEN_BINDINGS(rc3200_vm) {
     function("LoadROM",     &vm::aux::LoadROM);
     function("Register",    &r_);
@@ -61,6 +65,7 @@ EMSCRIPTEN_BINDINGS(rc3200_vm) {
       .function("Clock",      &vm::VirtualComputer::Clock)
       .function("Step",       &vm::VirtualComputer::Step)
       .function("Tick",       &vm::VirtualComputer::Tick)
+      .function("Disassembly",&Disassembly_)
       ;
 
     class_<vm::cda::CDA>("CDA")

@@ -372,6 +372,7 @@
         step_mode = false;
         var state = vm.CPUState();
         $('#pc_ex').text( decimalToHex(state.PC()) );
+        $('#instr').text( vm.Disassembly() );
         state.delete();
         
         var ticks = vm.Step(elapsed);
