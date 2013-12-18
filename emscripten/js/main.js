@@ -586,8 +586,11 @@
   };
 
   $(document).on('keydown', function (evt) {
+    // read : http://unixpapa.com/js/key.html
     if (running) {
       evt.preventDefault(); // Not anoying quick search in firefox
+      if (evt.repeat)
+        return false; // Stops anoying repeat
       
       var k = evt.keyCode;  // Note this gets scancodes !!!
       if (k == 16) // Shift key
