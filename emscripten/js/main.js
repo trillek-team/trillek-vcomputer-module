@@ -579,23 +579,47 @@
     }
   });
 
-  document.onkeydown = function (evt) {
-    var k = evt.keyCode;
+  // Stores keyboard status
+  var keyb = {
+    'shift_key' : false,
+    'caps_lock' : false,
+  };
+
+  $(document).on('keydown', function (evt) {
     if (running) {
-      evt.preventDefault();
+      evt.preventDefault(); // Not anoying quick search in firefox
+      
+      var k = evt.keyCode;  // Note this gets scancodes !!!
+      if (k == 16) // Shift key
+        keyb.shift_key = true;
+      
+      if (k == 20) // Caps locks key
+        keyb.caps_lock = ! keyb.caps_lock;
+      var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
+      if (! uppercase && (k >= 65 && k <= 90 )) // Undercase the scan codes
+        k = k +32;
+
       key.PushKeyEvent (true, k);
     }
     return false;
-  };
+  });
   
-  document.onkeyup = function (evt) {
-    var k = evt.keyCode;
+  $(document).on('keyup', function (evt) {
     if (running) {
       evt.preventDefault();
+      
+      var k = evt.keyCode;
+      if (k == 16) // Shift key
+        keyb.shift_key = false;
+
+      var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
+      if (! uppercase && (k >= 65 && k <= 90 ))
+        k = k +32;
+      
       key.PushKeyEvent (false, k);
     }
     return false;
-  };
+  });
 
   // Misc
   $('[data-toggle="tooltip"]').tooltip({'placement': 'top'});
