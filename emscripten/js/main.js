@@ -378,10 +378,16 @@
         
         // TODO Update VM machine state display
         var state = vm.CPUState();
-        for (var i=0; i <= 26; i++ ) {
+        for (var i=0; i <= 27; i++ ) {
           var r = state.R(i);
           $('#r' + i.toString() ).text( decimalToHex(r) );
         }
+        
+        $('#ia').text( decimalToHex(state.R(28)) );
+        $('#flags').text( decimalToHex(state.R(29)) );
+        $('#bp').text( decimalToHex(state.R(30)) );
+        $('#sp').text( decimalToHex(state.R(31)) );
+
         state.delete();
 
       } else {
