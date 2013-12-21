@@ -6,7 +6,7 @@
 #ifndef __DIS_RC3200_HPP__
 #define __DIS_RC3200_HPP__ 1
 
-#include "cpu.hpp"
+#include "Cpu.hpp"
 
 #include <string>
 

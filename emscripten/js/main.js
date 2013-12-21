@@ -393,6 +393,12 @@
 
       } else {
         vm.Tick(cycles, elapsed);
+        cycles = (100000.0 * elapsed * 0.001);
+        if (cycles <= 3)
+          cycles = 3;
+
+        if (cycles > 90000) // Dirty fix for clock.asm
+          cycles = 90000;
       }
 
       updTexTime += elapsed;

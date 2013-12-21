@@ -3,7 +3,7 @@
  * CPU of the virtual machine
  */
 
-#include "cpu.hpp"
+#include "Cpu.hpp"
 
 #include <iostream>
 #include <cstdio>

@@ -1,25 +1,20 @@
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
-        SET(linkFlags "-g4")
+  SET(linkFlags "-g4")
 else() # Either MinSizeRel, RelWithDebInfo or Release, all which run with optimizations enabled.
-        SET(linkFlags "-O2")
+  SET(linkFlags "-O2")
 endif()
 SET(linkFlags " --bind ${linkFlags}")
 
 # Fake executable
 add_executable( vm
-    ../src/vcomputer.cpp
-    ../src/IDevice.cpp
-    ../src/cpu.cpp
-    ../src/CDA.cpp
-    ../src/GKeyboard.cpp
-    ../src/dis_rc3200.cpp
-    ../src/aux.cpp
-    ./vm_wrap.cpp
-)
+  ${RC3200_SRC}
+  ./vm_wrap.cpp
+  )
 
 include_directories( vm
-    ${rc3200_INCLUDE_DIRS}
-)
+  ${RC3200_INCLUDE_DIRS}
+  
+  )
 
 configure_file(./index.html ${CMAKE_BINARY_DIR}/index.html COPYONLY)
 configure_file(./js/jquery-1.10.2.min.js ${CMAKE_BINARY_DIR}/js/jquery-1.10.2.min.js COPYONLY)

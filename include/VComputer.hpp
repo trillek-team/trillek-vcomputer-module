@@ -7,11 +7,10 @@
 #ifndef __VM_HPP_
 #define __VM_HPP_ 1
 
-//#include "config.hpp"
-#include "types.hpp"
+#include "Types.hpp"
 
-#include "cpu.hpp"
-#include "ram.hpp"
+#include "Cpu.hpp"
+#include "Ram.hpp"
 #include "IDevice.hpp"
 
 #include <vector>

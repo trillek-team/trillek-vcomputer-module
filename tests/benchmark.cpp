@@ -1,4 +1,4 @@
-#include <vm.hpp>
+#include <VM.hpp>
 
 #include <iostream>
 #include <fstream>

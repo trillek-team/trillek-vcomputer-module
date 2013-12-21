@@ -4,7 +4,7 @@
 #include <string>
 #include <cstdio>
 
-#include "vm.hpp"
+#include "VM.hpp"
 using namespace emscripten;
 
 // Wrapper functions

@@ -9,12 +9,11 @@
 #ifndef __RAM_HPP__
 #define __RAM_HPP__ 1
 
-#include "types.hpp"
+#include "Types.hpp"
 
 #include <vector>
 #include <algorithm>
 #include <memory>
-#include <iostream>
 
 #include <cassert>
 

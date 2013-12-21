@@ -7,8 +7,8 @@
 #ifndef __CPU_HPP__
 #define __CPU_HPP__
 
-#include "types.hpp"
-#include "ram.hpp"
+#include "Types.hpp"
+#include "Ram.hpp"
 #include "rc3200_opcodes.hpp"
 
 #include <vector>

@@ -18,13 +18,14 @@
         #pragma warning(disable : 4244) // Conversion of variables with data loss
 #endif
 
-#include "types.hpp"
+#include "Types.hpp"
 
-#include "ram.hpp"
-#include "cpu.hpp"
+// VM Core
+#include "Ram.hpp"
+#include "Cpu.hpp"
 
 #include "IDevice.hpp"
-#include "vcomputer.hpp"
+#include "VComputer.hpp"
 
 // Devices
 #include "CDA.hpp"

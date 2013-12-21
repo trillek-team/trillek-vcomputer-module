@@ -8,14 +8,13 @@
 #ifndef __CDA_HPP__
 #define __CDA_HPP__ 1
 
-#include "types.hpp"
-#include "ram.hpp"
+#include "Types.hpp"
+#include "Ram.hpp"
 #include "IDevice.hpp"
 
 #include <vector>
 #include <algorithm>
 #include <memory>
-#include <iostream>
 
 #include <cassert>
 

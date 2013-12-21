@@ -3,7 +3,7 @@
  * Virtual machine itself
  */
 
-#include "vcomputer.hpp"
+#include "VComputer.hpp"
 
 namespace vm {
 using namespace vm::cpu;

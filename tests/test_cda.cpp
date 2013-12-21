@@ -1,4 +1,4 @@
-#include <vm.hpp>
+#include <VM.hpp>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>

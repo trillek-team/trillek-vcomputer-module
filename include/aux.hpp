@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "vcomputer.hpp"
+#include "VComputer.hpp"
 
 namespace vm {
 namespace aux {

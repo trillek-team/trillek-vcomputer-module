@@ -1,3 +1,8 @@
+/**
+ * Color Display Adaptor
+ * \file CDA.cpp
+ */
+
 #include "CDA.hpp"
 
 namespace vm {

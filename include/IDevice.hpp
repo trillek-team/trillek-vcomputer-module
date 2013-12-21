@@ -8,8 +8,8 @@
 #ifndef __IDEVICE_HPP__
 #define __IDEVICE_HPP__ 1
 
-#include "types.hpp"
-#include "cpu.hpp"
+#include "Types.hpp"
+#include "Cpu.hpp"
 
 #include <memory>
 #include <vector>

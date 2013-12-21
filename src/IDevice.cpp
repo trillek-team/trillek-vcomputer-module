@@ -8,15 +8,15 @@
 
 namespace vm {
 
-IDevice::IDevice (dword_t j1, dword_t j2) : jmp1(j1), jmp2(j2) {
-}
+  IDevice::IDevice (dword_t j1, dword_t j2) : jmp1(j1), jmp2(j2) {
+  }
 
-IDevice::~IDevice () {
-}
+  IDevice::~IDevice () {
+  }
 
-std::vector<ram::AHandler*> IDevice::MemoryBlocks() const {
-  std::vector<ram::AHandler*> output;
-  return output;
-}
+  std::vector<ram::AHandler*> IDevice::MemoryBlocks() const {
+    std::vector<ram::AHandler*> output;
+    return output;
+  }
 
 } // End of namespace vm

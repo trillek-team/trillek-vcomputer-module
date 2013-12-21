@@ -8,15 +8,14 @@
 #ifndef __GKEYBOARD_HPP__
 #define __GKEYBOARD_HPP__ 1
 
-#include "types.hpp"
-#include "ram.hpp"
+#include "Types.hpp"
+#include "Ram.hpp"
 #include "IDevice.hpp"
 
 #include <vector>
 #include <deque>
 #include <algorithm>
 #include <memory>
-#include <iostream>
 
 #include <cassert>
 
