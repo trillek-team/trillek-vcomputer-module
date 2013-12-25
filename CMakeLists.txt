@@ -5,20 +5,21 @@ if (RC3200_SUB_PROJECT)
   message ("Setting SRC and INCLUDE for RC3200")
 
   # Include dirs
-  set(RC3200_INCLUDE_DIRS
+  set(RC3200_INCLUDE_DIRS 
     "${CMAKE_CURRENT_SOURCE_DIR}/include/"
     PARENT_SCOPE
     )
 
   # Source dirs
-  file(GLOB RC3200_SRC 
+  file(GLOB RC3200_SRC_ 
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" 
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
-    PARENT_SCOPE
     )
 
-  message (${RC3200_SRC})
-  message (${RC3200_INCLUDE_DIRS})
+  set(RC3200_SRC
+    ${RC3200_SRC_}
+    PARENT_SCOPE
+    )
 
 else (RC3200_SUB_PROJECT)
 
