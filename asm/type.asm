@@ -29,11 +29,17 @@ loop:
             IFL %r1, 0x20         ; Ignores not printable keys
               RJMP loop
               
+            IFL %r1, 0x2F
+              RJMP paint_char
+            
+            IFLE %r1, 0x39        ; Number keys
+              RCALL check_numbers
+            
             IFL %r1, 0x41
               RJMP paint_char
             
             IFLE %r1, 0x5A
-              RCALL check_shift
+              RCALL check_shift   ; alphabetic keys
 
 paint_char:
             ; Computes position to write
@@ -102,6 +108,79 @@ check_shift:
 
             ADD %r1, %r1, 32 ; Convert ascii to lowercase
             RET
+
+check_numbers:
+            IFCLEAR %r0, 0b1000000000  ; Shift being not pressed
+              RET
+
+            IFEQ %r1, 0x31  ; Shift + 1
+              RJMP shift1
+            IFEQ %r1, 0x32  ; Shift + 2
+              RJMP shift2
+            IFEQ %r1, 0x33  ; Shift + 3
+              RJMP shift3
+            IFEQ %r1, 0x34  ; Shift + 4
+              RJMP shift4
+            IFEQ %r1, 0x35  ; Shift + 5
+              RJMP shift5
+            IFEQ %r1, 0x36  ; Shift + 6
+              RJMP shift6
+            IFEQ %r1, 0x37  ; Shift + 7
+              RJMP shift7
+            IFEQ %r1, 0x38  ; Shift + 8
+              RJMP shift8
+            IFEQ %r1, 0x39  ; Shift + 9
+              RJMP shift9
+            IFEQ %r1, 0x30  ; Shift + 0
+              RJMP shift0
+            RET
+
+shift1:
+            MOV %r1, '!'
+            RET
+
+shift2:
+            MOV %r1, 0x40 ; @
+            RET
+
+shift3:
+            MOV %r1, '#'
+            RET
+
+shift4:
+            MOV %r1, '$'
+            RET
+
+shift5:
+            MOV %r1, '%'
+            RET
+
+shift6:
+            MOV %r1, '^'
+            RET
+
+shift7:
+            MOV %r1, '&'
+            RET
+
+shift8:
+            MOV %r1, '*'
+            RET
+
+shift9:
+            MOV %r1, '('
+            RET
+
+shift0:
+            MOV %r1, ')'
+            RET
+
+
+
+
+
+
+
 
             .include "lib.inc"
 

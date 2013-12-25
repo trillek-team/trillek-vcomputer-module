@@ -116,8 +116,9 @@ namespace vm {
       case 36:
       case 37:
       case 38:
+        return (key - 30) + vm::keyboard::KEY_1;
       case 39:
-        return (key - 30) + vm::keyboard::KEY_0;
+        return vm::keyboard::KEY_0;
 
       case 40:
         return vm::keyboard::KEY_RETURN;
