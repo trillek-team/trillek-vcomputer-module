@@ -18,14 +18,24 @@ loop:
 
             IFCLEAR %r0, 0x100  ; Ignores Key Up
               RJMP loop
-            AND %r0, %r0, 0xFF
+            AND %r1, %r0, 0xFF
            
-            IFEQ %r0, 13
+            IFEQ %r1, 0x0D        ; Return Key
               RJMP return
 
-            IFEQ %r0, 8
+            IFEQ %r1, 0x08        ; Backspace Key
               RJMP delete
 
+            IFLE %r1, 0x20        ; Ignores not printable keys
+              RJMP loop
+              
+            IFL %r1, 0x41
+              RJMP paint_char
+            
+            IFLE %r1, 0x5A
+              RCALL check_shift
+
+paint_char:
             ; Computes position to write
             LLS %r13, %r12, 1
             MUL %r14, %r11, 80
@@ -33,7 +43,7 @@ loop:
             ADD %r13, %r13, %r10
 
             ; Types
-            STORE.B %r13, %r0 
+            STORE.B %r13, %r1 
             ADD %r12, %r12, 1
             
             ; Increments cursor
@@ -45,6 +55,7 @@ loop:
 
 end_loop:
             RJMP loop
+
 
 return:
             MOV %r12, 0
@@ -85,7 +96,12 @@ del_row:
 
             RJMP end_loop
 
+check_shift:
+            IFBITS %r0, 0b1000000000  ; Shift being pressed
+              RET
 
+            ADD %r1, %r1, 32 ; Convert ascii to lowercase
+            RET
 
             .include "lib.inc"
 
