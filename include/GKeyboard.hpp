@@ -41,25 +41,83 @@ static const dword_t BASE_ADDR[] = {                /// VRAM base address
     0xFF000260, 
     0xFF000360};
 
-static const size_t BSIZE = 64;                     /// Internal buffer size
+static const size_t BSIZE = 64; /// Internal buffer size
 
-enum SCANCODES {                                    /// Scancodes of keyevents
-  BACKSPACE = 0x10,
-  RETURN,
-  INSERT,
-  DELETE,
+enum KEYCODES { /// Key codes of the events
+  KEY_DELETE          = 0x05,
+  KEY_ALT_GR          = 0x06,
+  KEY_BACKSPACE       = 0x08,
+  KEY_TAB             = 0x09,
+  KEY_RETURN          = 0x0D,
+  KEY_SHIFT           = 0x0E,
+  KEY_CONTROL         = 0x0F,
+  KEY_INSERT          = 0x10,
+  KEY_ARROW_UP        = 0x12,
+  KEY_ARROW_DOWN      = 0x13,
+  KEY_ARROW_LEFT      = 0x14,
+  KEY_ARROW_RIGHT     = 0x15,
+  KEY_ESC             = 0x1B,
+  KEY_SPACEBAR        = 0x20,
+  KEY_APOSTROPHE      = 0x27,
+  KEY_COMA            = 0x2C,
+  KEY_MINUS           = 0x2D,
+  KEY_PERIOD          = 0x2E,
+  KEY_SLASH           = 0x2F,
 
-  ESC = 0x1B,
+  KEY_0               = 0X30,
+  KEY_1,
+  KEY_2,
+  KEY_3,
+  KEY_4,
+  KEY_5,
+  KEY_6,
+  KEY_7,
+  KEY_8,
+  KEY_9,
+
+  KEY_SEMICOLON       = 0X3A,
+  KEY_EQUAL           = 0X3B,
+
+  KEY_A               = 'A',
+  KEY_B               = 'B',
+  KEY_C               = 'C',
+  KEY_D               = 'D',
+  KEY_E               = 'E',
+  KEY_F               = 'F',
+  KEY_G               = 'G',
+  KEY_H               = 'H',
+  KEY_I               = 'I',
+  KEY_J               = 'J',
+  KEY_K               = 'K',
+  KEY_L               = 'L',
+  KEY_M               = 'M',
+  KEY_N               = 'N',
+  KEY_O               = 'O',
+  KEY_P               = 'P',
+  KEY_Q               = 'Q',
+  KEY_R               = 'R',
+  KEY_S               = 'S',
+  KEY_T               = 'T',
+  KEY_U               = 'U',
+  KEY_V               = 'V',
+  KEY_W               = 'W',
+  KEY_X               = 'X',
+  KEY_Y               = 'Y',
+  KEY_Z               = 'Z',
+
+  KEY_LEFT_BRACKET    = 0x5B,
+  KEY_BACKSLASH       = 0x5C,
+  KEY_RIGHT_BRACKET   = 0x5D,
+  KEY_GRAVE_ACCENT    = 0x60,
+
+  KEY_UNKNOW          = 0xFF
   
-  // 0x20-0x7f: 7-bit ASCII characters
-  
-  ARROW_UP = 0x80,
-  ARROW_DOWN,
-  ARROW_LEFT,
-  ARROW_RIGHT,
-  
-  SHIFT = 0x90,
-  CONTROL,
+};
+
+enum KEY_MODS { /// Key modifier
+  MOD_SHIFT           = 0x02,
+  MOD_CTRL            = 0x04,
+  MOD_ALTGR           = 0x08,
 };
 
 enum KEY_COMMANDS {   /// Generic Keyboard commands
@@ -103,6 +161,8 @@ protected:
 
   bool e_ku_int;                  /// Enable KeyUp interrupt ?
   bool do_ku_int;                 /// Try to thorow KeyUp interrupt ?
+
+  byte_t mods;                    /// Actual modifiers being pressed. Set by buffer state
 
   /**
    * Address Handler that manages 3 registers

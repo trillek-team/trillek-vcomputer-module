@@ -201,6 +201,9 @@ int main(int argc, char* argv[]) {
           capture_keyboard = ! capture_keyboard;
 
         } else if (capture_keyboard && e.key.repeat == 0) {
+          auto k = vm::aux::SDL2KeyToRC3200(e.key.keysym.scancode);
+          keyb.PushKeyEvent( true, k);
+          /*
           auto k = e.key.keysym.sym;
           //std::printf("\tkey: '%c' %u\n", k, k);
           // Shit SDL! TODO Do a function that maps key to ascii
@@ -216,7 +219,7 @@ int main(int argc, char* argv[]) {
             keyb.PushKeyEvent( true, k);
           } else if (k == ' ' || k == 8 || k == 13) {
             keyb.PushKeyEvent( true, k);
-          }
+          } */
 
         } else {
           if (e.key.keysym.sym == SDLK_q ) {
@@ -240,6 +243,10 @@ int main(int argc, char* argv[]) {
 
       } else if (e.type == SDL_KEYUP) {
         if (capture_keyboard) {
+          auto k = vm::aux::SDL2KeyToRC3200(e.key.keysym.scancode);
+          keyb.PushKeyEvent( false, k);
+
+          /*
           auto k = e.key.keysym.sym;
           if (k >= 'a' && k <= 'z') {
             if (e.key.keysym.mod & (KMOD_SHIFT | KMOD_CAPS))
@@ -254,7 +261,7 @@ int main(int argc, char* argv[]) {
           } else if (k == ' ' || k == 8 || k == 13) {
             keyb.PushKeyEvent( false, k);
           }
-
+          */
         }
 
       }

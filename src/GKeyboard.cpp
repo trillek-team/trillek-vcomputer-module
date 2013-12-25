@@ -11,7 +11,7 @@
 namespace vm {
 namespace keyboard {
 
-GKeyboard::GKeyboard (dword_t j1, dword_t j2) : IDevice(j1, j2), k_status(0), e_kd_int(false), do_kd_int(false), e_ku_int(false), do_ku_int(false), reg_handler(this) {
+GKeyboard::GKeyboard (dword_t j1, dword_t j2) : IDevice(j1, j2), k_status(0), e_kd_int(false), do_kd_int(false), e_ku_int(false), do_ku_int(false), mods(0), reg_handler(this) {
   keybuffer.clear();
 }
 
@@ -41,7 +41,47 @@ std::vector<ram::AHandler*> GKeyboard::MemoryBlocks() const {
 
 void GKeyboard::PushKeyEvent (bool keydown, byte_t scancode) {
   if (keybuffer.size() < BSIZE ) {
+   
+    // Stores the modifiers
+    if (keydown) { // KeyDown : Adds modifier
+      switch (scancode) {
+        case KEY_SHIFT :
+          mods |= MOD_SHIFT;
+          break;
+
+        case KEY_CONTROL :
+          mods |= MOD_CTRL;
+          break;
+        
+        case KEY_ALT_GR :
+          mods |= MOD_ALTGR;
+          break;
+
+        default:
+          break;
+      }
+    } else { // KeyUp : Removes modifier
+      switch (scancode) {
+        case KEY_SHIFT :
+          mods &= ~MOD_SHIFT;
+          break;
+
+        case KEY_CONTROL :
+          mods &= ~MOD_CTRL;
+          break;
+        
+        case KEY_ALT_GR :
+          mods &= ~MOD_ALTGR;
+          break;
+
+        default:
+          break;
+      }
+    }
+
     word_t k = scancode | ( keydown ? 0x100 : 0x000 );
+    k |= (mods << 8); // Appends the modifiers bits
+
     keybuffer.push_front(k);
     // Will try to throw a interrupt
     do_kd_int = e_kd_int && keydown;
