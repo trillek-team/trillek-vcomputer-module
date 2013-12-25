@@ -26,7 +26,7 @@ loop:
             IFEQ %r1, 0x08        ; Backspace Key
               RJMP delete
 
-            IFLE %r1, 0x20        ; Ignores not printable keys
+            IFL %r1, 0x20         ; Ignores not printable keys
               RJMP loop
               
             IFL %r1, 0x41
