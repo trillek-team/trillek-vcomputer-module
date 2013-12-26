@@ -34,6 +34,64 @@
     return (myNav.indexOf('msie') != -1) ? parseInt(myNav.split('msie')[1]) : false;
   }
 
+  /**
+   * Convert JS KeyCodes from evt.keyCode to RC3200 keyboard codes
+   */
+  function JSKeyCodeToRC3200 (key) {
+    switch (key) {
+      case 16: // Shift
+        return 0x0E; 
+      
+      case 17: // Control
+        return 0x0F; 
+    
+      case 18:  // Alt
+      case 225: // Alt Gr
+        return 0x06;
+
+      case 16: // Shift
+        return 0x0E; 
+    
+      case 37: // Left arrow
+        return 0x14; 
+    
+      case 38: // Up arrow
+        return 0x12; 
+    
+      case 39: // Right arrow
+        return 0x15; 
+    
+      case 40: // Down arrow
+        return 0x13; 
+    
+      case 45: // Insert
+        return 0x10; 
+    
+      case 46: // Delete
+        return 0x05; 
+  
+      case 219: // Left Bracket
+        return 0x5B;
+
+      case 221: // Right Bracket
+        return 0x5D;
+
+      case 222: // Apostrophe (' ")
+        return 0x27;
+
+      case 188: // Comma (, < )
+        return 0x2C;
+
+      case 190: // Period (. >)
+        return 0x2E;
+
+      // TODO More cases
+
+      default:
+        return key;
+    }
+    return key;
+  }
 
   var vm = new Module.VirtualComputer(128*1024);
   var cda = new Module.CDA(0,0);
@@ -598,7 +656,7 @@
       if (evt.repeat)
         return false; // Stops anoying repeat
       
-      var k = evt.keyCode;  // Note this gets scancodes !!!
+      /*var k = evt.keyCode;  // Note this gets scancodes !!!
       if (k == 16) // Shift key
         keyb.shift_key = true;
       
@@ -606,8 +664,8 @@
         keyb.caps_lock = ! keyb.caps_lock;
       var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
       if (! uppercase && (k >= 65 && k <= 90 )) // Undercase the scan codes
-        k = k +32;
-
+        k = k +32;*/
+      var k = JSKeyCodeToRC3200(evt.keyCode);
       key.PushKeyEvent (true, k);
     }
     return false;
@@ -616,15 +674,15 @@
   $(document).on('keyup', function (evt) {
     if (running) {
       evt.preventDefault();
-      
+      /*
       var k = evt.keyCode;
       if (k == 16) // Shift key
         keyb.shift_key = false;
 
       var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
       if (! uppercase && (k >= 65 && k <= 90 ))
-        k = k +32;
-      
+        k = k +32;*/
+      var k = JSKeyCodeToRC3200(evt.keyCode);
       key.PushKeyEvent (false, k);
     }
     return false;

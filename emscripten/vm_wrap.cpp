@@ -83,18 +83,20 @@ EMSCRIPTEN_BINDINGS(rc3200_vm) {
       .function("PushKeyEvent",  &vm::keyboard::GKeyboard::PushKeyEvent)
       ;
 
-    enum_<vm::keyboard::SCANCODES>("SCANCODES")
-      .value("BACKSPACE", vm::keyboard::BACKSPACE)
-      .value("RETURN", vm::keyboard::RETURN)
-      .value("INSERT", vm::keyboard::INSERT)
-      .value("DELETE", vm::keyboard::DELETE)
-      .value("ESC", vm::keyboard::ESC)
-      .value("ARROW_UP", vm::keyboard::ARROW_UP)
-      .value("ARROW_DOWN", vm::keyboard::ARROW_DOWN)
-      .value("ARROW_LEFT", vm::keyboard::ARROW_LEFT)
-      .value("ARROW_RIGHT", vm::keyboard::ARROW_RIGHT)
-      .value("SHIFT", vm::keyboard::SHIFT)
-      .value("CONTROL", vm::keyboard::CONTROL)
+    enum_<vm::keyboard::KEYCODES>("KEYCODES")
+      .value("BACKSPACE",   vm::keyboard::KEY_BACKSPACE)
+      .value("RETURN",      vm::keyboard::KEY_RETURN)
+      .value("INSERT",      vm::keyboard::KEY_INSERT)
+      .value("DELETE",      vm::keyboard::KEY_DELETE)
+      .value("ESC",         vm::keyboard::KEY_ESC)
+      .value("ARROW_UP",    vm::keyboard::KEY_ARROW_UP)
+      .value("ARROW_DOWN",  vm::keyboard::KEY_ARROW_DOWN)
+      .value("ARROW_LEFT",  vm::keyboard::KEY_ARROW_LEFT)
+      .value("ARROW_RIGHT", vm::keyboard::KEY_ARROW_RIGHT)
+      .value("SHIFT",       vm::keyboard::KEY_SHIFT)
+      .value("ALT_GR",      vm::keyboard::KEY_ALT_GR)
+      .value("CONTROL",     vm::keyboard::KEY_CONTROL)
+      .value("UNKNOW",      vm::keyboard::KEY_UNKNOW)
       ;
       
 }
