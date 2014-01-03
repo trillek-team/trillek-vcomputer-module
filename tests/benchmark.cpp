@@ -14,10 +14,6 @@
 #include <chrono>
 
 
-void print_regs(const vm::cpu::CpuState& state);
-void print_pc(const vm::cpu::CpuState& state, const vm::ram::Mem& ram);
-void print_stack(const vm::cpu::CpuState& state, const vm::ram::Mem& ram);
-
 int main(int argc, char* argv[])
 {
     using namespace vm;
@@ -76,39 +72,39 @@ int main(int argc, char* argv[])
     }
     
     std::cout << "Running " << N_CPUS << " CPUs !\n";
-    unsigned ticks = 2000;
+    unsigned ticks = 10000;
     unsigned long ticks_count = 0;
 
     using namespace std::chrono;
     auto clock = high_resolution_clock::now();
     double delta;
 
-    while ( 1) {
+    auto oldClock = clock;
+    clock = high_resolution_clock::now();
+    delta = duration_cast<microseconds>(clock - oldClock).count();
+    
+		while ( 1) {
         
         for (auto i=0; i< N_CPUS; i++)
             vm[i].Tick(ticks);
         
         ticks_count += ticks;
 
-        auto oldClock = clock;
-        clock = high_resolution_clock::now();
-        if (ticks <= 0) // Compensates if is too quick
-            delta += duration_cast<nanoseconds>(clock - oldClock).count();
-        else
-            delta = duration_cast<nanoseconds>(clock - oldClock).count();
-
-        //ticks = delta/100.0f + 0.5f; // Rounding bug correction
+				auto oldClock = clock;
+				clock = high_resolution_clock::now();
+				delta = duration_cast<microseconds>(clock - oldClock).count();
 
 
         // Speed info
-        if (ticks_count > 500000) {
-            std::cout << "Running " << ticks << " cycles in " << delta << " nS"
+        if (ticks_count > 800000) {
+            std::cout << "Running " << ticks << " cycles in " << delta << " uS"
                       << " Speed of " 
-                      << 100.0f * (((ticks * 1000000000.0) / vm[0].Clock()) / delta)
+											<< 100.0f * (((ticks * 1000000.0) / vm[0].Clock()) / delta)
                       << "% \n";
             std::cout << std::endl;
-            ticks_count -= 500000;
+            ticks_count -= 800000;
         }
+				//ticks = (vm[0].Clock() * delta * 0.000001) + 0.5f; // Rounding bug in VS
 
     }
 

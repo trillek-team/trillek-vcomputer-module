@@ -288,13 +288,13 @@ int main(int argc, char* argv[]) {
 
 
     // Speed info
-    if (!debug && ticks_count > 100000) {
-      std::cout << "Running " << ticks << " cycles in " << delta << " nS"
+    if (!debug && ticks_count > 200000) {
+      std::cout << "Running " << ticks << " cycles in " << delta << " uS"
         << " Speed of " 
         << 100.0f * (((ticks * 1000000.0) / vm.Clock()) / delta)
         << "% \n";
       std::cout << std::endl;
-      ticks_count -= 100000;
+      ticks_count -= 200000;
     }
 
 
