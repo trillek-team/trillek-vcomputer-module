@@ -1,9 +1,9 @@
-RC3200 Computer Virtual Machine Lib
+TR3200 Computer Virtual Machine Lib
 ===================================
 
 Using these [specs](https://github.com/Zardoz89/Trillek-Computer)
 
-This repo is composed by the RC3200-VM libs and some extra tools. The tools includes a program that loads a binary file to a VM ROM and executes it.
+This repo is composed by the TR3200-VM libs and some extra tools. The tools includes a program that loads a binary file to a VM ROM and executes it.
 
 COMPILING
 ---------
@@ -14,7 +14,7 @@ Actually I'm using CMake and C++ 11.
     cmake ..
     make
 
-This will only generate the static and dynamic libs of the RC3200-VM libs.
+This will only generate the static and dynamic libs of the TR3200-VM libs.
 
 If you wish to compile the tools, then you should use **"cmake -DBUILD_tools=True .."**
 
@@ -28,7 +28,10 @@ Plus you can control if you wish release or debug building using **"-DCMAKE_BUIL
   cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Platform/Emscripten.cmake -DEMSCRIPTEN_ROOT_PATH=/usr/bin/ ..
   make
   
-Include vm_wrap.js inside a HTML page or other javascript.
+Include vm_wrap.js inside a HTML page or other javascript. A example webpage will be copy to build dir. Also, you can
+try it in (cpu.zardoz.es)[http://cpu.zardoz.es]
+
+NOTE : Depending how do you install Emscripten, you will need to change the -DEMSCRIPTEN_ROOT_PATH value.
 
 WHAT IT DOES ACTUALLY
 ------------------
@@ -36,7 +39,7 @@ WHAT IT DOES ACTUALLY
 
 #### vm
 
-Is a program that uses RC3200-VM lib to run a RC3200 emulation. Can run in step mode or in "run mode" where executes all the program without stopping. Needs C++ 11 std::chrono compilance for timings; SDL2 + GLFW + GLM + OpenGL 3.1 is needed if you desire to see the virtual screen.
+Is a program that uses TR3200-VM lib to run a RC3200 emulation. Can run in step mode or in "run mode" where executes all the program without stopping. Needs C++ 11 std::chrono compilance for timings; SDL2 + GLFW + GLM + OpenGL 3.1 is needed if you desire to see the virtual screen.
 
 - Can load a little endian binary file with a program. Has a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
 - Step mode working with a on-line disassembler. Each time that you press a
@@ -48,10 +51,10 @@ Is a program that uses RC3200-VM lib to run a RC3200 emulation. Can run in step 
 
 #### benchmark
 
-Is a program that run a quick and dirty benchmark to measure the performance of the RC3200-VM lib. Needs C++ 11 std::chrono compilance for timings.
+Is a program that run a quick and dirty benchmark to measure the performance of the TR3200-VM lib. Needs C++ 11 std::chrono compilance for timings.
 
 - Can load a little endian binary file with a program. Has a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
-- Trys to execute 1000 RC3200 CPUs in a single thread at what your computer can give. It does not enforce a particular speed, but it does compare the real speed against a CPU speed of 100KHz. Only stops by doing 'Ctrl+C'.
+- Trys to execute 1000 TR3200 CPUs in a single thread at what your computer can give. It does not enforce a particular speed, but it does compare the real speed against a CPU speed of 100KHz. Only stops by doing 'Ctrl+C'.
 
 #### pbm2font
 
@@ -75,15 +78,15 @@ Example image of text mode :
 
 HOW I CAN CREATE PROGRAMS ?
 ---------------------------
-Actually you can use <a href="https://github.com/Meisaka/WaveAsm" target="_blank">Meisaka's WaveAsm</a> to generate RC3200 machine code.
+Actually you can use <a href="https://github.com/Meisaka/WaveAsm" target="_blank">Meisaka's WaveAsm</a> to generate TR3200 machine code.
 
-ADJUNT RC3200 ASM PROGRAMS
+ADJUNT TR3200 ASM PROGRAMS
 --------------------------
-There is some RC3200 ASM programs, source code and binary files, in /asm directory. Actually are :
+There is some TR3200 ASM programs, source code and binary files, in /asm directory. Actually are :
 
 - hwm.asm : List the number of attached devices and display his enumeration information
 - hello.asm : Hello world
-- test.asm : Some tests of RC3200 compliance.
+- test.asm : Some tests of TR3200 compliance.
 - type.asm : Basic type program
 - clock.asm : Basic clock that prints hours minutes seconds in hexadecimal, and uses PIT TMR0 interrupt plus sleeps waiting it.
 
