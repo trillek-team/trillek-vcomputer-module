@@ -9,7 +9,7 @@ add_executable( vm
   )
 
 include_directories( vm
-  ${RC3200_INCLUDE_DIRS}
+  ${TR3200_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
   ${GLEW_INCLUDE_DIR}
   ${GLM_INCLUDE_DIR}
@@ -17,7 +17,7 @@ include_directories( vm
   )
 
 target_link_libraries( vm
-  RC3200_lib_static
+  TR3200_lib_static
   ${OPENGL_LIBRARIES}
   ${GLEW_LIBRARIES}
   ${GLM_LIBRARIES}
@@ -30,5 +30,5 @@ add_executable( pbm2font
   )
 
 include_directories( pbm2font
-  ${RC3200_INCLUDE_DIRS}
+  ${TR3200_INCLUDE_DIRS}
   )

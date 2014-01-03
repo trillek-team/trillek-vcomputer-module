@@ -1,32 +1,32 @@
 cmake_minimum_required(VERSION 2.6)
 
 
-if (RC3200_SUB_PROJECT)
-  message ("Setting SRC and INCLUDE for RC3200")
+if (TR3200_SUB_PROJECT)
+  message ("Setting SRC and INCLUDE for TR3200")
 
   # Include dirs
-  set(RC3200_INCLUDE_DIRS 
+  set(TR3200_INCLUDE_DIRS 
     "${CMAKE_CURRENT_SOURCE_DIR}/include/"
     PARENT_SCOPE
     )
 
   # Source dirs
-  file(GLOB RC3200_SRC_ 
+  file(GLOB TR3200_SRC_ 
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" 
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
     )
 
-  set(RC3200_SRC
-    ${RC3200_SRC_}
+  set(TR3200_SRC
+    ${TR3200_SRC_}
     PARENT_SCOPE
     )
 
-else (RC3200_SUB_PROJECT)
+else (TR3200_SUB_PROJECT)
 
-  project(RC3200)
+  project(TR3200)
 
   set(PACKAGE_BUGREPORT "luis.panader@gmail.com")
-  set(PACKAGE_NAME "RC3200_vm")
+  set(PACKAGE_NAME "TR3200_vm")
   set(PACKAGE_VERSION "0.1")
   set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
   set(PACKAGE_TARNAME "${PACKAGE_NAME}")
@@ -39,7 +39,7 @@ else (RC3200_SUB_PROJECT)
   endif (CMAKE_BUILD_TYPE STREQUAL "Release")
 
   # Set the directory where to find FindSLD2.cmake
-  set(CMAKE_MODULE_PATH ${RC3200_SOURCE_DIR}/cmake)
+  set(CMAKE_MODULE_PATH ${TR3200_SOURCE_DIR}/cmake)
 
   # Outpit the compiler ID.
   message("Compiler ID: " ${CMAKE_CXX_COMPILER_ID})
@@ -47,13 +47,13 @@ else (RC3200_SUB_PROJECT)
   set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
   # Include dirs
-  set(RC3200_INCLUDE_DIRS
+  set(TR3200_INCLUDE_DIRS
     ${PROJECT_BINARY_DIR}
-    ${RC3200_SOURCE_DIR}/include
+    ${TR3200_SOURCE_DIR}/include
     )
 
   # Source dirs
-  file(GLOB RC3200_SRC 
+  file(GLOB TR3200_SRC 
     "src/*.cpp" 
     "include/*.hpp" 
     )
@@ -73,23 +73,23 @@ else (RC3200_SUB_PROJECT)
     include(Platform)
 
     message( "Procesing Source Code - Build libraries")
-    # RC3200 VM core lib
-    add_library( RC3200_lib
+    # TR3200 VM core lib
+    add_library( TR3200_lib
       SHARED
-      ${RC3200_SRC}
+      ${TR3200_SRC}
       )
 
-    add_library( RC3200_lib_static
+    add_library( TR3200_lib_static
       STATIC
-      ${RC3200_SRC}
+      ${TR3200_SRC}
       )
 
-    include_directories(RC3200_lib
-      ${RC3200_INCLUDE_DIRS}
+    include_directories(TR3200_lib
+      ${TR3200_INCLUDE_DIRS}
       )
 
-    include_directories(RC3200_lib_static
-      ${RC3200_INCLUDE_DIRS}
+    include_directories(TR3200_lib_static
+      ${TR3200_INCLUDE_DIRS}
       )
 
     if(BUILD_tools OR BUILD_tests)
@@ -139,5 +139,5 @@ else (RC3200_SUB_PROJECT)
 
   endif (EMSCRIPTEN)
 
-endif (RC3200_SUB_PROJECT)
+endif (TR3200_SUB_PROJECT)
 
