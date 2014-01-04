@@ -65,7 +65,8 @@ namespace vm {
 		void RC3200::Tick (unsigned n) {
 			assert (n > 0);
 
-			for (unsigned i=0; i < n; i++) {
+			unsigned i = 0;
+			do {
 				if (!state.sleeping) {
 					if (state.wait_cycles <= 0 )  {
 						RealStep();
@@ -77,7 +78,8 @@ namespace vm {
 				}
 
 				tot_cycles++;
-			}
+				i++;
+			} while (i < n);
 		}
 
 		bool RC3200::ThrowInterrupt (dword_t msg) {
@@ -784,6 +786,7 @@ namespace vm {
 						if (literal && IS_BIG_LITERAL_L22(rn) )
 							state.pc +=4;
 					}
+
 				} else if (IS_PAR2(inst) && IS_BRANCH(inst)) {
 					state.skiping = true; // Chain IFxx
 				}
