@@ -9,7 +9,7 @@
 #define __IDEVICE_HPP__ 1
 
 #include "Types.hpp"
-#include "Cpu.hpp"
+#include "TR3200.hpp"
 
 #include <memory>
 #include <vector>

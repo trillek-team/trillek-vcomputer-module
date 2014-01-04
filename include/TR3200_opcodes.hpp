@@ -7,56 +7,8 @@
 #ifndef __TR3200_OPCODES__
 #define __TR3200_OPCODES__ 1
 
-// Alias to BP and SP registers
-#define BP (30)
-#define SP (31)
-
-// Alias to Ym Flags and IA registers
-#define RY      state.r[27]
-#define IA      state.r[28]
-#define FLAGS   state.r[29]
-
-
-/// Instrucction types
-#define IS_PAR3(x)  (((x) & 0xC0000000) == 0x40000000 )
-#define IS_PAR2(x)  (((x) & 0x80000000) == 0x80000000 )
-#define IS_PAR1(x)  (((x) & 0xE0000000) == 0x20000000 )
-#define IS_NP(x)    (((x) & 0xE0000000) == 0x00000000 )
-
-/// Instrucction sub-type
-#define IS_BRANCH(x)    (((x) & 0xE0000000) == 0xA0000000 )
-
-/// Uses a Literal value ?
-#define HAVE_LITERAL(x)     (((x) & 0x00800000) != 0)
-
-/// Extract operands
-#define GRD(x)              ( (x)       & 0x1F) 
-#define GRS(x)              (((x) >> 5) & 0x1F) 
-#define GRN(x)              (((x) >> 10)& 0x1F) 
-
-#define LIT13(x)            (((x) >> 10)& 0x1FFF) 
-#define LIT18(x)            (((x) >> 5) & 0x3FFFF) 
-#define LIT22(x)            ( (x)       & 0x7FFFFF) 
-
-/// Uses next dword as literal
-#define IS_BIG_LITERAL_L13(x)   ((x) == 0x1000)
-#define IS_BIG_LITERAL_L18(x)   ((x) == 0x20000)
-#define IS_BIG_LITERAL_L22(x)   ((x) == 0x400000)
-
-// Macros for ALU operations
-#define CARRY_BIT(x)        ((((x) >> 32) & 0x1) == 1)
-#define DW_SIGN_BIT(x)      ( ((x) >> 31) & 0x1)
-#define W_SIGN_BIT(x)       ( ((x) >> 15) & 0x1)
-#define B_SIGN_BIT(x)       ( ((x) >> 7)  & 0x1)
-
-// Extract sign of Literal Operator
-#define O13_SIGN_BIT(x)     (((x) >> 12)  & 0x1)
-#define O18_SIGN_BIT(x)     (((x) >> 17)  & 0x1)
-#define O22_SIGN_BIT(x)     (((x) >> 21)  & 0x1)
-
 namespace vm {
 	namespace cpu {
-
 
 		// 3 Parameters OpCodes *******************************************************
 

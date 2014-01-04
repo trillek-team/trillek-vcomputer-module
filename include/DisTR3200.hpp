@@ -1,12 +1,12 @@
 #pragma once
 /**
- * TR3200 VM - dis_rc3200.hpp
+ * TR3200 VM - DisTR3200.hpp
  * On-Line dissambler of VM ram
  */
 #ifndef __DIS_TR3200_HPP__
 #define __DIS_TR3200_HPP__ 1
 
-#include "Cpu.hpp"
+#include "TR3200.hpp"
 
 #include <string>
 

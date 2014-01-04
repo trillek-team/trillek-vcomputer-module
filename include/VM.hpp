@@ -10,7 +10,7 @@
 
 // VM Core
 #include "Ram.hpp"
-#include "Cpu.hpp"
+#include "TR3200.hpp"
 
 #include "IDevice.hpp"
 #include "VComputer.hpp"
