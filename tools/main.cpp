@@ -270,9 +270,9 @@ int main(int argc, char* argv[]) {
 
     if (debug) {
       print_pc(vm.CPUState(), vm.RAM());
-      if (vm.CPUState().skiping)
+      if (vm.Skiping())
         std::printf("Skiping!\n");
-      if (vm.CPUState().sleeping)
+      if (vm.Sleeping())
         std::printf("ZZZZzzzz...\n");
     }
 
@@ -299,7 +299,7 @@ int main(int argc, char* argv[]) {
 
 
     if (debug) {
-      std::printf("Takes %u cycles\n", vm.CPUState().wait_cycles);
+      std::printf("Takes %u cycles\n", vm.WaitCycles());
       print_regs(vm.CPUState());
       print_stack(vm.CPUState(), vm.RAM());
       c = std::getchar();

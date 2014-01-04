@@ -14,89 +14,26 @@
 namespace vm {
 	namespace cpu {
 
-		RC3200::RC3200(size_t ram_size, unsigned clock) : ram(ram_size), tot_cycles(0), clock(clock) {
-			assert(ram_size > 0);
-
-			Reset();    
+		RC3200::RC3200(size_t ram_size, unsigned clock) : ICpu(ram_size, clock) { 
 		}
 
 		RC3200::~RC3200() {
 		}
 
-		unsigned RC3200::Clock() const {
-			return this->clock;;
-		}
-
-		std::size_t RC3200::TotalCycles () const {
-			return tot_cycles;
-		}
-
 		void RC3200::Reset() {
 			std::fill_n(state.r, TR3200_NGPRS, 0);
-
 			state.pc = 0;
-
-			state.wait_cycles = 0;
-
-			state.skiping = false;
-			state.sleeping = false;
-
-			state.interrupt = false;
-			state.int_msg = 0;
-			state.iacq = false;
-
 			state.step_mode = false;
 
-			ram.Reset();
+			ICpu::Reset();
 		}
 
-		unsigned RC3200::Step() {
-			if (!state.sleeping) {
-				auto cyc = RealStep();
-				tot_cycles += cyc;
-				return cyc;
-			} else {
-				tot_cycles++;
-				ProcessInterrupt();
-				return 1;
-			}
-		}
-
-		void RC3200::Tick (unsigned n) {
-			assert (n > 0);
-
-			unsigned i = 0;
-			do {
-				if (!state.sleeping) {
-					if (state.wait_cycles <= 0 )  {
-						RealStep();
-					}
-
-					state.wait_cycles--;
-				} else {
-					ProcessInterrupt();
-				}
-
-				tot_cycles++;
-				i++;
-			} while (i < n);
-		}
-
-		bool RC3200::ThrowInterrupt (dword_t msg) {
-			if (!state.iacq && GET_EI(FLAGS)) {
-				// The CPU accepts a new interrupt
-				state.interrupt = true;
-				state.int_msg = msg;
-				return true;
-			}
-			return false;
-		}
 		/**
 		 * Executes a RC3200 instruction
 		 * @return Number of cycles that takes to do it
 		 */
 		unsigned RC3200::RealStep() {
-			state.wait_cycles = 0;
+			wait_cycles = 0;
 
 			dword_t inst = ram.RD(state.pc);
 			state.pc +=4;
@@ -110,12 +47,12 @@ namespace vm {
 			rs = GRS(inst);
 
 			// Check if we are skiping a instruction
-			if (! state.skiping) {
+			if (! skiping) {
 
 				// Check the type of instruction
 				if (IS_PAR3(inst)) {
 					// 3 parameter instruction ******************************************** 
-					state.wait_cycles += 3;
+					wait_cycles += 3;
 					opcode = (inst >> 24) & 0x3F;
 
 					// Fetch RN and RS parameters
@@ -124,7 +61,7 @@ namespace vm {
 						if (IS_BIG_LITERAL_L13(rn)) { // Next dword is literal value 
 							rn = ram.RD(state.pc);
 							state.pc +=4;
-							state.wait_cycles++;
+							wait_cycles++;
 						} else if (O13_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
 							rn |= 0xFFFFF000;
 						}
@@ -341,7 +278,7 @@ namespace vm {
 																	break;
 
 						case P3_OPCODE::MUL :
-																	state.wait_cycles += 17;
+																	wait_cycles += 17;
 																	ltmp = ((qword_t)rs) * rn;
 																	RY = (dword_t)(ltmp >> 32);      // 32bit MSB of the 64 bit result
 																	state.r[rd] = (dword_t)ltmp;     // 32bit LSB of the 64 bit result
@@ -350,7 +287,7 @@ namespace vm {
 																	break;
 
 						case P3_OPCODE::SMUL : {
-																		 state.wait_cycles += 27;
+																		 wait_cycles += 27;
 																		 sqword_t lword = (sqword_t)rs;
 																		 lword *= rn;
 																		 RY = (dword_t)(lword >> 32);     // 32bit MSB of the 64 bit result
@@ -361,7 +298,7 @@ namespace vm {
 																	 }
 
 						case P3_OPCODE::DIV :
-																	 state.wait_cycles += 27;
+																	 wait_cycles += 27;
 																	 if (rn != 0) {
 																		 state.r[rd] = rs / rn;
 																		 RY = rs % rn; // Compiler should optimize this and use a single instruction
@@ -377,7 +314,7 @@ namespace vm {
 
 
 						case P3_OPCODE::SDIV : {
-																		 state.wait_cycles += 37;
+																		 wait_cycles += 37;
 																		 if (rn != 0) {
 																			 sdword_t srs = rs;
 																			 sdword_t srn = rn;
@@ -433,7 +370,7 @@ namespace vm {
 				} else if (IS_PAR2(inst)) {
 					// 2 parameter instrucction *******************************************
 
-					state.wait_cycles += 3;
+					wait_cycles += 3;
 					opcode = (inst >> 24) & 0x7F;
 
 					// Fetch Rn operand
@@ -442,7 +379,7 @@ namespace vm {
 						if (IS_BIG_LITERAL_L18(rn)) { // Next dword is literal value 
 							rn = ram.RD(state.pc);
 							state.pc +=4;
-							state.wait_cycles++;
+							wait_cycles++;
 						} else if (O18_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
 							rn |= 0xFFFC0000;
 						}
@@ -515,22 +452,22 @@ namespace vm {
 
 						case P2_OPCODE::IFEQ :
 							if (!(state.r[rd] == rn)) {
-								state.skiping = true;
-								state.wait_cycles++;
+								skiping = true;
+								wait_cycles++;
 							}
 							break;
 
 						case P2_OPCODE::IFNEQ :
 							if (!(state.r[rd] != rn)) {
-								state.skiping = true;
-								state.wait_cycles++;
+								skiping = true;
+								wait_cycles++;
 							}
 							break;
 
 						case P2_OPCODE::IFL :
 							if (!(state.r[rd] < rn)) {
-								state.skiping = true;
-								state.wait_cycles++;
+								skiping = true;
+								wait_cycles++;
 							}
 							break;
 
@@ -538,16 +475,16 @@ namespace vm {
 																		 sdword_t srd = state.r[rd];
 																		 sdword_t srn = rn;
 																		 if (!(srd < srn)) {
-																			 state.skiping = true;
-																			 state.wait_cycles++;
+																			 skiping = true;
+																			 wait_cycles++;
 																		 }
 																		 break;
 																	 }
 
 						case P2_OPCODE::IFLE :
 																	 if (!(state.r[rd] <= rn)) {
-																		 state.skiping = true;
-																		 state.wait_cycles++;
+																		 skiping = true;
+																		 wait_cycles++;
 																	 }
 																	 break;
 
@@ -555,23 +492,23 @@ namespace vm {
 																			sdword_t srd = state.r[rd];
 																			sdword_t srn = rn;
 																			if (!(srd <= srn)) {
-																				state.skiping = true;
-																				state.wait_cycles++;
+																				skiping = true;
+																				wait_cycles++;
 																			}
 																			break;
 																		}
 
 						case P2_OPCODE::IFBITS :
 																		if (! ((state.r[rd] & rn) != 0)) {
-																			state.skiping = true;
-																			state.wait_cycles++;
+																			skiping = true;
+																			wait_cycles++;
 																		}
 																		break;
 
 						case P2_OPCODE::IFCLEAR :
 																		if (! ((state.r[rd] & rn) == 0)) {
-																			state.skiping = true;
-																			state.wait_cycles++;
+																			skiping = true;
+																			wait_cycles++;
 																		}
 																		break;
 
@@ -580,7 +517,7 @@ namespace vm {
 																		break;
 
 						case P2_OPCODE::CALL2 : // Absolute call
-																		state.wait_cycles++;
+																		wait_cycles++;
 																		// push to the stack register pc value
 																		ram.WB(--state.r[SP], state.pc >> 24);
 																		ram.WB(--state.r[SP], state.pc >> 16);
@@ -597,7 +534,7 @@ namespace vm {
 				} else if (IS_PAR1(inst)) {
 					// 1 parameter instrucction *******************************************
 
-					state.wait_cycles += 3;
+					wait_cycles += 3;
 					opcode = (inst >> 24) & 0x1F;
 
 					// Fetch Rn operand
@@ -606,7 +543,7 @@ namespace vm {
 						if (IS_BIG_LITERAL_L22(rn)) { // Next dword is literal value 
 							rn = ram.RD(state.pc);
 							state.pc +=4;
-							state.wait_cycles++;
+							wait_cycles++;
 						} else if (O22_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
 							rn |= 0xFF800000;
 						}
@@ -664,7 +601,7 @@ namespace vm {
 							break;
 
 						case P1_OPCODE::CALL :  // Absolute call
-							state.wait_cycles++;
+							wait_cycles++;
 							// push to the stack register pc value
 							ram.WB(--state.r[SP], state.pc >> 24);
 							ram.WB(--state.r[SP], state.pc >> 16);
@@ -682,7 +619,7 @@ namespace vm {
 							break;
 
 						case P1_OPCODE::RCALL : // Relative call
-							state.wait_cycles++;
+							wait_cycles++;
 							// push to the stack register pc value
 							ram.WB(--state.r[SP], state.pc >> 24);
 							ram.WB(--state.r[SP], state.pc >> 16);
@@ -695,7 +632,7 @@ namespace vm {
 
 
 						case P1_OPCODE::INT : // Software Interrupt
-							state.wait_cycles += 3;
+							wait_cycles += 3;
 							if (!literal)
 								rn = state.r[rn]; 
 							ThrowInterrupt(rn);
@@ -711,12 +648,12 @@ namespace vm {
 
 					switch (opcode) {
 						case NP_OPCODE::SLEEP :
-							state.wait_cycles = 1;
-							state.sleeping = true;
+							wait_cycles = 1;
+							sleeping = true;
 							break;
 
 						case NP_OPCODE::RET:
-							state.wait_cycles = 4;
+							wait_cycles = 4;
 							// Pop PC
 							state.pc = ram.RB(state.r[SP]++);
 							state.pc |= ram.RB(state.r[SP]++) << 8;
@@ -726,7 +663,7 @@ namespace vm {
 							break;
 
 						case NP_OPCODE::RFI :
-							state.wait_cycles = 6;
+							wait_cycles = 6;
 
 							// Pop PC
 							state.pc = ram.RB(state.r[SP]++);
@@ -742,13 +679,13 @@ namespace vm {
 							state.r[0] |= ram.RB(state.r[SP]++) << 24;
 
 							SET_OFF_IF(FLAGS);
-							state.iacq = false;
-							state.interrupt = false; // We now not have a interrupt
+							iacq = false;
+							interrupt = false; // We now not have a interrupt
 							break;
 
 						default:
 							// Unknow OpCode -> Acts like a NOP 
-							state.wait_cycles = 1;
+							wait_cycles = 1;
 
 					}
 				}
@@ -760,11 +697,11 @@ namespace vm {
 				ProcessInterrupt(); // Here we check if a interrupt happens
 
 
-				return state.wait_cycles;
+				return wait_cycles;
 
 			} else {
-				state.wait_cycles += 1;
-				state.skiping = false;
+				wait_cycles += 1;
+				skiping = false;
 
 				// See what kind of instruction is to know how many should
 				// increment PC, and remove skiping flag if is not a branch
@@ -776,7 +713,7 @@ namespace vm {
 							state.pc +=4;
 					} else if (IS_PAR2(inst)) {
 						// 2 parameter instruction
-						state.skiping = IS_BRANCH(inst); // Chain IFxx
+						skiping = IS_BRANCH(inst); // Chain IFxx
 						rn = LIT18(inst);
 						if (literal && IS_BIG_LITERAL_L18(rn) )
 							state.pc +=4;
@@ -788,10 +725,10 @@ namespace vm {
 					}
 
 				} else if (IS_PAR2(inst) && IS_BRANCH(inst)) {
-					state.skiping = true; // Chain IFxx
+					skiping = true; // Chain IFxx
 				}
 
-				return state.wait_cycles;
+				return wait_cycles;
 			}
 
 		}
@@ -800,14 +737,14 @@ namespace vm {
 		 * Check if there is an interrupt to be procesed
 		 */
 		void RC3200::ProcessInterrupt() {
-			if (GET_EI(FLAGS) && state.interrupt && !state.iacq) {
-				byte_t index = state.int_msg;
+			if (GET_EI(FLAGS) && interrupt && !iacq) {
+				byte_t index = int_msg;
 				dword_t addr = ram.RD(IA + index*4); // Get the address to jump from the Vector Table
 				if (addr == 0) { // Null entry, does nothing
-					state.interrupt = false;
+					interrupt = false;
 					return;
 				}
-				state.iacq = true;
+				iacq = true;
 
 				// push %r0
 				ram.WB(--state.r[SP], state.r[0] >> 24);
@@ -821,10 +758,10 @@ namespace vm {
 				ram.WB(--state.r[SP], state.pc >> 8);
 				ram.WB(--state.r[SP], state.pc); // Little Endian
 
-				state.r[0] = state.int_msg;
+				state.r[0] = int_msg;
 				state.pc = addr;
 				SET_ON_IF(FLAGS);
-				state.sleeping = false; // WakeUp! 
+				sleeping = false; // WakeUp! 
 			}
 		}
 

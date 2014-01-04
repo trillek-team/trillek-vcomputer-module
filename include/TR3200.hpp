@@ -9,8 +9,7 @@
 
 #include "VSFix.hpp"
 
-#include "Types.hpp"
-#include "Ram.hpp"
+#include "ICpu.hpp"
 #include "TR3200_opcodes.hpp"
 
 #include <vector>
@@ -26,16 +25,6 @@ namespace vm {
 		struct CpuState {
 			dword_t r[TR3200_NGPRS];      /// Registers
 			dword_t pc;             /// Program Counter 
-
-			dword_t int_msg;        /// Interrupt message
-
-			unsigned wait_cycles;   /// Number of cycles need to wait do realice a instruction
-
-			bool skiping;           /// Is skiping the next instruction
-			bool sleeping;          /// Is sleeping?
-
-			bool interrupt;         /// Is hapening an interrupt?
-			bool iacq;              /// IACQ signal
 
 			bool step_mode;         /// Is in step mode execution ?
 		};
@@ -86,8 +75,6 @@ namespace vm {
 #define O18_SIGN_BIT(x)     (((x) >> 17)  & 0x1)
 #define O22_SIGN_BIT(x)     (((x) >> 21)  & 0x1)
 
-
-
 		// Operation in Flags bits
 #define GET_CF(x)          ((x) & 0x1)
 #define SET_ON_CF(x)       (x |= 0x1)
@@ -114,7 +101,7 @@ namespace vm {
 #define SET_ON_ESS(x)      (x |= 0x200)
 #define SET_OFF_ESS(x)     (x &= 0xFFFFFDFF)
 
-		class RC3200 {
+		class RC3200 : public ICpu {
 			public:
 
 				/**
@@ -122,36 +109,14 @@ namespace vm {
 				 * @param ram_size Size of the Ram in BYTES
 				 * @param clock CPU clock speed
 				 */
-				RC3200(size_t ram_size = 128*1024, unsigned clock = 100000 );
+				RC3200(size_t ram_size = 128*1024, unsigned clock = 100000);
 
 				virtual ~RC3200();
 
 				/**
-				 * Return the actual CPU model clock speed
-				 */
-				virtual unsigned Clock() const;
-
-				/**
-				 * Number of CPU cycles executed
-				 */
-				std::size_t TotalCycles () const;
-
-				/**
 				 * Resets the CPU state
 				 */
-				void Reset();
-
-				/**
-				 * Executes a singe instrucction of the CPU
-				 * @return Number of CPU cycles used
-				 */
-				unsigned Step();
-
-				/**
-				 * Executes one or more CPU clock cycles
-				 * @param n Number of cycles (default=1)
-				 */
-				void Tick(unsigned n=1);
+				virtual void Reset();
 
 				/**
 				 * Return the actual CPU state
@@ -160,32 +125,20 @@ namespace vm {
 					return state;
 				}
 
-				/**
-				 * Throws a interrupt to the CPU
-				 * @param msg Interrupt message
-				 * @return True if the CPU accepts the interrupt
-				 */
-				bool ThrowInterrupt (dword_t msg);
-
-				ram::Mem ram;               /// Handles the RAM mapings / access 
-
 			protected:
 
 				CpuState state;             /// CPU actual state
-				std::size_t tot_cycles;     /// Total number of cpu cycles executed
-
-				unsigned clock;             /// CPU clock speed
 
 				/**
 				 * Does the real work of executing a instrucction
 				 * @param Numvber of cycles tha requires to execute an instrucction
 				 */
-				unsigned RealStep();
+				virtual unsigned RealStep();
 
 				/**
 				 * Process if an interrupt is waiting
 				 */
-				void ProcessInterrupt();
+				virtual void ProcessInterrupt();
 
 		};
 

@@ -81,6 +81,18 @@ public:
     return cpu.State();
   }
 
+	unsigned WaitCycles() const { 
+		return cpu.WaitCycles();
+	}
+
+	bool Skiping() const {
+		return cpu.Skiping();
+	}
+
+	bool Sleeping() const { 
+		return cpu.Sleeping();
+	}
+	
 
   /**
    * Returns the actual RAM image
