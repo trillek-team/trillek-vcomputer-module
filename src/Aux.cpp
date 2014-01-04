@@ -3,7 +3,8 @@
  * \file aux.cpp
  */
 
-#include "aux.hpp"
+#include "Aux.hpp"
+#include "VSFix.hpp"
 #include "GKeyboard.hpp"
 
 #include <fstream>
@@ -29,7 +30,7 @@ namespace vm {
     }
 
 
-  byte_t GLFWKeyToRC3200 (int key) {
+  byte_t GLFWKeyToTR3200 (int key) {
     switch (key) {
       case -1:
         return vm::keyboard::KEY_UNKNOW;
@@ -74,7 +75,7 @@ namespace vm {
     return vm::keyboard::KEY_UNKNOW;
   }
 
-  byte_t SDL2KeyToRC3200 (int key) {
+  byte_t SDL2KeyToTR3200 (int key) {
     switch (key) {
       case 0:
         return vm::keyboard::KEY_UNKNOW;

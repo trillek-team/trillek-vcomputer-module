@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
           capture_keyboard = ! capture_keyboard;
 
         } else if (capture_keyboard && e.key.repeat == 0) {
-          auto k = vm::aux::SDL2KeyToRC3200(e.key.keysym.scancode);
+          auto k = vm::aux::SDL2KeyToTR3200(e.key.keysym.scancode);
           keyb.PushKeyEvent( true, k);
           /*
           auto k = e.key.keysym.sym;
@@ -243,7 +243,7 @@ int main(int argc, char* argv[]) {
 
       } else if (e.type == SDL_KEYUP) {
         if (capture_keyboard) {
-          auto k = vm::aux::SDL2KeyToRC3200(e.key.keysym.scancode);
+          auto k = vm::aux::SDL2KeyToTR3200(e.key.keysym.scancode);
           keyb.PushKeyEvent( false, k);
 
           /*
@@ -483,7 +483,7 @@ void initSDL() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE); 
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-  pwin = SDL_CreateWindow("RC3200 VM", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+  pwin = SDL_CreateWindow("TR3200 VM", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
       sdl_width, sdl_height, SDL_WINDOW_OPENGL | sdl_other_flags);
 
   ogl_context = SDL_GL_CreateContext(pwin);

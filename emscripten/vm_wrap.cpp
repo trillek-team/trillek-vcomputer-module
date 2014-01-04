@@ -10,7 +10,7 @@ using namespace emscripten;
 // Wrapper functions
 
 vm::dword_t r_(vm::cpu::CpuState& arr, unsigned n) {
-  if (n < vm::cpu::N_GPRS) {
+  if (n < vm::cpu::TR3200_NGPRS) {
     return arr.r[n];
   }
   return -1;
@@ -44,7 +44,7 @@ std::string Disassembly_(vm::VirtualComputer& arr) {
   return vm::cpu::Disassembly(arr.RAM(), arr.CPUState().pc);
 }
 
-EMSCRIPTEN_BINDINGS(rc3200_vm) {
+EMSCRIPTEN_BINDINGS(tr3200_vm) {
     function("LoadROM",     &vm::aux::LoadROM);
     function("Register",    &r_);
     

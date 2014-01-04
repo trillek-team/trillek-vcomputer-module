@@ -4,6 +4,7 @@
  */
 
 #include "CDA.hpp"
+#include "VSFix.hpp"
 
 namespace vm {
 namespace cda {
@@ -17,7 +18,7 @@ CDA::~CDA() {
       delete[] buffer;
 }
 
-void CDA::Tick (cpu::RC3200& cpu, unsigned n, const double delta) {
+void CDA::Tick (cpu::TR3200& cpu, unsigned n, const double delta) {
   if (e_vsync && vsync_int) {
     auto ret = cpu.ThrowInterrupt(INT_MSG[this->Jmp1() &3]);
     if (ret) // If the CPU not accepts the interrupt, try again in the next tick

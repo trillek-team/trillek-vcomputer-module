@@ -126,7 +126,7 @@ public:
 
 private:
 
-  RC3200 cpu; /// Virtual CPU
+  TR3200 cpu; /// Virtual CPU
 
   IDevice* devices[MAX_N_DEVICES]; /// Devices atached to the virtual computer
   unsigned n_devices;

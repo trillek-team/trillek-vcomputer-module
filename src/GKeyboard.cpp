@@ -1,10 +1,11 @@
 /**
- * RC3200 VM - GKeyboard.cpp
+ * TR3200 VM - GKeyboard.cpp
  * Generic Keyboard device
  *
  */
 
 #include "GKeyboard.hpp"
+#include "VSFix.hpp"
 
 #include <cassert>
 
@@ -18,7 +19,7 @@ GKeyboard::GKeyboard (dword_t j1, dword_t j2) : IDevice(j1, j2), k_status(0), e_
 GKeyboard::~GKeyboard() {
 }
 
-void GKeyboard::Tick (cpu::RC3200& cpu, unsigned n, const double delta) {
+void GKeyboard::Tick (cpu::TR3200& cpu, unsigned n, const double delta) {
   if (e_kd_int && do_kd_int) { // Try to thorow KeyDown interrupt
     auto ret = cpu.ThrowInterrupt(INT_KDOWN_MSG[this->Jmp1() &3]);
     if (ret) // If the CPU not accepts the interrupt, try again in the next tick

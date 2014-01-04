@@ -21,14 +21,14 @@ namespace aux {
   unsigned LoadROM (const std::string& filename, vm::VirtualComputer& vcomp);
 
   /**
-   * Maps GLFW3 Key codes to RC3200 keycodes
+   * Maps GLFW3 Key codes to TR3200 keycodes
    */
-  byte_t GLFWKeyToRC3200 (int key);
+  byte_t GLFWKeyToTR3200 (int key);
 
   /**
-   * Maps SDL2 Scancodes to RC3200 keycodes
+   * Maps SDL2 Scancodes to TR3200 keycodes
    */
-  byte_t SDL2KeyToRC3200 (int key);
+  byte_t SDL2KeyToTR3200 (int key);
 
 } // end of namespace aux
 } // end of namespace vm

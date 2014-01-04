@@ -4,6 +4,7 @@
  */
 
 #include "TR3200.hpp"
+#include "VSFix.hpp"
 
 #include <iostream>
 #include <cstdio>
@@ -14,13 +15,13 @@
 namespace vm {
 	namespace cpu {
 
-		RC3200::RC3200(size_t ram_size, unsigned clock) : ICpu(ram_size, clock) { 
+		TR3200::TR3200(size_t ram_size, unsigned clock) : ICpu(ram_size, clock) { 
 		}
 
-		RC3200::~RC3200() {
+		TR3200::~TR3200() {
 		}
 
-		void RC3200::Reset() {
+		void TR3200::Reset() {
 			std::fill_n(state.r, TR3200_NGPRS, 0);
 			state.pc = 0;
 			state.step_mode = false;
@@ -29,10 +30,10 @@ namespace vm {
 		}
 
 		/**
-		 * Executes a RC3200 instruction
+		 * Executes a TR3200 instruction
 		 * @return Number of cycles that takes to do it
 		 */
-		unsigned RC3200::RealStep() {
+		unsigned TR3200::RealStep() {
 			wait_cycles = 0;
 
 			dword_t inst = ram.RD(state.pc);
@@ -736,7 +737,7 @@ namespace vm {
 		/**
 		 * Check if there is an interrupt to be procesed
 		 */
-		void RC3200::ProcessInterrupt() {
+		void TR3200::ProcessInterrupt() {
 			if (GET_EI(FLAGS) && interrupt && !iacq) {
 				byte_t index = int_msg;
 				dword_t addr = ram.RD(IA + index*4); // Get the address to jump from the Vector Table

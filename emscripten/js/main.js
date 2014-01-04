@@ -35,9 +35,9 @@
   }
 
   /**
-   * Convert JS KeyCodes from evt.keyCode to RC3200 keyboard codes
+   * Convert JS KeyCodes from evt.keyCode to TR3200 keyboard codes
    */
-  function JSKeyCodeToRC3200 (key) {
+  function JSKeyCodeToTR3200 (key) {
     switch (key) {
       case 16: // Shift
         return 0x0E; 
@@ -665,7 +665,7 @@
       var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
       if (! uppercase && (k >= 65 && k <= 90 )) // Undercase the scan codes
         k = k +32;*/
-      var k = JSKeyCodeToRC3200(evt.keyCode);
+      var k = JSKeyCodeToTR3200(evt.keyCode);
       key.PushKeyEvent (true, k);
     }
     return false;
@@ -682,7 +682,7 @@
       var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
       if (! uppercase && (k >= 65 && k <= 90 ))
         k = k +32;*/
-      var k = JSKeyCodeToRC3200(evt.keyCode);
+      var k = JSKeyCodeToTR3200(evt.keyCode);
       key.PushKeyEvent (false, k);
     }
     return false;
