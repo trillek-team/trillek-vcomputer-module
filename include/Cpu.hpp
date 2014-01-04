@@ -9,7 +9,7 @@
 
 #include "Types.hpp"
 #include "Ram.hpp"
-#include "rc3200_opcodes.hpp"
+#include "TR3200_opcodes.hpp"
 
 #include <vector>
 
