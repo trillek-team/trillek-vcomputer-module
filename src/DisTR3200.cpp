@@ -1,9 +1,10 @@
 /**
- * RC3200 online dissasambler
- * \file dis_rc3200.cpp
+ * TR3200 online dissasambler
+ * \file DisTR3200.cpp
  */
-#include "dis_rc3200.hpp"
-#include "rc3200_opcodes.hpp"
+#include "VSFix.hpp"
+
+#include "DisTR3200.hpp"
 
 #include <cstdio>
 

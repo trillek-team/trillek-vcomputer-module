@@ -1,9 +1,9 @@
 /**
- * RC3200 VM - cpu.cpp
+ * TR3200 VM - cpu.cpp
  * CPU of the virtual machine
  */
 
-#include "Cpu.hpp"
+#include "TR3200.hpp"
 
 #include <iostream>
 #include <cstdio>
@@ -32,7 +32,7 @@ namespace vm {
 		}
 
 		void RC3200::Reset() {
-			std::fill_n(state.r, N_GPRS, 0);
+			std::fill_n(state.r, TR3200_NGPRS, 0);
 
 			state.pc = 0;
 

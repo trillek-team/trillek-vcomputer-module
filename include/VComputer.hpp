@@ -1,6 +1,6 @@
 #pragma once
 /**
- * RC3200 VM - vcomputer.hpp
+ * TR3200 VM - vcomputer.hpp
  * Virtual machine itself
  */
 
@@ -9,7 +9,7 @@
 
 #include "Types.hpp"
 
-#include "Cpu.hpp"
+#include "TR3200.hpp"
 #include "Ram.hpp"
 #include "IDevice.hpp"
 
