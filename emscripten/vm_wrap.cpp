@@ -10,7 +10,7 @@ using namespace emscripten;
 // Wrapper functions
 
 vm::dword_t r_(vm::cpu::CpuState& arr, unsigned n) {
-  if (n < vm::cpu::N_GPRS) {
+  if (n < vm::cpu::TR3200_NGPRS) {
     return arr.r[n];
   }
   return -1;
