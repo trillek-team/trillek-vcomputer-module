@@ -21,7 +21,7 @@
 
 // Misc
 #include "DisTR3200.hpp"
-#include "aux.hpp"
+#include "Aux.hpp"
 
 
 #endif // ___VM_HPP__

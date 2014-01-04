@@ -4,6 +4,7 @@
  */
 
 #include "TR3200.hpp"
+#include "VSFix.hpp"
 
 #include <iostream>
 #include <cstdio>
@@ -14,24 +15,24 @@
 namespace vm {
 	namespace cpu {
 
-		RC3200::RC3200(size_t ram_size, unsigned clock) : ram(ram_size), tot_cycles(0), clock(clock) {
+		TR3200::TR3200(size_t ram_size, unsigned clock) : ram(ram_size), tot_cycles(0), clock(clock) {
 			assert(ram_size > 0);
 
 			Reset();    
 		}
 
-		RC3200::~RC3200() {
+		TR3200::~TR3200() {
 		}
 
-		unsigned RC3200::Clock() const {
+		unsigned TR3200::Clock() const {
 			return this->clock;;
 		}
 
-		std::size_t RC3200::TotalCycles () const {
+		std::size_t TR3200::TotalCycles () const {
 			return tot_cycles;
 		}
 
-		void RC3200::Reset() {
+		void TR3200::Reset() {
 			std::fill_n(state.r, TR3200_NGPRS, 0);
 
 			state.pc = 0;
@@ -50,7 +51,7 @@ namespace vm {
 			ram.Reset();
 		}
 
-		unsigned RC3200::Step() {
+		unsigned TR3200::Step() {
 			if (!state.sleeping) {
 				auto cyc = RealStep();
 				tot_cycles += cyc;
@@ -62,7 +63,7 @@ namespace vm {
 			}
 		}
 
-		void RC3200::Tick (unsigned n) {
+		void TR3200::Tick (unsigned n) {
 			assert (n > 0);
 
 			unsigned i = 0;
@@ -82,7 +83,7 @@ namespace vm {
 			} while (i < n);
 		}
 
-		bool RC3200::ThrowInterrupt (dword_t msg) {
+		bool TR3200::ThrowInterrupt (dword_t msg) {
 			if (!state.iacq && GET_EI(FLAGS)) {
 				// The CPU accepts a new interrupt
 				state.interrupt = true;
@@ -92,10 +93,10 @@ namespace vm {
 			return false;
 		}
 		/**
-		 * Executes a RC3200 instruction
+		 * Executes a TR3200 instruction
 		 * @return Number of cycles that takes to do it
 		 */
-		unsigned RC3200::RealStep() {
+		unsigned TR3200::RealStep() {
 			state.wait_cycles = 0;
 
 			dword_t inst = ram.RD(state.pc);
@@ -799,7 +800,7 @@ namespace vm {
 		/**
 		 * Check if there is an interrupt to be procesed
 		 */
-		void RC3200::ProcessInterrupt() {
+		void TR3200::ProcessInterrupt() {
 			if (GET_EI(FLAGS) && state.interrupt && !state.iacq) {
 				byte_t index = state.int_msg;
 				dword_t addr = ram.RD(IA + index*4); // Get the address to jump from the Vector Table

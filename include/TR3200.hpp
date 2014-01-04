@@ -114,17 +114,17 @@ namespace vm {
 #define SET_ON_ESS(x)      (x |= 0x200)
 #define SET_OFF_ESS(x)     (x &= 0xFFFFFDFF)
 
-		class RC3200 {
+		class TR3200 {
 			public:
 
 				/**
-				 * Builds a RC3200 CPU
+				 * Builds a TR3200 CPU
 				 * @param ram_size Size of the Ram in BYTES
 				 * @param clock CPU clock speed
 				 */
-				RC3200(size_t ram_size = 128*1024, unsigned clock = 100000 );
+				TR3200(size_t ram_size = 128*1024, unsigned clock = 100000 );
 
-				virtual ~RC3200();
+				virtual ~TR3200();
 
 				/**
 				 * Return the actual CPU model clock speed

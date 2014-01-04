@@ -44,7 +44,7 @@ std::string Disassembly_(vm::VirtualComputer& arr) {
   return vm::cpu::Disassembly(arr.RAM(), arr.CPUState().pc);
 }
 
-EMSCRIPTEN_BINDINGS(rc3200_vm) {
+EMSCRIPTEN_BINDINGS(tr3200_vm) {
     function("LoadROM",     &vm::aux::LoadROM);
     function("Register",    &r_);
     

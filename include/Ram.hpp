@@ -1,6 +1,6 @@
 #pragma once
 /**
- * RC3200 VM - ram.hpp
+ * TR3200 VM - ram.hpp
  * Address space mapping class
  *
  * Maps blocks of address space to RAM/ROM or devices
