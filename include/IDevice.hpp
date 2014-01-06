@@ -9,7 +9,7 @@
 #define __IDEVICE_HPP__ 1
 
 #include "Types.hpp"
-#include "TR3200.hpp"
+#include "ICpu.hpp"
 
 #include <memory>
 #include <vector>
@@ -73,7 +73,7 @@ public:
    * @param n Number of clock ticks executing
    * @param delta Number milliseconds since the last call
    */
-  virtual void Tick (cpu::TR3200& cpu, unsigned n=1, const double delta = 0) = 0;
+  virtual void Tick (cpu::ICpu& cpu, unsigned n=1, const double delta = 0) = 0;
 
   /**
    * Return an vector of ptrs AHandler that uses this device

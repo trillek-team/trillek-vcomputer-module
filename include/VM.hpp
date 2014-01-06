@@ -9,9 +9,9 @@
 #include "Types.hpp"
 
 // VM Core
-#include "Ram.hpp"
 #include "TR3200.hpp"
 
+#include "Ram.hpp"
 #include "IDevice.hpp"
 #include "VComputer.hpp"
 

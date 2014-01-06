@@ -9,7 +9,7 @@
 
 #include "Types.hpp"
 
-#include "TR3200.hpp"
+#include "ICpu.hpp"
 #include "Ram.hpp"
 #include "IDevice.hpp"
 
@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <memory>
 
+#include <cassert>
 
 namespace vm {
 using namespace vm::cpu;
@@ -41,24 +42,46 @@ class VirtualComputer {
 public:
 
   /**
-   * Builds a Virtual Computer
+   * Creates a Virtual Computer
    * @param ram_size RAM size in BYTES
    */
-  VirtualComputer (std::size_t ram_size = 128*1024);
+	template <class CPU_t> static VirtualComputer* Create(std::size_t ram_size = 128*1024) {
+		ICpu* cpu = new CPU_t(ram_size);
+		return new VirtualComputer(cpu);
+	}
 
-  ~VirtualComputer ();
+  VirtualComputer (ICpu* cpu) : 
+			cpu(cpu), n_devices(0), enumerator(this), timers(this) {
+
+		cpu->ram.AddBlock(&enumerator);  // Add Enumerator address handler
+		cpu->ram.AddBlock(&timers);      // Add PIT address handler
+
+		std::fill_n(devices, MAX_N_DEVICES, nullptr);
+	}
+
+  ~VirtualComputer () {
+		if (cpu != nullptr) {
+			delete cpu;
+		}
+	}
 
   /**
    * Resets the virtual machine (but not clears RAM!)
    */
-  void Reset();
+  void Reset() {
+		cpu->Reset();
+	}
 
   /**
    * Writes the ROM data to the internal array
    * @param *rom Ptr to the data to be copied to the ROM
    * @param rom_size Size of the ROM data that must be less or equal to 64KiB. Big sizes will be ignored
    */
-  void WriteROM (const byte_t* rom, size_t rom_size);
+  void WriteROM (const byte_t* rom, size_t rom_size) {
+		assert (rom != nullptr);
+
+		cpu->ram.WriteROM(rom, rom_size);
+	}
 
   /**
    * Adds a Device to the virtual machine in a slot
@@ -66,47 +89,52 @@ public:
    * @param dev The device to be pluged in the slot
    * @return False if the slot have a device or the slot is invalid.
    */
-  bool AddDevice (unsigned slot , IDevice& dev);
+  bool AddDevice (unsigned slot , IDevice& dev) {
+		if (slot >= MAX_N_DEVICES)
+			return false;
+
+		if (devices[slot] != nullptr)
+			return false;
+
+		devices[slot] = &dev;
+		n_devices++;
+		cpu->ram.AddBlock(dev.MemoryBlocks()); // Add Address handlerss
+
+		return true;
+	}
 
   /**
    * Remove a device from a virtual machine slot
    * @param slot Slot were unplug the device
    */
-  void RemoveDevice (unsigned slot);
+  void RemoveDevice (unsigned slot) {
+		if (slot < MAX_N_DEVICES && devices[slot] != nullptr) {
+			devices[slot] = nullptr;
+			n_devices--;
+			assert(n_devices >= 0);
+		}
+	}
+
 
   /**
-   * Returns the actual CPU state
+   * Returns the actual CPU instance
    */
-  const CpuState& CPUState () const {
-    return cpu.State();
+  const ICpu* CPU () const {
+    return cpu;
   }
-
-	unsigned WaitCycles() const { 
-		return cpu.WaitCycles();
-	}
-
-	bool Skiping() const {
-		return cpu.Skiping();
-	}
-
-	bool Sleeping() const { 
-		return cpu.Sleeping();
-	}
-	
 
   /**
    * Returns the actual RAM image
    */
   const Mem& RAM () const {
-    return cpu.ram;
+    return cpu->ram;
   }
-
 
   /**
    * Virtual Clock speed
    */
   unsigned Clock() const {
-    return cpu.Clock();
+    return cpu->Clock();
   }
 
 
@@ -115,18 +143,38 @@ public:
    * @param delta Number of milliseconds since the last call
    * @return number of cycles executed
    */
-  unsigned Step( const double delta = 0);
+  unsigned Step( const double delta = 0) {
+		auto cycles = cpu->Step();
+		timers.Update(cycles);
+	
+		for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
+			if (devices[i] != nullptr) {
+				devices[i]->Tick(*cpu, cycles, delta);
+			}
+		}
+		return cycles;
+	}
 
   /**
    * Executes N clock ticks
    * @param n nubmer of clock ticks, by default 1
    * @param delta Number of milliseconds since the last call
    */
-  void Tick( unsigned n=1, const double delta = 0);
+  void Tick( unsigned n=1, const double delta = 0) {
+		assert(n >0);
 
+		cpu->Tick(n);
+		timers.Update(n);
+		
+		for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
+			if (devices[i] != nullptr) {
+				devices[i]->Tick(*cpu, n, delta);
+			}
+		}
+	}
 private:
 
-  TR3200 cpu; /// Virtual CPU
+  ICpu* cpu; /// Virtual CPU
 
   IDevice* devices[MAX_N_DEVICES]; /// Devices atached to the virtual computer
   unsigned n_devices;
@@ -137,16 +185,80 @@ private:
    */
   class HWN : public ram::AHandler {
   public:
-    HWN (VirtualComputer* vm);
+    HWN (VirtualComputer* vm) {
+			assert(vm != nullptr);
 
-    virtual ~HWN ();
+			this->vm = vm;
+			this->begin = 0xFF000000;
+			this->size = 2;
+			ndev = 0;
+			read = 0;
+		}
 
-    byte_t RB (dword_t addr);
+    virtual ~HWN () {
+		}
+
+    byte_t RB (dword_t addr) {
+			addr -= this->begin;
+			if (addr == 0) {
+				return read & 0xFF;
+			}	else if (addr == 1) {
+				return read >> 8;
+			}
+			// TODO CLK and BUILDID registers
+			return 0;
+		}
 
     /**
      * Gets the commad value for the enumarator
      */
-    void WB (dword_t addr, byte_t val);
+    void WB (dword_t addr, byte_t val) {
+			addr -= this->begin;
+			if (addr == 0) {
+				ndev = val;
+			} else {
+				if (val == HWN_CMD::GET_NUMBER) { // Get number of devices commad
+					read = vm->n_devices;
+					return;
+				}
+
+				if (ndev >= MAX_N_DEVICES || vm->devices[ndev] == nullptr) {
+					read = 0;   // Invalid device. Reads 0
+					return;          
+				}
+
+				// Updates the read value
+				switch (val) {
+					case HWN_CMD::GET_CLASS : 
+						read = vm->devices[ndev]->DevClass();
+						break; 
+
+					case HWN_CMD::GET_BUILDER : 
+						read = vm->devices[ndev]->Builder();
+						break; 
+
+					case HWN_CMD::GET_ID : 
+						read = vm->devices[ndev]->DevId();
+						break; 
+
+					case HWN_CMD::GET_VERSION : 
+						read = vm->devices[ndev]->DevVer();
+						break; 
+
+					case HWN_CMD::GET_JMP1 : 
+						read = vm->devices[ndev]->Jmp1();
+						break; 
+
+					case HWN_CMD::GET_JMP2 : 
+						read = vm->devices[ndev]->Jmp2();
+						break; 
+
+					default:
+						break;
+
+				}
+			}
+		}
   
   private:
     VirtualComputer* vm;
@@ -162,19 +274,152 @@ HWN enumerator;
    */
   class PIT : public ram::AHandler {
   public:
-    PIT (VirtualComputer* vm);
+    PIT (VirtualComputer* vm) : tmr0(0), tmr1(0), re0(0), re1(0), cfg(0) {
+			assert(vm != nullptr);
 
-    virtual ~PIT ();
+			this->vm = vm;
+			this->begin = 0xFF000040;
+			this->size = 17;
+		}
 
-    byte_t RB (dword_t addr);
+    virtual ~PIT () {
+		}
 
-    void WB (dword_t addr, byte_t val);
+    byte_t RB (dword_t addr) {
+			addr &= 0x7F; // We only need to analize address 40 to 50
+			switch (addr) {
+				// Read TMR0_VAL
+				case 0x40 :
+					return (byte_t)tmr0;
+
+				case 0x41 :
+					return (byte_t)(tmr0>>8);
+
+				case 0x42 :
+					return (byte_t)(tmr0>>16);
+
+				case 0x43 :
+					return (byte_t)(tmr0>>24);
+
+					// Read TMR0_RELOAD
+				case 0x44 :
+					return (byte_t)(re0);
+
+				case 0x45 :
+					return (byte_t)(re0>>8);
+
+				case 0x46 :
+					return (byte_t)(re0>>16);
+
+				case 0x47 :
+					return (byte_t)(re0>>24);
+
+					// Read TMR1_VAL
+				case 0x48 :
+					return (byte_t)tmr1;
+
+				case 0x49 :
+					return (byte_t)(tmr1>>8);
+
+				case 0x4A :
+					return (byte_t)(tmr1>>16);
+
+				case 0x4B :
+					return (byte_t)(tmr1>>24);
+
+					// Read TMR1_RELOAD
+				case 0x4C :
+					return (byte_t)(re1);
+
+				case 0x4D :
+					return (byte_t)(re1>>8);
+
+				case 0x4E :
+					return (byte_t)(re1>>16);
+
+				case 0x4F :
+					return (byte_t)(re1>>24);
+
+					// Read TMR_CFG
+				case 0x50 :
+					return cfg;
+
+				default:
+					return 0;
+			}
+		}
+
+    void WB (dword_t addr, byte_t val) {
+			addr &= 0x7F; // We only need to analize address 40 to 50
+			switch (addr) {
+				// Write TMR0_RELOAD
+				case 0x44 :
+					re0 = (re0 & 0xFFFFFF00) | val;
+
+				case 0x45 :
+					re0 = (re0 & 0xFFFF00FF) | (val<<8);
+
+				case 0x46 :
+					re0 = (re0 & 0xFF00FFFF) | (val<<16);
+
+				case 0x47 :
+					re0 = (re0 & 0x00FFFFFF) | (val<<24);
+
+					// Write TMR1_RELOAD
+				case 0x4C :
+					re1 = (re1 & 0xFFFFFF00) | val;
+
+				case 0x4D :
+					re1 = (re1 & 0xFFFF00FF) | (val<<8);
+
+				case 0x4E :
+					re1 = (re1 & 0xFF00FFFF) | (val<<16);
+
+				case 0x4F :
+					re1 = (re1 & 0x00FFFFFF) | (val<<24);
+
+					// Write TMR_CFG
+				case 0x50 :
+					cfg = val;
+
+				default:
+					;
+			}
+		}
+
    
     /**
      * Update the timers and generate the interrupt if underflow hapens
      * @param n Number of cycles executed
      */
-    void Update(unsigned n);
+    void Update(unsigned n) {
+			assert(n >0);
+
+			dword_t tmp;
+			if ((cfg & 1) != 0) {
+				tmp = tmr0;
+				tmr0 -= n;
+				if (tmr0 > tmp) { // Underflow of TMR0
+					tmr0 = re0 - (0xFFFFFFFF - tmr0);
+					do_int_tmr0 = (cfg & 2) != 0;
+				}
+			}
+
+			if ((cfg & 8) != 0) {
+				tmp = tmr1;
+				tmr1 -= n;
+				if (tmr1 > tmp) { // Underflow of TMR1
+					tmr1 = re1 - (0xFFFFFFFF - tmr1);
+					do_int_tmr1 = (cfg & 16) != 0;
+				}
+			}
+
+			if (((cfg & 2) != 0) && do_int_tmr0) { // Try to throw TMR0 interrupt
+				do_int_tmr0 = ! vm->cpu->ThrowInterrupt(0x0001);
+			} else if (((cfg & 16) != 0) && do_int_tmr1) { // Try to thorow TMR1 interrupt 
+				do_int_tmr1 = ! vm->cpu->ThrowInterrupt(0x1001);
+			}
+		}
 
   private:
     VirtualComputer* vm;

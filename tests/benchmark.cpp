@@ -58,11 +58,13 @@ int main(int argc, char* argv[])
 		rom_size[i] = count;
 	}
 
-	VirtualComputer vm[N_CPUS];
+	VirtualComputer* vm[N_CPUS];
 	for (auto i=0; i< N_CPUS; i++) {
+		vm[i] = VirtualComputer::Create<vm::cpu::TR3200>();
+
 		auto rom_ptr = rom[i % troms];
 		auto rom_s = rom_size[i % troms];
-		vm[i].WriteROM(rom_ptr, rom_s);
+		vm[i]->WriteROM(rom_ptr, rom_s);
 	}
 
 	for (unsigned i=0; i < troms; i++) {
@@ -74,9 +76,9 @@ int main(int argc, char* argv[])
 	keyboard::GKeyboard keyb[N_CPUS];
 
 	for (auto i=0; i< N_CPUS; i++) {
-		vm[i].AddDevice(0, gcard[i]);
-		vm[i].AddDevice(2, keyb[i]);
-		vm[i].Reset();
+		vm[i]->AddDevice(0, gcard[i]);
+		vm[i]->AddDevice(2, keyb[i]);
+		vm[i]->Reset();
 	}
 
 	std::cout << "Running " << N_CPUS << " CPUs !\n";
@@ -94,7 +96,7 @@ int main(int argc, char* argv[])
 	while ( 1) {
 
 		for (auto i=0; i< N_CPUS; i++)
-			vm[i].Tick(ticks);
+			vm[i]->Tick(ticks);
 
 		ticks_count += ticks;
 
@@ -107,7 +109,7 @@ int main(int argc, char* argv[])
 		if (ticks_count > 800000) {
 			std::cout << "Running " << ticks << " cycles in " << delta << " uS"
 				<< " Speed of " 
-				<< 100.0f * (((ticks * 1000000.0) / vm[0].Clock()) / delta)
+				<< 100.0f * (((ticks * 1000000.0) / vm[0]->Clock()) / delta)
 				<< "% \n";
 			std::cout << std::endl;
 			ticks_count -= 800000;
@@ -116,6 +118,9 @@ int main(int argc, char* argv[])
 
 	}
 
+
+	for (auto i=0; i< N_CPUS; i++)
+		delete vm[i];
 	return 0;
 }
 
