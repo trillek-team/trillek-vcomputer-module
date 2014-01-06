@@ -1,7 +1,7 @@
 TR3200 Computer Virtual Machine Lib
 ===================================
 
-Using these [specs](https://github.com/Zardoz89/Trillek-Computer)
+Using these [specs](https://github.com/trillek-team/trillek-computer)
 
 This repo is composed by the TR3200-VM libs and some extra tools. The tools includes a program that loads a binary file to a VM ROM and executes it.
 
