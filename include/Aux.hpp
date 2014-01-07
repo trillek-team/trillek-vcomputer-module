@@ -5,9 +5,11 @@
  * Some semi-generic auxiliar functions related to the vm
  */
 
-#include <string>
-
 #include "VComputer.hpp"
+
+#include <string>
+#include <fstream>
+#include <ios>
 
 namespace vm {
 namespace aux {
@@ -18,7 +20,22 @@ namespace aux {
    * \param vcomp Virtual Computer
    * \return Read size or negative value if fails
    */
-  unsigned LoadROM (const std::string& filename, vm::VirtualComputer& vcomp);
+	template <typename CPU_t> 
+  unsigned LoadROM (const std::string& filename, vm::VirtualComputer<CPU_t>& vcomp) {
+		vm::byte_t rom[64*1024]; // Temporal buffer
+
+		std::fstream f(filename, std::ios::in | std::ios::binary);
+		if (!f.is_open())
+			return -1;
+
+		unsigned count = 0;
+		while (f.good() && count < 64*1024) {
+			f.read(reinterpret_cast<char*>(rom + count++), 1); // Read byte at byte, so the file must be in Little Endian
+		}
+		vcomp.WriteROM(rom, count);
+
+		return count;
+	}
 
   /**
    * Maps GLFW3 Key codes to TR3200 keycodes

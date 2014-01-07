@@ -19,14 +19,14 @@ GKeyboard::GKeyboard (dword_t j1, dword_t j2) : IDevice(j1, j2), k_status(0), e_
 GKeyboard::~GKeyboard() {
 }
 
-void GKeyboard::Tick (cpu::ICpu& cpu, unsigned n, const double delta) {
+void GKeyboard::Tick (cpu::ICpu* cpu, unsigned n, const double delta) {
   if (e_kd_int && do_kd_int) { // Try to thorow KeyDown interrupt
-    auto ret = cpu.ThrowInterrupt(INT_KDOWN_MSG[this->Jmp1() &3]);
+    auto ret = cpu->ThrowInterrupt(INT_KDOWN_MSG[this->Jmp1() &3]);
     if (ret) // If the CPU not accepts the interrupt, try again in the next tick
       do_kd_int = false;
 
   } else if (e_ku_int && do_ku_int) { // Try to thorow KeyUp interrupt
-    auto ret = cpu.ThrowInterrupt(INT_KUP_MSG[this->Jmp1() &3]);
+    auto ret = cpu->ThrowInterrupt(INT_KUP_MSG[this->Jmp1() &3]);
     if (ret) // If the CPU not accepts the interrupt, try again in the next tick
       do_ku_int = false;
 

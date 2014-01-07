@@ -38,6 +38,7 @@ enum HWN_CMD {
         GET_JMP2  = 0x20,
 };
 
+template <typename CPU_t> 
 class VirtualComputer {
 public:
 
@@ -45,31 +46,23 @@ public:
    * Creates a Virtual Computer
    * @param ram_size RAM size in BYTES
    */
-	template <class CPU_t> static VirtualComputer* Create(std::size_t ram_size = 128*1024) {
-		ICpu* cpu = new CPU_t(ram_size);
-		return new VirtualComputer(cpu);
-	}
+  VirtualComputer (std::size_t ram_size = 128*1024) : 
+			cpu(ram_size), n_devices(0), enumerator(this), timers(this) {
 
-  VirtualComputer (ICpu* cpu) : 
-			cpu(cpu), n_devices(0), enumerator(this), timers(this) {
-
-		cpu->ram.AddBlock(&enumerator);  // Add Enumerator address handler
-		cpu->ram.AddBlock(&timers);      // Add PIT address handler
+		cpu.ram.AddBlock(&enumerator);  // Add Enumerator address handler
+		cpu.ram.AddBlock(&timers);      // Add PIT address handler
 
 		std::fill_n(devices, MAX_N_DEVICES, nullptr);
 	}
 
   ~VirtualComputer () {
-		if (cpu != nullptr) {
-			delete cpu;
-		}
 	}
 
   /**
    * Resets the virtual machine (but not clears RAM!)
    */
   void Reset() {
-		cpu->Reset();
+		cpu.Reset();
 	}
 
   /**
@@ -80,7 +73,7 @@ public:
   void WriteROM (const byte_t* rom, size_t rom_size) {
 		assert (rom != nullptr);
 
-		cpu->ram.WriteROM(rom, rom_size);
+		cpu.ram.WriteROM(rom, rom_size);
 	}
 
   /**
@@ -98,7 +91,7 @@ public:
 
 		devices[slot] = &dev;
 		n_devices++;
-		cpu->ram.AddBlock(dev.MemoryBlocks()); // Add Address handlerss
+		cpu.ram.AddBlock(dev.MemoryBlocks()); // Add Address handlerss
 
 		return true;
 	}
@@ -119,7 +112,7 @@ public:
   /**
    * Returns the actual CPU instance
    */
-  const ICpu* CPU () const {
+  const CPU_t& CPU () const {
     return cpu;
   }
 
@@ -127,14 +120,14 @@ public:
    * Returns the actual RAM image
    */
   const Mem& RAM () const {
-    return cpu->ram;
+    return cpu.ram;
   }
 
   /**
    * Virtual Clock speed
    */
   unsigned Clock() const {
-    return cpu->Clock();
+    return cpu.Clock();
   }
 
 
@@ -144,12 +137,12 @@ public:
    * @return number of cycles executed
    */
   unsigned Step( const double delta = 0) {
-		auto cycles = cpu->Step();
+		auto cycles = cpu.Step();
 		timers.Update(cycles);
 	
 		for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
 			if (devices[i] != nullptr) {
-				devices[i]->Tick(*cpu, cycles, delta);
+				devices[i]->Tick((vm::cpu::ICpu*) &cpu, cycles, delta);
 			}
 		}
 		return cycles;
@@ -163,18 +156,18 @@ public:
   void Tick( unsigned n=1, const double delta = 0) {
 		assert(n >0);
 
-		cpu->Tick(n);
+		cpu.Tick(n);
 		timers.Update(n);
 		
 		for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
 			if (devices[i] != nullptr) {
-				devices[i]->Tick(*cpu, n, delta);
+				devices[i]->Tick((vm::cpu::ICpu*) &cpu, n, delta);
 			}
 		}
 	}
 private:
 
-  ICpu* cpu; /// Virtual CPU
+  CPU_t cpu; /// Virtual CPU
 
   IDevice* devices[MAX_N_DEVICES]; /// Devices atached to the virtual computer
   unsigned n_devices;
@@ -415,9 +408,9 @@ HWN enumerator;
 			}
 
 			if (((cfg & 2) != 0) && do_int_tmr0) { // Try to throw TMR0 interrupt
-				do_int_tmr0 = ! vm->cpu->ThrowInterrupt(0x0001);
+				do_int_tmr0 = ! vm->cpu.ThrowInterrupt(0x0001);
 			} else if (((cfg & 16) != 0) && do_int_tmr1) { // Try to thorow TMR1 interrupt 
-				do_int_tmr1 = ! vm->cpu->ThrowInterrupt(0x1001);
+				do_int_tmr1 = ! vm->cpu.ThrowInterrupt(0x1001);
 			}
 		}
 

@@ -85,9 +85,9 @@ void updatePBO (vm::cda::CDA*);
 
 vm::cda::CDA* cda_ptr = nullptr;
 
-void print_regs(const vm::cpu::ICpu* cpu);
-void print_pc(const vm::cpu::ICpu* cpu, const vm::ram::Mem& ram);
-void print_stack(const vm::cpu::ICpu* cpu, const vm::ram::Mem& ram);
+void print_regs(const vm::cpu::TR3200& cpu);
+void print_pc(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram);
+void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram);
 
 int main(int argc, char* argv[]) {
   using namespace vm;
@@ -128,19 +128,19 @@ int main(int argc, char* argv[]) {
   }
 
   // Create the Virtual Machine
-  VirtualComputer* vm = VirtualComputer::Create<vm::cpu::TR3200>();
-  vm->WriteROM(rom, rom_size);
+  VirtualComputer<vm::cpu::TR3200> vm;
+  vm.WriteROM(rom, rom_size);
   delete[] rom;
 
   // Add devices to tue Virtual Machine
   cda::CDA gcard(0, 10);
   keyboard::GKeyboard keyb;
-  vm->AddDevice(0, gcard);
-  vm->AddDevice(5, keyb);
+  vm.AddDevice(0, gcard);
+  vm.AddDevice(5, keyb);
 
-  vm->Reset();
+  vm.Reset();
 
-  //std::printf("Size of CPU state : %zu bytes \n", sizeof(vm->CPUState()) );
+  //std::printf("Size of CPU state : %zu bytes \n", sizeof(vm.CPUState()) );
 
   std::cout << "Run program (r) or Step Mode (s) ?\n";
   char mode;
@@ -269,29 +269,29 @@ int main(int argc, char* argv[]) {
 #endif
 
     if (debug) {
-      print_pc(vm->CPU(), vm->RAM());
-      if (vm->CPU()->Skiping())
+      print_pc(vm.CPU(), vm.RAM());
+      if (vm.CPU().Skiping())
         std::printf("Skiping!\n");
-      if (vm->CPU()->Sleeping())
+      if (vm.CPU().Sleeping())
         std::printf("ZZZZzzzz...\n");
     }
 
     if (!debug) {
       ticks_count += ticks;
-      vm->Tick(ticks, delta * 0.001f );
-      ticks = (vm->Clock() * delta * 0.000001) + 0.5f; // Rounding bug in VS
+      vm.Tick(ticks, delta * 0.001f );
+      ticks = (vm.Clock() * delta * 0.000001) + 0.5f; // Rounding bug in VS
       if (ticks <= 3)
         ticks = 3;
 
     } else
-      ticks = vm->Step(delta * 0.001f); 
+      ticks = vm.Step(delta * 0.001f); 
 
 
     // Speed info
     if (!debug && ticks_count > 200000) {
       std::cout << "Running " << ticks << " cycles in " << delta << " uS"
         << " Speed of " 
-        << 100.0f * (((ticks * 1000000.0) / vm->Clock()) / delta)
+        << 100.0f * (((ticks * 1000000.0) / vm.Clock()) / delta)
         << "% \n";
       std::cout << std::endl;
       ticks_count -= 200000;
@@ -299,9 +299,9 @@ int main(int argc, char* argv[]) {
 
 
     if (debug) {
-      std::printf("Takes %u cycles\n", vm->CPU()->WaitCycles());
-      print_regs(vm->CPU());
-      print_stack(vm->CPU(), vm->RAM());
+      std::printf("Takes %u cycles\n", vm.CPU().WaitCycles());
+      print_regs(vm.CPU());
+      print_stack(vm.CPU(), vm.RAM());
       c = std::getchar();
       if (c == 'q' || c == 'Q')
         loop = false;
@@ -419,14 +419,12 @@ int main(int argc, char* argv[]) {
   SDL_Quit();
 #endif
 
-	delete vm;
   return 0;
 }
 
 
-void print_regs(const vm::cpu::ICpu* cpu) {
-	vm::cpu::TR3200* tr3200 = (vm::cpu::TR3200*)cpu;
-	auto state = tr3200->State();
+void print_regs(const vm::cpu::TR3200& cpu) {
+	auto state = cpu.State();
 
   // Print registers
   for (int i=0; i < 27; i++) {
@@ -453,9 +451,8 @@ void print_regs(const vm::cpu::ICpu* cpu) {
 
 }
 
-void print_pc(const vm::cpu::ICpu* cpu, const vm::ram::Mem&  ram) {
-	vm::cpu::TR3200* tr3200 = (vm::cpu::TR3200*)cpu;
-	auto state = tr3200->State();
+void print_pc(const vm::cpu::TR3200& cpu, const vm::ram::Mem&  ram) {
+	auto state = cpu.State();
   
 	vm::dword_t val = ram.RD(state.pc);
 
@@ -463,9 +460,8 @@ void print_pc(const vm::cpu::ICpu* cpu, const vm::ram::Mem&  ram) {
   std::cout << vm::cpu::Disassembly(ram,  state.pc) << std::endl;  
 }
 
-void print_stack(const vm::cpu::ICpu* cpu, const vm::ram::Mem& ram) {
-	vm::cpu::TR3200* tr3200 = (vm::cpu::TR3200*)cpu;
-	auto state = tr3200->State();
+void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram) {
+	auto state = cpu.State();
   
 	std::printf("STACK:\n");
 

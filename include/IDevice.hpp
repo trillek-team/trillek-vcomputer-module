@@ -73,7 +73,7 @@ public:
    * @param n Number of clock ticks executing
    * @param delta Number milliseconds since the last call
    */
-  virtual void Tick (cpu::ICpu& cpu, unsigned n=1, const double delta = 0) = 0;
+  virtual void Tick (cpu::ICpu* cpu, unsigned n=1, const double delta = 0) = 0;
 
   /**
    * Return an vector of ptrs AHandler that uses this device
