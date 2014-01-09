@@ -54,10 +54,26 @@ void VirtualComputer::RemoveDevice (unsigned slot) {
 unsigned VirtualComputer::Step( const double delta) {
   auto cycles = cpu.Step();
   timers.Update(cycles);
-  
-  for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
+
+  std::size_t i=0;
+	dword_t msg;
+	if (! timers.DoesInterrupt(msg)) {
+		for (; i < MAX_N_DEVICES; i++) {
+			if (devices[i] != nullptr) {
+				devices[i]->Tick(cycles, delta);
+				if (devices[i]->DoesInterrupt(msg)) { // Check interrupts
+					cpu.ThrowInterrupt(msg);
+					break;
+				}
+			}
+		}
+	} else { // Here throw PIT interrupt only
+		cpu.ThrowInterrupt(msg);
+	}
+
+  for (; i < MAX_N_DEVICES; i++) {
     if (devices[i] != nullptr) {
-      devices[i]->Tick(cpu, cycles, delta);
+      devices[i]->Tick(cycles, delta);
     }
   }
   return cycles;
@@ -69,9 +85,25 @@ void VirtualComputer::Tick( unsigned n, const double delta) {
   cpu.Tick(n);
   timers.Update(n);
   
-  for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
+  std::size_t i=0;
+	dword_t msg;
+	if (! timers.DoesInterrupt(msg)) {
+		for (; i < MAX_N_DEVICES; i++) {
+			if (devices[i] != nullptr) {
+				devices[i]->Tick(n, delta);
+				if (devices[i]->DoesInterrupt(msg)) { // Check interrupts
+					cpu.ThrowInterrupt(msg);
+					break;
+				}
+			}
+		}
+	} else { // Here throw PIT interrupt only
+		cpu.ThrowInterrupt(msg);
+	}
+
+  for (; i < MAX_N_DEVICES; i++) {
     if (devices[i] != nullptr) {
-      devices[i]->Tick(cpu, n, delta);
+      devices[i]->Tick(n, delta);
     }
   }
 }
@@ -291,13 +323,22 @@ void VirtualComputer::PIT::Update(unsigned n) {
     }
   }
 
-  if (((cfg & 2) != 0) && do_int_tmr0) { // Try to throw TMR0 interrupt
-    do_int_tmr0 = ! vm->cpu.ThrowInterrupt(0x0001);
-  } else if (((cfg & 16) != 0) && do_int_tmr1) { // Try to thorow TMR1 interrupt 
-    do_int_tmr1 = ! vm->cpu.ThrowInterrupt(0x1001);
-  }
 }
 
+	bool VirtualComputer::PIT::DoesInterrupt(dword_t& msg) {
+		if ( ((cfg & 2) != 0) && do_int_tmr0) {
+			msg = 0x0001;
+			do_int_tmr0 = false;
+			return true;
+
+		} else if (((cfg & 16) != 0) && do_int_tmr1) {
+			msg = 0x1001;
+			do_int_tmr1 = false;
+			return true;
+		}
+
+		return false;
+	}
 
 } // End of namespace vm
 

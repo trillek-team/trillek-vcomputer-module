@@ -163,6 +163,13 @@ HWN enumerator;
      * @param n Number of cycles executed
      */
     void Update(unsigned n);
+	
+		/**
+		 * Checks if the device is trying to thorow a interrupt
+		 * @param msg The interrupt message will be writen here
+		 * @return True if is generating a new interrupt
+		 */
+		bool DoesInterrupt(dword_t& msg);
 
   private:
     VirtualComputer* vm;

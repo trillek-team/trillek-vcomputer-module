@@ -141,7 +141,7 @@ public:
   word_t DevId() const        {return 0x0001;} // Keyboard standard
   word_t DevVer() const       {return 0x0000;} // Ver 0
 
-  virtual void Tick (cpu::TR3200& cpu, unsigned n=1, const double delta = 0);
+  virtual void Tick (unsigned n=1, const double delta = 0);
 
   virtual std::vector<ram::AHandler*> MemoryBlocks() const;
 
@@ -157,10 +157,7 @@ protected:
 
   byte_t k_status;                /// Keyboard status byte
   bool e_kd_int;                  /// Enable KeyDown interrupt ?
-  bool do_kd_int;                 /// Try to thorow KeyDown interrupt ?
-
   bool e_ku_int;                  /// Enable KeyUp interrupt ?
-  bool do_ku_int;                 /// Try to thorow KeyUp interrupt ?
 
   byte_t mods;                    /// Actual modifiers being pressed. Set by buffer state
 

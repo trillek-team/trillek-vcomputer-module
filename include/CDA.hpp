@@ -63,7 +63,7 @@ public:
   word_t DevId() const        {return 0x0001;} // CDA standard
   word_t DevVer() const       {return 0x0000;} // Ver 0 -> CDA base standard
 
-  virtual void Tick (cpu::TR3200& cpu, unsigned n=1, const double delta = 0);
+  virtual void Tick (unsigned n=1, const double delta = 0);
 
   virtual std::vector<ram::AHandler*> MemoryBlocks() const;
 
@@ -151,7 +151,6 @@ protected:
   byte_t* buffer;         /// Visible video ram buffer for grpahics representation of screen
 
   bool e_vsync;           /// Enable V-Sync interrupt by user program ?
-  bool vsync_int;         /// Thorow a V-Sync interrupt if true
 
 };
 
