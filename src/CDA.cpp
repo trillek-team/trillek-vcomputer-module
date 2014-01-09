@@ -9,7 +9,7 @@
 namespace vm {
 namespace cda {
 
-CDA::CDA(dword_t j1, dword_t j2) : IDevice(j1, j2), videomode(0), textmode(true), userpal(false), userfont(false),vram(this), setupr(this), buffer(nullptr), e_vsync(false), vsync_int(false) {
+CDA::CDA(dword_t j1, dword_t j2) : IDevice(j1, j2), videomode(0), textmode(true), userpal(false), userfont(false),vram(this), setupr(this), buffer(nullptr), e_vsync(false) {
     buffer = new byte_t[VRAM_SIZE]();
 }
 
@@ -18,12 +18,7 @@ CDA::~CDA() {
       delete[] buffer;
 }
 
-void CDA::Tick (cpu::ICpu* cpu, unsigned n, const double delta) {
-  if (e_vsync && vsync_int) {
-    auto ret = cpu->ThrowInterrupt(INT_MSG[this->Jmp1() &3]);
-    if (ret) // If the CPU not accepts the interrupt, try again in the next tick
-      vsync_int = false;
-  }
+void CDA::Tick (unsigned n, const double delta) {
 }
 
 std::vector<ram::AHandler*> CDA::MemoryBlocks() const { 
@@ -56,7 +51,8 @@ bool CDA::isUserFont() const {
 }
 
 void CDA::VSync() {
-  this->vsync_int = true;
+	do_interrupt = e_vsync;
+	int_msg = INT_MSG[this->Jmp1() &3];
 }
 
 // Class VideoRAM inside of CDA class

@@ -6,7 +6,4 @@
 #include "VComputer.hpp"
 #include "VSFix.hpp"
 
-namespace vm {
-
-} // End of namespace vm
 

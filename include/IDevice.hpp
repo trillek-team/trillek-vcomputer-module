@@ -9,7 +9,7 @@
 #define __IDEVICE_HPP__ 1
 
 #include "Types.hpp"
-#include "ICpu.hpp"
+#include "Ram.hpp"
 
 #include <memory>
 #include <vector>
@@ -69,11 +69,17 @@ public:
 
   /**
    * Does Hardware stuff in sync with the CPU clock
-   * @param cpu Ptr to the CPU, if needs to thorow a interrupt
    * @param n Number of clock ticks executing
    * @param delta Number milliseconds since the last call
    */
-  virtual void Tick (cpu::ICpu* cpu, unsigned n=1, const double delta = 0) = 0;
+  virtual void Tick (unsigned n=1, const double delta = 0) = 0;
+
+	/**
+	 * Checks if the device is trying to thorow a interrupt
+	 * @param msg The interrupt message will be writen here
+	 * @return True if is generating a new interrupt
+	 */
+	bool DoesInterrupt(dword_t& msg);
 
   /**
    * Return an vector of ptrs AHandler that uses this device
@@ -84,6 +90,8 @@ protected:
   unsigned jmp1;
   unsigned jmp2;
 
+	dword_t int_msg;		/// Stores the interrupt message
+	bool do_interrupt;	/// Does is generating a interrupt ?
 };
 
 } // End of namespace vm

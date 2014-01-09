@@ -12,25 +12,15 @@
 namespace vm {
 namespace keyboard {
 
-GKeyboard::GKeyboard (dword_t j1, dword_t j2) : IDevice(j1, j2), k_status(0), e_kd_int(false), do_kd_int(false), e_ku_int(false), do_ku_int(false), mods(0), reg_handler(this) {
+GKeyboard::GKeyboard (dword_t j1, dword_t j2) : IDevice(j1, j2), k_status(0), e_kd_int(false), e_ku_int(false), mods(0), reg_handler(this) {
   keybuffer.clear();
 }
 
 GKeyboard::~GKeyboard() {
 }
 
-void GKeyboard::Tick (cpu::ICpu* cpu, unsigned n, const double delta) {
-  if (e_kd_int && do_kd_int) { // Try to thorow KeyDown interrupt
-    auto ret = cpu->ThrowInterrupt(INT_KDOWN_MSG[this->Jmp1() &3]);
-    if (ret) // If the CPU not accepts the interrupt, try again in the next tick
-      do_kd_int = false;
+void GKeyboard::Tick (unsigned n, const double delta) {
 
-  } else if (e_ku_int && do_ku_int) { // Try to thorow KeyUp interrupt
-    auto ret = cpu->ThrowInterrupt(INT_KUP_MSG[this->Jmp1() &3]);
-    if (ret) // If the CPU not accepts the interrupt, try again in the next tick
-      do_ku_int = false;
-
-  } 
 }
 
 std::vector<ram::AHandler*> GKeyboard::MemoryBlocks() const { 
@@ -84,9 +74,16 @@ void GKeyboard::PushKeyEvent (bool keydown, byte_t scancode) {
     k |= (mods << 8); // Appends the modifiers bits
 
     keybuffer.push_front(k);
+
     // Will try to throw a interrupt
-    do_kd_int = e_kd_int && keydown;
-    do_ku_int = e_ku_int && !keydown;
+		if (e_kd_int && keydown) {
+			do_interrupt = true;
+			int_msg = INT_KDOWN_MSG[this->Jmp1() &3];
+		} else if (e_ku_int && !keydown) {
+			do_interrupt = true;
+			int_msg = INT_KUP_MSG[this->Jmp1() &3];
+		}
+
   }
 }
 
