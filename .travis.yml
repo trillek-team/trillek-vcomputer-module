@@ -1,0 +1,25 @@
+language: cpp
+compiler: gcc
+before_install:
+    # libstdc++-4.8-dev
+    - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
+    # clang++-3.2 and gcc 4.8
+    - sudo add-apt-repository --yes ppa:h-rayflood/llvm
+    - sudo apt-get -qq update
+install:
+    - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+    - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+#    - sudo apt-get -y install automake libtool cmake
+before_script:
+  - mkdir build
+  - cd build
+  - cmake ..
+script: make
+
+notifications:
+    email:
+      - luis.panadero@gmail.com
+    # I can also set up Glitch to output build results as well if we don't want the travis bot join/part spam
+    #    irc:
+    #    - "chat.freenode.net#sigma-gcf"
+    #    - "chat.freenode.net#project-trillek"
