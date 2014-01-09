@@ -119,6 +119,13 @@ namespace vm {
 				virtual void Reset();
 
 				/**
+				 * Throws a interrupt to the CPU
+				 * @param msg Interrupt message
+				 * @return True if the CPU accepts the interrupt
+				 */
+				virtual bool ThrowInterrupt (dword_t msg);
+				
+				/**
 				 * Return the actual CPU state
 				 */
 				const CpuState& State() const {

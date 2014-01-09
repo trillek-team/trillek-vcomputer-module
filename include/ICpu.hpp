@@ -17,7 +17,7 @@ namespace vm {
 
 		class ICpu {
 			public:
-				ICpu(size_t ram_size, unsigned clock) : ram(ram_size), clock(clock), tot_cycles(0), wait_cycles(0), skiping(false), sleeping(false), int_msg(0), interrupt(false), iacq(false) {
+				ICpu(size_t ram_size, unsigned clock) : ram(ram_size), clock(clock), tot_cycles(0), wait_cycles(0), skiping(false), sleeping(false), int_msg(0), interrupt(false) {
 					assert(ram_size > 0);
 
 					Reset();
@@ -49,7 +49,6 @@ namespace vm {
 					sleeping = false;
 					interrupt = false;
 					int_msg = 0;
-					iacq = false;
 					
 					ram.Reset();
 				}
@@ -98,17 +97,8 @@ namespace vm {
 				 * Throws a interrupt to the CPU
 				 * @param msg Interrupt message
 				 * @return True if the CPU accepts the interrupt
-				 * TODO Rethink Throw/Process interrupt protocol to remove unecesary bool var
 				 */
-				bool ThrowInterrupt (dword_t msg) {
-					if (!iacq) {
-						// The CPU accepts a new interrupt
-						interrupt = true;
-						int_msg = msg;
-						return true;
-					}
-					return false;
-				}
+				virtual bool ThrowInterrupt (dword_t msg) = 0;
 
 				unsigned WaitCycles() const { return wait_cycles;}
 
@@ -129,7 +119,6 @@ namespace vm {
 			
 				dword_t int_msg;        /// Interrupt message
 				bool interrupt;         /// Is hapening an interrupt?
-				bool iacq;              /// IACQ signal
 
 				/**
 				 * Does the real work of executing a instrucction

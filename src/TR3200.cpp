@@ -29,6 +29,16 @@ namespace vm {
 			ICpu::Reset();
 		}
 
+		bool TR3200::ThrowInterrupt (dword_t msg) {
+			if (GET_EI(FLAGS)) {
+				// The CPU accepts a new interrupt
+				interrupt = true;
+				int_msg = msg;
+				return true;
+			}
+			return false;
+		}
+
 		/**
 		 * Executes a TR3200 instruction
 		 * @return Number of cycles that takes to do it
