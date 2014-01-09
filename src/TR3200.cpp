@@ -44,7 +44,6 @@ namespace vm {
 
 			state.interrupt = false;
 			state.int_msg = 0;
-			state.iacq = false;
 
 			state.step_mode = false;
 
@@ -84,7 +83,7 @@ namespace vm {
 		}
 
 		bool TR3200::ThrowInterrupt (dword_t msg) {
-			if (!state.iacq && GET_EI(FLAGS)) {
+			if (GET_EI(FLAGS)) {
 				// The CPU accepts a new interrupt
 				state.interrupt = true;
 				state.int_msg = msg;
@@ -743,7 +742,6 @@ namespace vm {
 							state.r[0] |= ram.RB(state.r[SP]++) << 24;
 
 							SET_OFF_IF(FLAGS);
-							state.iacq = false;
 							state.interrupt = false; // We now not have a interrupt
 							break;
 
@@ -801,14 +799,13 @@ namespace vm {
 		 * Check if there is an interrupt to be procesed
 		 */
 		void TR3200::ProcessInterrupt() {
-			if (GET_EI(FLAGS) && state.interrupt && !state.iacq) {
+			if (GET_EI(FLAGS) && state.interrupt) {
 				byte_t index = state.int_msg;
 				dword_t addr = ram.RD(IA + index*4); // Get the address to jump from the Vector Table
+				state.interrupt = false;
 				if (addr == 0) { // Null entry, does nothing
-					state.interrupt = false;
 					return;
 				}
-				state.iacq = true;
 
 				// push %r0
 				ram.WB(--state.r[SP], state.r[0] >> 24);

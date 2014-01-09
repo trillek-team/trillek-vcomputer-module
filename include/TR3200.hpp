@@ -35,7 +35,6 @@ namespace vm {
 			bool sleeping;          /// Is sleeping?
 
 			bool interrupt;         /// Is hapening an interrupt?
-			bool iacq;              /// IACQ signal
 
 			bool step_mode;         /// Is in step mode execution ?
 		};
