@@ -428,7 +428,7 @@
       //trace("PC:" + vm.CPUState().pc);
       if (step_mode) {
         step_mode = false;
-        var state = vm.CPUState();
+        var state = vm.State();
         $('#pc_ex').text( decimalToHex(state.PC()) );
         $('#instr').text( vm.Disassembly() );
         state.delete();
@@ -436,7 +436,7 @@
         var ticks = vm.Step(elapsed);
         
         // TODO Update VM machine state display
-        var state = vm.CPUState();
+        var state = vm.State();
         for (var i=0; i <= 27; i++ ) {
           var r = state.R(i);
           $('#r' + i.toString() ).text( decimalToHex(r) );

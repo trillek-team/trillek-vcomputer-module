@@ -20,18 +20,24 @@ vm::dword_t pc_(vm::cpu::CpuState& arr) {
   return arr.pc;
 }
 
+void LoadROM_ (const std::string& filename, vm::VirtualComputer<vm::cpu::TR3200>& vcomp) {
+	vm::aux::LoadROM(filename, vcomp);
+}
 
-void WriteROM_ (vm::VirtualComputer& arr,long ptr, size_t rom_size) {
+void WriteROM_ (vm::VirtualComputer<vm::cpu::TR3200>& arr,long ptr, size_t rom_size) {
   auto p = (vm::byte_t *)ptr;
   arr.WriteROM(p, rom_size);
 }
 
+const vm::cpu::CpuState& State_ (vm::VirtualComputer<vm::cpu::TR3200>& arr) {
+	return arr.CPU().State();
+}
 
-bool AddGKey_(vm::VirtualComputer& arr, unsigned slot, vm::keyboard::GKeyboard& d ) {
+bool AddGKey_(vm::VirtualComputer<vm::cpu::TR3200>& arr, unsigned slot, vm::keyboard::GKeyboard& d ) {
   return arr.AddDevice(slot, d);
 }
 
-bool AddCDA_(vm::VirtualComputer& arr, unsigned slot, vm::cda::CDA& d ) {
+bool AddCDA_(vm::VirtualComputer<vm::cpu::TR3200>& arr, unsigned slot, vm::cda::CDA& d ) {
   return arr.AddDevice(slot, d);
 }
 
@@ -40,12 +46,12 @@ void WriteTexture_(vm::cda::CDA& arr, long ptr) {
   arr.ToRGBATexture((vm::dword_t*)p); // TODO Perhaps we need a special function for this case
 }
 
-std::string Disassembly_(vm::VirtualComputer& arr) {
-  return vm::cpu::Disassembly(arr.RAM(), arr.CPUState().pc);
+std::string Disassembly_(vm::VirtualComputer<vm::cpu::TR3200>& arr) {
+  return vm::cpu::Disassembly(arr.RAM(), arr.CPU().State().pc);
 }
 
 EMSCRIPTEN_BINDINGS(tr3200_vm) {
-    function("LoadROM",     &vm::aux::LoadROM);
+    function("LoadROM",     &LoadROM_);
     function("Register",    &r_);
     
     class_<vm::cpu::CpuState>("CpuState")
@@ -54,17 +60,17 @@ EMSCRIPTEN_BINDINGS(tr3200_vm) {
       .function("PC",         &pc_)
       ;
 
-    class_<vm::VirtualComputer>("VirtualComputer")
+    class_<vm::VirtualComputer<vm::cpu::TR3200>>("VirtualComputer")
       .constructor<int>()
-      .function("Reset",      &vm::VirtualComputer::Reset)
+      .function("Reset",      &vm::VirtualComputer<vm::cpu::TR3200>::Reset)
       .function("WriteROM",   &WriteROM_)
       .function("AddKeyboard",&AddGKey_)
       .function("AddCDA",     &AddCDA_)
-      .function("RemoveDevice",  &vm::VirtualComputer::RemoveDevice)
-      .function("CPUState",   &vm::VirtualComputer::CPUState)
-      .function("Clock",      &vm::VirtualComputer::Clock)
-      .function("Step",       &vm::VirtualComputer::Step)
-      .function("Tick",       &vm::VirtualComputer::Tick)
+      .function("RemoveDevice",  &vm::VirtualComputer<vm::cpu::TR3200>::RemoveDevice)
+      .function("State",			&State_)
+      .function("Clock",      &vm::VirtualComputer<vm::cpu::TR3200>::Clock)
+      .function("Step",       &vm::VirtualComputer<vm::cpu::TR3200>::Step)
+      .function("Tick",       &vm::VirtualComputer<vm::cpu::TR3200>::Tick)
       .function("Disassembly",&Disassembly_)
       ;
 
