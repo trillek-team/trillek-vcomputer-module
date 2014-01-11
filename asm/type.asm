@@ -9,8 +9,8 @@
             CALL clr_screen
 
             MOV %r10, 0xFF0A0000 ; %r10 stores screen pointer
-            MOV %r11, 0 ; Row
-            MOV %r12, 0 ; Col
+            MOV %r8, 0 ; Row
+            MOV %r9, 0 ; Col
 loop:       
             LOAD.W %r0, 0xFF000060  ; Reads KEY_REG
             IFEQ %r0, 0
@@ -43,20 +43,20 @@ loop:
 
 paint_char:
             ; Computes position to write
-            LLS %r13, %r12, 1
-            MUL %r14, %r11, 80
-            ADD %r13, %r13, %r14
-            ADD %r13, %r13, %r10
+            LLS %r7, %r9, 1
+            MUL %r6, %r8, 80
+            ADD %r7, %r7, %r6
+            ADD %r7, %r7, %r10
 
             ; Types
-            STORE.B %r13, %r1 
-            ADD %r12, %r12, 1
+            STORE.B %r7, %r1 
+            ADD %r9, %r9, 1
             
             ; Increments cursor
-            IFL %r12, 40
+            IFL %r9, 40
               RJMP loop
-            MOV %r12, 0
-            ADD %r11, %r11, 1
+            MOV %r9, 0
+            ADD %r8, %r8, 1
 
 
 end_loop:
@@ -64,41 +64,41 @@ end_loop:
 
 
 return:
-            MOV %r12, 0
-            ADD %r11, %r11, 1
+            MOV %r9, 0
+            ADD %r8, %r8, 1
             RJMP end_loop
 
 delete:
             MOV %r0, 0x20 ; Space character
-            SUB %r12, %r12, 1   ; Col -1
-            IFSL %r12, 0  ; Is Negative? Then change row
+            SUB %r9, %r9, 1   ; Col -1
+            IFSL %r9, 0  ; Is Negative? Then change row
               RJMP del_row
 
             ; Computes position to write
-            LLS %r13, %r12, 1
-            MUL %r14, %r11, 80
-            ADD %r13, %r13, %r14
-            ADD %r13, %r13, %r10
+            LLS %r7, %r9, 1
+            MUL %r6, %r8, 80
+            ADD %r7, %r7, %r6
+            ADD %r7, %r7, %r10
 
             ; Types
-            STORE.B %r13, %r0 
+            STORE.B %r7, %r0 
 
             RJMP end_loop
 
 del_row:
-            MOV %r12, 0  ; Col 0
-            SUB %r11, %r11, 1  ; Row -1
-            IFSL %r11, 0   ; If Row is negative, coverts to 0
-              MOV %r11, 0
+            MOV %r9, 0  ; Col 0
+            SUB %r8, %r8, 1  ; Row -1
+            IFSL %r8, 0   ; If Row is negative, coverts to 0
+              MOV %r8, 0
 
             ; Computes position to write
-            LLS %r13, %r12, 1
-            MUL %r14, %r11, 80
-            ADD %r13, %r13, %r14
-            ADD %r13, %r13, %r10
+            LLS %r7, %r9, 1
+            MUL %r6, %r8, 80
+            ADD %r7, %r7, %r6
+            ADD %r7, %r7, %r10
 
             ; Types
-            STORE.B %r13, %r0 
+            STORE.B %r7, %r0 
 
             RJMP end_loop
 
