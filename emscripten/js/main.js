@@ -434,15 +434,15 @@
         var ticks = vm.Step(elapsed);
         
         // Update VM machine state display
-        for (var i=0; i <= 27; i++ ) {
+        for (var i=0; i <= 11; i++ ) {
           var r = vm.Reg(i);
           $('#r' + i.toString() ).text( decimalToHex(r) );
         }
         
-        $('#ia').text( decimalToHex(vm.Reg(28)) );
-        $('#flags').text( decimalToHex(vm.Reg(29)) );
-        $('#bp').text( decimalToHex(vm.Reg(30)) );
-        $('#sp').text( decimalToHex(vm.Reg(31)) );
+        $('#bp').text( decimalToHex(vm.Reg(12)) );
+        $('#sp').text( decimalToHex(vm.Reg(13)) );
+        $('#ia').text( decimalToHex(vm.Reg(14)) );
+        $('#flags').text( decimalToHex(vm.Reg(15)) );
 
       } else {
         vm.Tick(cycles, elapsed);

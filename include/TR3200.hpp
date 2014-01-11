@@ -17,14 +17,14 @@
 namespace vm {
 	namespace cpu {
 
-		static unsigned const TR3200_NGPRS = 32;
+		static unsigned const TR3200_NGPRS = 16;
 
 		// Alias to special registers
-#define REG_Y			(27)
-#define REG_IA		(28)
-#define REG_FLAGS (29)
-#define BP				(30)
-#define SP				(31)
+#define REG_Y			(11)
+#define BP				(12)
+#define SP				(13)
+#define REG_IA		(14)
+#define REG_FLAGS (15)
 
 		/// Instrucction types
 #define IS_PAR3(x)  (((x) & 0xC0000000) == 0x40000000 )
@@ -39,9 +39,9 @@ namespace vm {
 #define HAVE_LITERAL(x)     (((x) & 0x00800000) != 0)
 
 		/// Extract operands
-#define GRD(x)              ( (x)       & 0x1F) 
-#define GRS(x)              (((x) >> 5) & 0x1F) 
-#define GRN(x)              (((x) >> 10)& 0x1F) 
+#define GRD(x)              ( (x)       & 0x0F) 
+#define GRS(x)              (((x) >> 5) & 0x0F) 
+#define GRN(x)              (((x) >> 10)& 0x0F) 
 
 #define LIT13(x)            (((x) >> 10)& 0x1FFF) 
 #define LIT18(x)            (((x) >> 5) & 0x3FFFF) 

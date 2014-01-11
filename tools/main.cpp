@@ -423,7 +423,7 @@ int main(int argc, char* argv[]) {
 
 void print_regs(const vm::cpu::TR3200& cpu) {
   // Print registers
-  for (int i=0; i < 27; i++) {
+  for (int i=0; i < 11; i++) {
     std::printf("%%r%2d= 0x%08X ", i, cpu.Reg(i));
     if (i == 3 || i == 7 || i == 11 || i == 15 || i == 19 || i == 23 || i == 27 || i == 31)
       std::printf("\n");
