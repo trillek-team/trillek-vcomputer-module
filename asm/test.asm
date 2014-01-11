@@ -20,7 +20,7 @@ begin:
 
         MOV %r10 , %r1      ; %r10 = 0xBEBECAFE
         SWP %r7, %r9        ; %r9 = 7 ; %r7 = 9
-        NOT %r0, %r0        ; %r0 = 0xFFFFFFFF = -1
+        NOT %r0, %r0        ; %r0 = 0xFFFFFFFE
         XCHGB %r4           ; %r4 = 0x400
         XCHGW %r5           ; %r5 = 0x50000
 
@@ -92,17 +92,17 @@ test_alu:                       ; PC = 0x010C
         IFNEQ %r10, 0x3FF
             JMP crash
 
-;        SUB %r22, %r24, 4       ; %r22 = %r24 -4 = 20 = 0x14
-;        IFNEQ %r22, 20
-;            JMP crash
+        ;SUB %r22, %r24, 4       ; %r22 = %r24 -4 = 20 = 0x14
+        ;IFNEQ %r22, 20
+        ;    JMP crash
 
-;        SUB %r22, %r24, -4      ; %r22 = %r24 -(-4) = 28 = 0x1C
-;        IFNEQ %r22, 28
-;            JMP crash
+        ;SUB %r22, %r24, -4      ; %r22 = %r24 -(-4) = 28 = 0x1C
+        ;IFNEQ %r22, 28
+        ;    JMP crash
 
-;        RSB %r22, %r24, -4      ; %r22 = -4 - %r24 = -28 = 0xFFFFFFE4
-;        IFNEQ %r22, -28
-;            JMP crash
+        ;RSB %r22, %r24, -4      ; %r22 = -4 - %r24 = -28 = 0xFFFFFFE4
+        ;IFNEQ %r22, -28
+        ;    JMP crash
 
         ; Testing Overflow
         MOV %r9, 0x40000000
@@ -135,6 +135,9 @@ test_alu:                       ; PC = 0x010C
 
         ; Testing Shift instructions
         ; %r6 = 0xAAFFFF55
+        ; %r7 = 0x55FFFFAA
+				MOV %r6, 0xAAFFFF55
+				MOV %r7, 0x55FFFFAA
         LLS %r10, %r6, 8        ; %r10 = 0xFFFF5500
         IFNEQ %r10, 0xFFFF5500
             JMP crash
@@ -146,8 +149,8 @@ test_alu:                       ; PC = 0x010C
         ARS %r10, %r6, 8        ; %r10 = 0xFFAAFFFF
         IFNEQ %r10, 0xFFAAFFFF
             JMP crash
-        ARS %r10, %r7, 8        ; %r10 = 0x005555AA
-        IFNEQ %r10, 0x005555AA
+        ARS %r10, %r7, 8        ; %r10 = 0x0055FFFF
+        IFNEQ %r10, 0x0055FFFF
             JMP crash
 
         ROTL %r10, %r6, 8       ; %r10 = 0xFFFF55AA

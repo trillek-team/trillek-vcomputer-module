@@ -410,9 +410,9 @@ namespace vm {
 
 						case P2_OPCODE::SWP :
 							if (!literal) {
-								auto tmp = rn;
-								rn = r[rd];
-								r[rd] = tmp;
+								auto tmp = r[rd];
+								r[rd] = rn;
+								r[GRS(inst)] = tmp;
 							} // If M != acts like a NOP
 							break;
 
