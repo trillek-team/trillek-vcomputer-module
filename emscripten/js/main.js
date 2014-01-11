@@ -425,29 +425,24 @@
     var timeNow = new Date().getTime(); 
     if (lastTime != 0) {
       var elapsed = timeNow - lastTime;
-      //trace("PC:" + vm.CPUState().pc);
+      //trace("PC:" + vm.PC());
       if (step_mode) {
         step_mode = false;
-        var state = vm.State();
-        $('#pc_ex').text( decimalToHex(state.PC()) );
+        $('#pc_ex').text( decimalToHex(vm.PC()) );
         $('#instr').text( vm.Disassembly() );
-        state.delete();
         
         var ticks = vm.Step(elapsed);
         
-        // TODO Update VM machine state display
-        var state = vm.State();
+        // Update VM machine state display
         for (var i=0; i <= 27; i++ ) {
-          var r = state.R(i);
+          var r = vm.Reg(i);
           $('#r' + i.toString() ).text( decimalToHex(r) );
         }
         
-        $('#ia').text( decimalToHex(state.R(28)) );
-        $('#flags').text( decimalToHex(state.R(29)) );
-        $('#bp').text( decimalToHex(state.R(30)) );
-        $('#sp').text( decimalToHex(state.R(31)) );
-
-        state.delete();
+        $('#ia').text( decimalToHex(vm.Reg(28)) );
+        $('#flags').text( decimalToHex(vm.Reg(29)) );
+        $('#bp').text( decimalToHex(vm.Reg(30)) );
+        $('#sp').text( decimalToHex(vm.Reg(31)) );
 
       } else {
         vm.Tick(cycles, elapsed);

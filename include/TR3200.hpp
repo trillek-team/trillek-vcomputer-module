@@ -19,24 +19,12 @@ namespace vm {
 
 		static unsigned const TR3200_NGPRS = 32;
 
-		/**
-		 * Represent the state of the CPU in a moment of time
-		 */
-		struct CpuState {
-			dword_t r[TR3200_NGPRS];      /// Registers
-			dword_t pc;             /// Program Counter 
-
-			bool step_mode;         /// Is in step mode execution ?
-		};
-
-		// Alias to BP and SP registers
-#define BP (30)
-#define SP (31)
-
-		// Alias to Ym Flags and IA registers
-#define RY      state.r[27]
-#define IA      state.r[28]
-#define FLAGS   state.r[29]
+		// Alias to special registers
+#define REG_Y			(27)
+#define REG_IA		(28)
+#define REG_FLAGS (29)
+#define BP				(30)
+#define SP				(31)
 
 		/// Instrucction types
 #define IS_PAR3(x)  (((x) & 0xC0000000) == 0x40000000 )
@@ -124,17 +112,36 @@ namespace vm {
 				 * @return True if the CPU accepts the interrupt
 				 */
 				virtual bool ThrowInterrupt (dword_t msg);
-				
+
 				/**
-				 * Return the actual CPU state
+				 * Return the value of a register
+				 * @param reg Number of register
 				 */
-				const CpuState& State() const {
-					return state;
+				dword_t Reg (unsigned reg) const {
+					assert (reg < TR3200_NGPRS);
+					return r[reg];
+				}
+
+				/**
+				 * Return the Program Counter value
+				 */
+				dword_t PC () const {
+					return pc;
+				}
+
+				/**
+				 * Return if the CPU has entered in Step mode execution
+				 */
+				bool StepMode () const {
+					return step_mode;
 				}
 
 			protected:
 
-				CpuState state;             /// CPU actual state
+				dword_t r[TR3200_NGPRS];      /// Registers
+				dword_t pc;             /// Program Counter 
+
+				bool step_mode;         /// Is in step mode execution ?
 
 				/**
 				 * Does the real work of executing a instrucction

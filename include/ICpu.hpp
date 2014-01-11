@@ -100,10 +100,19 @@ namespace vm {
 				 */
 				virtual bool ThrowInterrupt (dword_t msg) = 0;
 
+				/**
+				 * Number of cycles that needs to end of executing the actual instruction
+				 */
 				unsigned WaitCycles() const { return wait_cycles;}
 
+				/**
+				 * Is skiping the actual instruction ?
+				 */
 				bool Skiping() const { return skiping;}
 
+				/**
+				 * Is sleeping the CPU ?
+				 */
 				bool Sleeping() const { return sleeping;}
 
 				ram::Mem ram;											/// Handles the RAM mapings / access 

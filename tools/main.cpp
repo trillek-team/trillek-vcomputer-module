@@ -140,8 +140,6 @@ int main(int argc, char* argv[]) {
 
   vm.Reset();
 
-  //std::printf("Size of CPU state : %zu bytes \n", sizeof(vm.CPUState()) );
-
   std::cout << "Run program (r) or Step Mode (s) ?\n";
   char mode;
   std::cin >> mode;
@@ -424,52 +422,42 @@ int main(int argc, char* argv[]) {
 
 
 void print_regs(const vm::cpu::TR3200& cpu) {
-	auto state = cpu.State();
-
   // Print registers
   for (int i=0; i < 27; i++) {
-    std::printf("%%r%2d= 0x%08X ", i, state.r[i]);
+    std::printf("%%r%2d= 0x%08X ", i, cpu.Reg(i));
     if (i == 3 || i == 7 || i == 11 || i == 15 || i == 19 || i == 23 || i == 27 || i == 31)
       std::printf("\n");
   }
-  std::printf("%%y= 0x%08X\n", RY);
+  std::printf("%%y= 0x%08X\n", cpu.Reg(REG_Y));
 
-  std::printf("%%ia= 0x%08X ", IA);
-  std::printf("%%flags= 0x%08X ", FLAGS);
-  std::printf("%%bp= 0x%08X ", state.r[BP]);
-  std::printf("%%sp= 0x%08X\n", state.r[SP]);
+  std::printf("%%ia= 0x%08X ", cpu.Reg(REG_IA));
+	auto flags = cpu.Reg(REG_FLAGS);
+  std::printf("%%flags= 0x%08X ", flags);
+  std::printf("%%bp= 0x%08X ", cpu.Reg(BP));
+  std::printf("%%sp= 0x%08X\n", cpu.Reg(SP));
 
-  std::printf("%%pc= 0x%08X \n", state.pc);
-  /*
-     std::printf("EDE: %d EOE: %d ESS: %d EI: %d \t IF: %d DE %d OF: %d CF: %d\n",
-     GET_EDE(FLAGS), GET_EOE(FLAGS), GET_ESS(FLAGS), GET_EI(FLAGS),
-     GET_IF(FLAGS) , GET_DE(FLAGS) , GET_OF(FLAGS) , GET_CF(FLAGS));
-     */
+  std::printf("%%pc= 0x%08X \n", cpu.PC());
   std::printf("ESS: %d EI: %d \t IF: %d DE %d OF: %d CF: %d\n",
-      GET_ESS(FLAGS), GET_EI(FLAGS), GET_IF(FLAGS) , GET_DE(FLAGS) , GET_OF(FLAGS) , GET_CF(FLAGS));
+      GET_ESS(flags), GET_EI(flags), GET_IF(flags) , GET_DE(flags) , GET_OF(flags) , GET_CF(flags));
   std::printf("\n");
 
 }
 
 void print_pc(const vm::cpu::TR3200& cpu, const vm::ram::Mem&  ram) {
-	auto state = cpu.State();
-  
-	vm::dword_t val = ram.RD(state.pc);
+	vm::dword_t val = ram.RD(cpu.PC());
 
-  std::printf("\tPC : 0x%08X > 0x%08X ", state.pc, val); 
-  std::cout << vm::cpu::Disassembly(ram,  state.pc) << std::endl;  
+  std::printf("\tPC : 0x%08X > 0x%08X ", cpu.PC(), val); 
+  std::cout << vm::cpu::Disassembly(ram,  cpu.PC()) << std::endl;  
 }
 
 void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram) {
-	auto state = cpu.State();
-  
 	std::printf("STACK:\n");
 
   for (size_t i =0; i <5*4; i +=4) {
-    auto val = ram.RD(state.r[SP]+ i);
+    auto val = ram.RD(cpu.Reg(SP)+ i);
 
     std::printf("0x%08X\n", val);
-    if (((size_t)(state.r[SP]) + i) >= 0xFFFFFFFF)
+    if (((size_t)(cpu.Reg(SP)) + i) >= 0xFFFFFFFF)
       break;
   }
 }
