@@ -20,7 +20,7 @@
 namespace vm {
 	namespace cpu {
 
-		TR3200::TR3200(size_t ram_size, unsigned clock) : ICpu(ram_size, clock) { 
+		TR3200::TR3200(ram::Mem& ram, unsigned clock) : ICpu(ram, clock) { 
 		}
 
 		TR3200::~TR3200() {

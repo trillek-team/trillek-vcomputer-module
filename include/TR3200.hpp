@@ -97,7 +97,7 @@ namespace vm {
 				 * @param ram_size Size of the Ram in BYTES
 				 * @param clock CPU clock speed
 				 */
-				TR3200(size_t ram_size = 128*1024, unsigned clock = 100000);
+				TR3200(ram::Mem& ram, unsigned clock = 100000);
 
 				virtual ~TR3200();
 

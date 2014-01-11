@@ -17,9 +17,7 @@ namespace vm {
 
 		class ICpu {
 			public:
-				ICpu(size_t ram_size, unsigned clock) : ram(ram_size), clock(clock), tot_cycles(0), wait_cycles(0), skiping(false), sleeping(false), int_msg(0), interrupt(false) {
-					assert(ram_size > 0);
-
+				ICpu(ram::Mem& ram, unsigned clock) : ram(ram), clock(clock), tot_cycles(0), wait_cycles(0), skiping(false), sleeping(false), int_msg(0), interrupt(false) {
 					Reset();
 				}
 
@@ -115,9 +113,9 @@ namespace vm {
 				 */
 				bool Sleeping() const { return sleeping;}
 
-				ram::Mem ram;											/// Handles the RAM mapings / access 
 
 			protected:
+				ram::Mem& ram;					/// Handles the RAM mapings / access 
 				const unsigned clock;		/// CPU clock speed
 				
 				std::size_t tot_cycles;	/// Total number of cpu cycles executed

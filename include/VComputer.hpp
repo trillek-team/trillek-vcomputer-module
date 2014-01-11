@@ -47,10 +47,10 @@ public:
    * @param ram_size RAM size in BYTES
    */
   VirtualComputer (std::size_t ram_size = 128*1024) : 
-			cpu(ram_size), n_devices(0), enumerator(this), timers(this) {
+			ram(ram_size), cpu(ram), n_devices(0), enumerator(this), timers(this) {
 
-		cpu.ram.AddBlock(&enumerator);  // Add Enumerator address handler
-		cpu.ram.AddBlock(&timers);      // Add PIT address handler
+		ram.AddBlock(&enumerator);  // Add Enumerator address handler
+		ram.AddBlock(&timers);      // Add PIT address handler
 
 		std::fill_n(devices, MAX_N_DEVICES, nullptr);
 	}
@@ -73,7 +73,7 @@ public:
   void WriteROM (const byte_t* rom, size_t rom_size) {
 		assert (rom != nullptr);
 
-		cpu.ram.WriteROM(rom, rom_size);
+		ram.WriteROM(rom, rom_size);
 	}
 
   /**
@@ -91,7 +91,7 @@ public:
 
 		devices[slot] = &dev;
 		n_devices++;
-		cpu.ram.AddBlock(dev.MemoryBlocks()); // Add Address handlerss
+		ram.AddBlock(dev.MemoryBlocks()); // Add Address handlerss
 
 		return true;
 	}
@@ -120,7 +120,7 @@ public:
    * Returns the actual RAM image
    */
   const Mem& RAM () const {
-    return cpu.ram;
+    return ram;
   }
 
   /**
@@ -202,6 +202,7 @@ public:
 
 private:
 
+	ram::Mem ram;					/// Handles the RAM mapings / access 
   CPU_t cpu; /// Virtual CPU
 
   IDevice* devices[MAX_N_DEVICES]; /// Devices atached to the virtual computer
