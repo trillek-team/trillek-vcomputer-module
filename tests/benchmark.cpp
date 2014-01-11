@@ -10,6 +10,8 @@
 #include <string>
 #include <cwctype>
 #include <clocale>
+#include <cstdlib>
+#include <ctime>
 
 #include <chrono>
 
@@ -26,7 +28,8 @@ int main(int argc, char* argv[])
 		return -1;
 
 	}
-
+	std::srand(std::time(0));
+	
 	unsigned troms = argc -1;
 	byte_t* rom[troms];
 	size_t rom_size[troms];
@@ -79,8 +82,13 @@ int main(int argc, char* argv[])
 		vm[i].Reset();
 	}
 
+	std::cout << "Randomizing every CPU!\nExecuting a random number of cycles from 1 to 255\n";
+	for (auto i=0; i< N_CPUS; i++) {
+		vm[i].Tick((std::rand() % 255) + 1);
+	}	
+
 	std::cout << "Running " << N_CPUS << " CPUs !\n";
-	unsigned ticks = 10000;
+	unsigned ticks = 5000;
 	unsigned long ticks_count = 0;
 
 	using namespace std::chrono;
