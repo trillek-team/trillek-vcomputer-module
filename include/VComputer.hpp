@@ -53,6 +53,8 @@ public:
 		ram.AddBlock(&timers);      // Add PIT address handler
 
 		std::fill_n(devices, MAX_N_DEVICES, nullptr);
+		std::fill_n(sdevices, MAX_N_DEVICES, nullptr);
+		std::fill_n(idevices, MAX_N_DEVICES, nullptr);
 	}
 
   ~VirtualComputer () {
@@ -90,6 +92,12 @@ public:
 			return false;
 
 		devices[slot] = &dev;
+		if (dev.Flags() & DeviceFlags::WITH_INTERRUPTS) {
+			idevices[slot] = &dev;
+		}
+		if (dev.Flags() & DeviceFlags::SYNC) {
+			sdevices[slot] = &dev;
+		}
 		n_devices++;
 		ram.AddBlock(dev.MemoryBlocks()); // Add Address handlerss
 
@@ -99,6 +107,7 @@ public:
   /**
    * Remove a device from a virtual machine slot
    * @param slot Slot were unplug the device
+	 * TODO Fix all!
    */
   void RemoveDevice (unsigned slot) {
 		if (slot < MAX_N_DEVICES && devices[slot] != nullptr) {
@@ -142,26 +151,23 @@ public:
 	
 		std::size_t i=0;
 		dword_t msg;
-		if (! timers.DoesInterrupt(msg)) {
-			for (; i < MAX_N_DEVICES; i++) {
-				if (devices[i] != nullptr) {
-					devices[i]->Tick(cycles, delta);
-					if (devices[i]->DoesInterrupt(msg)) { // Check interrupts
-						cpu.ThrowInterrupt(msg);
-						break;
-					}
-				}
+		bool interrupted = timers.DoesInterrupt(msg);
+		for (; i < MAX_N_DEVICES; i++) {
+			// Does the sync job
+			if (sdevices[i] != nullptr) {
+				sdevices[i]->Tick(cycles, delta);
 			}
-		} else { // Here throw PIT interrupt only
+			// Try to get the highest priority interrupt
+			if (! interrupted && idevices[i] != nullptr && idevices[i]->DoesInterrupt(msg)) {
+				interrupted = true;
+			}
+		}
+
+		// Send the interrupt to the CPU if there is any
+		if (interrupted) {
 			cpu.ThrowInterrupt(msg);
 		}
-		
-		for (; i < MAX_N_DEVICES; i++) {
-			if (devices[i] != nullptr) {
-				devices[i]->Tick(cycles, delta);
-			}
-		}
-		
+
 		return cycles;
 	}
 
@@ -178,24 +184,21 @@ public:
 		
 		std::size_t i=0;
 		dword_t msg;
-		if (! timers.DoesInterrupt(msg)) {
-			for (; i < MAX_N_DEVICES; i++) {
-				if (devices[i] != nullptr) {
-					devices[i]->Tick(n, delta);
-					if (devices[i]->DoesInterrupt(msg)) { // Check interrupts
-						cpu.ThrowInterrupt(msg);
-						break;
-					}
-				}
-			}
-		} else { // Here throw PIT interrupt only
-			cpu.ThrowInterrupt(msg);
-		}
-		
+		bool interrupted = timers.DoesInterrupt(msg);
 		for (; i < MAX_N_DEVICES; i++) {
-			if (devices[i] != nullptr) {
-				devices[i]->Tick(n, delta);
+			// Does the sync job
+			if (sdevices[i] != nullptr) {
+				sdevices[i]->Tick(n, delta);
 			}
+			// Try to get the highest priority interrupt
+			if (! interrupted && idevices[i] != nullptr && idevices[i]->DoesInterrupt(msg)) {
+				interrupted = true;
+			}
+		}
+
+		// Send the interrupt to the CPU if there is any
+		if (interrupted) {
+			cpu.ThrowInterrupt(msg);
 		}
 		
 	}
@@ -205,7 +208,9 @@ private:
 	ram::Mem ram;					/// Handles the RAM mapings / access 
   CPU_t cpu; /// Virtual CPU
 
-  IDevice* devices[MAX_N_DEVICES]; /// Devices atached to the virtual computer
+  IDevice* devices[MAX_N_DEVICES];	/// Devices atached to the virtual computer
+  IDevice* sdevices[MAX_N_DEVICES]; /// Devices that run in sync with the VM clock
+  IDevice* idevices[MAX_N_DEVICES]; /// Devices that can throw a interrupt
   unsigned n_devices;
 
   /**

@@ -63,6 +63,8 @@ public:
   word_t DevId() const        {return 0x0001;} // CDA standard
   word_t DevVer() const       {return 0x0000;} // Ver 0 -> CDA base standard
 
+	DeviceFlags Flags () const	{return DeviceFlags::WITH_INTERRUPTS;}
+
   virtual void Tick (unsigned n=1, const double delta = 0);
 
   virtual std::vector<ram::AHandler*> MemoryBlocks() const;

@@ -16,6 +16,14 @@
 
 namespace vm {
 
+/**
+ * Flags that indicte to the VM some usefull information
+ */
+enum DeviceFlags {
+	WITH_INTERRUPTS			= 1,	/// The Device can generate Interrupts
+	SYNC								= 2		/// The Devuce executes code in sync with the CPU/VM clock
+};
+
 /** 
  * Base class of all devices
  */
@@ -66,6 +74,10 @@ public:
     return jmp2;
   }
 
+	/**
+	 * Information about the device to the VM like if can thorow flags, etc..
+	 */
+	virtual DeviceFlags Flags () const = 0;
 
   /**
    * Does Hardware stuff in sync with the CPU clock
