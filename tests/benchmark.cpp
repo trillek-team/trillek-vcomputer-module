@@ -63,6 +63,8 @@ int main(int argc, char* argv[])
 
 	VirtualComputer<vm::cpu::TR3200> vm[N_CPUS];
 	for (auto i=0; i< N_CPUS; i++) {
+		vm[i].BuildID (std::rand() % 0xffffffff); // Asign random BuildIDs
+
 		auto rom_ptr = rom[i % troms];
 		auto rom_s = rom_size[i % troms];
 		vm[i].WriteROM(rom_ptr, rom_s);
@@ -77,7 +79,7 @@ int main(int argc, char* argv[])
 	keyboard::GKeyboard keyb[N_CPUS];
 
 	for (auto i=0; i< N_CPUS; i++) {
-		vm[i].AddDevice(0, gcard[i]);
+		vm[i].AddDevice(0, gcard[i]); 
 		vm[i].AddDevice(2, keyb[i]);
 		vm[i].Reset();
 	}

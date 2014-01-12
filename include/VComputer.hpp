@@ -46,8 +46,8 @@ public:
    * Creates a Virtual Computer
    * @param ram_size RAM size in BYTES
    */
-  VirtualComputer (std::size_t ram_size = 128*1024) : 
-			ram(ram_size), cpu(ram), n_devices(0), enumerator(this), timers(this) {
+  VirtualComputer (dword_t buildid = 0, std::size_t ram_size = 128*1024) : 
+			buildid(buildid), ram(ram_size), cpu(ram), n_devices(0), enumerator(this), timers(this) {
 
 		ram.AddBlock(&enumerator);  // Add Enumerator address handler
 		ram.AddBlock(&timers);      // Add PIT address handler
@@ -58,6 +58,20 @@ public:
 	}
 
   ~VirtualComputer () {
+	}
+
+	/**
+	 * Changes the build id (this not should happen when is running!)
+	 */
+	void BuildID (dword_t val) {
+		this->buildid = val;
+	}
+
+	/**
+	 * Return the BuildID
+	 */
+	dword_t BuildID () const {
+		return this->buildid;
 	}
 
   /**
@@ -205,6 +219,8 @@ public:
 
 private:
 
+	dword_t buildid;
+
 	ram::Mem ram;					/// Handles the RAM mapings / access 
   CPU_t cpu; /// Virtual CPU
 
@@ -224,7 +240,7 @@ private:
 
 			this->vm = vm;
 			this->begin = 0xFF000000;
-			this->size = 2;
+			this->size = 0xC;
 			ndev = 0;
 			read = 0;
 		}
@@ -236,10 +252,44 @@ private:
 			addr -= this->begin;
 			if (addr == 0) {
 				return read & 0xFF;
+
 			}	else if (addr == 1) {
 				return read >> 8;
+
+			} else if (addr >= 4 && addr <= 7) {
+				// Return CLK register
+				switch (addr) {
+					case 4:
+						return vm->CPU().Clock() & 0xFF;
+
+					case 5:
+						return (vm->CPU().Clock() >> 8) & 0xFF;
+					
+					case 6:
+						return (vm->CPU().Clock() >> 16) & 0xFF;
+					
+					case 7:
+						return (vm->CPU().Clock() >> 24) & 0xFF;
+				}
+				
+			} else if (addr >= 8 && addr <= 0xB) {
+				// Return BUILID registers
+				switch (addr) {
+					case 8:
+						return vm->buildid & 0xFF;
+
+					case 9:
+						return (vm->buildid >> 8) & 0xFF;
+					
+					case 10:
+						return (vm->buildid >> 16) & 0xFF;
+					
+					case 11:
+						return (vm->buildid >> 24) & 0xFF;
+				}
+				
+				
 			}
-			// TODO CLK and BUILDID registers
 			return 0;
 		}
 

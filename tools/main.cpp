@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Create the Virtual Machine
-  VirtualComputer<vm::cpu::TR3200> vm;
+  VirtualComputer<vm::cpu::TR3200> vm(12345);
   vm.WriteROM(rom, rom_size);
   delete[] rom;
 
