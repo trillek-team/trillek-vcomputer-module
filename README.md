@@ -1,9 +1,9 @@
-TR3200 Computer Virtual Machine Lib
-===================================
+Trillek Virtual Computer Lib
+============================
 
 Using these [specs](https://github.com/trillek-team/trillek-computer)
 
-This repo is composed by the TR3200-VM libs and some extra tools. The tools includes a program that loads a binary file to a VM ROM and executes it.
+This repo is composed by the Trillek Virtual Computer lib and some extra tools. 
 
 COMPILING
 ---------
@@ -14,11 +14,13 @@ Actually I'm using CMake and C++ 11.
     cmake ..
     make
 
-This will only generate the static and dynamic libs of the TR3200-VM libs.
+By default will generate dynamic libs and compile tools and tests.
 
-If you wish to compile the tools, then you should use **"cmake -DBUILD_tools=True .."**
+If you wish to compile a static lib, then you should use **"cmake -DBUILD_STATIC_TR3200=True .."**
 
-If you wish to compile the tests, then you should use **"cmake -DBUILD_tests=True .."**
+If you not wish to compile the tools, then you should use **"cmake -DBUILD_tools=False .."**
+
+If you not wish to compile the tests, then you should use **"cmake -DBUILD_tests=False .."**
 
 Plus you can control if you wish release or debug building using **"-DCMAKE_BUILD_TYPE=Release"** or **"-DCMAKE_BUILD_TYPE=Debug"** flag in cmake.
 

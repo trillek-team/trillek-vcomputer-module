@@ -9,7 +9,7 @@ include_directories( benchmark
   )
 
 target_link_libraries( benchmark
-  TR3200_lib_static
+  TR3200
   )
 
 
@@ -29,7 +29,7 @@ if(SDL2_ENABLE)
     )
 
   target_link_libraries( test_cda
-    TR3200_lib_static
+    TR3200
     ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARIES}
     ${GLM_LIBRARIES}

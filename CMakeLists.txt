@@ -25,18 +25,16 @@ else (TR3200_SUB_PROJECT)
 
   project(TR3200)
 
-  set(PACKAGE_BUGREPORT "luis.panader@gmail.com")
+	# We like having options
+	set(BUILD_tools TRUE CACHE BOOL "Build TR3200 VM tools")
+	set(BUILD_tests TRUE CACHE BOOL "Build TR3200 VM tests")
+	set(BUILD_STATIC_TR3200 FALSE CACHE BOOL "Build TR3200 VM as a static library")
+
+	set(PACKAGE_BUGREPORT "luis.panadero@gmail.com")
   set(PACKAGE_NAME "TR3200_vm")
   set(PACKAGE_VERSION "0.1")
   set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
   set(PACKAGE_TARNAME "${PACKAGE_NAME}")
-
-  if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    message( "Release mode")
-    set (LOG_ENABLE 0)
-  else (CMAKE_BUILD_TYPE STREQUAL "Release")
-    set (LOG_ENABLE 1)
-  endif (CMAKE_BUILD_TYPE STREQUAL "Release")
 
   # Set the directory where to find FindSLD2.cmake
   set(CMAKE_MODULE_PATH ${TR3200_SOURCE_DIR}/cmake)
@@ -72,25 +70,28 @@ else (TR3200_SUB_PROJECT)
 
     include(Platform)
 
-    message( "Procesing Source Code - Build libraries")
-    # TR3200 VM core lib
-    add_library( TR3200_lib
-      SHARED
-      ${TR3200_SRC}
-      )
+    message( "Procesing Source Code - Build library")
+		# TR3200 VM core lib
+		if(BUILD_STATIC_TR3200)
+			add_library( TR3200	STATIC
+				${TR3200_SRC}
+				)
+    
+			include_directories(TR3200
+				${TR3200_INCLUDE_DIRS}
+				)
 
-    add_library( TR3200_lib_static
-      STATIC
-      ${TR3200_SRC}
-      )
+		else(BUILD_STATIC_TR3200)
+			add_library( TR3200	SHARED
+				${TR3200_SRC}
+				)
+    
+			include_directories(TR3200
+				${TR3200_INCLUDE_DIRS}
+				)
+		
+		endif(BUILD_STATIC_TR3200)
 
-    include_directories(TR3200_lib
-      ${TR3200_INCLUDE_DIRS}
-      )
-
-    include_directories(TR3200_lib_static
-      ${TR3200_INCLUDE_DIRS}
-      )
 
     if(BUILD_tools OR BUILD_tests)
 

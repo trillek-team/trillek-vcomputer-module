@@ -17,7 +17,7 @@ include_directories( vm
   )
 
 target_link_libraries( vm
-  TR3200_lib_static
+  TR3200
   ${OPENGL_LIBRARIES}
   ${GLEW_LIBRARIES}
   ${GLM_LIBRARIES}
