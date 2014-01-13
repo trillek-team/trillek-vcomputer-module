@@ -5,6 +5,10 @@ Using these [specs](https://github.com/trillek-team/trillek-computer)
 
 This repo is composed by the Trillek Virtual Computer lib and some extra tools. 
 
+| linux                                            |
+|--------------------------------------------------|
+| [![Build Status](https://travis-ci.org/trillek-team/trillek-tr3200-vm.png?branch=master)](https://travis-ci.org/trillek-team/trillek-tr3200-vm) |
+
 COMPILING
 ---------
 Actually I'm using CMake and C++ 11. 
