@@ -26,8 +26,8 @@ else (TR3200_SUB_PROJECT)
   project(TR3200)
 
 	# We like having options
-	set(BUILD_tools TRUE CACHE BOOL "Build TR3200 VM tools")
-	set(BUILD_tests TRUE CACHE BOOL "Build TR3200 VM tests")
+	set(BUILD_TOOLS_TR3200 TRUE CACHE BOOL "Build TR3200 VM tools")
+	set(BUILD_TESTS_TR3200 TRUE CACHE BOOL "Build TR3200 VM tests")
 	set(BUILD_STATIC_TR3200 FALSE CACHE BOOL "Build TR3200 VM as a static library")
 
 	set(PACKAGE_BUGREPORT "luis.panadero@gmail.com")
@@ -93,7 +93,7 @@ else (TR3200_SUB_PROJECT)
 		endif(BUILD_STATIC_TR3200)
 
 
-    if(BUILD_tools OR BUILD_tests)
+    if(BUILD_TOOLS_TR3200 OR BUILD_TESTS_TR3200)
 
       # Find SDL2 and OpenGL libs
       find_package(SDL2)
@@ -122,21 +122,21 @@ else (TR3200_SUB_PROJECT)
       #  set (SDL2_ENABLE 0)
       #endif(NOT GLM_FOUND)
 
-      if(BUILD_tools)
+      if(BUILD_TOOLS_TR3200)
         message( "Procesing Tools")
         add_subdirectory(tools)
-      endif(BUILD_tools)
+      endif(BUILD_TOOLS_TR3200)
 
       message( "Procesing Assets")
       add_subdirectory(assets)
 
 
-      if(BUILD_tests)
+      if(BUILD_TESTS_TR3200)
         message( "Procesing Tests")
         add_subdirectory(tests)
-      endif(BUILD_tests)
+      endif(BUILD_TESTS_TR3200)
 
-    endif(BUILD_tools OR BUILD_tests)
+    endif(BUILD_TOOLS_TR3200 OR BUILD_TESTS_TR3200)
 
   endif (EMSCRIPTEN)
 

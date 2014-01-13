@@ -18,9 +18,9 @@ By default will generate dynamic libs and compile tools and tests.
 
 If you wish to compile a static lib, then you should use **"cmake -DBUILD_STATIC_TR3200=True .."**
 
-If you not wish to compile the tools, then you should use **"cmake -DBUILD_tools=False .."**
+If you not wish to compile the tools, then you should use **"cmake -DBUILD_TOOLS_TR3200=False .."**
 
-If you not wish to compile the tests, then you should use **"cmake -DBUILD_tests=False .."**
+If you not wish to compile the tests, then you should use **"cmake -DBUILD_TESTS_TR3200=False .."**
 
 Plus you can control if you wish release or debug building using **"-DCMAKE_BUILD_TYPE=Release"** or **"-DCMAKE_BUILD_TYPE=Debug"** flag in cmake.
 
