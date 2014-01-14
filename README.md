@@ -3,6 +3,8 @@ Trillek Virtual Computer Lib
 
 Using these [specs](https://github.com/trillek-team/trillek-computer)
 
+The design of the Virtual Computer should allow to plug and use different CPUs. Actually only uses the TR3200 CPU.
+
 This repo is composed by the Trillek Virtual Computer lib and some extra tools. 
 
 | linux                                            |
@@ -45,22 +47,23 @@ WHAT IT DOES ACTUALLY
 
 #### vm
 
-Is a program that uses TR3200-VM lib to run a RC3200 emulation. Can run in step mode or in "run mode" where executes all the program without stopping. Needs C++ 11 std::chrono compilance for timings; SDL2 + GLFW + GLM + OpenGL 3.1 is needed if you desire to see the virtual screen.
+Is a program that uses Trillek Virtual Computer lib to run a TR3200 emulation. Can run in step mode or in "run mode" where executes all the program without stopping. Needs C++ 11 *std::chrono compilance* for timings; **SDL2 + GLFW + GLM + OpenGL 3.1** is needed if you desire to see the virtual screen.
 
 - Can load a little endian binary file with a program. Has a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
-- Step mode working with a on-line disassembler. Each time that you press a
+- Step mode, have a on-line disassembler. Each time that you press a
   key, one instruction is executed, and the status of registers and stack, is
   shown. '**q**' ends the execution.
-- Run mode at what your computer can give. It does not enforce a particular speed, but it does compare the real speed against a CPU speed of 100KHz. Only stops by doing '**Ctrl+C**'. The run speed is tweaked by source code to run at 100% aprox. in my computer.
+- Run mode, It try to enforce CPU Clock speed (100KHz) with a simple algorithm. Only stops by doing '**Ctrl+C**'. 
 - If SDL2, GLM and OpenGL libs headers are found, then it will create a window of 800x600 showing a virtual screen. This
   adds the possibility of end the execution closing the window or pressing '**q**'. Additionally '**F3**' key toggles virtual keyboard. When Virtual Keyboard is enabled, 'q' key types to it instead of ending the emulation.
 
 #### benchmark
 
-Is a program that run a quick and dirty benchmark to measure the performance of the TR3200-VM lib. Needs C++ 11 std::chrono compilance for timings.
+Is a program that run a quick and dirty benchmark to measure the performance of the Trillek Virtual Computer lib. Needs C++ 11 *std::chrono compilance* for timings.
 
-- Can load a little endian binary file with a program. Has a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
-- Trys to execute 1000 TR3200 CPUs in a single thread at what your computer can give. It does not enforce a particular speed, but it does compare the real speed against a CPU speed of 100KHz. Only stops by doing 'Ctrl+C'.
+- Can load a list of little endian binary files as ROMs for each Virtual Computer. Has a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
+- Executes a random number of cycles before begin the benchmark to make more realistic.
+- Tries to execute 1000 Virtual Computers with the TR3200 CPUs in a single thread at what your computer can give. It does not enforce a particular speed, but it does compare the real speed against a CPU clock of 100KHz. Only stops by doing 'Ctrl+C'.
 
 #### pbm2font
 
@@ -70,7 +73,7 @@ Is a small tool that can generate a hexadecimal representation of a user font fo
 
 #### test_cda
 
-It tests the CDA VRAM to RGBA Texture routines, PBO texture streaming, and displays it in a virtual screen in 3D (in awindow of 1024x768). This requires SDL2 + GLFW + GLM + OpenGL 3.1 to work.
+It tests the CDA VRAM to RGBA Texture routines, PBO texture streaming, and displays it in a virtual screen in 3D (in a window of 1024x768). This requires SDL2 + GLFW + GLM + OpenGL 3.1 to work.
 It has these shortcuts:
 
 - 'n' Change to the next video/text mode
@@ -86,13 +89,13 @@ HOW I CAN CREATE PROGRAMS ?
 ---------------------------
 Actually you can use <a href="https://github.com/Meisaka/WaveAsm" target="_blank">Meisaka's WaveAsm</a> to generate TR3200 machine code.
 
-ADJUNT TR3200 ASM PROGRAMS
+ADJUNCT TR3200 ASM PROGRAMS
 --------------------------
 There is some TR3200 ASM programs, source code and binary files, in /asm directory. Actually are :
 
 - hwm.asm : List the number of attached devices and display his enumeration information
 - hello.asm : Hello world
-- test.asm : Some tests of TR3200 compliance.
+- test.asm : Some tests of TR3200 CPU compliance.
 - type.asm : Basic type program
 - clock.asm : Basic clock that prints hours minutes seconds in hexadecimal, and uses PIT TMR0 interrupt plus sleeps waiting it.
 
@@ -113,8 +116,6 @@ TODO
 - Implement beeper
 - Implement more devices.
 - Improve the vm API and document it better -> doxygen
-- Create a vm factory class
 - Fix the virtual keyboard. Actually SDL2 key event weirdness make this lees straightforward that should be. This means that actually only works alphanumeric characters and a few symbols.
-- Probably remove SDL2 dependency and use directly GLFW
 
 
