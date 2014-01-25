@@ -160,7 +160,7 @@ public:
    * @return number of cycles executed
    */
   unsigned Step( const double delta = 0) {
-		auto cycles = cpu.Step();
+		unsigned cycles = cpu.Step();
 		timers.Update(cycles);
 	
 		std::size_t i=0;

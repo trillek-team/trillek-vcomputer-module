@@ -22,7 +22,7 @@ void CDA::Tick (unsigned n, const double delta) {
 }
 
 std::vector<ram::AHandler*> CDA::MemoryBlocks() const { 
-  auto handlers = IDevice::MemoryBlocks(); 
+  std::vector<ram::AHandler*> handlers = IDevice::MemoryBlocks(); 
   handlers.push_back((ram::AHandler*)&vram);
   handlers.push_back((ram::AHandler*)&setupr);
 

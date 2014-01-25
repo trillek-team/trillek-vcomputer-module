@@ -3,7 +3,7 @@
  * \file aux.cpp
  */
 
-#include "Aux.hpp"
+#include "Auxiliar.hpp"
 #include "VSFix.hpp"
 #include "GKeyboard.hpp"
 

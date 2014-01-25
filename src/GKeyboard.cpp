@@ -24,7 +24,7 @@ void GKeyboard::Tick (unsigned n, const double delta) {
 }
 
 std::vector<ram::AHandler*> GKeyboard::MemoryBlocks() const { 
-  auto handlers = IDevice::MemoryBlocks(); 
+  std::vector<ram::AHandler*> handlers = IDevice::MemoryBlocks(); 
   handlers.push_back((ram::AHandler*)&reg_handler);
 
   return handlers;
@@ -101,12 +101,12 @@ GKeyboard::KeybReg::~KeybReg() {
 byte_t GKeyboard::KeybReg::RB (dword_t addr) {
   addr &= 3; // We only are interesed in the two least significant bits
   if (addr == 0 && gkey->keybuffer.size() > 0) { // KEY_REG LSB
-    auto ret = gkey->keybuffer.back();
+    word_t ret = gkey->keybuffer.back();
     gkey->keybuffer.pop_back();
     return ret & 0xFF;
 
   } else if (addr == 1 && gkey->keybuffer.size() > 0) { // KEY_REG MSB
-    auto ret = gkey->keybuffer.back();
+    word_t ret = gkey->keybuffer.back();
     return ret >> 8;
 
   } else if (addr == 2) { // KEY_STATUS

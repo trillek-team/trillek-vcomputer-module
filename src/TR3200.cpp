@@ -410,7 +410,7 @@ namespace vm {
 
 						case P2_OPCODE::SWP :
 							if (!literal) {
-								auto tmp = r[rd];
+								dword_t tmp = r[rd];
 								r[rd] = rn;
 								r[GRS(inst)] = tmp;
 							} // If M != acts like a NOP

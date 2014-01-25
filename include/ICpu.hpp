@@ -57,7 +57,7 @@ namespace vm {
 				 */
 				unsigned Step() {
 					if (!sleeping) {
-						auto cyc = RealStep();
+						unsigned cyc = RealStep();
 						tot_cycles += cyc;
 						return cyc;
 					} else {
