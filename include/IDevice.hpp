@@ -1,110 +1,104 @@
 #pragma once
 /**
- * TR3200 VM - CDA.hpp
- * Base class of all devices
- *
+ * Trillek Virtual Computer - ICPU.hpp
+ * Defines a base interface for all Devices in the Virtual Computer
  */
 
 #ifndef __IDEVICE_HPP__
 #define __IDEVICE_HPP__ 1
 
 #include "Types.hpp"
-#include "Ram.hpp"
-
-#include <memory>
-#include <vector>
+#include "VComputer.hpp"
 
 namespace vm {
 
-/**
- * Flags that indicte to the VM some usefull information
- */
-enum DeviceFlags {
-	WITH_INTERRUPTS			= 1,	/// The Device can generate Interrupts
-	SYNC								= 2		/// The Devuce executes code in sync with the CPU/VM clock
-};
-
-/** 
- * Base class of all devices
- */
-class IDevice {
-public:
-
-  /**
-   * Build a device setting his jumper values
-   * @param j1 Jumper 1 value
-   * @param j2 Jumper 2 value
-   */
-  IDevice(dword_t j1 = 0, dword_t j2 = 0);
-
-  virtual ~IDevice();
-
-  /**
-   * Device Class
-   */
-  virtual byte_t DevClass() const = 0;
-
-  /**
-   * Device Builder/Vendor
-   */
-  virtual word_t Builder() const = 0;
-
-  /**
-   * Device ID
-   */
-  virtual word_t DevId() const = 0;
-
-  /**
-   * Device Version
-   */
-  virtual word_t DevVer() const = 0;
-
-  /**
-   * Return Jumper 1 value
-   */
-  word_t Jmp1() const {
-    return jmp1;
-  }
-
-
-  /**
-   * Return Jumper 2 value
-   */
-  word_t Jmp2() const {
-    return jmp2;
-  }
-
-	/**
-	 * Information about the device to the VM like if can thorow flags, etc..
+	/** 
+	 * Interface that must be implemente by any Device that will be used by the
+	 * Virtual Computer.
+	 * Derived class constructors must set vcomp == nullptr.
 	 */
-	virtual DeviceFlags Flags () const = 0;
+	class IDevice {
+		public:
 
-  /**
-   * Does Hardware stuff in sync with the CPU clock
-   * @param n Number of clock ticks executing
-   * @param delta Number milliseconds since the last call
-   */
-  virtual void Tick (unsigned n=1, const double delta = 0) = 0;
+			virtual ~IDevice() {
+			}
+			
+			/**
+			 * Sets the VComputer pointer
+			 * This method must be only called by VComputer itself
+			 * @param vcomp VComputer pointer or nullptr
+			 */
+			virtual void SetVComputer (vm::VComputer* vcomp) {
+				this->vcomp = vcomp;
+			}
 
-	/**
-	 * Checks if the device is trying to thorow a interrupt
-	 * @param msg The interrupt message will be writen here
-	 * @return True if is generating a new interrupt
-	 */
-	bool DoesInterrupt(dword_t& msg);
+			/**
+			 * Sends (writes to CMD register) a command to the device
+			 * @param cmd Command value to send
+			 */
+			virtual void SendCMD (word_t cmd) = 0;
 
-  /**
-   * Return an vector of ptrs AHandler that uses this device
-   */
-  virtual std::vector<ram::AHandler*> MemoryBlocks() const;
+			virtual void A (word_t cmd) = 0;
+			virtual void B (word_t cmd) = 0;
+			virtual void C (word_t cmd) = 0;
+			virtual void D (word_t cmd) = 0;
+			virtual void E (word_t cmd) = 0;
 
-protected:
-  unsigned jmp1;
-  unsigned jmp2;
+			virtual word_t A () = 0;
+			virtual word_t B () = 0;
+			virtual word_t C () = 0;
+			virtual word_t D () = 0;
+			virtual word_t E () = 0;
 
-	dword_t int_msg;		/// Stores the interrupt message
-	bool do_interrupt;	/// Does is generating a interrupt ?
-};
+			/**
+			 * Device Type
+			 */
+			virtual byte_t DevType() const = 0;
+
+			/**
+			 * Device Builder ID
+			 */
+			virtual dword_t DevBuildID() const = 0;
+
+			/**
+			 * Device ID
+			 */
+			virtual byte_t DevId() const = 0;
+
+			/**
+			 * Device Revision
+			 */
+			virtual byte_t DevRev() const = 0;
+
+			/**
+			 * Return if the device does something each Device Clock tick.
+			 * Few devices really need to do this, so IDevice implementation 
+			 * returns false.
+			 */
+			virtual bool IsSyncDev const {
+				return false;
+			}
+
+			/**
+			 * Executes N Device clock cycles. 
+			 * Here resides the code that is executed every Device Clock tick. 
+			 * IDevice implementation does nothing.
+			 * @param n Number of clock ticks executing
+			 * @param delta Number milliseconds since the last call
+			 */
+			virtual void Tick (unsigned n=1, const double delta = 0) { 
+			}
+
+			/**
+			 * Checks if the device is trying to generate an interrupt
+			 * @param msg The interrupt message will be writen here
+			 * @return True if is generating a new interrupt
+			 */
+			bool DoesInterrupt(word_t& msg);
+
+
+		protected:
+	};
 
 } // End of namespace vm
 
