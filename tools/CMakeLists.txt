@@ -10,16 +10,16 @@ add_executable( vm
 
 IF (SDL2_ENABLE EQUAL 0)
 	include_directories( vm
-		${TR3200_INCLUDE_DIRS}
+		${VCOMPUTER_INCLUDE_DIRS}
 		)
 
 	target_link_libraries( vm
-		TR3200
+		VCOMPUTER
 		)
 
 ELSE (SDL2_ENABLE EQUAL 0)
 	include_directories( vm
-		${TR3200_INCLUDE_DIRS}
+		${VCOMPUTER_INCLUDE_DIRS}
 		${OPENGL_INCLUDE_DIR}
 		${GLEW_INCLUDE_DIR}
 		${GLM_INCLUDE_DIR}
@@ -27,7 +27,7 @@ ELSE (SDL2_ENABLE EQUAL 0)
 		)
 
 	target_link_libraries( vm
-		TR3200
+		VCOMPUTER
 		${OPENGL_LIBRARIES}
 		${GLEW_LIBRARIES}
 		${GLM_LIBRARIES}
@@ -41,5 +41,5 @@ add_executable( pbm2font
   )
 
 include_directories( pbm2font
-  ${TR3200_INCLUDE_DIRS}
+  ${VCOMPUTER_INCLUDE_DIRS}
   )

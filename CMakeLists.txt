@@ -1,57 +1,47 @@
 cmake_minimum_required(VERSION 2.6)
 
-
-if (TR3200_SUB_PROJECT)
-  message ("Setting SRC and INCLUDE for TR3200")
+if (VCOMPUTER_SUB_PROJECT)
+  message ("Setting SRC and INCLUDE for Trillek VCOMPUTER")
 
   # Include dirs
-  set(TR3200_INCLUDE_DIRS 
+  set(VCOMPUTER_INCLUDE_DIRS 
     "${CMAKE_CURRENT_SOURCE_DIR}/include/"
     PARENT_SCOPE
     )
 
   # Source dirs
-  file(GLOB TR3200_SRC_ 
+  file(GLOB VCOMPUTER_SRC_ 
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" 
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
     )
 
-  set(TR3200_SRC
-    ${TR3200_SRC_}
+  set(VCOMPUTER_SRC
+    ${VCOMPUTER_SRC_}
     PARENT_SCOPE
     )
 
-else (TR3200_SUB_PROJECT)
+else (VCOMPUTER_SUB_PROJECT)
 
-  project(TR3200)
+  project(VCOMPUTER)
 
 	# We like having options
-	set(BUILD_TOOLS_TR3200 TRUE CACHE BOOL "Build TR3200 VM tools")
-	set(BUILD_TESTS_TR3200 TRUE CACHE BOOL "Build TR3200 VM tests")
-	set(BUILD_STATIC_TR3200 FALSE CACHE BOOL "Build TR3200 VM as a static library")
-
-	set(PACKAGE_BUGREPORT "luis.panadero@gmail.com")
-  set(PACKAGE_NAME "TR3200_vm")
-  set(PACKAGE_VERSION "0.1")
-  set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
-  set(PACKAGE_TARNAME "${PACKAGE_NAME}")
+	set(BUILD_TOOLS_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER tools")
+	set(BUILD_TESTS_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER tests")
+	set(BUILD_STATIC_VCOMPUTER FALSE CACHE BOOL "Build Trillek VCOMPUTER as a static library")
 
   # Set the directory where to find FindSLD2.cmake
-  set(CMAKE_MODULE_PATH ${TR3200_SOURCE_DIR}/cmake)
-
-  # Outpit the compiler ID.
-  message("Compiler ID: " ${CMAKE_CXX_COMPILER_ID})
+  set(CMAKE_MODULE_PATH ${VCOMPUTER_SOURCE_DIR}/cmake)
 
   set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
   # Include dirs
-  set(TR3200_INCLUDE_DIRS
+  set(VCOMPUTER_INCLUDE_DIRS
     ${PROJECT_BINARY_DIR}
-    ${TR3200_SOURCE_DIR}/include
+    ${VCOMPUTER_SOURCE_DIR}/include
     )
 
   # Source dirs
-  file(GLOB TR3200_SRC 
+  file(GLOB VCOMPUTER_SRC 
     "src/*.cpp" 
     "include/*.hpp" 
     )
@@ -71,29 +61,29 @@ else (TR3200_SUB_PROJECT)
     include(Platform)
 
     message( "Procesing Source Code - Build library")
-		# TR3200 VM core lib
-		if(BUILD_STATIC_TR3200)
-			add_library( TR3200	STATIC
-				${TR3200_SRC}
+		# VCOMPUTER VM core lib
+		if(BUILD_STATIC_VCOMPUTER)
+			add_library( VCOMPUTER	STATIC
+				${VCOMPUTER_SRC}
 				)
     
-			include_directories(TR3200
-				${TR3200_INCLUDE_DIRS}
+			include_directories(VCOMPUTER
+				${VCOMPUTER_INCLUDE_DIRS}
 				)
 
-		else(BUILD_STATIC_TR3200)
-			add_library( TR3200	SHARED
-				${TR3200_SRC}
+		else(BUILD_STATIC_VCOMPUTER)
+			add_library( VCOMPUTER	SHARED
+				${VCOMPUTER_SRC}
 				)
     
-			include_directories(TR3200
-				${TR3200_INCLUDE_DIRS}
+			include_directories(VCOMPUTER
+				${VCOMPUTER_INCLUDE_DIRS}
 				)
 		
-		endif(BUILD_STATIC_TR3200)
+		endif(BUILD_STATIC_VCOMPUTER)
 
 
-    if(BUILD_TOOLS_TR3200 OR BUILD_TESTS_TR3200)
+    if(BUILD_TOOLS_VCOMPUTER OR BUILD_TESTS_VCOMPUTER)
 
       # Find SDL2 and OpenGL libs
       find_package(SDL2)
@@ -122,23 +112,23 @@ else (TR3200_SUB_PROJECT)
         set (SDL2_ENABLE 0)
       endif(NOT GLM_FOUND)
 
-      if(BUILD_TOOLS_TR3200)
+      if(BUILD_TOOLS_VCOMPUTER)
         message( "Procesing Tools")
         add_subdirectory(tools)
-      endif(BUILD_TOOLS_TR3200)
+      endif(BUILD_TOOLS_VCOMPUTER)
 
       message( "Procesing Assets")
       add_subdirectory(assets)
 
 
-      if(BUILD_TESTS_TR3200)
+      if(BUILD_TESTS_VCOMPUTER)
         message( "Procesing Tests")
         add_subdirectory(tests)
-      endif(BUILD_TESTS_TR3200)
+      endif(BUILD_TESTS_VCOMPUTER)
 
-    endif(BUILD_TOOLS_TR3200 OR BUILD_TESTS_TR3200)
+    endif(BUILD_TOOLS_VCOMPUTER OR BUILD_TESTS_VCOMPUTER)
 
   endif (EMSCRIPTEN)
 
-endif (TR3200_SUB_PROJECT)
+endif (VCOMPUTER_SUB_PROJECT)
 

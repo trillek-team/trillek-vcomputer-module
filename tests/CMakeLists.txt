@@ -5,11 +5,11 @@ add_executable( benchmark
   )
 
 include_directories( benchmark
-  ${TR3200_INCLUDE_DIRS}
+  ${VCOMPUTER_INCLUDE_DIRS}
   )
 
 target_link_libraries( benchmark
-  TR3200
+  VCOMPUTER
   )
 
 
@@ -21,7 +21,7 @@ if(SDL2_ENABLE)
     )
 
   include_directories( test_cda
-    ${TR3200_INCLUDE_DIRS}
+    ${VCOMPUTER_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
     ${GLM_INCLUDE_DIR}
@@ -29,7 +29,7 @@ if(SDL2_ENABLE)
     )
 
   target_link_libraries( test_cda
-    TR3200
+    VCOMPUTER
     ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARIES}
     ${GLM_LIBRARIES}

@@ -3,7 +3,7 @@ Trillek Virtual Computer Lib
 
 Using these [specs](https://github.com/trillek-team/trillek-computer)
 
-The design of the Virtual Computer should allow to plug and use different CPUs. Actually only uses the TR3200 CPU.
+The design of the Virtual Computer should allow to plug and use different CPUs. 
 
 This repo is composed by the Trillek Virtual Computer lib and some extra tools. 
 
@@ -102,20 +102,9 @@ There is some TR3200 ASM programs, source code and binary files, in /asm directo
 IMPLEMENTED DEVICES
 -------------------
 
-- CDA (need verification that user palette and user font works)
-- Hardware Enumerator
-- PIT (Timers) 
-- Virtual Keyboard. **vm** need to do better interface with SDL2 key events as actually does.
-
 
 TODO
 ----
 
-- Check that all instructions work as they should (tested around 66%). -> Add more cases and fix test.asm
-- Improve the memory mapper as it is currently pretty inefficient if we add a lot of devices.
-- Implement beeper
-- Implement more devices.
-- Improve the vm API and document it better -> doxygen
-- Fix the virtual keyboard. Actually SDL2 key event weirdness make this lees straightforward that should be. This means that actually only works alphanumeric characters and a few symbols.
-
+- Nearly all, as we are moving to the new version of the specs.
 
