@@ -38,17 +38,17 @@ namespace vm {
 			 */
 			virtual void SendCMD (word_t cmd) = 0;
 
-			virtual void A (word_t cmd) = 0;
-			virtual void B (word_t cmd) = 0;
-			virtual void C (word_t cmd) = 0;
-			virtual void D (word_t cmd) = 0;
-			virtual void E (word_t cmd) = 0;
+			virtual void A (word_t cmd) { }
+			virtual void B (word_t cmd) { }
+			virtual void C (word_t cmd) { }
+			virtual void D (word_t cmd) { }
+			virtual void E (word_t cmd) { }
 
-			virtual word_t A () = 0;
-			virtual word_t B () = 0;
-			virtual word_t C () = 0;
-			virtual word_t D () = 0;
-			virtual word_t E () = 0;
+			virtual word_t A () { }
+			virtual word_t B () { }
+			virtual word_t C () { }
+			virtual word_t D () { }
+			virtual word_t E () { }
 
 			/**
 			 * Device Type
@@ -94,8 +94,15 @@ namespace vm {
 			 * @param msg The interrupt message will be writen here
 			 * @return True if is generating a new interrupt
 			 */
-			bool DoesInterrupt(word_t& msg);
+			virtual bool DoesInterrupt(word_t& msg) {
+				return false;
+			}
 
+			/**
+			 * Informs to the device that his generated interrupt was accepted by the CPU
+			 */
+			void IACK () {
+			}
 
 		protected:
 	};

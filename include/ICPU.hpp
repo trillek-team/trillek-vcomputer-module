@@ -68,7 +68,7 @@ namespace vm {
 				 * @param size Size of the chunk of memory were can write. If is 
 				 * sucesfull, it will be set to the size of the write data.
 				 */
-				void GetState (const void* ptr, size_t& size) const = 0;
+				virtual void GetState (const void* ptr, size_t& size) const = 0;
 
 			protected:
 				vm::VComputer* vcomp;		/// Ptr to the Virtual Computer
