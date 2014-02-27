@@ -1,11 +1,10 @@
 /**
- * TR3200 VM - cpu.cpp
- * CPU of the virtual machine
+ * Trillek Virtual Computer - TR3200.cpp
+ * Implementation of the TR3200 CPU
  */
 
-#ifdef __NOT_REWRITE_YET_
-
 #include "TR3200.hpp"
+#include "TR3200_opcodes.hpp"
 #include "VSFix.hpp"
 
 #include <iostream>
@@ -13,6 +12,76 @@
 #include <algorithm>
 
 #include <cassert>
+
+// Alias to special registers
+#define REG_Y			(11)
+#define BP				(12)
+#define SP				(13)
+#define REG_IA		(14)
+#define REG_FLAGS (15)
+
+/// Instrucction types
+#define IS_PAR3(x)  (((x) & 0xC0000000) == 0x40000000 )
+#define IS_PAR2(x)  (((x) & 0x80000000) == 0x80000000 )
+#define IS_PAR1(x)  (((x) & 0xE0000000) == 0x20000000 )
+#define IS_NP(x)    (((x) & 0xE0000000) == 0x00000000 )
+
+/// Instrucction sub-type
+#define IS_BRANCH(x)    (((x) & 0xE0000000) == 0xA0000000 )
+
+/// Uses a Literal value ?
+#define HAVE_LITERAL(x)     (((x) & 0x00800000) != 0)
+
+/// Extract operands
+#define GRD(x)              ( (x)       & 0x0F) 
+#define GRS(x)              (((x) >> 5) & 0x0F) 
+#define GRN(x)              (((x) >> 10)& 0x0F) 
+
+#define LIT13(x)            (((x) >> 10)& 0x1FFF) 
+#define LIT18(x)            (((x) >> 5) & 0x3FFFF) 
+#define LIT22(x)            ( (x)       & 0x7FFFFF) 
+
+/// Uses next dword as literal
+#define IS_BIG_LITERAL_L13(x)   ((x) == 0x1000)
+#define IS_BIG_LITERAL_L18(x)   ((x) == 0x20000)
+#define IS_BIG_LITERAL_L22(x)   ((x) == 0x400000)
+
+// Macros for ALU operations
+#define CARRY_BIT(x)        ((((x) >> 32) & 0x1) == 1)
+#define DW_SIGN_BIT(x)      ( ((x) >> 31) & 0x1)
+#define W_SIGN_BIT(x)       ( ((x) >> 15) & 0x1)
+#define B_SIGN_BIT(x)       ( ((x) >> 7)  & 0x1)
+
+// Extract sign of Literal Operator
+#define O13_SIGN_BIT(x)     (((x) >> 12)  & 0x1)
+#define O18_SIGN_BIT(x)     (((x) >> 17)  & 0x1)
+#define O22_SIGN_BIT(x)     (((x) >> 21)  & 0x1)
+
+// Operation in Flags bits
+#define GET_CF(x)          ((x) & 0x1)
+#define SET_ON_CF(x)       (x |= 0x1)
+#define SET_OFF_CF(x)      (x &= 0xFFFFFFFE)
+
+#define GET_OF(x)          (((x) & 0x2) >> 1)
+#define SET_ON_OF(x)       (x |= 0x2)
+#define SET_OFF_OF(x)      (x &= 0xFFFFFFFD)
+
+#define GET_DE(x)          (((x) & 0x4) >> 2)
+#define SET_ON_DE(x)       (x |= 0x4)
+#define SET_OFF_DE(x)      (x &= 0xFFFFFFFB)
+
+#define GET_IF(x)          (((x) & 0x8) >> 3)
+#define SET_ON_IF(x)       (x |= 0x8)
+#define SET_OFF_IF(x)      (x &= 0xFFFFFFF7)
+
+// Enable bits that change what does the CPU
+#define GET_EI(x)          (((x) & 0x100) >> 8)
+#define SET_ON_EI(x)       (x |= 0x100)
+#define SET_OFF_EI(x)      (x &= 0xFFFFFEFF)
+
+#define GET_ESS(x)         (((x) & 0x200) >> 9)
+#define SET_ON_ESS(x)      (x |= 0x200)
+#define SET_OFF_ESS(x)     (x &= 0xFFFFFDFF)
 
 // Internal alias to Y Flags and IA registers
 #define RY      r[REG_Y]
@@ -22,7 +91,8 @@
 namespace vm {
 	namespace cpu {
 
-		TR3200::TR3200(ram::Mem& ram, unsigned clock) : ICpu(ram, clock) { 
+		TR3200::TR3200(unsigned clock) : ICPU(), cpu_clock(clock) {
+			this->Reset();
 		}
 
 		TR3200::~TR3200() {
@@ -30,19 +100,59 @@ namespace vm {
 
 		void TR3200::Reset() {
 			std::fill_n(r, TR3200_NGPRS, 0);
-			pc = 0;
-			step_mode = false;
+			pc = 0x100000; //0;
 
-			ICpu::Reset();
+			wait_cycles = 0;
+
+			int_msg = 0;
+			
+			interrupt = false;
+			step_mode = false;
+			skiping = false;
+			sleeping = false;
 		}
 
-		bool TR3200::ThrowInterrupt (dword_t msg) {
+		unsigned TR3200::Step() {
+			assert (vcomp != nullptr);
+
+			if (!sleeping) {
+				unsigned cyc = RealStep();
+				return cyc;
+			} else {
+				ProcessInterrupt();
+				return 1;
+			}
+		}
+
+		void TR3200::Tick(unsigned n) {
+			assert (n > 0);
+			assert (vcomp != nullptr);
+			
+			unsigned i = 0;
+			
+			do {
+				if (!sleeping) {
+					if (wait_cycles <= 0 ) {
+						wait_cycles = RealStep();
+					}
+
+					wait_cycles--;
+				} else {
+					ProcessInterrupt();
+				}
+
+				i++;
+			} while (i < n);
+		}
+
+		bool TR3200::SendInterrupt (word_t msg) {
 			if (GET_EI(FLAGS)) {
 				// The CPU accepts a new interrupt
 				interrupt = true;
 				int_msg = msg;
 				return true;
 			}
+
 			return false;
 		}
 
@@ -51,9 +161,9 @@ namespace vm {
 		 * @return Number of cycles that takes to do it
 		 */
 		unsigned TR3200::RealStep() {
-			wait_cycles = 0;
+			unsigned wait_cycles = 0;
 
-			dword_t inst = ram.RD(pc);
+			dword_t inst = vcomp->ReadDW(pc);
 			pc +=4;
 
 			dword_t opcode, rd, rs, rn;
@@ -77,7 +187,7 @@ namespace vm {
 					if (literal) {
 						rn = LIT13(inst);
 						if (IS_BIG_LITERAL_L13(rn)) { // Next dword is literal value 
-							rn = ram.RD(pc);
+							rn = vcomp->ReadDW(pc);
 							pc +=4;
 							wait_cycles++;
 						} else if (O13_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
@@ -126,9 +236,6 @@ namespace vm {
 								if (DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) { 
 									// Overflow happens
 									SET_ON_OF(FLAGS);
-									//if (GET_EOE(FLAGS)) {
-									//    ThrowInterrupt(4);
-									//}
 								} else {
 									SET_OFF_OF(FLAGS);
 								}
@@ -148,9 +255,6 @@ namespace vm {
 								if (DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) { 
 									// Overflow happens
 									SET_ON_OF(FLAGS);
-									//if (GET_EOE(FLAGS)) {
-									//    ThrowInterrupt(4);
-									//}
 								} else {
 									SET_OFF_OF(FLAGS);
 								}
@@ -171,7 +275,7 @@ namespace vm {
 									// Overflow happens
 									SET_ON_OF(FLAGS);
 									//if (GET_EOE(FLAGS)) {
-									//    ThrowInterrupt(4);
+									//    SendInterrupt(4);
 									//}
 								} else {
 									SET_OFF_OF(FLAGS);
@@ -193,7 +297,7 @@ namespace vm {
 									// Overflow happens
 									SET_ON_OF(FLAGS);
 									//if (GET_EOE(FLAGS)) {
-									//    ThrowInterrupt(4);
+									//    SendInterrupt(4);
 									//}
 								} else {
 									SET_OFF_OF(FLAGS);
@@ -215,7 +319,7 @@ namespace vm {
 									// Overflow happens
 									SET_ON_OF(FLAGS);
 									//if (GET_EOE(FLAGS)) {
-									//    ThrowInterrupt(4);
+									//    SendInterrupt(4);
 									//}
 								} else {
 									SET_OFF_OF(FLAGS);
@@ -236,9 +340,6 @@ namespace vm {
 								if (DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) { 
 									// Overflow happens
 									SET_ON_OF(FLAGS);
-									//if (GET_EOE(FLAGS)) {
-									//    ThrowInterrupt(4);
-									//}
 								} else {
 									SET_OFF_OF(FLAGS);
 								}
@@ -267,118 +368,112 @@ namespace vm {
 							break;
 
 						case P3_OPCODE::ARS : {
-																		sdword_t srs = rs;
-																		sdword_t srn = rn;
+							sdword_t srs = rs;
+							sdword_t srn = rn;
 
-																		sqword_t result = (((sqword_t)srs) << 1) >> srn; // Enforce to do arithmetic shift
+							sqword_t result = (((sqword_t)srs) << 1) >> srn; // Enforce to do arithmetic shift
 
-																		if (result & 1) // We grab output bit
-																			SET_ON_CF(FLAGS);
-																		else
-																			SET_OFF_CF(FLAGS);
-																		SET_OFF_OF(FLAGS);
-																		r[rd] = (dword_t)(result >> 1);
-																		break;
-																	}
+							if (result & 1) // We grab output bit
+								SET_ON_CF(FLAGS);
+							else
+								SET_OFF_CF(FLAGS);
+							SET_OFF_OF(FLAGS);
+							r[rd] = (dword_t)(result >> 1);
+							break;
+						}
 
 						case P3_OPCODE::ROTL :
-																	r[rd] = rs << (rn%32);
-																	r[rd] |= rs >> (32 - (rn)%32);
-																	SET_OFF_OF(FLAGS);
-																	SET_OFF_CF(FLAGS);
-																	break;
+							r[rd] = rs << (rn%32);
+							r[rd] |= rs >> (32 - (rn)%32);
+							SET_OFF_OF(FLAGS);
+							SET_OFF_CF(FLAGS);
+							break;
 
 						case P3_OPCODE::ROTR :
-																	r[rd] = rs >> (rn%32);
-																	r[rd] |= rs << (32 - (rn)%32);
-																	SET_OFF_OF(FLAGS);
-																	SET_OFF_CF(FLAGS);
-																	break;
+							r[rd] = rs >> (rn%32);
+							r[rd] |= rs << (32 - (rn)%32);
+							SET_OFF_OF(FLAGS);
+							SET_OFF_CF(FLAGS);
+							break;
 
 						case P3_OPCODE::MUL :
-																	wait_cycles += 17;
-																	ltmp = ((qword_t)rs) * rn;
-																	RY = (dword_t)(ltmp >> 32);      // 32bit MSB of the 64 bit result
-																	r[rd] = (dword_t)ltmp;     // 32bit LSB of the 64 bit result
-																	SET_OFF_OF(FLAGS);
-																	SET_OFF_CF(FLAGS);
-																	break;
+							wait_cycles += 17;
+							ltmp = ((qword_t)rs) * rn;
+							RY = (dword_t)(ltmp >> 32);      // 32bit MSB of the 64 bit result
+							r[rd] = (dword_t)ltmp;     // 32bit LSB of the 64 bit result
+							SET_OFF_OF(FLAGS);
+							SET_OFF_CF(FLAGS);
+							break;
 
 						case P3_OPCODE::SMUL : {
-																		 wait_cycles += 27;
-																		 sqword_t lword = (sqword_t)rs;
-																		 lword *= rn;
-																		 RY = (dword_t)(lword >> 32);     // 32bit MSB of the 64 bit result
-																		 r[rd] = (dword_t)lword;    // 32bit LSB of the 64 bit result
-																		 SET_OFF_OF(FLAGS);
-																		 SET_OFF_CF(FLAGS);
-																		 break;
-																	 }
+							wait_cycles += 27;
+							sqword_t lword = (sqword_t)rs;
+							lword *= rn;
+							RY = (dword_t)(lword >> 32);     // 32bit MSB of the 64 bit result
+							r[rd] = (dword_t)lword;    // 32bit LSB of the 64 bit result
+							SET_OFF_OF(FLAGS);
+							SET_OFF_CF(FLAGS);
+							break;
+						}
 
 						case P3_OPCODE::DIV :
-																	 wait_cycles += 27;
-																	 if (rn != 0) {
-																		 r[rd] = rs / rn;
-																		 RY = rs % rn; // Compiler should optimize this and use a single instruction
-																	 } else { // Division by 0
-																		 SET_ON_DE(FLAGS);
-																		 //if ( GET_EDE(FLAGS)) {
-																		 //    ThrowInterrupt(0);
-																		 //}
-																	 }
-																	 SET_OFF_OF(FLAGS);
-																	 SET_OFF_CF(FLAGS);
-																	 break;
+						  wait_cycles += 27;
+						  if (rn != 0) {
+						 	 r[rd] = rs / rn;
+						 	 RY = rs % rn; // Compiler should optimize this and use a single instruction
+						  } else { // Division by 0
+						 	 SET_ON_DE(FLAGS);
+						  }
+						  SET_OFF_OF(FLAGS);
+						  SET_OFF_CF(FLAGS);
+						  break;
 
 
 						case P3_OPCODE::SDIV : {
-																		 wait_cycles += 37;
-																		 if (rn != 0) {
-																			 sdword_t srs = rs;
-																			 sdword_t srn = rn;
-																			 sdword_t result = srs / srn;
-																			 r[rd] = result;
-																			 result = srs % srn;
-																			 RY = result;
-																		 } else { // Division by 0
-																			 SET_ON_DE(FLAGS);
-																			 //if ( GET_EDE(FLAGS)) {
-																			 //    ThrowInterrupt(0);
-																			 //}
-																		 }
-																		 SET_OFF_OF(FLAGS);
-																		 SET_OFF_CF(FLAGS);
+							wait_cycles += 37;
+							if (rn != 0) {
+								sdword_t srs = rs;
+								sdword_t srn = rn;
+								sdword_t result = srs / srn;
+								r[rd] = result;
+								result = srs % srn;
+								RY = result;
+							} else { // Division by 0
+								SET_ON_DE(FLAGS);
+							}
+							SET_OFF_OF(FLAGS);
+							SET_OFF_CF(FLAGS);
 
-																		 break;
-																	 }
+							break;
+						}
 
 
 						case P3_OPCODE::LOAD :
-																	 r[rd] = ram.RD(rs+rn);
-																	 break;
+						  r[rd] = vcomp->ReadDW(rs+rn);
+						  break;
 
 						case P3_OPCODE::LOADW :
-																	 r[rd] = ram.RW(rs+rn);
-																	 break;
+						  r[rd] = vcomp->ReadW(rs+rn);
+						  break;
 
 						case P3_OPCODE::LOADB :
-																	 r[rd] = ram.RB(rs+rn);
-																	 break;
+						  r[rd] = vcomp->ReadB(rs+rn);
+						  break;
 
 						case P3_OPCODE::STORE :
-																	 ram.WB(rs+rn   , r[rd]);
-																	 ram.WB(rs+rn +1, r[rd] >> 8);
-																	 ram.WB(rs+rn +2, r[rd] >> 16);
-																	 ram.WB(rs+rn +3, r[rd] >> 24);
-																	 break;
+						  vcomp->WriteB(rs+rn   , r[rd]);
+						  vcomp->WriteB(rs+rn +1, r[rd] >> 8);
+						  vcomp->WriteB(rs+rn +2, r[rd] >> 16);
+						  vcomp->WriteB(rs+rn +3, r[rd] >> 24);
+						  break;
 
 						case P3_OPCODE::STOREW :
-																	 ram.WB(rs+rn   , r[rd]);
-																	 ram.WB(rs+rn +1, r[rd] >> 8);
+																	 vcomp->WriteB(rs+rn   , r[rd]);
+																	 vcomp->WriteB(rs+rn +1, r[rd] >> 8);
 																	 break;
 
 						case P3_OPCODE::STOREB :
-																	 ram.WB(rs+rn   , r[rd]);
+																	 vcomp->WriteB(rs+rn   , r[rd]);
 																	 break;
 
 						default:
@@ -395,7 +490,7 @@ namespace vm {
 					if (literal) {
 						rn = LIT18(inst);
 						if (IS_BIG_LITERAL_L18(rn)) { // Next dword is literal value 
-							rn = ram.RD(pc);
+							rn = vcomp->ReadDW(pc);
 							pc +=4;
 							wait_cycles++;
 						} else if (O18_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
@@ -440,31 +535,31 @@ namespace vm {
 
 
 						case P2_OPCODE::LOAD2 :
-							r[rd] = ram.RD(rn);
+							r[rd] = vcomp->ReadDW(rn);
 							break;
 
 						case P2_OPCODE::LOADW2 :
-							r[rd] = ram.RW(rn);
+							r[rd] = vcomp->ReadW(rn);
 							break;
 
 						case P2_OPCODE::LOADB2 :
-							r[rd] = ram.RB(rn);
+							r[rd] = vcomp->ReadB(rn);
 							break;
 
 						case P2_OPCODE::STORE2 :
-							ram.WB(rn   , r[rd]);
-							ram.WB(rn +1, r[rd] >> 8);
-							ram.WB(rn +2, r[rd] >> 16);
-							ram.WB(rn +3, r[rd] >> 24);
+							vcomp->WriteB(rn   , r[rd]);
+							vcomp->WriteB(rn +1, r[rd] >> 8);
+							vcomp->WriteB(rn +2, r[rd] >> 16);
+							vcomp->WriteB(rn +3, r[rd] >> 24);
 							break;
 
 						case P2_OPCODE::STOREW2 :
-							ram.WB(rn   , r[rd]);
-							ram.WB(rn +1, r[rd] >> 8);
+							vcomp->WriteB(rn   , r[rd]);
+							vcomp->WriteB(rn +1, r[rd] >> 8);
 							break;
 
 						case P2_OPCODE::STOREB2 :
-							ram.WB(rn   , r[rd]);
+							vcomp->WriteB(rn   , r[rd]);
 							break;
 
 
@@ -490,63 +585,63 @@ namespace vm {
 							break;
 
 						case P2_OPCODE::IFSL : {
-																		 sdword_t srd = r[rd];
-																		 sdword_t srn = rn;
-																		 if (!(srd < srn)) {
-																			 skiping = true;
-																			 wait_cycles++;
-																		 }
-																		 break;
-																	 }
+							sdword_t srd = r[rd];
+							sdword_t srn = rn;
+							if (!(srd < srn)) {
+							  skiping = true;
+								wait_cycles++;
+							}
+							break;
+						}
 
 						case P2_OPCODE::IFLE :
-																	 if (!(r[rd] <= rn)) {
-																		 skiping = true;
-																		 wait_cycles++;
-																	 }
-																	 break;
+							if (!(r[rd] <= rn)) {
+							  skiping = true;
+							  wait_cycles++;
+						  }
+						  break;
 
 						case P2_OPCODE::IFSLE : {
-																			sdword_t srd = r[rd];
-																			sdword_t srn = rn;
-																			if (!(srd <= srn)) {
-																				skiping = true;
-																				wait_cycles++;
-																			}
-																			break;
-																		}
+							sdword_t srd = r[rd];
+							sdword_t srn = rn;
+							if (!(srd <= srn)) {
+								skiping = true;
+								wait_cycles++;
+							}
+							break;
+						}
 
 						case P2_OPCODE::IFBITS :
-																		if (! ((r[rd] & rn) != 0)) {
-																			skiping = true;
-																			wait_cycles++;
-																		}
-																		break;
+						  if (! ((r[rd] & rn) != 0)) {
+							  skiping = true;
+							  wait_cycles++;
+						  }
+						  break;
 
 						case P2_OPCODE::IFCLEAR :
-																		if (! ((r[rd] & rn) == 0)) {
-																			skiping = true;
-																			wait_cycles++;
-																		}
-																		break;
+							if (! ((r[rd] & rn) == 0)) {
+								skiping = true;
+								wait_cycles++;
+							}
+							break;
 
 						case P2_OPCODE::JMP2 : // Absolute jump
-																		pc = (r[rd] + rn) & 0xFFFFFFFC;
-																		break;
+							pc = (r[rd] + rn) & 0xFFFFFFFC;
+							break;
 
 						case P2_OPCODE::CALL2 : // Absolute call
-																		wait_cycles++;
-																		// push to the stack register pc value
-																		ram.WB(--r[SP], pc >> 24);
-																		ram.WB(--r[SP], pc >> 16);
-																		ram.WB(--r[SP], pc >> 8);
-																		ram.WB(--r[SP], pc); // Little Endian
-																		pc = (r[rd] + rn) & 0xFFFFFFFC;
-																		break;
+							wait_cycles++;
+							// push to the stack register pc value
+							vcomp->WriteB(--r[SP], pc >> 24);
+							vcomp->WriteB(--r[SP], pc >> 16);
+							vcomp->WriteB(--r[SP], pc >> 8);
+							vcomp->WriteB(--r[SP], pc); // Little Endian
+							pc = (r[rd] + rn) & 0xFFFFFFFC;
+							break;
 
 
 						default:
-																		break; // Unknow OpCode -> Acts like a NOP (this could change)
+							break; // Unknow OpCode -> Acts like a NOP (this could change)
 					}
 
 				} else if (IS_PAR1(inst)) {
@@ -559,7 +654,7 @@ namespace vm {
 					if (literal) {
 						rn = LIT22(inst);
 						if (IS_BIG_LITERAL_L22(rn)) { // Next dword is literal value 
-							rn = ram.RD(pc);
+							rn = vcomp->ReadDW(pc);
 							pc +=4;
 							wait_cycles++;
 						} else if (O22_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
@@ -596,7 +691,7 @@ namespace vm {
 						case P1_OPCODE::POP :
 							if (!literal) {
 								// SP always points to the last pushed element
-								r[rn]  = ram.RD(r[SP]);
+								r[rn]  = vcomp->ReadDW(r[SP]);
 								r[SP] += 4;
 							}
 							break;
@@ -605,10 +700,10 @@ namespace vm {
 							// SP always points to the last pushed element
 							if (!literal)
 								rn = r[rn]; 
-							ram.WB(--r[SP] , rn >> 24);
-							ram.WB(--r[SP] , rn >> 16);
-							ram.WB(--r[SP] , rn >> 8 );
-							ram.WB(--r[SP] , rn      );
+							vcomp->WriteB(--r[SP] , rn >> 24);
+							vcomp->WriteB(--r[SP] , rn >> 16);
+							vcomp->WriteB(--r[SP] , rn >> 8 );
+							vcomp->WriteB(--r[SP] , rn      );
 							break;
 
 
@@ -621,10 +716,10 @@ namespace vm {
 						case P1_OPCODE::CALL :  // Absolute call
 							wait_cycles++;
 							// push to the stack register pc value
-							ram.WB(--r[SP], pc >> 24);
-							ram.WB(--r[SP], pc >> 16);
-							ram.WB(--r[SP], pc >> 8);
-							ram.WB(--r[SP], pc); // Little Endian
+							vcomp->WriteB(--r[SP], pc >> 24);
+							vcomp->WriteB(--r[SP], pc >> 16);
+							vcomp->WriteB(--r[SP], pc >> 8);
+							vcomp->WriteB(--r[SP], pc); // Little Endian
 							if (!literal)
 								rn = r[rn]; 
 							pc = rn & 0xFFFFFFFC;
@@ -639,10 +734,10 @@ namespace vm {
 						case P1_OPCODE::RCALL : // Relative call
 							wait_cycles++;
 							// push to the stack register pc value
-							ram.WB(--r[SP], pc >> 24);
-							ram.WB(--r[SP], pc >> 16);
-							ram.WB(--r[SP], pc >> 8);
-							ram.WB(--r[SP], pc); // Little Endian
+							vcomp->WriteB(--r[SP], pc >> 24);
+							vcomp->WriteB(--r[SP], pc >> 16);
+							vcomp->WriteB(--r[SP], pc >> 8);
+							vcomp->WriteB(--r[SP], pc); // Little Endian
 							if (!literal)
 								rn = r[rn]; 
 							pc = (pc + rn) & 0xFFFFFFFC;
@@ -653,7 +748,7 @@ namespace vm {
 							wait_cycles += 3;
 							if (!literal)
 								rn = r[rn]; 
-							ThrowInterrupt(rn);
+							SendInterrupt(rn);
 							break;
 
 						default:
@@ -673,10 +768,10 @@ namespace vm {
 						case NP_OPCODE::RET:
 							wait_cycles = 4;
 							// Pop PC
-							pc = ram.RB(r[SP]++);
-							pc |= ram.RB(r[SP]++) << 8;
-							pc |= ram.RB(r[SP]++) << 16;
-							pc |= ram.RB(r[SP]++) << 24;
+							pc = vcomp->ReadB(r[SP]++);
+							pc |= vcomp->ReadB(r[SP]++) << 8;
+							pc |= vcomp->ReadB(r[SP]++) << 16;
+							pc |= vcomp->ReadB(r[SP]++) << 24;
 							pc &= 0xFFFFFFFC;
 							break;
 
@@ -684,17 +779,17 @@ namespace vm {
 							wait_cycles = 6;
 
 							// Pop PC
-							pc = ram.RB(r[SP]++);
-							pc |= ram.RB(r[SP]++) << 8;
-							pc |= ram.RB(r[SP]++) << 16;
-							pc |= ram.RB(r[SP]++) << 24;
+							pc = vcomp->ReadB(r[SP]++);
+							pc |= vcomp->ReadB(r[SP]++) << 8;
+							pc |= vcomp->ReadB(r[SP]++) << 16;
+							pc |= vcomp->ReadB(r[SP]++) << 24;
 							pc &= 0xFFFFFFFC;
 
 							// Pop %r0
-							r[0] = ram.RB(r[SP]++);
-							r[0] |= ram.RB(r[SP]++) << 8;
-							r[0] |= ram.RB(r[SP]++) << 16;
-							r[0] |= ram.RB(r[SP]++) << 24;
+							r[0] = vcomp->ReadB(r[SP]++);
+							r[0] |= vcomp->ReadB(r[SP]++) << 8;
+							r[0] |= vcomp->ReadB(r[SP]++) << 16;
+							r[0] |= vcomp->ReadB(r[SP]++) << 24;
 
 							SET_OFF_IF(FLAGS);
 							interrupt = false; // We now not have a interrupt
@@ -708,37 +803,40 @@ namespace vm {
 				}
 
 				// If step-mode is enable, Throw the adequate exception
-				if (step_mode && ! GET_IF(FLAGS))
-					ThrowInterrupt(0);
+				if (step_mode && ! GET_IF(FLAGS)) {
+					SendInterrupt(0);
+				}
 
 				ProcessInterrupt(); // Here we check if a interrupt happens
 
-
 				return wait_cycles;
 
-			} else {
+			} else { // Skiping an instruction
 				wait_cycles += 1;
 				skiping = false;
 
 				// See what kind of instruction is to know how many should
-				// increment PC, and remove skiping flag if is not a branch
+				// increment PC, and remove skiping flag if is not an IFxxx instruction
 				if (literal) {
 					if (IS_PAR3(inst)) {
 						// 3 parameter instruction
 						rn = LIT13(inst);
 						if (IS_BIG_LITERAL_L13(rn) )
 							pc +=4;
+
 					} else if (IS_PAR2(inst)) {
 						// 2 parameter instruction
 						skiping = IS_BRANCH(inst); // Chain IFxx
 						rn = LIT18(inst);
 						if (literal && IS_BIG_LITERAL_L18(rn) )
 							pc +=4;
+
 					} else if (IS_PAR1(inst)) { 
 						// 1 parameter instruction
 						rn = LIT22(inst);
 						if (literal && IS_BIG_LITERAL_L22(rn) )
 							pc +=4;
+						
 					}
 
 				} else if (IS_PAR2(inst) && IS_BRANCH(inst)) {
@@ -756,23 +854,23 @@ namespace vm {
 		void TR3200::ProcessInterrupt() {
 			if (GET_EI(FLAGS) && interrupt) {
 				byte_t index = int_msg;
-				dword_t addr = ram.RD(IA + index*4); // Get the address to jump from the Vector Table
+				dword_t addr = vcomp->ReadDW(IA + (index << 2)); // Get the address to jump from the Vector Table
 				interrupt = false;
 				if (addr == 0) { // Null entry, does nothing
 					return;
 				}
 
 				// push %r0
-				ram.WB(--r[SP], r[0] >> 24);
-				ram.WB(--r[SP], r[0] >> 16);
-				ram.WB(--r[SP], r[0] >> 8);
-				ram.WB(--r[SP], r[0]); // Little Endian
+				vcomp->WriteB(--r[SP], r[0] >> 24);
+				vcomp->WriteB(--r[SP], r[0] >> 16);
+				vcomp->WriteB(--r[SP], r[0] >> 8);
+				vcomp->WriteB(--r[SP], r[0]); // Little Endian
 
 				// push PC
-				ram.WB(--r[SP], pc >> 24);
-				ram.WB(--r[SP], pc >> 16);
-				ram.WB(--r[SP], pc >> 8);
-				ram.WB(--r[SP], pc); // Little Endian
+				vcomp->WriteB(--r[SP], pc >> 24);
+				vcomp->WriteB(--r[SP], pc >> 16);
+				vcomp->WriteB(--r[SP], pc >> 8);
+				vcomp->WriteB(--r[SP], pc); // Little Endian
 
 				r[0] = int_msg;
 				pc = addr;
@@ -781,8 +879,13 @@ namespace vm {
 			}
 		}
 
+		void TR3200::GetState (const void* ptr, std::size_t& size) const {
+			if (ptr != nullptr) {
+				// TODO
+			}
+		}
+
+
 	} // End of namespace cpu
 } // End of namespace vm
-
-#endif
 

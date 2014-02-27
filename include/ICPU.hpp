@@ -8,7 +8,6 @@
 #define __ICPU_HPP__ 1
 
 #include "Types.hpp"
-#include "VComputer.hpp"
 
 namespace vm {
 
@@ -23,6 +22,9 @@ namespace vm {
 		 */
 		class ICPU {
 			public:
+
+				ICPU() : vcomp(nullptr) {
+				}
 
 				virtual ~ICPU() { 
 				}

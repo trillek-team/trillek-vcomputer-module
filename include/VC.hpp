@@ -11,7 +11,7 @@
 #include "VComputer.hpp"
 
 // VM CPUs
-//#include "TR3200.hpp"
+#include "TR3200.hpp"
 
 
 // Devices

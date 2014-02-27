@@ -22,8 +22,9 @@
 namespace vm {
 	using namespace vm::cpu;
 
-	const unsigned MAX_N_DEVICES = 32;				/// Max number of devices attached
-	const std::size_t MAX_ROM_SIZE = 32*1024; /// Max ROM size
+	const unsigned MAX_N_DEVICES		= 32;					/// Max number of devices attached
+	const std::size_t MAX_ROM_SIZE	= 32*1024;		/// Max ROM size
+	const std::size_t MAX_RAM_SIZE	= 1024*1024;	/// Max RAM size
 
 	class VComputer {
 		public:
@@ -218,6 +219,16 @@ namespace vm {
 			}
 
 			byte_t ReadB (dword_t addr) {
+				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+
+				if (!(addr & 0xFF0000 )) { // RAM address
+					return ram[addr];
+				}
+				
+				if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
+					return rom[addr & 0x00FFFF];
+				}
+
 				// TODO
 				return 0;
 			}
