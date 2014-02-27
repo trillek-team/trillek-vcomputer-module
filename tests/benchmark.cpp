@@ -1,4 +1,12 @@
-#include <VM.hpp>
+#include <VC.hpp>
+
+#ifndef __NOT_REWRITE_YET_
+
+int main () {
+	return 0;
+}
+
+#else
 
 #include <iostream>
 #include <fstream>
@@ -128,4 +136,6 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
+
+#endif
 

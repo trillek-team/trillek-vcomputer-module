@@ -1,6 +1,14 @@
 #include "config_main.hpp"
 
-#include <VM.hpp>
+#include <VC.hpp>
+
+#ifndef __NOT_REWRITE_YET_
+
+int main () {
+	return 0;
+}
+
+#else
 
 #include <iostream>
 #include <fstream>
@@ -647,6 +655,8 @@ void updatePBO (vm::cda::CDA* cda) {
 
 }
 
+
+#endif
 
 #endif
 

@@ -7,6 +7,8 @@
 #ifndef __TR3200_HPP__
 #define __TR3200_HPP__
 
+#ifdef __NOT_REWRITE_YET_
+
 #include "VSFix.hpp"
 
 #include "ICpu.hpp"
@@ -159,6 +161,7 @@ namespace vm {
 	} // End of namespace cpu
 } // End of namespace vm
 
+#endif // __NOT_WRITE_YET
 
 #endif // __TR3200_HPP__
 

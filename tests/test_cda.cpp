@@ -1,4 +1,12 @@
-#include <VM.hpp>
+#include <VC.hpp>
+
+#ifndef __NOT_REWRITE_YET_
+
+int main () {
+	return 0;
+}
+
+#else
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -503,5 +511,7 @@ void initGL() {
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
 }
+
+#endif
 
 

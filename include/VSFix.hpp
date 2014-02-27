@@ -1,10 +1,11 @@
 #pragma once
+/**
+ * Trillek Virtual Computer - VSFix.hpp
+ * VStudio pragmas and fix
+ */
+
 #ifndef ___VSFIX_HPP__
 #define ___VSFIX_HPP__ 1
-/**
- * TR3200 VM - VSFix.hpp
- * Fix and pragmas for Visual Studio
- */
 
 // MS Visual C++ stuff
 #if defined(_MSC_VER)

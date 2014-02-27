@@ -8,6 +8,8 @@
 #ifndef __CDA_HPP__
 #define __CDA_HPP__ 1
 
+#ifdef __NOT_REWRITE_YET_
+
 #include "Types.hpp"
 #include "Ram.hpp"
 #include "IDevice.hpp"
@@ -208,4 +210,8 @@ static const byte_t def_font[256*8] = {  /// Default font
 } // End of namespace cda
 } // End of namespace vm
 
+
+#endif // __NOT_REWRITE_YET_
+
 #endif
+

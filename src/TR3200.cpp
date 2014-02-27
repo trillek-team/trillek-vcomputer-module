@@ -3,6 +3,8 @@
  * CPU of the virtual machine
  */
 
+#ifdef __NOT_REWRITE_YET_
+
 #include "TR3200.hpp"
 #include "VSFix.hpp"
 
@@ -781,3 +783,6 @@ namespace vm {
 
 	} // End of namespace cpu
 } // End of namespace vm
+
+#endif
+

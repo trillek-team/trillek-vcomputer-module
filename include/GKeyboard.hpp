@@ -8,6 +8,8 @@
 #ifndef __GKEYBOARD_HPP__
 #define __GKEYBOARD_HPP__ 1
 
+#ifdef __NOT_REWRITE_YET_
+
 #include "Types.hpp"
 #include "Ram.hpp"
 #include "IDevice.hpp"
@@ -188,6 +190,9 @@ protected:
 
 } // End of namespace keyboard
 } // End of namespace vm
+
+
+#endif //__NOT_REWRITE_YET_
 
 #endif  // __GKEYBOARD_HPP__
 

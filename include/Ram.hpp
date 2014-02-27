@@ -9,6 +9,8 @@
 #ifndef __RAM_HPP__
 #define __RAM_HPP__ 1
 
+#ifdef __NOT_REWRITE_YET_
+
 #include "Types.hpp"
 
 #include <vector>
@@ -273,4 +275,7 @@ namespace vm {
 	} // End of namespace ram
 } // End of namespace vm
 
+#endif //__NOT_REWRITE_YET_
+
 #endif
+

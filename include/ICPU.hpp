@@ -5,12 +5,15 @@
  */
 
 #ifndef __ICPU_HPP__
-#define __ICPU_HPP__
+#define __ICPU_HPP__ 1
 
 #include "Types.hpp"
 #include "VComputer.hpp"
 
 namespace vm {
+
+	class VComputer;
+
 	namespace cpu {
 
 		/**
@@ -21,7 +24,7 @@ namespace vm {
 		class ICPU {
 			public:
 
-				virtual ~ICpu() { 
+				virtual ~ICPU() { 
 				}
 
 				/**
@@ -68,7 +71,7 @@ namespace vm {
 				 * @param size Size of the chunk of memory were can write. If is 
 				 * sucesfull, it will be set to the size of the write data.
 				 */
-				virtual void GetState (const void* ptr, size_t& size) const = 0;
+				virtual void GetState (const void* ptr, std::size_t& size) const = 0;
 
 			protected:
 				vm::VComputer* vcomp;		/// Ptr to the Virtual Computer

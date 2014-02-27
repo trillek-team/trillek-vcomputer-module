@@ -5,6 +5,8 @@
  * Some semi-generic auxiliar functions related to the vm
  */
 
+#ifdef __NOT_REWRITE_YET_
+
 #include "VComputer.hpp"
 
 #include <string>
@@ -49,6 +51,8 @@ namespace aux {
 
 } // end of namespace aux
 } // end of namespace vm
+
+#endif //__NOT_REWRITE_YET_
 
 #endif // __AUX_HPP__
 

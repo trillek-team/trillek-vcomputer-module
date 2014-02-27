@@ -12,6 +12,8 @@
 
 namespace vm {
 
+	class VComputer;
+
 	/** 
 	 * Interface that must be implemente by any Device that will be used by the
 	 * Virtual Computer.
@@ -22,13 +24,13 @@ namespace vm {
 
 			virtual ~IDevice() {
 			}
-			
+
 			/**
 			 * Sets the VComputer pointer
 			 * This method must be only called by VComputer itself
 			 * @param vcomp VComputer pointer or nullptr
 			 */
-			virtual void SetVComputer (vm::VComputer* vcomp) {
+			virtual void SetVComputer (VComputer* vcomp) {
 				this->vcomp = vcomp;
 			}
 
@@ -44,11 +46,11 @@ namespace vm {
 			virtual void D (word_t cmd) { }
 			virtual void E (word_t cmd) { }
 
-			virtual word_t A () { }
-			virtual word_t B () { }
-			virtual word_t C () { }
-			virtual word_t D () { }
-			virtual word_t E () { }
+			virtual word_t A () { return 0; }
+			virtual word_t B () { return 0; }
+			virtual word_t C () { return 0; }
+			virtual word_t D () { return 0; }
+			virtual word_t E () { return 0; }
 
 			/**
 			 * Device Type
@@ -75,7 +77,7 @@ namespace vm {
 			 * Few devices really need to do this, so IDevice implementation 
 			 * returns false.
 			 */
-			virtual bool IsSyncDev const {
+			virtual bool IsSyncDev() const {
 				return false;
 			}
 
@@ -105,6 +107,7 @@ namespace vm {
 			}
 
 		protected:
+			VComputer* vcomp;		/// Ptr to the Virtual Computer
 	};
 
 } // End of namespace vm

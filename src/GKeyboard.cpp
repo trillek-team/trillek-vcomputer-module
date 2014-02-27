@@ -4,6 +4,8 @@
  *
  */
 
+#ifdef __NOT_REWRITE_YET_
+
 #include "GKeyboard.hpp"
 #include "VSFix.hpp"
 
@@ -155,3 +157,6 @@ void GKeyboard::KeybReg::WB (dword_t addr, byte_t val) {
 
 } // End of namespace keyboard
 } // End of namespace vm
+
+#endif
+

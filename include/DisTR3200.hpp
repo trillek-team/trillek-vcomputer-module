@@ -6,6 +6,8 @@
 #ifndef __DIS_TR3200_HPP__
 #define __DIS_TR3200_HPP__ 1
 
+#ifdef __NOT_REWRITE_YET_
+
 #include "TR3200.hpp"
 
 #include <string>
@@ -22,4 +24,7 @@ std::string Disassembly (const ram::Mem& ram, dword_t pc);
 } // End of namespace cpu
 } // End of namespace vm
 
+#endif //__NOT_REWRITE_YET_
+
 #endif // __DIS_TR3200_HPP__
+

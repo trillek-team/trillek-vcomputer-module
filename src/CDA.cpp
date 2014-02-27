@@ -3,6 +3,8 @@
  * \file CDA.cpp
  */
 
+#ifdef __NOT_REWRITE_YET_
+
 #include "CDA.hpp"
 #include "VSFix.hpp"
 
@@ -330,4 +332,6 @@ void RGBATexture (const byte_t* buffer, bool textmode, unsigned vmode, bool user
 
 } // End of namespace cda
 } // End of namespace vm
+
+#endif
 

@@ -2,6 +2,9 @@
  * TR3200 online dissasambler
  * \file DisTR3200.cpp
  */
+
+#ifdef __NOT_REWRITE_YET_
+
 #include "VSFix.hpp"
 
 #include "DisTR3200.hpp"
@@ -536,3 +539,6 @@ namespace vm {
 
   } // End of namespace cpu
 } // End of namespace vm
+
+#endif
+

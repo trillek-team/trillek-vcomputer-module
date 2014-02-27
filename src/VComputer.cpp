@@ -1,6 +1,6 @@
 /**
- * TR3200 VM - vcomputer.cpp
- * Virtual machine itself
+ * Trillek Virtual Computer - VComputer.cpp
+ * Virtual Computer core
  */
 
 #include "VComputer.hpp"

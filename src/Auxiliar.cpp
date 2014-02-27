@@ -3,6 +3,8 @@
  * \file aux.cpp
  */
 
+#ifdef __NOT_REWRITE_YET_
+
 #include "Auxiliar.hpp"
 #include "VSFix.hpp"
 #include "GKeyboard.hpp"
@@ -169,4 +171,6 @@ namespace vm {
 
   } // end of namespace aux
 } // end of namespace vm
+
+#endif
 
