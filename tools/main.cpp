@@ -2,13 +2,7 @@
 
 #include <VC.hpp>
 
-#ifndef __NOT_REWRITE_YET_
-
-int main () {
-	return 0;
-}
-
-#else
+#undef SDL2_ENABLE
 
 #include <iostream>
 #include <fstream>
@@ -91,17 +85,17 @@ void updatePBO (vm::cda::CDA*);
 
 #endif
 
-vm::cda::CDA* cda_ptr = nullptr;
+//vm::cda::CDA* cda_ptr = nullptr;
 
-void print_regs(const vm::cpu::TR3200& cpu);
-void print_pc(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram);
-void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram);
+void print_regs(const vm::cpu::TR3200State& state);
+//void print_pc(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram);
+//void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram);
 
 int main(int argc, char* argv[]) {
   using namespace vm;
   using namespace vm::cpu;
 
-  byte_t* rom = NULL;
+  byte_t* rom = nullptr;
   size_t rom_size = 0;
 
   if (argc < 2) {
@@ -114,39 +108,37 @@ int main(int argc, char* argv[]) {
     std::printf("Opening file %s\n", argv[1]);
     std::fstream f(argv[1], std::ios::in | std::ios::binary);
     unsigned count = 0;
-#if (BYTE_ORDER != LITTLE_ENDIAN)
-    while (f.good() && count < 64*1024) {
-      f.read(reinterpret_cast<char*>(rom + count++), 1); // Read byte at byte, so the file must be in Little Endian
-    }
-#else
     size_t size;
-    auto begin = f.tellg();
+    
+		auto begin = f.tellg();
     f.seekg (0, std::ios::end);
     auto end = f.tellg();
     f.seekg (0, std::ios::beg);
 
     size = end - begin;
-    size = size > (64*1024) ? (64*1024) : size;
+    size = size > (MAX_ROM_SIZE) ? (MAX_ROM_SIZE) : size;
 
     f.read(reinterpret_cast<char*>(rom), size);
     count = size;
-#endif
-    std::printf("Read %u bytes and stored in ROM\n", count);
+    
+		std::printf("Read %u bytes and stored in ROM\n", count);
     rom_size = count;
   }
 
   // Create the Virtual Machine
-  VirtualComputer<vm::cpu::TR3200> vm(12345);
-  vm.WriteROM(rom, rom_size);
-  delete[] rom;
+  VComputer vc;
+	std::unique_ptr<vm::cpu::ICPU> cpu(new TR3200());
+	vc.SetCPU(std::move(cpu));
+	
+  vc.SetROM(rom, rom_size);
 
   // Add devices to tue Virtual Machine
-  cda::CDA gcard(0, 10);
-  keyboard::GKeyboard keyb;
-  vm.AddDevice(0, gcard);
-  vm.AddDevice(5, keyb);
+  //cda::CDA gcard(0, 10);
+  //keyboard::GKeyboard keyb;
+  //vm.AddDevice(0, gcard);
+  //vm.AddDevice(5, keyb);
 
-  vm.Reset();
+  vc.Reset();
 
   std::cout << "Run program (r) or Step Mode (s) ?\n";
   char mode;
@@ -180,6 +172,8 @@ int main(int argc, char* argv[]) {
 
   int c = ' ';
   bool loop = true;
+	vm::cpu::TR3200State cpu_state;
+
   while ( loop) {
     // Calcs delta time 
 
@@ -275,29 +269,30 @@ int main(int argc, char* argv[]) {
 #endif
 
     if (debug) {
-      print_pc(vm.CPU(), vm.RAM());
-      if (vm.CPU().Skiping())
-        std::printf("Skiping!\n");
-      if (vm.CPU().Sleeping())
-        std::printf("ZZZZzzzz...\n");
+      //print_pc(vm.CPU(), vm.RAM());
+      //if (vm.CPU().Skiping())
+      //  std::printf("Skiping!\n");
+      //if (vm.CPU().Sleeping())
+      //  std::printf("ZZZZzzzz...\n");
     }
 
     if (!debug) {
       ticks_count += ticks;
-      vm.Tick(ticks, delta * 0.001f );
-      ticks = (vm.Clock() * delta * 0.000001) + 0.5f; // Rounding bug in VS
-      if (ticks <= 3)
-        ticks = 3;
+      vc.Tick(ticks, delta * 0.001f );
+      //ticks = (vc.Clock() * delta * 0.000001) + 0.5f; // Rounding bug in VS
+      //if (ticks <= 3)
+      //  ticks = 3;
 
-    } else
-      ticks = vm.Step(delta * 0.001f); 
+    } else {
+      ticks = vc.Step(delta * 0.001f); 
+		}
 
 
     // Speed info
     if (!debug && ticks_count > 200000) {
       std::cout << "Running " << ticks << " cycles in " << delta << " uS"
         << " Speed of " 
-        << 100.0f * (((ticks * 1000000.0) / vm.Clock()) / delta)
+        << 100.0f * (((ticks * 1000000.0) / vc.CPUClock()) / delta)
         << "% \n";
       std::cout << std::endl;
       ticks_count -= 200000;
@@ -305,9 +300,10 @@ int main(int argc, char* argv[]) {
 
 
     if (debug) {
-      std::printf("Takes %u cycles\n", vm.CPU().WaitCycles());
-      print_regs(vm.CPU());
-      print_stack(vm.CPU(), vm.RAM());
+			vc.GetState((void*) &cpu_state, sizeof(cpu_state));
+      std::printf("Takes %u cycles\n", cpu_state.wait_cycles);
+      print_regs(cpu_state);
+      //print_stack(vm.CPU(), vm.RAM());
       c = std::getchar();
       if (c == 'q' || c == 'Q')
         loop = false;
@@ -428,29 +424,68 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
+// Alias to special registers
+#define REG_Y			(11)
+#define BP				(12)
+#define SP				(13)
+#define REG_IA		(14)
+#define REG_FLAGS (15)
 
-void print_regs(const vm::cpu::TR3200& cpu) {
+// Operation in Flags bits
+#define GET_CF(x)          ((x) & 0x1)
+#define SET_ON_CF(x)       (x |= 0x1)
+#define SET_OFF_CF(x)      (x &= 0xFFFFFFFE)
+
+#define GET_OF(x)          (((x) & 0x2) >> 1)
+#define SET_ON_OF(x)       (x |= 0x2)
+#define SET_OFF_OF(x)      (x &= 0xFFFFFFFD)
+
+#define GET_DE(x)          (((x) & 0x4) >> 2)
+#define SET_ON_DE(x)       (x |= 0x4)
+#define SET_OFF_DE(x)      (x &= 0xFFFFFFFB)
+
+#define GET_IF(x)          (((x) & 0x8) >> 3)
+#define SET_ON_IF(x)       (x |= 0x8)
+#define SET_OFF_IF(x)      (x &= 0xFFFFFFF7)
+
+// Enable bits that change what does the CPU
+#define GET_EI(x)          (((x) & 0x100) >> 8)
+#define SET_ON_EI(x)       (x |= 0x100)
+#define SET_OFF_EI(x)      (x &= 0xFFFFFEFF)
+
+#define GET_ESS(x)         (((x) & 0x200) >> 9)
+#define SET_ON_ESS(x)      (x |= 0x200)
+#define SET_OFF_ESS(x)     (x &= 0xFFFFFDFF)
+
+// Internal alias to Y Flags and IA registers
+#define RY      r[REG_Y]
+#define IA      r[REG_IA]
+#define FLAGS   r[REG_FLAGS]
+
+void print_regs(const vm::cpu::TR3200State& state) {
   // Print registers
+	
   for (int i=0; i < 11; i++) {
-    std::printf("%%r%2d= 0x%08X ", i, cpu.Reg(i));
+    std::printf("%%r%2d= 0x%08X ", i, state.r[i]);
     if (i == 3 || i == 7 || i == 11 || i == 15 || i == 19 || i == 23 || i == 27 || i == 31)
       std::printf("\n");
   }
-  std::printf("%%y= 0x%08X\n", cpu.Reg(REG_Y));
+  std::printf("%%y= 0x%08X\n", state.r[REG_Y]);
 
-  std::printf("%%ia= 0x%08X ", cpu.Reg(REG_IA));
-	auto flags = cpu.Reg(REG_FLAGS);
+  std::printf("%%ia= 0x%08X ", state.r[REG_IA]);
+	auto flags = state.r[REG_FLAGS];
   std::printf("%%flags= 0x%08X ", flags);
-  std::printf("%%bp= 0x%08X ", cpu.Reg(BP));
-  std::printf("%%sp= 0x%08X\n", cpu.Reg(SP));
+  std::printf("%%bp= 0x%08X ",  state.r[BP]);
+  std::printf("%%sp= 0x%08X\n", state.r[SP]);
 
-  std::printf("%%pc= 0x%08X \n", cpu.PC());
+  std::printf("%%pc= 0x%08X \n", state.pc);
   std::printf("ESS: %d EI: %d \t IF: %d DE %d OF: %d CF: %d\n",
       GET_ESS(flags), GET_EI(flags), GET_IF(flags) , GET_DE(flags) , GET_OF(flags) , GET_CF(flags));
   std::printf("\n");
-
+  
 }
 
+/*
 void print_pc(const vm::cpu::TR3200& cpu, const vm::ram::Mem&  ram) {
 	vm::dword_t val = ram.RD(cpu.PC());
 
@@ -469,7 +504,7 @@ void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram) {
       break;
   }
 }
-
+*/
 
 #ifdef SDL2_ENABLE
 
@@ -658,5 +693,4 @@ void updatePBO (vm::cda::CDA* cda) {
 
 #endif
 
-#endif
 

@@ -60,7 +60,7 @@ namespace vm {
 			SIGXB           = 0x02,
 			SIGXW           = 0x03,
 
-			NOT             = 0x04,
+			//NOT             = 0x04,
 
 			LOAD2           = 0x40,
 			LOADW2          = 0x41,

@@ -50,6 +50,7 @@ namespace vm {
 			 */
 			void SetCPU (std::unique_ptr<ICPU> cpu) {
 				this->cpu = std::move(cpu);
+				cpu->SetVComputer(this);
 			}
 
 			/**
@@ -57,6 +58,7 @@ namespace vm {
 			 * @return Returns the ICPU
 			 */
 			std::unique_ptr<ICPU> RmCPU () {
+				cpu->SetVComputer(nullptr);
 				return std::move(cpu);
 			}
 
@@ -120,7 +122,7 @@ namespace vm {
 			 * @param size Size of the chunk of memory were can write. If is 
 			 * sucesfull, it will be set to the size of the write data.
 			 */
-			inline void GetState (const void* ptr, std::size_t& size) const {
+			inline void GetState (void* ptr, std::size_t size) const {
 				if (cpu) {
 					return cpu->GetState(ptr, size);
 				}
@@ -132,6 +134,9 @@ namespace vm {
 			 * @param rom_size Size of the ROM data that must be less or equal to 32KiB. Big sizes will be ignored
 			 */
 			void SetROM (const byte_t* rom, std::size_t rom_size) {
+				assert (rom != nullptr);
+				assert (rom_size > 0);
+
 				this->rom = rom;
 				this->rom_size = (rom_size > MAX_ROM_SIZE) ? MAX_ROM_SIZE : rom_size; 
 			}
@@ -234,24 +239,69 @@ namespace vm {
 			}
 
 			word_t ReadW (dword_t addr) {
+				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+
+				if (!(addr & 0xFF0000 )) { // RAM address
+					return ((word_t*)ram)[addr];
+				}
+				
+				if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
+					return ((word_t*)rom)[addr & 0x00FFFF];
+				}
 				// TODO
 				return 0;
 			}
 
 			dword_t ReadDW (dword_t addr) {
+				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+
+				if (!(addr & 0xFF0000 )) { // RAM address
+					return ((dword_t*)ram)[addr];
+				}
+				
+				if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
+					return ((dword_t*)rom)[addr & 0x00FFFF];
+				}
 				// TODO
 				return 0;
 			}
 
 			void WriteB (dword_t addr, byte_t val) {
+				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+
+				if (addr < ram_size) { // RAM address
+					ram[addr] = val;
+				}
+				
 				// TODO
+				
+				return ; // You can't write in the ROM or not mapped addresses !
+
 			}
 
 			void WriteW (dword_t addr, word_t val) {
+				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+
+				if (addr < ram_size-1 ) { // RAM address
+					((word_t*)ram)[addr] = val;
+				}
+				// TODO What hapens when there is a write that falls half in RAM and
+				// half outside ?
+				// I actually forbid these cases to avoid buffer overun, but should be
+				// allowed
+				
 				// TODO
 			}
 
 			void WriteDW (dword_t addr, dword_t val) {
+				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+
+				if (addr < ram_size-3 ) { // RAM address
+					((dword_t*)ram)[addr] = val;
+				}
+				// TODO What hapens when there is a write that falls half in RAM and
+				// half outside ?
+				
 				// TODO
 			}
 

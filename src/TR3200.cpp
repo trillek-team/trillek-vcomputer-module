@@ -461,23 +461,29 @@ namespace vm {
 						  break;
 
 						case P3_OPCODE::STORE :
+							vcomp->WriteDW(rs+rn, r[rd]);
+							/*
 						  vcomp->WriteB(rs+rn   , r[rd]);
 						  vcomp->WriteB(rs+rn +1, r[rd] >> 8);
 						  vcomp->WriteB(rs+rn +2, r[rd] >> 16);
 						  vcomp->WriteB(rs+rn +3, r[rd] >> 24);
+							*/
 						  break;
 
 						case P3_OPCODE::STOREW :
-																	 vcomp->WriteB(rs+rn   , r[rd]);
-																	 vcomp->WriteB(rs+rn +1, r[rd] >> 8);
-																	 break;
+							vcomp->WriteW(rs+rn, r[rd]);
+							/*
+							vcomp->WriteB(rs+rn   , r[rd]);
+							vcomp->WriteB(rs+rn +1, r[rd] >> 8);
+							*/
+							break;
 
 						case P3_OPCODE::STOREB :
-																	 vcomp->WriteB(rs+rn   , r[rd]);
-																	 break;
+							vcomp->WriteB(rs+rn, r[rd]);
+							break;
 
 						default:
-																	 break;// Unknow OpCode -> Acts like a NOP (this could change)
+							 break;// Unknow OpCode -> Acts like a NOP (this could change)
 					}
 
 				} else if (IS_PAR2(inst)) {
@@ -529,11 +535,6 @@ namespace vm {
 							}
 							break;
 
-						case P2_OPCODE::NOT :
-							r[rd] = ~ rn;
-							break;
-
-
 						case P2_OPCODE::LOAD2 :
 							r[rd] = vcomp->ReadDW(rn);
 							break;
@@ -547,19 +548,25 @@ namespace vm {
 							break;
 
 						case P2_OPCODE::STORE2 :
+							vcomp->WriteDW(rn, r[rd]);
+							/*
 							vcomp->WriteB(rn   , r[rd]);
 							vcomp->WriteB(rn +1, r[rd] >> 8);
 							vcomp->WriteB(rn +2, r[rd] >> 16);
 							vcomp->WriteB(rn +3, r[rd] >> 24);
+							*/
 							break;
 
 						case P2_OPCODE::STOREW2 :
+							vcomp->WriteW(rn, r[rd]);
+							/*
 							vcomp->WriteB(rn   , r[rd]);
 							vcomp->WriteB(rn +1, r[rd] >> 8);
+							*/
 							break;
 
 						case P2_OPCODE::STOREB2 :
-							vcomp->WriteB(rn   , r[rd]);
+							vcomp->WriteB(rn, r[rd]);
 							break;
 
 
@@ -768,10 +775,14 @@ namespace vm {
 						case NP_OPCODE::RET:
 							wait_cycles = 4;
 							// Pop PC
+							pc = vcomp->ReadDW(r[SP]);
+							r[SP] += 4;
+							/*
 							pc = vcomp->ReadB(r[SP]++);
 							pc |= vcomp->ReadB(r[SP]++) << 8;
 							pc |= vcomp->ReadB(r[SP]++) << 16;
 							pc |= vcomp->ReadB(r[SP]++) << 24;
+							*/
 							pc &= 0xFFFFFFFC;
 							break;
 
@@ -779,17 +790,25 @@ namespace vm {
 							wait_cycles = 6;
 
 							// Pop PC
+							pc = vcomp->ReadDW(r[SP]);
+							r[SP] += 4;
+							/*
 							pc = vcomp->ReadB(r[SP]++);
 							pc |= vcomp->ReadB(r[SP]++) << 8;
 							pc |= vcomp->ReadB(r[SP]++) << 16;
 							pc |= vcomp->ReadB(r[SP]++) << 24;
+							*/
 							pc &= 0xFFFFFFFC;
 
 							// Pop %r0
+							r[0] = vcomp->ReadDW(r[SP]);
+							r[SP] += 4;
+							/*
 							r[0] = vcomp->ReadB(r[SP]++);
 							r[0] |= vcomp->ReadB(r[SP]++) << 8;
 							r[0] |= vcomp->ReadB(r[SP]++) << 16;
 							r[0] |= vcomp->ReadB(r[SP]++) << 24;
+							*/
 
 							SET_OFF_IF(FLAGS);
 							interrupt = false; // We now not have a interrupt
@@ -880,8 +899,23 @@ namespace vm {
 		}
 
 		void TR3200::GetState (const void* ptr, std::size_t& size) const {
-			if (ptr != nullptr) {
-				// TODO
+			if (ptr != nullptr && size >= sizeof(TR3200State)) {
+				TR3200State* state = (TR3200State*)ptr;
+				std::copy_n(this->r, TR3200_NGPRS, state->r);
+				state->pc = this->pc;
+
+				state->wait_cycles = this->wait_cycles;
+
+				state->int_msg = this->int_msg;
+
+				state->interrupt = this->interrupt;
+				state->step_mode = this->step_mode;
+				state->skiping   = this->skiping;
+				state->sleeping  = this->sleeping;
+			
+				size = sizeof(TR3200State);
+			} else {
+				size = 0;
 			}
 		}
 

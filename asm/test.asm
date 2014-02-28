@@ -1,3 +1,5 @@
+				.ORG 0x100000				; This a ROM image, so jumps need to know the real address
+
 begin:
         MOV %r0, 1
         MOV %r1, 1
@@ -20,7 +22,7 @@ begin:
 
         MOV %r10 , %r1      ; %r10 = 0xBEBECAFE
         SWP %r7, %r9        ; %r9 = 7 ; %r7 = 9
-        NOT %r0, %r0        ; %r0 = 0xFFFFFFFE
+        ;NOT %r0, %r0        ; %r0 = 0xFFFFFFFE
         XCHGB %r4           ; %r4 = 0x400
         XCHGW %r5           ; %r5 = 0x50000
 
@@ -59,7 +61,7 @@ test_alu:                       ; PC = 0x010C
         ; Testing BOOLEAN instructions
         MOV %r7, 0x5555AAAA
         MOV %r6, 0xAAFFFF55
-        NOT %r11, %r6           ; %r11 = 0x550000AA
+        ;NOT %r11, %r6           ; %r11 = 0x550000AA
         IFNEQ %r11, 0x550000AA
             JMP crash
 
@@ -188,111 +190,9 @@ test_alu:                       ; PC = 0x010C
 
         ; TODO Check other instrucctions
 
-; Setup the Vector Table
-        MOV %r0, int_A0
-        MOV %r1, vtable
-        ADD %r1, %r1, 0x280 ; 0xA0 * 4
-        STORE %r1, %r0
-
-; Basic checks finished, inform about it
-
-        MOV %r0, 0xFF0A0000
-        MOV %r1, 0x07           ; Clear the screen with black border and light gray ink
-        CALL clr_screen
-
-        MOV %r0, str_basic_tests
-        MOV %r1, 0xFF0A0000
-        MOV %r2, 0x07
-        CALL print
-
-        MOV %r0, str_ok
-        MOV %r1, 0xFF0A0016
-        MOV %r2, 0x0A
-        RCALL print
-
-        ; Print RAM size
-        MOV %r1, 0
-        INT A0h
-        LRS %r0, %r1, 10
-        MOV %r1, 0xFF0A00A0         
-        MOV %r2, 0x0F
-        CALL print_hex_w
-        
-        MOV %r0, str_kib
-        MOV %r1, 0xFF0A00AA
-        MOV %r2, 0x0F
-        RCALL print
 
 
-        MOV %r10, countervar
-for_ever_loop:        
-        LOAD.W %r0, %r10        ; Load countervar
-        ADD %r1, %r0, 0x1
-        STORE.W %r10, %r1
+				.ORG 0x0	; RAM
+:data
+				.data 0
 
-        MOV %r1, 0xFF0A0050         
-        MOV %r2, 0x0E
-        CALL print_hex_w
-        
-        
-        RJMP for_ever_loop
-
-crash:
-        ; Try to print that the test fails (probably will not do it)
-        MOV %r0, 0xFF0A0000
-        MOV %r1, 0x07           ; Clear the screen with black border and light gray ink
-        CALL clr_screen
-
-        MOV %r0, str_basic_tests
-        MOV %r1, 0xFF0A0000
-        MOV %r2, 0x07
-        CALL print
-
-        MOV %r0, str_fail
-        MOV %r1, 0xFF0A0016
-        MOV %r2, 0x0C
-        CALL print
-
-        SLEEP               ; Sleeps because something goes wrong
-
-
-; *****************************************************************************
-; Try to measure RAM in multiples of 128 KiB and return it in %r1
-int_A0:
-      PUSH %r2
-      PUSH %flags
-
-      MOV %r1, 0x10000
-loop_int_A0:
-      ADD %r1, %r1, 0x20000
-      MOV %r2, 0xAA55
-      STORE.W %r1, %r2
-      LOAD.W %r0, %r1
-      IFEQ %r0, 0xAA55    ; We can read/write at that address so is RAM
-        RJMP loop_int_A0
-
-      SUB %r1, %r1, 0x10000   ; Now %r1 have the size of the RAM minus the ROM size
-
-      POP %flags
-      POP %r2
-
-      RFI
-      
-      
-
-; *****************************************************************************
-      .include "lib.inc"
-
-; Strings
-str_ok:               .DB "OK",0
-str_fail:             .DB "FAIL",0
-
-str_kib:              .DB "KiB of RAM",0
-
-str_basic_tests:      .DB "BASIC TEST",0
-
-
-                      .ORG 0x10000
-countervar:           .DD 0
-; Vector table
-vtable:               

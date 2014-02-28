@@ -49,7 +49,7 @@ namespace vm {
 				 * Executes one or more CPU clock cycles
 				 * @param n Number of cycles (default=1)
 				 */
-				void Tick(unsigned n=1) = 0;
+				void Tick(unsigned n=1);
 
 				/**
 				 * Sends an interrupt to the CPU.
@@ -95,7 +95,22 @@ namespace vm {
 
 		};
 
-		// TODO Create a Struct to return the CPU state with GetState
+		/**
+		 * Structure that stores the TR3200 CPU state in any moment
+		 */
+		struct TR3200State {
+			dword_t r[TR3200_NGPRS];  /// Registers
+			dword_t pc;								/// Program Counter
+
+			unsigned wait_cycles;			/// Nº of cycles that need to finish the actual instruction
+			
+			word_t int_msg;						/// Interrupt message
+
+			bool interrupt;						/// Is atending an interrupt ?
+			bool step_mode;						/// Is in step mode execution ?
+			bool skiping;							/// Is skiping an instruction ?
+			bool sleeping;						/// Is sleping the CPU ?
+		};
 
 	} // End of namespace cpu
 } // End of namespace vm
