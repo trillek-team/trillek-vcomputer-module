@@ -1,34 +1,33 @@
 /**
- * TR3200 online dissasambler
- * \file DisTR3200.cpp
+ * Trillek Virtual Computer - DisTR3200.cpp
+ * OnLine dis-assembler of TR3200 machine code
  */
 
-#ifdef __NOT_REWRITE_YET_
-
-#include "VSFix.hpp"
-
+#include "VComputer.hpp"
 #include "DisTR3200.hpp"
+#include "TR3200_opcodes.hpp"
+#include "TR3200_macros.hpp"
+#include "VSFix.hpp"
 
 #include <cstdio>
 
 namespace vm {
   namespace cpu {
 
-    std::string Disassembly (const ram::Mem& ram, dword_t pc) {
+    std::string Disassembly (const VComputer& vc, dword_t pc) {
 #define BUF_SIZE (32)
       char buf[BUF_SIZE] = {0};
 
-      dword_t inst = ram.RB(pc++); // Fetch
-      inst |= (ram.RB(pc++) << 8);
-      inst |= (ram.RB(pc++) << 16);
-      inst |= (ram.RB(pc++) << 24); // Little Endian
+      dword_t inst = vc.ReadB(pc++); // Fetch
+      inst |= (vc.ReadB(pc++) << 8);
+      inst |= (vc.ReadB(pc++) << 16);
+      inst |= (vc.ReadB(pc++) << 24); // Little Endian
 
       dword_t opcode, rd, rn, rs;
       rd = GRD(inst);
       rs = GRS(inst);
       // Here beging the Decoding
       bool literal = HAVE_LITERAL(inst);
-
 
       if (IS_PAR3(inst)) {
         // 3 parameter instruction ******************************************** 
@@ -37,7 +36,7 @@ namespace vm {
         if (literal) {
           rn = LIT13(inst);
           if (IS_BIG_LITERAL_L13(rn)) { // Next dword is literal value 
-            rn = ram.RD(pc);
+            rn = vc.ReadDW(pc);
             pc +=4;
           } else if (O13_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
             rn |= 0xFFFFF000;
@@ -239,7 +238,7 @@ namespace vm {
         if (literal) {
           rn = LIT18(inst);
           if (IS_BIG_LITERAL_L18(rn)) { // Next dword is literal value 
-            rn = ram.RD(pc);
+            rn = vc.ReadDW(pc);
             pc +=4;
           } else if (O18_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
             rn |= 0xFFFC0000;
@@ -277,13 +276,14 @@ namespace vm {
               snprintf(buf, BUF_SIZE, "SIGXW %%r%02u, %%r%02u", rd, rn);
             break;
 
+					/*	
           case P2_OPCODE::NOT :
             if (literal)
               snprintf(buf, BUF_SIZE, "NOT %%r%02u, 0x%08X",  rd, rn);
             else
               snprintf(buf, BUF_SIZE, "NOT %%r%02u, %%r%02u", rd, rn);
             break;
-
+					*/
 
           case P2_OPCODE::LOAD2 :
             if (literal)
@@ -417,7 +417,7 @@ namespace vm {
         if (literal) {
           rn = LIT22(inst);
           if (IS_BIG_LITERAL_L22(rn)) { // Next dword is literal value 
-            rn = ram.RD(pc);
+            rn = vc.ReadDW(pc);
             pc +=4;
           } else if (O22_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
             rn |= 0xFF800000;
@@ -540,5 +540,4 @@ namespace vm {
   } // End of namespace cpu
 } // End of namespace vm
 
-#endif
 

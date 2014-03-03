@@ -17,6 +17,8 @@
 #include <algorithm>
 #include <memory>
 
+#include <cstdio>
+
 #include <cassert>
 
 namespace vm {
@@ -50,7 +52,7 @@ namespace vm {
 			 */
 			void SetCPU (std::unique_ptr<ICPU> cpu) {
 				this->cpu = std::move(cpu);
-				cpu->SetVComputer(this);
+				this->cpu->SetVComputer(this);
 			}
 
 			/**
@@ -58,7 +60,7 @@ namespace vm {
 			 * @return Returns the ICPU
 			 */
 			std::unique_ptr<ICPU> RmCPU () {
-				cpu->SetVComputer(nullptr);
+				this->cpu->SetVComputer(nullptr);
 				return std::move(cpu);
 			}
 
@@ -223,7 +225,8 @@ namespace vm {
 				}		
 			}
 
-			byte_t ReadB (dword_t addr) {
+			byte_t ReadB (dword_t addr) const {
+				//std::fprintf(stderr, "\t B addr: 0x%06X\n", addr);
 				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 
 				if (!(addr & 0xFF0000 )) { // RAM address
@@ -238,29 +241,39 @@ namespace vm {
 				return 0;
 			}
 
-			word_t ReadW (dword_t addr) {
+			word_t ReadW (dword_t addr) const {
+				//std::fprintf(stderr, "\t DW addr: 0x%06X\n", addr);
 				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+				size_t tmp;
 
 				if (!(addr & 0xFF0000 )) { // RAM address
-					return ((word_t*)ram)[addr];
+					tmp = ((size_t)ram) + addr;
+					return ((word_t*)tmp)[0];
 				}
 				
 				if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
-					return ((word_t*)rom)[addr & 0x00FFFF];
+					addr &= 0x00FFFF; // Dirty tricks with pointers
+					tmp = ((size_t)rom) + addr;
+					return ((word_t*)tmp)[0];
 				}
 				// TODO
 				return 0;
 			}
 
-			dword_t ReadDW (dword_t addr) {
+			dword_t ReadDW (dword_t addr) const {
+				//std::fprintf(stderr, "\t DW addr: 0x%06X\n", addr);
 				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+				size_t tmp;
 
 				if (!(addr & 0xFF0000 )) { // RAM address
-					return ((dword_t*)ram)[addr];
+					tmp = ((size_t)ram) + addr;
+					return ((dword_t*)tmp)[0];
 				}
 				
 				if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
-					return ((dword_t*)rom)[addr & 0x00FFFF];
+					addr &= 0x00FFFF; // Dirty tricks with pointers
+					tmp = ((size_t)rom) + addr;
+					return ((dword_t*)tmp)[0];
 				}
 				// TODO
 				return 0;

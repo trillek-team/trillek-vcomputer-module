@@ -1,6 +1,7 @@
 #include "config_main.hpp"
 
 #include <VC.hpp>
+#include <DisTR3200.hpp>
 
 #undef SDL2_ENABLE
 
@@ -88,7 +89,7 @@ void updatePBO (vm::cda::CDA*);
 //vm::cda::CDA* cda_ptr = nullptr;
 
 void print_regs(const vm::cpu::TR3200State& state);
-//void print_pc(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram);
+void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc);
 //void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram);
 
 int main(int argc, char* argv[]) {
@@ -127,7 +128,8 @@ int main(int argc, char* argv[]) {
 
   // Create the Virtual Machine
   VComputer vc;
-	std::unique_ptr<vm::cpu::ICPU> cpu(new TR3200());
+	std::unique_ptr<vm::cpu::TR3200> cpu(new TR3200());
+	cpu->Clock();
 	vc.SetCPU(std::move(cpu));
 	
   vc.SetROM(rom, rom_size);
@@ -269,7 +271,8 @@ int main(int argc, char* argv[]) {
 #endif
 
     if (debug) {
-      //print_pc(vm.CPU(), vm.RAM());
+			vc.GetState((void*) &cpu_state, sizeof(cpu_state));
+      print_pc(cpu_state, vc);
       //if (vm.CPU().Skiping())
       //  std::printf("Skiping!\n");
       //if (vm.CPU().Sleeping())
@@ -285,6 +288,7 @@ int main(int argc, char* argv[]) {
 
     } else {
       ticks = vc.Step(delta * 0.001f); 
+			//ticks = 1; vc.Tick(1, delta * 0.001f );
 		}
 
 
@@ -485,14 +489,14 @@ void print_regs(const vm::cpu::TR3200State& state) {
   
 }
 
-/*
-void print_pc(const vm::cpu::TR3200& cpu, const vm::ram::Mem&  ram) {
-	vm::dword_t val = ram.RD(cpu.PC());
+void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc) {
+	vm::dword_t val = vc.ReadDW(state.pc);
 
-  std::printf("\tPC : 0x%08X > 0x%08X ", cpu.PC(), val); 
-  std::cout << vm::cpu::Disassembly(ram,  cpu.PC()) << std::endl;  
+  std::printf("\tPC : 0x%08X > 0x%08X ", state.pc, val); 
+  std::cout << vm::cpu::Disassembly(vc,  state.pc) << std::endl;  
 }
 
+/*
 void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram) {
 	std::printf("STACK:\n");
 
