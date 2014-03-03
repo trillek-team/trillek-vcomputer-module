@@ -62,8 +62,8 @@ test_alu:                       ; PC = 0x010C
         MOV %r7, 0x5555AAAA
         MOV %r6, 0xAAFFFF55
         ;NOT %r11, %r6           ; %r11 = 0x550000AA
-        IFNEQ %r11, 0x550000AA
-            JMP crash
+        ;IFNEQ %r11, 0x550000AA
+        ;    JMP crash
 
         AND %r11, %r7, %r6      ; %r11 = 0x0055AA00
         IFNEQ %r11, 0x0055AA00
@@ -178,6 +178,8 @@ test_alu:                       ; PC = 0x010C
         IFNEQ %y, 1
             JMP crash
 
+				JMP begin
+
         ; Try LOAD and STORE
         ;MOV %r10, countervar
         ;STORE.W %r10, 0xBEBA
@@ -190,7 +192,8 @@ test_alu:                       ; PC = 0x010C
 
         ; TODO Check other instrucctions
 
-
+:crash
+				SLEEP
 
 				.ORG 0x0	; RAM
 :data
