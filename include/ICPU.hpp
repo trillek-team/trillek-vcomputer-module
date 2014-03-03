@@ -73,7 +73,15 @@ namespace vm {
 				 * @param size Size of the chunk of memory were can write. If is 
 				 * sucesfull, it will be set to the size of the write data.
 				 */
-				virtual void GetState (const void* ptr, std::size_t& size) const = 0;
+				virtual void GetState (void* ptr, std::size_t& size) const = 0;
+
+				/**
+				 * Sets the CPU state.
+				 * @param ptr Pointer were read the state information
+				 * @param size Size of the chunk of memory were will read.
+				 * @return True if can read the State data from the pointer.
+				 */
+				virtual bool SetState (const void* ptr, std::size_t size) = 0;
 
 			protected:
 				vm::VComputer* vcomp;		/// Ptr to the Virtual Computer

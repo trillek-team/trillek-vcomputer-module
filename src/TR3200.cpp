@@ -823,7 +823,7 @@ namespace vm {
 			}
 		}
 
-		void TR3200::GetState (const void* ptr, std::size_t& size) const {
+		void TR3200::GetState (void* ptr, std::size_t& size) const {
 			if (ptr != nullptr && size >= sizeof(TR3200State)) {
 				TR3200State* state = (TR3200State*)ptr;
 				std::copy_n(this->r, TR3200_NGPRS, state->r);
@@ -842,6 +842,27 @@ namespace vm {
 			} else {
 				size = 0;
 			}
+		}
+
+		bool TR3200::SetState (const void* ptr, std::size_t size) {
+			if (ptr != nullptr && size >= sizeof(TR3200State)) {
+				const TR3200State* state = (const TR3200State*)ptr;
+				std::copy_n(state->r, TR3200_NGPRS, this->r);
+				this->pc					= state->pc;
+
+				this->wait_cycles = state->wait_cycles;
+
+				this->int_msg			= state->int_msg;
+
+				this->interrupt		= state->interrupt;
+				this->step_mode		= state->step_mode;
+				this->skiping			= state->skiping;
+				this->sleeping		= state->sleeping;
+			
+				return true;
+			}
+
+			return false;
 		}
 
 
