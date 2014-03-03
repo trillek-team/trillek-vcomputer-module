@@ -293,24 +293,28 @@ namespace vm {
 			}
 
 			void WriteW (dword_t addr, word_t val) {
+				size_t tmp;
 				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 
 				if (addr < ram_size-1 ) { // RAM address
-					((word_t*)ram)[addr] = val;
+					tmp = ((size_t)ram) + addr;
+					((word_t*)tmp)[0] = val;
 				}
 				// TODO What hapens when there is a write that falls half in RAM and
 				// half outside ?
 				// I actually forbid these cases to avoid buffer overun, but should be
-				// allowed
+				// allowed and only use the apropiate portion of the data in the RAM.
 				
 				// TODO
 			}
 
 			void WriteDW (dword_t addr, dword_t val) {
+				size_t tmp;
 				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 
 				if (addr < ram_size-3 ) { // RAM address
-					((dword_t*)ram)[addr] = val;
+					tmp = ((size_t)ram) + addr;
+					((dword_t*)tmp)[0] = val;
 				}
 				// TODO What hapens when there is a write that falls half in RAM and
 				// half outside ?
@@ -321,7 +325,7 @@ namespace vm {
 		private:
 
 			byte_t* ram;						/// Computer RAM
-			const byte_t* rom;			/// Computer ROM chip
+			const byte_t* rom;			/// Computer ROM chip (could be shared between some VComputers)
 			std::size_t ram_size;		/// Computer RAM size
 			std::size_t rom_size;		/// Computer ROM size
 
