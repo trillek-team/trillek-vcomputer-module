@@ -13,7 +13,7 @@
 #include "IDevice.hpp"
 #include "AddrListener.hpp"
 
-#include <vector>
+#include <map>
 #include <algorithm>
 #include <memory>
 
@@ -237,7 +237,12 @@ namespace vm {
 					return rom[addr & 0x00FFFF];
 				}
 
-				// TODO
+				Range r(addr);
+				auto search = listeners.find(r);
+				if (search != listeners.end()) {
+					return search->second->ReadB(addr);
+				}
+
 				return 0;
 			}
 
@@ -256,7 +261,13 @@ namespace vm {
 					tmp = ((size_t)rom) + addr;
 					return ((word_t*)tmp)[0];
 				}
-				// TODO
+				
+				Range r(addr);
+				auto search = listeners.find(r);
+				if (search != listeners.end()) {
+					return search->second->ReadW(addr);
+				}
+
 				return 0;
 			}
 
@@ -275,7 +286,13 @@ namespace vm {
 					tmp = ((size_t)rom) + addr;
 					return ((dword_t*)tmp)[0];
 				}
-				// TODO
+				
+				Range r(addr);
+				auto search = listeners.find(r);
+				if (search != listeners.end()) {
+					return search->second->ReadDW(addr);
+				}
+
 				return 0;
 			}
 
@@ -286,9 +303,11 @@ namespace vm {
 					ram[addr] = val;
 				}
 				
-				// TODO
-				
-				return ; // You can't write in the ROM or not mapped addresses !
+				Range r(addr);
+				auto search = listeners.find(r);
+				if (search != listeners.end()) {
+					search->second->WriteB(addr, val);
+				}
 
 			}
 
@@ -305,7 +324,12 @@ namespace vm {
 				// I actually forbid these cases to avoid buffer overun, but should be
 				// allowed and only use the apropiate portion of the data in the RAM.
 				
-				// TODO
+				Range r(addr);
+				auto search = listeners.find(r);
+				if (search != listeners.end()) {
+					search->second->WriteW(addr, val);
+				}
+
 			}
 
 			void WriteDW (dword_t addr, dword_t val) {
@@ -319,7 +343,12 @@ namespace vm {
 				// TODO What hapens when there is a write that falls half in RAM and
 				// half outside ?
 				
-				// TODO
+				Range r(addr);
+				auto search = listeners.find(r);
+				if (search != listeners.end()) {
+					search->second->WriteDW(addr, val);
+				}
+
 			}
 
 			/**
@@ -330,7 +359,9 @@ namespace vm {
 			 */
 			int32_t AddAddrListener (const Range& range, AddrListener* listener) {
 				assert(listener != nullptr);
-				// TODO
+				if (listeners.insert(std::make_pair(range, listener)).second ) { // Correct insertion
+					return range.start;
+				}
 				return -1;
 			}
 			
@@ -340,8 +371,8 @@ namespace vm {
 			 * @return True if can find these listener and remove it.
 			 */
 			bool RmAddrListener (int32_t id) {
-				// TODO
-				return false;
+				Range r(id);
+				return listeners.erase(r) >= 1;
 			}
 
 
@@ -356,6 +387,8 @@ namespace vm {
 
 			std::shared_ptr<IDevice> devices[MAX_N_DEVICES];	/// Devices atached to the virtual computer
 			std::shared_ptr<IDevice> sdevices[MAX_N_DEVICES]; /// Devices that run in sync with the VM clock
+
+			std::map<Range, AddrListener*> listeners;					/// Container of AddrListeners
 
 	};
 

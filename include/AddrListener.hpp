@@ -17,13 +17,14 @@ namespace vm {
 	 * Interface for a Address Listener
 	 */
 	class AddrListener {
-		virtual byte_t ReadB (dword_t addr) = 0;
-		virtual word_t ReadW (dword_t addr) = 0;
-		virtual dword_t ReadDW (dword_t addr) = 0;
+		public:
+			virtual byte_t ReadB (dword_t addr) = 0;
+			virtual word_t ReadW (dword_t addr) = 0;
+			virtual dword_t ReadDW (dword_t addr) = 0;
 
-		virtual void WriteB (dword_t addr, byte_t val) = 0;
-		virtual void WriteW (dword_t addr, word_t val) = 0;
-		virtual void WriteDW (dword_t addr, dword_t val) = 0;
+			virtual void WriteB (dword_t addr, byte_t val) = 0;
+			virtual void WriteW (dword_t addr, word_t val) = 0;
+			virtual void WriteDW (dword_t addr, dword_t val) = 0;
 
 	};
 
@@ -43,7 +44,7 @@ namespace vm {
 		Range (dword_t addr) : start(addr), end(addr) {
 			assert(addr <= 0xFFFFFF);
 		}
-		
+
 		/**
 		 * Build a Range for listening a range of addresses.
 		 * Must be a 24 bit address and start <= end

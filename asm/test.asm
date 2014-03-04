@@ -178,6 +178,14 @@ test_alu:                       ; PC = 0x010C
         IFNEQ %y, 1
             JMP crash
 
+
+		    MOV %r0, 0x110000
+				MOV %r1, 0
+				MOV %r3, 0xBEBACAFE
+
+				STORE %r0, %r3
+				LOAD %r1, %r0
+
 				JMP begin
 
         ; Try LOAD and STORE
