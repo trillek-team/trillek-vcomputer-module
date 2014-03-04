@@ -322,6 +322,29 @@ namespace vm {
 				// TODO
 			}
 
+			/**
+			 * Adds an AddrListener to the computer
+			 * @param range Range of addresses that the listerner listens
+			 * @param listener AddrListener using these range
+			 * @return And ID oif the listener or -1 if can't add the listener
+			 */
+			int32_t AddAddrListener (const Range& range, AddrListener* listener) {
+				assert(listener != nullptr);
+				// TODO
+				return -1;
+			}
+			
+			/**
+			 * Removes an AddrListener from the computer
+			 * @param id ID of the address listener to remove (ID from AddAddrListener)
+			 * @return True if can find these listener and remove it.
+			 */
+			bool RmAddrListener (int32_t id) {
+				// TODO
+				return false;
+			}
+
+
 		private:
 
 			byte_t* ram;						/// Computer RAM
@@ -339,3 +362,4 @@ namespace vm {
 } // End of namespace vm
 
 #endif // __VCOMPUTER_HPP_
+
