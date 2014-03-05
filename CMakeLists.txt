@@ -82,7 +82,6 @@ else (VCOMPUTER_SUB_PROJECT)
 		
 		endif(BUILD_STATIC_VCOMPUTER)
 
-
     if(BUILD_TOOLS_VCOMPUTER OR BUILD_TESTS_VCOMPUTER)
 
       # Find SDL2 and OpenGL libs
@@ -120,15 +119,26 @@ else (VCOMPUTER_SUB_PROJECT)
       message( "Procesing Assets")
       add_subdirectory(assets)
 
-
-      if(BUILD_TESTS_VCOMPUTER)
-        message( "Procesing Tests")
-        add_subdirectory(tests)
-      endif(BUILD_TESTS_VCOMPUTER)
-
     endif(BUILD_TOOLS_VCOMPUTER OR BUILD_TESTS_VCOMPUTER)
 
-  endif (EMSCRIPTEN)
+		if(BUILD_TESTS_VCOMPUTER)
+			message( "Procesing Tests")
+			
+			if(DEFINED ENV{GTEST_ROOT})  # Note we omit the $ here!
+        message(" ... using gtest found in $ENV{GTEST_ROOT}")
+			ELSE()
+        message("GTEST_ROOT is not defined. You must tell CMake where
+ to find the gtest source. For example : 
+	GTEST_ROOT=path/gtest-1.6.0 ; 
+	export GTEST_ROOT ")
+				return()
+			endif()
+			
+			add_subdirectory(tests)
+			add_subdirectory($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest)
+		endif(BUILD_TESTS_VCOMPUTER)
+  
+	endif (EMSCRIPTEN)
 
 endif (VCOMPUTER_SUB_PROJECT)
 
