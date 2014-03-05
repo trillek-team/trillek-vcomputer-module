@@ -1,6 +1,13 @@
+/**
+ * Unit tests of VComputer
+ */
 #include "VComputer.hpp"
 
 #include "gtest/gtest.h"
+
+#include <cstdlib>
+#include <cstdio>
+#include <ctime>
 
 class VComputer_test : public ::testing::Test {
 	protected:
@@ -9,6 +16,7 @@ class VComputer_test : public ::testing::Test {
 		
 		virtual void SetUp() {
 			vc.SetROM(this->rom, 1024);
+
 		}
 
 		
@@ -42,5 +50,35 @@ TEST_F(VComputer_test, ReadROM) {
 	byte  = vc.ReadB (0x10000C);
 	ASSERT_EQ(byte,  0);
 	
+}
+
+TEST_F(VComputer_test, WriteROM) {
+	vc.WriteB(0x100000, 'X');
+	
+	vm::byte_t byte = vc.ReadB (0x100000);
+	ASSERT_EQ(byte,  'H');
+}
+
+TEST_F(VComputer_test, RW_RAM) {
+	std::srand(std::time(0));
+	for (int i=0; i< 1024 ; i++) {
+		vm::dword_t addr  = std::rand() & 0x01FFFF; // Address between 0 and 128 KiB
+		vm::byte_t  bval  = 0x55;
+		vc.WriteB(addr, bval);
+		vm::byte_t  byte  = vc.ReadB (addr);
+		ASSERT_EQ (bval, byte);
+
+		addr  = std::rand() & 0x01FFFF; // Address between 0 and 128 KiB
+		vm::word_t  wval  = 0x5A5A;
+		vc.WriteW(addr, wval);
+		vm::word_t  word  = vc.ReadW (addr);
+		ASSERT_EQ (wval, word);
+
+		addr  = std::rand() & 0x01FFFF; // Address between 0 and 128 KiB
+		vm::dword_t dwval  = 0xBEBACAFE;
+		vc.WriteDW(addr, dwval);
+		vm::dword_t dword  = vc.ReadDW (addr);
+		ASSERT_EQ (dwval, dword);
+	}
 }
 

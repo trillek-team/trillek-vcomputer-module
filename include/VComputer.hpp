@@ -229,7 +229,7 @@ namespace vm {
 				//std::fprintf(stderr, "\t B addr: 0x%06X\n", addr);
 				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 
-				if (!(addr & 0xFF0000 )) { // RAM address
+				if (!(addr & 0xF00000 )) { // RAM address (0x000000-0x0FFFFF)
 					return ram[addr];
 				}
 				
@@ -251,7 +251,7 @@ namespace vm {
 				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 				size_t tmp;
 
-				if (!(addr & 0xFF0000 )) { // RAM address
+				if (!(addr & 0xF00000 )) { // RAM address
 					tmp = ((size_t)ram) + addr;
 					return ((word_t*)tmp)[0];
 				}
@@ -276,7 +276,7 @@ namespace vm {
 				addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 				size_t tmp;
 
-				if (!(addr & 0xFF0000 )) { // RAM address
+				if (!(addr & 0xF00000 )) { // RAM address
 					tmp = ((size_t)ram) + addr;
 					return ((dword_t*)tmp)[0];
 				}
