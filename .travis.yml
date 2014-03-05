@@ -9,12 +9,22 @@ before_install:
 install:
     - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
     - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+    - sudo apt-get install libgtest-dev
+    - BUILD_PATH=$(pwd)
+    - cd /usr/src/gtest
+    - sudo cmake CMakeLists.txt
+    - sudo make
+    - GTEST_ROOT=/usr/src/gtest
+    - export GTEST_ROOT
+    - cd $BUILD_PATH
 #    - sudo apt-get -y install automake libtool cmake
 before_script:
   - mkdir build
   - cd build
   - cmake ..
-script: make
+script: 
+  - make
+  - ./module_test
 
 notifications:
     email:
