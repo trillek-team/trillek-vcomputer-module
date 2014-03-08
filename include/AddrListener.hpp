@@ -18,6 +18,8 @@ namespace vm {
 	 */
 	class AddrListener {
 		public:
+			virtual ~AddrListener() { }
+
 			virtual byte_t ReadB (dword_t addr) = 0;
 			virtual word_t ReadW (dword_t addr) = 0;
 			virtual dword_t ReadDW (dword_t addr) = 0;

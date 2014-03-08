@@ -14,6 +14,7 @@
 #include "AddrListener.hpp"
 
 #include <map>
+#include <tuple>
 #include <algorithm>
 #include <memory>
 
@@ -27,6 +28,50 @@ namespace vm {
 	const unsigned MAX_N_DEVICES		= 32;					/// Max number of devices attached
 	const std::size_t MAX_ROM_SIZE	= 32*1024;		/// Max ROM size
 	const std::size_t MAX_RAM_SIZE	= 1024*1024;	/// Max RAM size
+
+	const unsigned EnumCtrlBlkSize	= 20;					/// Enumeration and Control registers blk size
+
+	/**
+   * An specialized Address Listener used by VComputer to implement
+   * Enumeration and Control registers in a slot
+	 */
+	class EnumAndCtrlBlk : public AddrListener {
+		public:
+			/**
+			 * Builds the Enumeartion and Control register block for a device plugged
+			 * in slot XX
+			 */
+			EnumAndCtrlBlk (unsigned slot, IDevice* dev);
+
+			virtual ~EnumAndCtrlBlk () { }
+
+
+			/**
+			 * Returns the address Range used by this register block
+			 */
+			Range GetRange () const;
+
+			byte_t ReadB (dword_t addr);
+			word_t ReadW (dword_t addr);
+			dword_t ReadDW (dword_t addr);
+
+			void WriteB (dword_t addr, byte_t val);
+			void WriteW (dword_t addr, word_t val);
+			void WriteDW (dword_t addr, dword_t val);
+
+		private:
+			unsigned slot;	/// Slot number
+			IDevice* dev;		/// Ptr to the device
+
+			dword_t cmd;		/// Buffer used when a byte write hapens in CMD
+			dword_t a;			/// Buffer used when a byte write hapens in A
+			dword_t b;			/// Buffer used when a byte write hapens in B
+			dword_t c;			/// Buffer used when a byte write hapens in C
+			dword_t d;			/// Buffer used when a byte write hapens in D
+			dword_t e;			/// Buffer used when a byte write hapens in E
+	};
+	
+	typedef std::tuple<std::shared_ptr<IDevice>, EnumAndCtrlBlk*, int32_t> device_t;		/// Storage of a device
 
 	class VComputer {
 		public:
@@ -71,15 +116,18 @@ namespace vm {
 			 * @return False if the slot have a device or the slot is invalid.
 			 */
 			bool AddDevice (unsigned slot , std::shared_ptr<IDevice> dev) {
-				if (slot >= MAX_N_DEVICES || !devices[slot]) {
+				if (slot >= MAX_N_DEVICES || !std::get<0>(devices[slot])) {
 					return false;
 				}
 
-				devices[slot] = dev;
-				if (dev->IsSyncDev()) {
-					sdevices[slot] = dev;
-				} else {
-					sdevices[slot].reset();
+				// TODO Ver donde almacenar el dichoso puntero o usar un shared_ptr
+				auto enumblk = new EnumAndCtrlBlk(slot, dev.get());
+				std::get<2>(devices[slot]) = this->AddAddrListener(enumblk->GetRange(), enumblk);
+				if (std::get<2>(devices[slot]) != -1) {
+					std::get<0>(devices[slot]) = dev;
+					std::get<1>(devices[slot]) = enumblk;
+				} else { // Wops ! Problem!
+					delete enumblk;
 				}
 
 				return true;
@@ -89,11 +137,11 @@ namespace vm {
 			 * Gets the DEvice plugged in the slot
 			 */
 			std::shared_ptr<IDevice> GetDevice (unsigned slot) {
-				if (slot >= MAX_N_DEVICES || !devices[slot]) {
+				if (slot >= MAX_N_DEVICES || !std::get<0>(devices[slot])) {
 					return nullptr;
 				}
 
-				return devices[slot];
+				return std::get<0>(devices[slot]);
 			}
 
 
@@ -102,9 +150,11 @@ namespace vm {
 			 * @param slot Slot were unplug the device
 			 */
 			void RmDevice (unsigned slot) {
-				if (slot < MAX_N_DEVICES && devices[slot]) {
-					devices[slot].reset(); // Cleans the slot
-					sdevices[slot].reset();
+				if (slot < MAX_N_DEVICES && std::get<0>(devices[slot])) {
+					std::get<0>(devices[slot]).reset(); // Cleans the slot
+					delete std::get<1>(devices[slot]);
+					std::get<1>(devices[slot]) = nullptr;
+					std::get<2>(devices[slot]) = -1;
 				}
 			}
 
@@ -165,24 +215,23 @@ namespace vm {
 					word_t msg;
 					bool interrupted = false;//= timers.DoesInterrupt(msg);
 					for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
-						if (!devices[i]) {
+						if (! std::get<0>(devices[i])) {
 							continue; // Slot without device
 						}
 
 						// Does the sync job
-						if (sdevices[i]) {
-							sdevices[i]->Tick(cycles, delta);
+						if ( std::get<0>(devices[i])->IsSyncDev()) {
+							std::get<0>(devices[i])->Tick(cycles, delta);
 						}
 
 						// Try to get the highest priority interrupt
-						if (! interrupted && devices[i]->DoesInterrupt(msg) ) { 
+						if (! interrupted && std::get<0>(devices[i])->DoesInterrupt(msg) ) { 
 							interrupted = true;
 							if (cpu->SendInterrupt(msg)) { // Send the interrupt to the CPU
-								devices[i]->IACK(); // Informs to the device that his interrupt has been accepted by the CPU
+							  std::get<0>(devices[i])->IACK(); // Informs to the device that his interrupt has been accepted by the CPU
 							}
 						}
 					}
-
 
 					return cycles;
 				}
@@ -204,20 +253,20 @@ namespace vm {
 					word_t msg;
 					bool interrupted =false; // timers.DoesInterrupt(msg);
 					for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
-						if (!devices[i]) {
+						if (! std::get<0>(devices[i])) {
 							continue; // Slot without device
 						}
 
 						// Does the sync job
-						if (sdevices[i]) {
-							sdevices[i]->Tick(n, delta);
+						if ( std::get<0>(devices[i])->IsSyncDev()) {
+							std::get<0>(devices[i])->Tick(n, delta);
 						}
 
 						// Try to get the highest priority interrupt
-						if (! interrupted && devices[i]->DoesInterrupt(msg) ) { 
+						if (! interrupted && std::get<0>(devices[i])->DoesInterrupt(msg) ) { 
 							interrupted = true;
 							if (cpu->SendInterrupt(msg)) { // Send the interrupt to the CPU
-								devices[i]->IACK(); // Informs to the device that his interrupt has been accepted by the CPU
+								std::get<0>(devices[i])->IACK(); // Informs to the device that his interrupt has been accepted by the CPU
 							}
 						}
 					}
@@ -385,12 +434,12 @@ namespace vm {
 
 			std::unique_ptr<ICPU> cpu;	/// Virtual CPU
 
-			std::shared_ptr<IDevice> devices[MAX_N_DEVICES];	/// Devices atached to the virtual computer
-			std::shared_ptr<IDevice> sdevices[MAX_N_DEVICES]; /// Devices that run in sync with the VM clock
+			device_t devices[MAX_N_DEVICES];	/// Devices atached to the virtual computer
 
 			std::map<Range, AddrListener*> listeners;					/// Container of AddrListeners
 
 	};
+
 
 } // End of namespace vm
 

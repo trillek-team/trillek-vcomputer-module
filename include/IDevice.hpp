@@ -65,7 +65,7 @@ namespace vm {
 			/**
 			 * Device ID
 			 */
-			virtual byte_t DevId() const = 0;
+			virtual byte_t DevID() const = 0;
 
 			/**
 			 * Device Revision

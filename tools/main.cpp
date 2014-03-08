@@ -86,36 +86,6 @@ void updatePBO (vm::cda::CDA*);
 
 #endif
 
-class TestAddrListener : public vm::AddrListener {
-	vm::byte_t ReadB (vm::dword_t addr) {
-		std::fprintf(stderr, "\tReading Addr: 0x%06X\n", addr);
-		return 0;
-	}
-
-	vm::word_t ReadW (vm::dword_t addr) {
-		return this->ReadB(addr) | (this->ReadB(addr+1) << 8);  
-	}
-
-	vm::dword_t ReadDW (vm::dword_t addr) {
-		return this->ReadW(addr) | (this->ReadW(addr+2) << 16);  
-	}
-
-	void WriteB (vm::dword_t addr, vm::byte_t val) {
-		std::fprintf(stderr, "\tWriting Addr: 0x%06X <- 0x%02X\n", addr, val);
-	}
-
-	void WriteW (vm::dword_t addr, vm::word_t val) {
-		WriteB(addr   , val);
-		WriteB(addr +1, val >> 8);
-	}
-
-	void WriteDW (vm::dword_t addr, vm::dword_t val) {
-		WriteW(addr   , val);
-		WriteW(addr +2, val >> 16);
-	}
-
-};
-
 //vm::cda::CDA* cda_ptr = nullptr;
 
 void print_regs(const vm::cpu::TR3200State& state);
@@ -163,10 +133,6 @@ int main(int argc, char* argv[]) {
 	vc.SetCPU(std::move(cpu));
 	
   vc.SetROM(rom, rom_size);
-
-	TestAddrListener testAddrList;
-	Range r(0x110000, 0x1100FF);
-	auto id = vc.AddAddrListener(r, &testAddrList);
 
   // Add devices to tue Virtual Machine
   //cda::CDA gcard(0, 10);
