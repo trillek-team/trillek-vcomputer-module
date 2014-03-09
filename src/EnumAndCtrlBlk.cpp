@@ -36,27 +36,27 @@ namespace vm {
 				break;
 
 			case 2:
-				return dev->DevBuildID();
+				return dev->DevSubType();
 				break;
 
 			case 3:
-				return dev->DevBuildID() >> 8;
-				break;
-
-			case 4:
-				return dev->DevBuildID() >> 16;
-				break;
-
-			case 5:
-				return dev->DevBuildID() >> 24;
-				break;
-
-			case 6:
 				return dev->DevID();
 				break;
 
+			case 4:
+				return dev->DevVendorID();
+				break;
+
+			case 5:
+				return dev->DevVendorID() >> 8;
+				break;
+
+			case 6:
+				return dev->DevVendorID() >> 16;
+				break;
+
 			case 7:
-				return dev->DevRev();
+				return dev->DevVendorID() >> 24;
 				break;
 
 			// Control and status stuff
@@ -115,6 +115,7 @@ namespace vm {
 
 	word_t EnumAndCtrlBlk::ReadW (dword_t addr) {
 		return this->ReadB(addr) | this->ReadB(addr+1);
+		// TODO Improve this in the aligned cases
 	}
 
 	dword_t EnumAndCtrlBlk::ReadDW (dword_t addr) {
@@ -238,8 +239,6 @@ namespace vm {
 		this->WriteW(addr  , val);
 		this->WriteW(addr+2, val >> 16);
 	}
-
-
 
 } // End of namespace vm
 

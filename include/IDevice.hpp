@@ -58,19 +58,19 @@ namespace vm {
 			virtual byte_t DevType() const = 0;
 
 			/**
-			 * Device Builder ID
+			 * Device SubType
 			 */
-			virtual dword_t DevBuildID() const = 0;
-
+			virtual byte_t DevSubType() const = 0;
+			
 			/**
 			 * Device ID
 			 */
 			virtual byte_t DevID() const = 0;
 
 			/**
-			 * Device Revision
+			 * Device Vendor ID
 			 */
-			virtual byte_t DevRev() const = 0;
+			virtual dword_t DevVendorID() const = 0;
 
 			/**
 			 * Return if the device does something each Device Clock tick.
