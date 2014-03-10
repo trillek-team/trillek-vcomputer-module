@@ -1,4 +1,3 @@
-
 #pragma once
 /**
  * Trillek Virtual Computer - DummyDevice.hpp
