@@ -9,7 +9,7 @@ This repo is composed by the Trillek Virtual Computer lib and some extra tools.
 
 | linux                                            |
 |--------------------------------------------------|
-| [![Build Status](https://travis-ci.org/trillek-team/trillek-tr3200-vm.png?branch=master)](https://travis-ci.org/trillek-team/trillek-tr3200-vm) |
+| [![Build Status](https://travis-ci.org/trillek-team/trillek-vcomputer-module.png?branch=master)](https://travis-ci.org/trillek-team/trillek-vcomputer-module) |
 
 COMPILING
 ---------
