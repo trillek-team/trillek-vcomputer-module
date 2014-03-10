@@ -103,7 +103,7 @@ namespace vm {
 			/**
 			 * Informs to the device that his generated interrupt was accepted by the CPU
 			 */
-			void IACK () {
+			virtual void IACK () {
 			}
 
 		protected:
