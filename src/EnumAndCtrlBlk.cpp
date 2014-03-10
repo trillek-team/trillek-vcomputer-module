@@ -114,12 +114,12 @@ namespace vm {
 	}
 
 	word_t EnumAndCtrlBlk::ReadW (dword_t addr) {
-		return this->ReadB(addr) | this->ReadB(addr+1);
+		return this->ReadB(addr) | (this->ReadB(addr+1) << 8);
 		// TODO Improve this in the aligned cases
 	}
 
 	dword_t EnumAndCtrlBlk::ReadDW (dword_t addr) {
-		return this->ReadW(addr) | this->ReadW(addr+2);
+		return this->ReadW(addr) | (this->ReadW(addr+2) << 16);
 	}
 
 

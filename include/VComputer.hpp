@@ -116,7 +116,7 @@ namespace vm {
 			 * @return False if the slot have a device or the slot is invalid.
 			 */
 			bool AddDevice (unsigned slot , std::shared_ptr<IDevice> dev) {
-				if (slot >= MAX_N_DEVICES || !std::get<0>(devices[slot])) {
+				if (slot >= MAX_N_DEVICES || std::get<0>(devices[slot])) {
 					return false;
 				}
 
@@ -128,6 +128,7 @@ namespace vm {
 					std::get<1>(devices[slot]) = enumblk;
 				} else { // Wops ! Problem!
 					delete enumblk;
+					return false;
 				}
 
 				return true;

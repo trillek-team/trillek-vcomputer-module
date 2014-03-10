@@ -2,6 +2,7 @@
  * Unit tests of VComputer
  */
 #include "VComputer.hpp"
+#include "DummyDevice.hpp"
 
 #include "gtest/gtest.h"
 
@@ -112,13 +113,13 @@ TEST_F(VComputer_test, RW_RAM) {
 		vm::byte_t  byte  = vc.ReadB (addr);
 		ASSERT_EQ (bval, byte);
 
-		addr  = std::rand() & 0x01FFFF; // Address between 0 and 128 KiB
+		addr  = std::rand() & 0x01FFF0; // Address between 0 and 128 KiB
 		vm::word_t  wval  = 0x5A5A;
 		vc.WriteW(addr, wval);
 		vm::word_t  word  = vc.ReadW (addr);
 		ASSERT_EQ (wval, word);
 
-		addr  = std::rand() & 0x01FFFF; // Address between 0 and 128 KiB
+		addr  = std::rand() & 0x01FFF0; // Address between 0 and 128 KiB
 		vm::dword_t dwval  = 0xBEBACAFE;
 		vc.WriteDW(addr, dwval);
 		vm::dword_t dword  = vc.ReadDW (addr);
@@ -225,5 +226,73 @@ TEST_F(VComputer_test, AddrListener_Test) {
 
 }
 
+TEST_F(VComputer_test, AddGetRmDevice) {
+	auto ddev = std::make_shared<vm::DummyDevice>();
+	auto ddev2 = std::make_shared<vm::DummyDevice>();
 
+	ASSERT_TRUE(vc.AddDevice(0, ddev)) << "AddDevice failed to add a device";
+	ASSERT_EQ(ddev.use_count(), 2) << "Device not being stored in VComputer class";
+	
+	ASSERT_FALSE(vc.AddDevice(0, ddev2)) << "AddDevice added a device in a not empty slot";
+	
+	auto sptr = vc.GetDevice(0);
+	if (! sptr)
+		ASSERT_TRUE(false) << "GetDevice not returned dummy device";
+	
+	auto sptr2 = vc.GetDevice(30);
+	if (sptr2)
+		ASSERT_TRUE(false) << "GetDevice failed to return a empty slot";
 
+	vc.RmDevice(0);
+	ASSERT_EQ(sptr.use_count(), 2) << "RmDevice failed to remove a device";
+}
+
+TEST_F(VComputer_test, DummyDevice_EnumAndCtrl) {
+	auto ddev = std::make_shared<vm::DummyDevice>();
+	ASSERT_TRUE(vc.AddDevice(0, ddev)) << "AddDevice failed to add a device";
+
+	// Enumeration stuff
+	auto valb = vc.ReadB(0x110000);
+	ASSERT_EQ(0xFF, valb) << "Device present";
+
+	valb = vc.ReadB(0x110100);
+	ASSERT_EQ(0x00, valb) << "False positive of device present";
+
+	valb = vc.ReadB(0x110001);
+	ASSERT_EQ(0x00, valb) << "Bad Dev Type";
+
+	valb = vc.ReadB(0x110002);
+	ASSERT_EQ(0x01, valb) << "Bad Dev SubType";
+
+	valb = vc.ReadB(0x110003);
+	ASSERT_EQ(0x5A, valb) << "Bad Dev ID";
+
+	auto valdw = vc.ReadDW(0x110004);
+	ASSERT_EQ(0xBEEF55AA, valdw) << "Bad Vendor ID";
+
+	// Test Status & Control
+	vc.WriteW(0x110008, 0xAF50);
+	auto valw = vc.ReadW(0x11000A);
+	ASSERT_EQ(0xAF50, valw);
+	
+	vc.WriteW(0x11000A, 0x0FA5);
+	valw = vc.ReadW(0x11000A);
+	ASSERT_EQ(0x0FA5, valw);
+	
+	vc.WriteW(0x11000C, 0xF0A5);
+	valw = vc.ReadW(0x11000C);
+	ASSERT_EQ(0xF0A5, valw);
+	
+	vc.WriteW(0x11000E, 0xFA05);
+	valw = vc.ReadW(0x11000E);
+	ASSERT_EQ(0xFA05, valw);
+	
+	vc.WriteW(0x110010, 0xFA5B);
+	valw = vc.ReadW(0x110010);
+	ASSERT_EQ(0xFA5B, valw);
+	
+	vc.WriteW(0x110012, 0xA0F5);
+	valw = vc.ReadW(0x110012);
+	ASSERT_EQ(0xA0F5, valw);
+	
+}
