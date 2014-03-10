@@ -425,6 +425,12 @@ namespace vm {
 				return listeners.erase(r) >= 1;
 			}
 
+			/**
+			 * Sizeo of the RAM in bytes
+			 */
+			std::size_t RamSize() const {
+				return ram_size;
+			}
 
 		private:
 
