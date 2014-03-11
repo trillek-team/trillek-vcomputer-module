@@ -71,6 +71,13 @@ namespace vm {
 			virtual dword_t DevVendorID() const {
 				return 0xBEEF55AA;
 			}
+			
+			virtual void GetState (void* ptr, std::size_t& size) const {
+			}
+
+			virtual bool SetState (const void* ptr, std::size_t size) {
+				return true;
+			}
 
 			word_t a, b, c, d, e;
 

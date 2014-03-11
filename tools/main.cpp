@@ -1,7 +1,7 @@
 #include "config_main.hpp"
 
-#include <VC.hpp>
-#include <DisTR3200.hpp>
+#include "VC.hpp"
+#include "DisTR3200.hpp"
 
 #undef SDL2_ENABLE
 
