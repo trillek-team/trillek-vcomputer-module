@@ -1,9 +1,7 @@
-#include "config_main.hpp"
+#include "OS.hpp"
 
 #include "VC.hpp"
 #include "DisTR3200.hpp"
-
-#undef SDL2_ENABLE
 
 #include <iostream>
 #include <fstream>
@@ -18,14 +16,10 @@
 
 #include <chrono>
 
-#ifdef SDL2_ENABLE
+#ifdef GLFW3_ENABLE
 
-unsigned sdl_width = 1024;
-unsigned sdl_height = 768;
-int sdl_other_flags = SDL_WINDOW_SHOWN;
-SDL_Window* pwin = nullptr;
-SDL_Renderer* prend = nullptr;
-SDL_GLContext ogl_context;
+unsigned winWidth;
+unsigned winHeight;
 
 bool capture_keyboard = false;
 
@@ -79,10 +73,9 @@ float yaw  = 0.0;
 float pith = 0.0;
 float zoom = 10.0;
 
-void initSDL();
-void initGL();
+void initGL(OS& os);
 
-void updatePBO (vm::cda::CDA*);
+//void updatePBO (vm::cda::CDA*);
 
 #endif
 
@@ -155,12 +148,17 @@ int main(int argc, char* argv[]) {
 
 
 
-#ifdef SDL2_ENABLE
-  initSDL();
-
-  initGL();
+#ifdef GLFW3_ENABLE
+	OS glfwos;
+	if (!glfwos.InitializeWindow(1024, 768, "Trillek Virtual Computer demo emulator")) {
+		std::clog << "Failed creating the window or context.";
+		return -1;
+	}
+  
+  initGL(glfwos);
   std::printf("Initiated OpenGL\n");
   float frame_count = 0; // Count frames
+	
 #endif
 
   std::cout << "Running!\n";
@@ -186,7 +184,12 @@ int main(int argc, char* argv[]) {
     updt_scr_acu += delta;
 
 
-#ifdef SDL2_ENABLE
+#ifdef GLFW3_ENABLE
+		if (glfwos.Closing()) {
+			loop = false;
+			continue;
+		}
+		/*
     SDL_Event e;
     while (SDL_PollEvent(&e)){
       //If user closes he window
@@ -205,24 +208,6 @@ int main(int argc, char* argv[]) {
         } else if (capture_keyboard && e.key.repeat == 0) {
           auto k = vm::aux::SDL2KeyToTR3200(e.key.keysym.scancode);
           keyb.PushKeyEvent( true, k);
-          /*
-          auto k = e.key.keysym.sym;
-          //std::printf("\tkey: '%c' %u\n", k, k);
-          // Shit SDL! TODO Do a function that maps key to ascii
-          if (k >= 'a' && k <= 'z') {
-            if (e.key.keysym.mod & (KMOD_SHIFT | KMOD_CAPS))
-              k = k -'a' + 'A';
-
-            keyb.PushKeyEvent( true, k);
-          } else if (k >= '0' && k <= '9') {
-            if (e.key.keysym.mod & (KMOD_SHIFT | KMOD_CAPS))
-              k = k -'0' + '!';
-
-            keyb.PushKeyEvent( true, k);
-          } else if (k == ' ' || k == 8 || k == 13) {
-            keyb.PushKeyEvent( true, k);
-          } */
-
         } else {
           if (e.key.keysym.sym == SDLK_q ) {
             loop = false;
@@ -247,27 +232,11 @@ int main(int argc, char* argv[]) {
         if (capture_keyboard) {
           auto k = vm::aux::SDL2KeyToTR3200(e.key.keysym.scancode);
           keyb.PushKeyEvent( false, k);
-
-          /*
-          auto k = e.key.keysym.sym;
-          if (k >= 'a' && k <= 'z') {
-            if (e.key.keysym.mod & (KMOD_SHIFT | KMOD_CAPS))
-              k = k -'a' + 'A';
-
-            keyb.PushKeyEvent( false, k);
-          } else if (k >= '0' && k <= '9') {
-            if (e.key.keysym.mod & (KMOD_SHIFT | KMOD_CAPS))
-              k = k -'0' + '!';
-
-            keyb.PushKeyEvent( false, k);
-          } else if (k == ' ' || k == 8 || k == 13) {
-            keyb.PushKeyEvent( false, k);
-          }
-          */
         }
 
       }
     }
+		*/
 #endif
 
     if (debug) {
@@ -314,13 +283,14 @@ int main(int argc, char* argv[]) {
 
     }
 
-#ifdef SDL2_ENABLE
+#ifdef GLFW3_ENABLE
     // Clear The Screen And The Depth Buffer
     frame_count += 1.0;
 
     glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    
+		
     // Model matrix <- Identity
     model = glm::mat4(1.0f); 
 
@@ -354,13 +324,13 @@ int main(int argc, char* argv[]) {
       // Updates the PBO with the new texture
       auto tdata = (dword_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
       if (tdata != nullptr) {
-        gcard.ToRGBATexture(tdata);
+        //gcard.ToRGBATexture(tdata);
 
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
       }
 
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO
-      gcard.VSync();
+      //gcard.VSync();
     }
 
     // Enable attribute in_Position as being used
@@ -413,16 +383,13 @@ int main(int argc, char* argv[]) {
     glDisableVertexAttribArray(sh_in_UV);
 
     // Update host window
-    SDL_RenderPresent(prend);
-    SDL_GL_SwapWindow(pwin);
+		glfwos.SwapBuffers();
+		glfwos.OSMessageLoop();
 #endif
   }
 
-#ifdef SDL2_ENABLE
-
-  SDL_GL_DeleteContext(ogl_context);
-  SDL_DestroyWindow(pwin);
-  SDL_Quit();
+#ifdef GLFW3_ENABLE
+	glfwos.Terminate();
 #endif
 
   return 0;
@@ -510,38 +477,51 @@ void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram) {
 }
 */
 
-#ifdef SDL2_ENABLE
+#ifdef GLFW3_ENABLE
 
-void initSDL() {
-  // Init SDL2 / OpenGL stuff
-  if (SDL_Init(SDL_INIT_VIDEO) == -1){
-    std::cout << SDL_GetError() << std::endl;
-    exit(-1);
-  }
 
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE); 
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+// Init OpenGL ************************************************************
+void initGL(OS& os) {
+	int OpenGLVersion[2];
 
-  pwin = SDL_CreateWindow("TR3200 VM", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-      sdl_width, sdl_height, SDL_WINDOW_OPENGL | sdl_other_flags);
+	// Use the GL3 way to get the version number
+	glGetIntegerv(GL_MAJOR_VERSION, &OpenGLVersion[0]);
+	glGetIntegerv(GL_MINOR_VERSION, &OpenGLVersion[1]);
+	std::cout << "OpenGL " << OpenGLVersion[0] << "." << OpenGLVersion[1] << "\n";
 
-  ogl_context = SDL_GL_CreateContext(pwin);
+	// Sanity check to make sure we are at least in a good major version number.
+	assert((OpenGLVersion[0] > 1) && (OpenGLVersion[0] < 5));
 
-  GLenum status = glewInit();
-  if (status != GLEW_OK) {
-    std::cerr << "GLEW Error: " << glewGetErrorString(status) << "\n";
-    exit(1);
-  }
+	winWidth = os.GetWindowWidth(); winHeight = os.GetWindowHeight();
 
-  // sync buffer swap with monitor's vertical refresh rate
-  SDL_GL_SetSwapInterval(1);
-  SDL_SetRelativeMouseMode(SDL_TRUE);
-}
+	// Determine the aspect ratio and sanity check it to a safe ratio
+	GLfloat aspectRatio = static_cast<float>(winWidth) / static_cast<float>(winHeight);
+	if (aspectRatio < 1.0f) {
+		aspectRatio = 4.0f / 3.0f;
+	}
+  // Projection matrix : 45° Field of View
+  proj = glm::perspective(
+			45.0f,			// FOV
+			aspectRatio, 
+			0.1f,				// Near cliping plane
+			10000.0f);	// Far cliping plane
 
-void initGL() {
-  // Init OpenGL ************************************************************
+	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+	#if __APPLE__
+		// GL_MULTISAMPLE are Core.
+		glEnable(GL_MULTISAMPLE);
+	#else
+		if (GLEW_ARB_multisample) {
+			glEnable(GL_MULTISAMPLE_ARB);
+		}
+	#endif
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	
+	glEnable(GL_DEPTH_TEST);
+  // Accept fragment if it closer to the camera than the former one
+  glDepthFunc(GL_LESS);
+	
 
   // Initialize VBOs ********************************************************
   glGenBuffers(1, &vertexbuffer);
@@ -608,7 +588,6 @@ void initGL() {
     fragmentSource[bufsize] = 0; // Enforce null char
   }
 
-
   // Assign our handles a "name" to new shader objects
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
   fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -672,8 +651,6 @@ void initGL() {
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
 
-  // Projection matrix : 45° Field of View
-  proj = glm::perspective(45.0f,  (GLfloat)(sdl_width) / sdl_height, 0.1f, 100.0f);
 
   // Camera matrix
   view = glm::lookAt(
@@ -682,18 +659,15 @@ void initGL() {
       glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
       );
 
-  // Enable depth test
-  glEnable(GL_DEPTH_TEST);
-  // Accept fragment if it closer to the camera than the former one
-  glDepthFunc(GL_LESS);
+	
 }
 
-
+/*
 void updatePBO (vm::cda::CDA* cda) {
   using namespace vm;
 
 }
-
+*/
 
 #endif
 

@@ -8,7 +8,7 @@ add_executable( vm
   ./main.cpp
   )
 
-IF (SDL2_ENABLE EQUAL 0)
+IF (GLFW3_ENABLE EQUAL 0)
 	include_directories( vm
 		${VCOMPUTER_INCLUDE_DIRS}
 		)
@@ -17,13 +17,13 @@ IF (SDL2_ENABLE EQUAL 0)
 		VCOMPUTER
 		)
 
-ELSE (SDL2_ENABLE EQUAL 0)
+ELSE (GLFW3_ENABLE EQUAL 0)
 	include_directories( vm
 		${VCOMPUTER_INCLUDE_DIRS}
 		${OPENGL_INCLUDE_DIR}
 		${GLEW_INCLUDE_DIR}
 		${GLM_INCLUDE_DIR}
-		${SDL2_INCLUDE_DIR}
+		${GLFW3_INCLUDE_DIR}
 		)
 
 	target_link_libraries( vm
@@ -31,9 +31,9 @@ ELSE (SDL2_ENABLE EQUAL 0)
 		${OPENGL_LIBRARIES}
 		${GLEW_LIBRARIES}
 		${GLM_LIBRARIES}
-		${SDL2_LIBRARY}
+		${GLFW3_LIBRARY}
 		)
-ENDIF (SDL2_ENABLE EQUAL 0)
+ENDIF (GLFW3_ENABLE EQUAL 0)
 
 #pbm2font tool
 add_executable( pbm2font

@@ -70,7 +70,7 @@ namespace vm {
 			dword_t d;			/// Buffer used when a byte write hapens in D
 			dword_t e;			/// Buffer used when a byte write hapens in E
 	};
-	
+
 	typedef std::tuple<std::shared_ptr<IDevice>, EnumAndCtrlBlk*, int32_t> device_t;		/// Storage of a device
 
 	class VComputer {
@@ -80,7 +80,7 @@ namespace vm {
 			 * Creates a Virtual Computer
 			 * @param ram_size RAM size in BYTES
 			 */
-			VComputer (std::size_t ram_size = 128*1024) : 
+			VComputer (std::size_t ram_size = 128*1024) :
 				ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0) {
 
 					ram = new byte_t[ram_size];
@@ -172,7 +172,7 @@ namespace vm {
 			/**
 			 * Writes a copy of CPU state in a chunk of memory pointer by ptr.
 			 * @param ptr Pointer were to write
-			 * @param size Size of the chunk of memory were can write. If is 
+			 * @param size Size of the chunk of memory were can write. If is
 			 * sucesfull, it will be set to the size of the write data.
 			 */
 			inline void GetState (void* ptr, std::size_t size) const {
@@ -191,7 +191,7 @@ namespace vm {
 				assert (rom_size > 0);
 
 				this->rom = rom;
-				this->rom_size = (rom_size > MAX_ROM_SIZE) ? MAX_ROM_SIZE : rom_size; 
+				this->rom_size = (rom_size > MAX_ROM_SIZE) ? MAX_ROM_SIZE : rom_size;
 			}
 
 			/**
@@ -226,10 +226,10 @@ namespace vm {
 						}
 
 						// Try to get the highest priority interrupt
-						if (! interrupted && std::get<0>(devices[i])->DoesInterrupt(msg) ) { 
+						if (! interrupted && std::get<0>(devices[i])->DoesInterrupt(msg) ) {
 							interrupted = true;
 							if (cpu->SendInterrupt(msg)) { // Send the interrupt to the CPU
-							  std::get<0>(devices[i])->IACK(); // Informs to the device that his interrupt has been accepted by the CPU
+								std::get<0>(devices[i])->IACK(); // Informs to the device that his interrupt has been accepted by the CPU
 							}
 						}
 					}
@@ -264,7 +264,7 @@ namespace vm {
 						}
 
 						// Try to get the highest priority interrupt
-						if (! interrupted && std::get<0>(devices[i])->DoesInterrupt(msg) ) { 
+						if (! interrupted && std::get<0>(devices[i])->DoesInterrupt(msg) ) {
 							interrupted = true;
 							if (cpu->SendInterrupt(msg)) { // Send the interrupt to the CPU
 								std::get<0>(devices[i])->IACK(); // Informs to the device that his interrupt has been accepted by the CPU
@@ -272,7 +272,7 @@ namespace vm {
 						}
 					}
 
-				}		
+				}
 			}
 
 			byte_t ReadB (dword_t addr) const {
@@ -282,7 +282,7 @@ namespace vm {
 				if (!(addr & 0xF00000 )) { // RAM address (0x000000-0x0FFFFF)
 					return ram[addr];
 				}
-				
+
 				if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
 					return rom[addr & 0x00FFFF];
 				}
@@ -305,13 +305,13 @@ namespace vm {
 					tmp = ((size_t)ram) + addr;
 					return ((word_t*)tmp)[0];
 				}
-				
+
 				if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
 					addr &= 0x00FFFF; // Dirty tricks with pointers
 					tmp = ((size_t)rom) + addr;
 					return ((word_t*)tmp)[0];
 				}
-				
+
 				Range r(addr);
 				auto search = listeners.find(r);
 				if (search != listeners.end()) {
@@ -330,13 +330,13 @@ namespace vm {
 					tmp = ((size_t)ram) + addr;
 					return ((dword_t*)tmp)[0];
 				}
-				
+
 				if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
 					addr &= 0x00FFFF; // Dirty tricks with pointers
 					tmp = ((size_t)rom) + addr;
 					return ((dword_t*)tmp)[0];
 				}
-				
+
 				Range r(addr);
 				auto search = listeners.find(r);
 				if (search != listeners.end()) {
@@ -352,7 +352,7 @@ namespace vm {
 				if (addr < ram_size) { // RAM address
 					ram[addr] = val;
 				}
-				
+
 				Range r(addr);
 				auto search = listeners.find(r);
 				if (search != listeners.end()) {
@@ -373,7 +373,7 @@ namespace vm {
 				// half outside ?
 				// I actually forbid these cases to avoid buffer overun, but should be
 				// allowed and only use the apropiate portion of the data in the RAM.
-				
+
 				Range r(addr);
 				auto search = listeners.find(r);
 				if (search != listeners.end()) {
@@ -392,7 +392,7 @@ namespace vm {
 				}
 				// TODO What hapens when there is a write that falls half in RAM and
 				// half outside ?
-				
+
 				Range r(addr);
 				auto search = listeners.find(r);
 				if (search != listeners.end()) {
@@ -414,7 +414,7 @@ namespace vm {
 				}
 				return -1;
 			}
-			
+
 			/**
 			 * Removes an AddrListener from the computer
 			 * @param id ID of the address listener to remove (ID from AddAddrListener)

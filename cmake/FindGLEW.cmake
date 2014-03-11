@@ -18,7 +18,13 @@
 #  License text for the above reference.)
 
 find_path(GLEW_INCLUDE_DIR GL/glew.h)
-find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
+if(USE_STATIC_GLEW)
+set(GLEW_NAMES glew32s)
+add_definitions(-DGLEW_STATIC)
+else(USE_STATIC_GLEW)
+set(GLEW_NAMES GLEW glew32 glew glew32s)
+endif(USE_STATIC_GLEW)
+find_library(GLEW_LIBRARY NAMES ${GLEW_NAMES} PATH_SUFFIXES lib64)
 
 set(GLEW_INCLUDE_DIRS ${GLEW_INCLUDE_DIR})
 set(GLEW_LIBRARIES ${GLEW_LIBRARY})
@@ -28,4 +34,3 @@ find_package_handle_standard_args(GLEW
                                   REQUIRED_VARS GLEW_INCLUDE_DIR GLEW_LIBRARY)
 
 mark_as_advanced(GLEW_INCLUDE_DIR GLEW_LIBRARY)
-

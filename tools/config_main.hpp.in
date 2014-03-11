@@ -1,25 +1,40 @@
 #pragma once
-#ifndef ___CONFIG_MAIN_HPP__
-#define ___CONFIG_MAIN_HPP__ 1
 /**
- * RC3200 VM - config_main.hpp
+ * Trillek Virtual Computer - config_main.hpp
  * Compilation time generated stuff related to version, OS, etc...
- * All related to main.cpp, like if SDL2 is there  etc...
+ * Used by main executable
  */
 
-#define SDL2_ENABLE @SDL2_ENABLE@
-#if SDL2_ENABLE == 0
-    #undef SDL2_ENABLE
-#else
-    //#define GL_GLEXT_PROTOTYPES
+#ifndef ___CONFIG_MAIN_HPP__
+#define ___CONFIG_MAIN_HPP__ 1
 
-    #include <GL/glew.h>
-    #include <glm/glm.hpp>
-    #include <glm/ext.hpp> 
-    
-    #include <SDL2/SDL.h>
-    //#include <SDL2/SDL_opengl.h>
-    
+#define		GLFW3_ENABLE @GLFW3_ENABLE@
+#if GLFW3_ENABLE == 0
+	#undef GLFW3_ENABLE
+#else
+
+  #ifdef __APPLE__
+  	// Needed so we can disable retina support for our window.
+		#define GLFW_EXPOSE_NATIVE_COCOA 1
+		#define GLFW_EXPOSE_NATIVE_NSGL 1
+		#include <GLFW/glfw3native.h>
+  	// We can't just include objc/runtime.h and objc/message.h because glfw is too forward thinking for its own good.
+  	typedef void* SEL;
+  	extern "C" id objc_msgSend(id self, SEL op, ...);
+  	extern "C" SEL sel_getUid(const char *str);
+	#else
+		#include <GL/glew.h>
+
+		#ifndef __unix
+			#include <GL/wglew.h>
+		#endif
+  #endif
+
+	#include <GLFW/glfw3.h>
+
+	#include <glm/glm.hpp>
+  #include <glm/ext.hpp>
+
 #endif
 
 
