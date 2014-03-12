@@ -1,5 +1,5 @@
 /**//**************************************************************************
- *   PBM to LDA font tool
+ *   PBM to TDA font tool
  *   This program reads a plain text PBM image file, and generates a 8x8 font 
  *   from it.
  *   It outputs in .DAT format or in a list of HEX values
@@ -175,7 +175,7 @@ int main (int argc, char **argv)
      
       glyph = (x/8) + glyphs_row * (y/8);
       addr = glyph*8 + y%8;
-      glyphs[addr] |= ((c == '1') << (x%8));
+      glyphs[addr] |= ((c == '1') << (7-(x%8)));
       
       if (++x >= glyphs_row *8) {
         x = 0;

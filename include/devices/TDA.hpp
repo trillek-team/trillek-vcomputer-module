@@ -21,6 +21,32 @@ namespace vm {
 			static const unsigned TXT_BUFFER_SIZE		= WIDTH_CHARS*HEIGHT_CHARS*2;
 			static const unsigned FONT_BUFFER_SIZE	= 256*8;
 
+			static const dword_t PALETTE[] = {  /// Default color palette
+				// Little Endian -> ABGR
+				0xFF000000, // Black
+				0xFFCD0000, // Dark Blue
+				0xFF00CD00, // Dark Green
+				0xFFCDCD00, // Dark Cyan
+				0xFF0000CD, // Dark Red
+				0xFFCD00CD, // Dark Magenta
+				0xFF0055AA, // Brown
+				0xFFCDCDCD, // Light Gray
+				// Bright colors
+				0xFF555555, // Dark Grey
+				0xFFFF0000, // Blue
+				0xFF00FF00, // Green
+				0xFFFFFF00, // Cyan
+				0xFF0000FF, // Red
+				0xFFFF00FF, // Magenta
+				0xFF00FFFF, // Yellow
+				0xFFFFFFFF, // White
+			};
+
+			static const byte_t ROM_FONT[256*8] = {  /// Default font
+				#include "devices/TDAfont.inc"
+			};
+
+
 			/**
 			 * Structure to store a snapshot of the device state
 			 */
@@ -37,7 +63,14 @@ namespace vm {
 
 					bool do_vsync;
 			};
-			
+
+		  /**
+		   * Generates/Updates a RGBA texture (4 byte per pixel) of the screen state
+		   * @param state Copy of the state of the TDA card
+		   * @param texture Ptr. to the texture. Must have a size enought to containt a 320x240 RGB texture.
+		   */
+			void RGBATexture (const TDAState& state, dword_t* texture);
+
 			/**
 			 * Text Generator Adapter
 			 * Text only video card
@@ -133,7 +166,7 @@ namespace vm {
 							state->buffer_ptr = this->buffer_ptr;
 							state->font_ptr   = this->font_ptr;
 							state->vsync_msg  = this->vsync_msg;
-							state->a          = this->a; 
+							state->a          = this->a;
 							state->b          = this->b;
 
 							state->do_vsync   = this->do_vsync;
@@ -145,7 +178,7 @@ namespace vm {
 									state->txt_buffer[i>>2] = vcomp->ReadW(this->buffer_ptr + i);
 								}
 							}
-							
+
 							if (this->font_ptr != 0 ) {
 								// Copy FONT_BUFFER
 								// TODO Improve this
@@ -167,7 +200,7 @@ namespace vm {
 
 							this->do_vsync    = state->do_vsync;
 
-							if (this->buffer_ptr != 0 && 
+							if (this->buffer_ptr != 0 &&
 									this->buffer_ptr + TXT_BUFFER_SIZE < vcomp->RamSize() ) {
 								// Copy TXT_BUFFER
 								// TODO Improve this
@@ -175,8 +208,8 @@ namespace vm {
 									vcomp->WriteW(this->buffer_ptr + i, state->txt_buffer[i]);
 								}
 							}
-							
-							if (this->font_ptr != 0 && 
+
+							if (this->font_ptr != 0 &&
 									this->font_ptr + FONT_BUFFER_SIZE < vcomp->RamSize() ) {
 								// Copy FONT_BUFFER
 								// TODO Improve this
