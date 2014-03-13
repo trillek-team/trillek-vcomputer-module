@@ -154,11 +154,12 @@ namespace vm {
 
               state->do_vsync   = this->do_vsync;
 
+              // FIXME Check/revise copy code as looks that is doing something wrong...
               if (this->buffer_ptr != 0 ) {
                 // Copy TXT_BUFFER
                 // TODO Improve this
-                for (unsigned i=0; i < TXT_BUFFER_SIZE ; i += 2) {
-                  state->txt_buffer[i>>2] = vcomp->ReadW(this->buffer_ptr + i);
+                for (unsigned i=0; i < (TXT_BUFFER_SIZE/2) ; i++) {
+                  state->txt_buffer[i] = vcomp->ReadW(this->buffer_ptr + i*2);
                 }
               }
 

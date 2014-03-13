@@ -31,29 +31,4 @@ target_link_libraries( module_test
 #target_link_libraries( benchmark
 #  VCOMPUTER
 #  )
-#
-#
-#if(SDL2_ENABLE)
-#
-#  # Test CDA vram to texture and dispaly in OpenGL 
-#  add_executable( test_cda
-#    test_cda.cpp
-#    )
-#
-#  include_directories( test_cda
-#    ${VCOMPUTER_INCLUDE_DIRS}
-#    ${OPENGL_INCLUDE_DIR}
-#    ${GLEW_INCLUDE_DIR}
-#    ${GLM_INCLUDE_DIR}
-#    ${SDL2_INCLUDE_DIR}
-#    )
-#
-#  target_link_libraries( test_cda
-#    VCOMPUTER
-#    ${OPENGL_LIBRARIES}
-#    ${GLEW_LIBRARIES}
-#    ${GLM_LIBRARIES}
-#    ${SDL2_LIBRARY}
-#    )
-#
-#endif(SDL2_ENABLE)
+

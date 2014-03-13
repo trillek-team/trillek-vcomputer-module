@@ -78,7 +78,7 @@ static const float uv_data[] = {
 glm::mat4 proj, view, model; // MVP Matrixes
 float yaw  = 0.0;
 float pith = 0.0;
-float zoom = 10.0;
+float zoom = 6.0;
 
 void initGL(OS& os);
 
@@ -339,6 +339,7 @@ int main(int argc, char* argv[]) {
       // Updates the PBO with the new texture
       auto tdata = (dword_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
       if (tdata != nullptr) {
+        //std::fill_n(tdata, 320*240, 0xFF800000);
         TDAtoRGBATexture(gcard_state, tdata); // Write the texture to the PBO buffer
 
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);

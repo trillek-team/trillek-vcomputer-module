@@ -125,6 +125,7 @@ namespace vm {
 				std::get<2>(devices[slot]) = this->AddAddrListener(enumblk->GetRange(), enumblk);
 				if (std::get<2>(devices[slot]) != -1) {
 					std::get<0>(devices[slot]) = dev;
+          dev->SetVComputer(this);
 					std::get<1>(devices[slot]) = enumblk;
 				} else { // Wops ! Problem!
 					delete enumblk;
@@ -152,6 +153,7 @@ namespace vm {
 			 */
 			void RmDevice (unsigned slot) {
 				if (slot < MAX_N_DEVICES && std::get<0>(devices[slot])) {
+          std::get<0>(devices[slot])->SetVComputer(nullptr);
 					std::get<0>(devices[slot]).reset(); // Cleans the slot
 					delete std::get<1>(devices[slot]);
 					std::get<1>(devices[slot]) = nullptr;
