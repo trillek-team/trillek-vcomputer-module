@@ -135,9 +135,11 @@ int main(int argc, char* argv[]) {
   vc.SetROM(rom, rom_size);
 
   // Add devices to tue Virtual Machine
+  auto gcard = std::make_shared<vm::dev::tda::TDADev>();
+  vm::dev::tda::TDAState gcard_state = {0};
   //cda::CDA gcard(0, 10);
   //keyboard::GKeyboard keyb;
-  //vm.AddDevice(0, gcard);
+  vc.AddDevice(0, gcard);
   //vm.AddDevice(5, keyb);
 
   vc.Reset();
@@ -169,13 +171,13 @@ int main(int argc, char* argv[]) {
 #endif
 
   std::cout << "Running!\n";
-  unsigned ticks = 1675;
+  unsigned ticks = 16050;
   unsigned long ticks_count = 0;
 
   using namespace std::chrono;
   auto clock = high_resolution_clock::now();
-  double delta, updt_scr_acu; // Time Deltas
-  updt_scr_acu = 0;
+  double delta; // Time delta in seconds
+  double t_acu = 0; // Acumulated time
 
   int c = ' ';
   bool loop = true;
@@ -186,9 +188,9 @@ int main(int argc, char* argv[]) {
 
     auto oldClock = clock;
     clock = high_resolution_clock::now();
-    delta = duration_cast<microseconds>(clock - oldClock).count();
+    delta = duration_cast<milliseconds>(clock - oldClock).count();
 
-    updt_scr_acu += delta;
+    t_acu += delta/1000.0;
 
 
 #ifdef GLFW3_ENABLE
@@ -257,24 +259,25 @@ int main(int argc, char* argv[]) {
 
     if (!debug) {
       ticks_count += ticks;
-      vc.Tick(ticks, delta * 0.001f );
+      vc.Tick(ticks, delta / 1000.0 );
       //ticks = (vc.Clock() * delta * 0.000001) + 0.5f; // Rounding bug in VS
       //if (ticks <= 3)
       //  ticks = 3;
 
     } else {
-      ticks = vc.Step(delta * 0.001f); 
+      ticks = vc.Step(delta / 1000.0 ); 
 			//ticks = 1; vc.Tick(1, delta * 0.001f );
 		}
 
 
     // Speed info
     if (!debug && ticks_count > 200000) {
-      std::cout << "Running " << ticks << " cycles in " << delta << " uS"
-        << " Speed of " 
-        << 100.0f * (((ticks * 1000000.0) / vc.CPUClock()) / delta)
-        << "% \n";
-      std::cout << std::endl;
+      std::printf("Running %u cycles in %f ms ", ticks, delta);
+      double ttick = delta / ticks;
+      double tclk = 1000.0 / 1000000.0;
+      std::printf("Ttick %f ms ", ttick);
+      std::printf("Tclk %f ms ", tclk);
+      std::printf("Speed of %f %% \n", 100.0f * (tclk / ttick) );
       ticks_count -= 200000;
     }
 
@@ -320,8 +323,13 @@ int main(int argc, char* argv[]) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, screenTex);
 
-    if (updt_scr_acu >= 50000) { // Updates screen texture at a rate of 20 Hz
-      updt_scr_acu -= 50000;
+    if (t_acu >= 0.04) { // Updates screen texture at a rate of ~25 Hz
+      t_acu -= 0.04;
+      // Dump a copy of the CDA card state
+      std::size_t tmp = sizeof(gcard_state);
+      gcard->GetState ((void*) &gcard_state, tmp);
+      gcard->DoVSync();
+
       // Stream the texture *************************************************
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
 
@@ -331,13 +339,12 @@ int main(int argc, char* argv[]) {
       // Updates the PBO with the new texture
       auto tdata = (dword_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
       if (tdata != nullptr) {
-        //gcard.ToRGBATexture(tdata);
+        TDAtoRGBATexture(gcard_state, tdata); // Write the texture to the PBO buffer
 
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
       }
 
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO
-      //gcard.VSync();
     }
 
     // Enable attribute in_Position as being used
