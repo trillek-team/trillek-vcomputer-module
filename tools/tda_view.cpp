@@ -70,7 +70,7 @@ static const float uv_data[] = {
 glm::mat4 proj, view, model; // MVP Matrixes
 float yaw  = 0.0;
 float pith = 0.0;
-float zoom = 10.0;
+float zoom = 6.0;
 
 void initGL(OS& os);
 
@@ -81,7 +81,7 @@ int main (int argc, char* argv[]) {
   // TODO load screen from a file
 
 	OS glfwos;
-	if (!glfwos.InitializeWindow(1024, 768, "Trillek Virtual Computer demo emulator")) {
+	if (!glfwos.InitializeWindow(1024, 768, "TDA screen dump viewer")) {
 		std::clog << "Failed creating the window or context.";
 		return -1;
 	}
