@@ -1,11 +1,9 @@
 /**
- * Trillek Virtual Computer - main.cpp
- * Test/Toy executable that uses the Virtual Computer lib to run a emulation
+ * Trillek Virtual Computer - tda_view.cpp
+ * Tool that visualizes a image of a TDA screen using a stored TDA state 
  */
 #include "OS.hpp"
-
-#include "VC.hpp"
-#include "DisTR3200.hpp"
+#include "devices/TDA.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -18,14 +16,8 @@
 #include <cwctype>
 #include <clocale>
 
-#include <chrono>
-
-#ifdef GLFW3_ENABLE
-
 unsigned winWidth;
 unsigned winHeight;
-
-//bool capture_keyboard = false;
 
 GLuint screenTex; // ID of screen Texture
 GLuint tex_pbo;   // ID of the screen texture PBO
@@ -82,80 +74,12 @@ float zoom = 10.0;
 
 void initGL(OS& os);
 
-//void updatePBO (vm::cda::CDA*);
-
-#endif
-
-//vm::cda::CDA* cda_ptr = nullptr;
-
-void print_regs(const vm::cpu::TR3200State& state);
-void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc);
-//void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram);
-
-int main(int argc, char* argv[]) {
+int main (int argc, char* argv[]) {
   using namespace vm;
-  using namespace vm::cpu;
+  using namespace vm::dev::tda;
 
-  byte_t* rom = nullptr;
-  size_t rom_size = 0;
+  // TODO load screen from a file
 
-  if (argc < 2) {
-    std::printf("Usage: %s binary_file\n", argv[0]);
-    return -1;
-
-  } else {
-    rom = new byte_t[64*1024];
-
-    std::printf("Opening file %s\n", argv[1]);
-    std::fstream f(argv[1], std::ios::in | std::ios::binary);
-    unsigned count = 0;
-    size_t size;
-    
-		auto begin = f.tellg();
-    f.seekg (0, std::ios::end);
-    auto end = f.tellg();
-    f.seekg (0, std::ios::beg);
-
-    size = end - begin;
-    size = size > (MAX_ROM_SIZE) ? (MAX_ROM_SIZE) : size;
-
-    f.read(reinterpret_cast<char*>(rom), size);
-    count = size;
-    
-		std::printf("Read %u bytes and stored in ROM\n", count);
-    rom_size = count;
-  }
-
-  // Create the Virtual Machine
-  VComputer vc;
-	std::unique_ptr<vm::cpu::TR3200> cpu(new TR3200());
-	cpu->Clock();
-	vc.SetCPU(std::move(cpu));
-	
-  vc.SetROM(rom, rom_size);
-
-  // Add devices to tue Virtual Machine
-  //cda::CDA gcard(0, 10);
-  //keyboard::GKeyboard keyb;
-  //vm.AddDevice(0, gcard);
-  //vm.AddDevice(5, keyb);
-
-  vc.Reset();
-
-  std::cout << "Run program (r) or Step Mode (s) ?\n";
-  char mode;
-  std::cin >> mode;
-  std::getchar();
-
-
-  bool debug = false;
-  if (mode == 's' || mode == 'S') {
-    debug = true;
-  }
-
-
-
-#ifdef GLFW3_ENABLE
 	OS glfwos;
 	if (!glfwos.InitializeWindow(1024, 768, "Trillek Virtual Computer demo emulator")) {
 		std::clog << "Failed creating the window or context.";
@@ -165,138 +89,46 @@ int main(int argc, char* argv[]) {
   initGL(glfwos);
   std::printf("Initiated OpenGL\n");
   float frame_count = 0; // Count frames
-	
-#endif
+  double deltat = glfwos.GetDeltaTime();
+  double t_acu = 0; // Time acumulator
 
-  std::cout << "Running!\n";
-  unsigned ticks = 1675;
-  unsigned long ticks_count = 0;
+  // TODO Here insert a callback fro events	
 
-  using namespace std::chrono;
-  auto clock = high_resolution_clock::now();
-  double delta, updt_scr_acu; // Time Deltas
-  updt_scr_acu = 0;
+  // Test screen
+  TDAState screen = {0}; // Clear it
+  screen.buffer_ptr = 1;
+  screen.font_ptr = 0;
+  screen.txt_buffer[0]  = 0x0F00 | 'H'; 
+  screen.txt_buffer[1]  = 0x1F00 | 'e'; 
+  screen.txt_buffer[2]  = 0x2F00 | 'l'; 
+  screen.txt_buffer[3]  = 0x3F00 | 'l'; 
+  screen.txt_buffer[4]  = 0x4F00 | 'o'; 
+  screen.txt_buffer[5]  = 0x5F00 | ' '; 
+  screen.txt_buffer[6]  = 0x6F00 | 'w'; 
+  screen.txt_buffer[7]  = 0x7F00 | 'o'; 
+  screen.txt_buffer[8]  = 0x8F00 | 'r'; 
+  screen.txt_buffer[9]  = 0x9F00 | 'l'; 
+  screen.txt_buffer[10] = 0xAF00 | 'd'; 
+  screen.txt_buffer[11] = 0xBF00 | '!'; 
 
-  int c = ' ';
+  for (unsigned i= 40; i < WIDTH_CHARS*HEIGHT_CHARS; i++ ) {
+    byte_t fg = i % 16;
+    byte_t bg = (15 - i) % 16;
+    screen.txt_buffer[i] = (bg << 12) | (fg << 8) | ((i-40) % 256); 
+  }
+
   bool loop = true;
-	vm::cpu::TR3200State cpu_state;
-
   while ( loop) {
-    // Calcs delta time 
-
-    auto oldClock = clock;
-    clock = high_resolution_clock::now();
-    delta = duration_cast<microseconds>(clock - oldClock).count();
-
-    updt_scr_acu += delta;
-
-
-#ifdef GLFW3_ENABLE
 		if (glfwos.Closing()) {
 			loop = false;
 			continue;
 		}
-		/*
-    SDL_Event e;
-    while (SDL_PollEvent(&e)){
-      //If user closes he window
-      if (e.type == SDL_QUIT) {
-        loop = false;
-      } else if (e.type == SDL_MOUSEBUTTONDOWN) {
 
-      } else if (e.type == SDL_MOUSEWHEEL) {
-        zoom += e.wheel.y / 10.0f;
-        if (zoom < 2.0f)
-          zoom = 2.0f;
-      } else if (e.type == SDL_KEYDOWN) {
-        if (e.key.keysym.sym == SDLK_F3 ) { // F3 togles capture keyboard
-          capture_keyboard = ! capture_keyboard;
-
-        } else if (capture_keyboard && e.key.repeat == 0) {
-          auto k = vm::aux::SDL2KeyToTR3200(e.key.keysym.scancode);
-          keyb.PushKeyEvent( true, k);
-        } else {
-          if (e.key.keysym.sym == SDLK_q ) {
-            loop = false;
-          } else if (e.key.keysym.sym == SDLK_a) { // Turn to left
-            yaw -= 0.1; 
-          } else if (e.key.keysym.sym == SDLK_d) { // Turn to right
-            yaw += 0.1; 
-          } else if (e.key.keysym.sym == SDLK_w) { // Turn to up
-            pith += 0.1; 
-          } else if (e.key.keysym.sym == SDLK_s) { // Turn to down
-            pith -= 0.1; 
-
-          } else if (e.key.keysym.sym == SDLK_r) { // Zoom In
-            zoom = (zoom > 2.0)? zoom - 0.1 : zoom; 
-          } else if (e.key.keysym.sym == SDLK_f) { // Zoom out
-            zoom += 0.1; 
-          }
-
-        }
-
-      } else if (e.type == SDL_KEYUP) {
-        if (capture_keyboard) {
-          auto k = vm::aux::SDL2KeyToTR3200(e.key.keysym.scancode);
-          keyb.PushKeyEvent( false, k);
-        }
-
-      }
-    }
-		*/
-#endif
-
-    if (debug) {
-			vc.GetState((void*) &cpu_state, sizeof(cpu_state));
-      print_pc(cpu_state, vc);
-      //if (vm.CPU().Skiping())
-      //  std::printf("Skiping!\n");
-      //if (vm.CPU().Sleeping())
-      //  std::printf("ZZZZzzzz...\n");
-    }
-
-    if (!debug) {
-      ticks_count += ticks;
-      vc.Tick(ticks, delta * 0.001f );
-      //ticks = (vc.Clock() * delta * 0.000001) + 0.5f; // Rounding bug in VS
-      //if (ticks <= 3)
-      //  ticks = 3;
-
-    } else {
-      ticks = vc.Step(delta * 0.001f); 
-			//ticks = 1; vc.Tick(1, delta * 0.001f );
-		}
-
-
-    // Speed info
-    if (!debug && ticks_count > 200000) {
-      std::cout << "Running " << ticks << " cycles in " << delta << " uS"
-        << " Speed of " 
-        << 100.0f * (((ticks * 1000000.0) / vc.CPUClock()) / delta)
-        << "% \n";
-      std::cout << std::endl;
-      ticks_count -= 200000;
-    }
-
-
-    if (debug) {
-			vc.GetState((void*) &cpu_state, sizeof(cpu_state));
-      std::printf("Takes %u cycles\n", cpu_state.wait_cycles);
-      print_regs(cpu_state);
-      //print_stack(vm.CPU(), vm.RAM());
-      c = std::getchar();
-      if (c == 'q' || c == 'Q')
-        loop = false;
-
-    }
-
-#ifdef GLFW3_ENABLE
     // Clear The Screen And The Depth Buffer
     frame_count += 1.0;
 
     glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
 		
     // Model matrix <- Identity
     model = glm::mat4(1.0f); 
@@ -320,8 +152,9 @@ int main(int argc, char* argv[]) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, screenTex);
 
-    if (updt_scr_acu >= 50000) { // Updates screen texture at a rate of 20 Hz
-      updt_scr_acu -= 50000;
+    if (t_acu >= 0.04) { // Updates screen texture at a rate of ~25 Hz
+      t_acu -= 0.04;
+
       // Stream the texture *************************************************
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
 
@@ -331,13 +164,12 @@ int main(int argc, char* argv[]) {
       // Updates the PBO with the new texture
       auto tdata = (dword_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
       if (tdata != nullptr) {
-        //gcard.ToRGBATexture(tdata);
+        TDAtoRGBATexture(screen, tdata); // Write the texture to the PBO buffer
 
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
       }
 
       glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO
-      //gcard.VSync();
     }
 
     // Enable attribute in_Position as being used
@@ -392,100 +224,13 @@ int main(int argc, char* argv[]) {
     // Update host window
 		glfwos.SwapBuffers();
 		glfwos.OSMessageLoop();
-#endif
-  }
 
-#ifdef GLFW3_ENABLE
-	glfwos.Terminate();
-#endif
+    deltat = glfwos.GetDeltaTime(); // Gets new Delta time
+    t_acu += deltat;
+  }
 
   return 0;
 }
-
-// Alias to special registers
-#define REG_Y			(11)
-#define BP				(12)
-#define SP				(13)
-#define REG_IA		(14)
-#define REG_FLAGS (15)
-
-// Operation in Flags bits
-#define GET_CF(x)          ((x) & 0x1)
-#define SET_ON_CF(x)       (x |= 0x1)
-#define SET_OFF_CF(x)      (x &= 0xFFFFFFFE)
-
-#define GET_OF(x)          (((x) & 0x2) >> 1)
-#define SET_ON_OF(x)       (x |= 0x2)
-#define SET_OFF_OF(x)      (x &= 0xFFFFFFFD)
-
-#define GET_DE(x)          (((x) & 0x4) >> 2)
-#define SET_ON_DE(x)       (x |= 0x4)
-#define SET_OFF_DE(x)      (x &= 0xFFFFFFFB)
-
-#define GET_IF(x)          (((x) & 0x8) >> 3)
-#define SET_ON_IF(x)       (x |= 0x8)
-#define SET_OFF_IF(x)      (x &= 0xFFFFFFF7)
-
-// Enable bits that change what does the CPU
-#define GET_EI(x)          (((x) & 0x100) >> 8)
-#define SET_ON_EI(x)       (x |= 0x100)
-#define SET_OFF_EI(x)      (x &= 0xFFFFFEFF)
-
-#define GET_ESS(x)         (((x) & 0x200) >> 9)
-#define SET_ON_ESS(x)      (x |= 0x200)
-#define SET_OFF_ESS(x)     (x &= 0xFFFFFDFF)
-
-// Internal alias to Y Flags and IA registers
-#define RY      r[REG_Y]
-#define IA      r[REG_IA]
-#define FLAGS   r[REG_FLAGS]
-
-void print_regs(const vm::cpu::TR3200State& state) {
-  // Print registers
-	
-  for (int i=0; i < 11; i++) {
-    std::printf("%%r%2d= 0x%08X ", i, state.r[i]);
-    if (i == 3 || i == 7 || i == 11 || i == 15 || i == 19 || i == 23 || i == 27 || i == 31)
-      std::printf("\n");
-  }
-  std::printf("%%y= 0x%08X\n", state.r[REG_Y]);
-
-  std::printf("%%ia= 0x%08X ", state.r[REG_IA]);
-	auto flags = state.r[REG_FLAGS];
-  std::printf("%%flags= 0x%08X ", flags);
-  std::printf("%%bp= 0x%08X ",  state.r[BP]);
-  std::printf("%%sp= 0x%08X\n", state.r[SP]);
-
-  std::printf("%%pc= 0x%08X \n", state.pc);
-  std::printf("ESS: %d EI: %d \t IF: %d DE %d OF: %d CF: %d\n",
-      GET_ESS(flags), GET_EI(flags), GET_IF(flags) , GET_DE(flags) , GET_OF(flags) , GET_CF(flags));
-  std::printf("\n");
-  
-}
-
-void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc) {
-	vm::dword_t val = vc.ReadDW(state.pc);
-
-  std::printf("\tPC : 0x%08X > 0x%08X ", state.pc, val); 
-  std::cout << vm::cpu::Disassembly(vc,  state.pc) << std::endl;  
-}
-
-/*
-void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram) {
-	std::printf("STACK:\n");
-
-  for (size_t i =0; i <5*4; i +=4) {
-    auto val = ram.RD(cpu.Reg(SP)+ i);
-
-    std::printf("0x%08X\n", val);
-    if (((size_t)(cpu.Reg(SP)) + i) >= 0xFFFFFFFF)
-      break;
-  }
-}
-*/
-
-#ifdef GLFW3_ENABLE
-
 
 // Init OpenGL ************************************************************
 void initGL(OS& os) {
@@ -669,13 +414,5 @@ void initGL(OS& os) {
 	
 }
 
-/*
-void updatePBO (vm::cda::CDA* cda) {
-  using namespace vm;
-
-}
-*/
-
-#endif
 
 

@@ -23,7 +23,9 @@
 		bool mouseLock; // If mouse lock is enabled causing the cursor to snap to mid-window each movement event.
 
 	public:
-		OS() : mouseLock(false) { }
+		OS() : mouseLock(false) {
+      this->lastTime = glfwGetTime(); // Better that garbage...
+    }
 		
 		~OS() { }
 		
@@ -122,6 +124,9 @@
 			return this->window;
 		}
 
+    /**
+     * Return delta time in SECONDS
+     */
 		double GetDeltaTime() {
 			double time = glfwGetTime();
 			double delta = time - this->lastTime;

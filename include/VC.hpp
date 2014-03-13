@@ -16,11 +16,9 @@
 
 // Devices
 #include "devices/TDA.hpp"
-//#include "CDA.hpp"
 //#include "GKeyboard.hpp"
 
 // Misc
-//#include "DisTR3200.hpp"
 //#include "Auxiliar.hpp"
 
 
