@@ -155,13 +155,19 @@ namespace vm {
               state->do_vsync   = this->do_vsync;
 
               // FIXME Check/revise copy code as looks that is doing something wrong...
-              if (this->buffer_ptr != 0 ) {
+              
+              if (this->buffer_ptr != 0 && this->buffer_ptr < vcomp->RamSize()) {
                 // Copy TXT_BUFFER
                 // TODO Improve this
-                for (unsigned i=0; i < (TXT_BUFFER_SIZE/2) ; i++) {
-                  state->txt_buffer[i] = vcomp->ReadW(this->buffer_ptr + i*2);
+                for (unsigned i=0; i < (WIDTH_CHARS*HEIGHT_CHARS) ; i+=2) {
+                  state->txt_buffer[i/2] = vcomp->ReadW(this->buffer_ptr + i);
                 }
               }
+              
+              /*
+              if (this->buffer_ptr != 0 && this->buffer_ptr < vcomp->RamSize()) {
+                std::copy_n(vcomp->Ram(), TXT_BUFFER_SIZE, state->txt_buffer);
+              }*/
 
               if (this->font_ptr != 0 ) {
                 // Copy FONT_BUFFER

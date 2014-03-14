@@ -14,7 +14,7 @@ begin:
         MOV %r10, 10
         MOV %r11, 11
         MOV %bp, 0
-        MOV %sp, 0x30000    ; Sets Stack Pointer to the end of the 128KiB RAM
+        MOV %sp, 0x20000    ; Sets Stack Pointer to the end of the 128KiB RAM
         MOV %ia, vtable
         MOV %flags, 0x100    ; Enable interrupts
         MOV %r1, 0xBEBECAFE
@@ -179,12 +179,14 @@ test_alu:                       ; PC = 0x010C
             JMP crash
 
 
-        MOV %r0, 0x110000
+        MOV %r0, 0x001000
         MOV %r1, 0
         MOV %r3, 0xBEBACAFE
 
         STORE %r0, %r3
         LOAD %r1, %r0
+        ;IFNEQ %r1, %r0
+        ;    JMP crash
 
         ; Try to detect if a TDA devices is in the slot 0
         LOAD.B %r0, 0x110000
@@ -199,20 +201,20 @@ test_alu:                       ; PC = 0x010C
         IFNEQ %r0, 0x01   ; TDA compatible
           JMP begin
         
-        MOV %r1, 0x001000
+        MOV %r1, 0x010000
         STORE  0x11000A, %r1 ; Set B:A to point to 0x001000
 
         MOV %r1, 0
         STORE  0x110008, %r1 ; Seen command to point Text buffer to B:A address
 
         MOV %r0, 0x0F61
-        STORE.W 0x001000, %r0
+        STORE.W 0x010000, %r0
         MOV %r0, 0x1F62
-        STORE.W 0x001002, %r0
+        STORE.W 0x010002, %r0
         MOV %r0, 0x2F63
-        STORE.W 0x001004, %r0
+        STORE.W 0x010004, %r0
         MOV %r0, 0x3F64
-        STORE.W 0x001006, %r0
+        STORE.W 0x010006, %r0
 
         JMP begin
 

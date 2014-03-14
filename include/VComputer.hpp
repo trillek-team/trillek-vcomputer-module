@@ -434,6 +434,14 @@ namespace vm {
 				return ram_size;
 			}
 
+      /**
+       * Returns a pointer to the RAM for reading raw values from it
+       * Use only for GetState methods or dump a snapshot of the computer state
+       */
+      const byte_t* Ram() const {
+        return ram;
+      }
+
 		private:
 
 			byte_t* ram;						/// Computer RAM
