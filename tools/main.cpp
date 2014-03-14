@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
 
   // Add devices to tue Virtual Machine
   auto gcard = std::make_shared<vm::dev::tda::TDADev>();
-  vm::dev::tda::TDAState gcard_state = {0};
+  vm::dev::tda::TDAScreen gcard_screen = {0};
   //cda::CDA gcard(0, 10);
   //keyboard::GKeyboard keyb;
   vc.AddDevice(0, gcard);
@@ -326,8 +326,7 @@ int main(int argc, char* argv[]) {
     if (t_acu >= 0.04) { // Updates screen texture at a rate of ~25 Hz
       t_acu -= 0.04;
       // Dump a copy of the CDA card state
-      std::size_t tmp = sizeof(gcard_state);
-      gcard->GetState ((void*) &gcard_state, tmp);
+      gcard->DumpScreen (gcard_screen);
       gcard->DoVSync();
 
       // Stream the texture *************************************************
@@ -340,7 +339,7 @@ int main(int argc, char* argv[]) {
       auto tdata = (dword_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
       if (tdata != nullptr) {
         //std::fill_n(tdata, 320*240, 0xFF800000);
-        TDAtoRGBATexture(gcard_state, tdata); // Write the texture to the PBO buffer
+        TDAtoRGBATexture(gcard_screen, tdata); // Write the texture to the PBO buffer
 
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
       }

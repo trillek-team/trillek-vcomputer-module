@@ -50,11 +50,21 @@ namespace vm {
       };
 
       /**
+       * Structure to store a snapshot TDA computer screen
+       */
+      struct TDAScreen {
+        public:
+          word_t txt_buffer[WIDTH_CHARS*HEIGHT_CHARS];
+          byte_t font_buffer[FONT_BUFFER_SIZE];
+          bool user_font;
+      };
+
+      /**
        * Generates/Updates a RGBA texture (4 byte per pixel) of the screen state
        * @param state Copy of the state of the TDA card
        * @param texture Ptr. to the texture. Must have a size enought to containt a 320x240 RGBA8 texture.
        */
-      void TDAtoRGBATexture (const TDAState& state, dword_t* texture);
+      void TDAtoRGBATexture (const TDAScreen& screen, dword_t* texture);
 
       /**
        * Text Generator Adapter
@@ -155,19 +165,6 @@ namespace vm {
               state->b          = this->b;
 
               state->do_vsync   = this->do_vsync;
-
-              // Copy TEXT_BUFFER
-              if (this->buffer_ptr != 0 &&
-                  this->buffer_ptr + TXT_BUFFER_SIZE < vcomp->RamSize() ) {
-                auto orig = &(vcomp->Ram()[this->buffer_ptr]);
-                std::copy_n(orig, TXT_BUFFER_SIZE, (byte_t*)state->txt_buffer);
-              }
-              // Copy FONT_BUFFER
-              if (this->font_ptr != 0 &&
-                  this->font_ptr + FONT_BUFFER_SIZE < vcomp->RamSize() ) {
-                auto orig = &(vcomp->Ram()[this->font_ptr]);
-                std::copy_n(orig, FONT_BUFFER_SIZE, (byte_t*)state->font_buffer);
-              }
             }
           }
 
@@ -182,27 +179,35 @@ namespace vm {
 
               this->do_vsync    = state->do_vsync;
 
-              // Copy TEXT_BUFFER
-              if (this->buffer_ptr != 0 &&
-                  this->buffer_ptr + TXT_BUFFER_SIZE < vcomp->RamSize() ) {
-                auto dest = (byte_t*) &(vcomp->Ram()[this->buffer_ptr]);
-                std::copy_n((byte_t*)state->txt_buffer, TXT_BUFFER_SIZE, dest);
-              }
-              // Copy FONT_BUFFER
-              if (this->font_ptr != 0 &&
-                  this->font_ptr + FONT_BUFFER_SIZE < vcomp->RamSize() ) {
-                auto dest = (byte_t*) &(vcomp->Ram()[this->font_ptr]);
-                std::copy_n((byte_t*)state->font_buffer, FONT_BUFFER_SIZE, dest);
-              }
-
               return true;
             }
 
             return false;
           }
+          
+          /* API exterior to the Virtual Computer (affects or afected by stuff outside of the computer) */
 
+          /**
+           * Does a dump of the TDA screen ram
+           * @param screen Structure TDAScreen were store the dump
+           */
+          void DumpScreen (TDAScreen& screen) const {
+            // Copy TEXT_BUFFER
+            if (this->buffer_ptr != 0 &&
+                this->buffer_ptr + TXT_BUFFER_SIZE < vcomp->RamSize() ) {
+              auto orig = &(vcomp->Ram()[this->buffer_ptr]);
+              std::copy_n(orig, TXT_BUFFER_SIZE, (byte_t*)screen.txt_buffer);
+            }
 
-          /* API exterior to the Virtual Computer */
+            screen.user_font = false;
+            // Copy FONT_BUFFER
+            if (this->font_ptr != 0 &&
+                this->font_ptr + FONT_BUFFER_SIZE < vcomp->RamSize() ) {
+              auto orig = &(vcomp->Ram()[this->font_ptr]);
+              std::copy_n(orig, FONT_BUFFER_SIZE, (byte_t*)screen.font_buffer);
+              screen.user_font = true;
+            }
+          }
 
           /**
            * Generate a VSync interrupt if is enabled

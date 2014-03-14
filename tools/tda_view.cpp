@@ -95,9 +95,7 @@ int main (int argc, char* argv[]) {
   // TODO Here insert a callback fro events	
 
   // Test screen
-  TDAState screen = {0}; // Clear it
-  screen.buffer_ptr = 1;
-  screen.font_ptr = 0;
+  TDAScreen screen = {0}; // Clear it
   screen.txt_buffer[0]  = 0x0F00 | 'H'; 
   screen.txt_buffer[1]  = 0x1F00 | 'e'; 
   screen.txt_buffer[2]  = 0x2F00 | 'l'; 

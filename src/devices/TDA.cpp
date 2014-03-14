@@ -13,17 +13,17 @@ namespace vm {
 	namespace dev {
 		namespace tda {
 
-      void TDAtoRGBATexture (const TDAState& state, dword_t* texture) {
+      void TDAtoRGBATexture (const TDAScreen& screen, dword_t* texture) {
         assert(texture != nullptr);
 
-        if (state.buffer_ptr == 0) {
-          std::fill_n(texture, TEXTURE_SIZE, 0xFF000000); // fill with black
-          return;
-        }
+        //if (state.buffer_ptr == 0) {
+        //  std::fill_n(texture, TEXTURE_SIZE, 0xFF000000); // fill with black
+        //  return;
+        //}
 
         const byte_t* font = ROM_FONT;
-        if (state.font_ptr != 0) {
-          font = (byte_t*) state.font_buffer;
+        if (screen.user_font) {
+          font = (byte_t*) screen.font_buffer;
         }
 				
         // TODO Rewrite this to be more efficient and cache friendly, as now 
@@ -34,11 +34,11 @@ namespace vm {
           for (unsigned col = 0; col < WIDTH_CHARS; col++) {
 
             std::size_t addr = col + (WIDTH_CHARS * row);
-            byte_t c = state.txt_buffer[addr]; // character
+            byte_t c = screen.txt_buffer[addr]; // character
 
             // Get Ink (fg) and Paper (bg) colors
-            dword_t fg = (state.txt_buffer[addr] >> 8) & 0x0F; // Bits 8-11
-            dword_t bg = (state.txt_buffer[addr] >> 12)& 0x0F; // bits 12-15
+            dword_t fg = (screen.txt_buffer[addr] >> 8) & 0x0F; // Bits 8-11
+            dword_t bg = (screen.txt_buffer[addr] >> 12)& 0x0F; // bits 12-15
 
             // Paint the texture
             byte_t pixels;
