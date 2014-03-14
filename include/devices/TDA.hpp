@@ -11,6 +11,8 @@
 #include "Types.hpp"
 #include "VComputer.hpp"
 
+#include <cstdio>
+
 namespace vm {
   namespace dev {
     namespace tda {
@@ -154,27 +156,17 @@ namespace vm {
 
               state->do_vsync   = this->do_vsync;
 
-              // FIXME Check/revise copy code as looks that is doing something wrong...
-              
-              if (this->buffer_ptr != 0 && this->buffer_ptr < vcomp->RamSize()) {
-                // Copy TXT_BUFFER
-                // TODO Improve this
-                for (unsigned i=0; i < (WIDTH_CHARS*HEIGHT_CHARS) ; i+=2) {
-                  state->txt_buffer[i/2] = vcomp->ReadW(this->buffer_ptr + i);
-                }
+              // Copy TEXT_BUFFER
+              if (this->buffer_ptr != 0 &&
+                  this->buffer_ptr + TXT_BUFFER_SIZE < vcomp->RamSize() ) {
+                auto orig = &(vcomp->Ram()[this->buffer_ptr]);
+                std::copy_n(orig, TXT_BUFFER_SIZE, (byte_t*)state->txt_buffer);
               }
-              
-              /*
-              if (this->buffer_ptr != 0 && this->buffer_ptr < vcomp->RamSize()) {
-                std::copy_n(vcomp->Ram(), TXT_BUFFER_SIZE, state->txt_buffer);
-              }*/
-
-              if (this->font_ptr != 0 ) {
-                // Copy FONT_BUFFER
-                // TODO Improve this
-                for (unsigned i=0; i < FONT_BUFFER_SIZE ; i += 1) {
-                  state->font_buffer[i] = vcomp->ReadB(this->font_ptr + i);
-                }
+              // Copy FONT_BUFFER
+              if (this->font_ptr != 0 &&
+                  this->font_ptr + FONT_BUFFER_SIZE < vcomp->RamSize() ) {
+                auto orig = &(vcomp->Ram()[this->font_ptr]);
+                std::copy_n(orig, FONT_BUFFER_SIZE, (byte_t*)state->font_buffer);
               }
             }
           }
@@ -190,22 +182,17 @@ namespace vm {
 
               this->do_vsync    = state->do_vsync;
 
+              // Copy TEXT_BUFFER
               if (this->buffer_ptr != 0 &&
                   this->buffer_ptr + TXT_BUFFER_SIZE < vcomp->RamSize() ) {
-                // Copy TXT_BUFFER
-                // TODO Improve this
-                for (unsigned i=0; i < TXT_BUFFER_SIZE ; i += 2) {
-                  vcomp->WriteW(this->buffer_ptr + i, state->txt_buffer[i]);
-                }
+                auto dest = (byte_t*) &(vcomp->Ram()[this->buffer_ptr]);
+                std::copy_n((byte_t*)state->txt_buffer, TXT_BUFFER_SIZE, dest);
               }
-
+              // Copy FONT_BUFFER
               if (this->font_ptr != 0 &&
                   this->font_ptr + FONT_BUFFER_SIZE < vcomp->RamSize() ) {
-                // Copy FONT_BUFFER
-                // TODO Improve this
-                for (unsigned i=0; i < FONT_BUFFER_SIZE ; i += 1) {
-                  vcomp->WriteB(this->font_ptr + i, state->font_buffer[i]);
-                }
+                auto dest = (byte_t*) &(vcomp->Ram()[this->font_ptr]);
+                std::copy_n((byte_t*)state->font_buffer, FONT_BUFFER_SIZE, dest);
               }
 
               return true;
