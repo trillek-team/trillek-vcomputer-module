@@ -9,7 +9,7 @@ begin_search_tda:
   ADD %r10, %r10, 0x100
   IFEQ %r10, 0x112100  ; Not found any TDA device
     JMP end
-  
+
   LOAD.B %r0, %r10
   IFNEQ %r0, 0xFF   ; Device Present ?
     JMP begin_search_tda
@@ -49,9 +49,9 @@ end_search_tda:
   ; Prints the string at Rom 3, Column 3
   MOV %r0, 3              ; Row 3
   MOV %r1, 3              ; Column 3
-  CALL get_offset_from_row_col 
+  CALL get_offset_from_row_col
   ADD %r1, %r0, 0x001000  ; Adds the offset to the ptr to text buffer
-  
+
   MOV %r0, string         ; %r0 ptr to string
   MOV %r2, 0x78           ; Swamp paper, Yellow Ink
   CALL print

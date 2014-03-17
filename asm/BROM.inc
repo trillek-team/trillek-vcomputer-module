@@ -3,7 +3,7 @@
   .DD 0xBEEFCAFE ; Nice mark of were begin this stuff
 
 ; *****************************************************************************
-; GetOffsetFromRowCol function : Calculate the offsets of a row & column for 
+; GetOffsetFromRowCol function : Calculate the offsets of a row & column for
 ; the text buffer
 ; $r0 <- Column (X)
 ; %r1 <- Row    (Y)
