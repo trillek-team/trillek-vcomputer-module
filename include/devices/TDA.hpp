@@ -79,6 +79,15 @@ namespace vm {
           virtual ~TDADev() {
           }
 
+          virtual void Reset () {
+              this->buffer_ptr  = 0;
+              this->font_ptr    = 0;
+              this->vsync_msg   = 0;
+              this->a           = 0;
+              this->b           = 0;
+              this->do_vsync    = false;
+          }
+
           /**
            * Sends (writes to CMD register) a command to the device
            * @param cmd Command value to send
@@ -184,7 +193,7 @@ namespace vm {
 
             return false;
           }
-          
+
           /* API exterior to the Virtual Computer (affects or afected by stuff outside of the computer) */
 
           /**

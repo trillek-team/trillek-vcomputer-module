@@ -11,77 +11,81 @@
 #include "VComputer.hpp"
 
 namespace vm {
-	
-	/** 
+
+  /**
    * DummyDevice for testing
-	 */
-	class DummyDevice : public IDevice {
-		public:
+   */
+  class DummyDevice : public IDevice {
+    public:
 
-			DummyDevice () {
-			}
-			
-			virtual ~DummyDevice() {
-			}
+      DummyDevice () {
+      }
 
-			/**
-			 * Sends (writes to CMD register) a command to the device
-			 * @param cmd Command value to send
-			 */
-			virtual void SendCMD (word_t cmd) {
-				a = cmd;
-			}
+      virtual ~DummyDevice() {
+      }
 
-			virtual void A (word_t cmd) { a = cmd; }
-			virtual void B (word_t cmd) { b = cmd; }
-			virtual void C (word_t cmd) { c = cmd; }
-			virtual void D (word_t cmd) { d = cmd; }
-			virtual void E (word_t cmd) { e = cmd;}
+      virtual void Reset () {
+        a = b = c = d = e = 0;
+      }
 
-			virtual word_t A () { return a; }
-			virtual word_t B () { return b; }
-			virtual word_t C () { return c; }
-			virtual word_t D () { return d; }
-			virtual word_t E () { return e; }
+      /**
+       * Sends (writes to CMD register) a command to the device
+       * @param cmd Command value to send
+       */
+      virtual void SendCMD (word_t cmd) {
+        a = cmd;
+      }
 
-			/**
-			 * Device Type
-			 */
-			virtual byte_t DevType() const {
-				return 0;
-			}
+      virtual void A (word_t cmd) { a = cmd; }
+      virtual void B (word_t cmd) { b = cmd; }
+      virtual void C (word_t cmd) { c = cmd; }
+      virtual void D (word_t cmd) { d = cmd; }
+      virtual void E (word_t cmd) { e = cmd;}
 
-			/**
-			 * Device SubType
-			 */
-			virtual byte_t DevSubType() const {
-				return 1;
-			}
+      virtual word_t A () { return a; }
+      virtual word_t B () { return b; }
+      virtual word_t C () { return c; }
+      virtual word_t D () { return d; }
+      virtual word_t E () { return e; }
 
-			/**
-			 * Device ID
-			 */
-			virtual byte_t DevID() const {
-				return 0x5A;
-			}
+      /**
+       * Device Type
+       */
+      virtual byte_t DevType() const {
+        return 0;
+      }
 
-			/**
-			 * Device Vendor ID
-			 */
-			virtual dword_t DevVendorID() const {
-				return 0xBEEF55AA;
-			}
-			
-			virtual void GetState (void* ptr, std::size_t& size) const {
-			}
+      /**
+       * Device SubType
+       */
+      virtual byte_t DevSubType() const {
+        return 1;
+      }
 
-			virtual bool SetState (const void* ptr, std::size_t size) {
-				return true;
-			}
+      /**
+       * Device ID
+       */
+      virtual byte_t DevID() const {
+        return 0x5A;
+      }
 
-			word_t a, b, c, d, e;
+      /**
+       * Device Vendor ID
+       */
+      virtual dword_t DevVendorID() const {
+        return 0xBEEF55AA;
+      }
 
-	};
+      virtual void GetState (void* ptr, std::size_t& size) const {
+      }
+
+      virtual bool SetState (const void* ptr, std::size_t size) {
+        return true;
+      }
+
+      word_t a, b, c, d, e;
+
+  };
 
 
 } // End of namespace vm

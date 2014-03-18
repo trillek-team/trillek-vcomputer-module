@@ -49,6 +49,15 @@ namespace vm {
           virtual ~GKeyboardDev() {
           }
 
+          virtual void Reset () {
+            int_msg = 0;
+            a = 0;
+            b = 0;
+            do_int = false;
+          
+            mode = KeybMode::KEY;
+          }
+
           /**
            * Sends (writes to CMD register) a command to the device
            * @param cmd Command value to send
