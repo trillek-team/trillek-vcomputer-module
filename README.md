@@ -5,7 +5,7 @@ Using these [specs](https://github.com/trillek-team/trillek-computer)
 
 The design of the Virtual Computer should allow to plug and use different CPUs. 
 
-This repo is composed by the Trillek Virtual Computer lib and some extra tools. 
+This repo is composed of the Trillek Virtual Computer lib and some extra tools. 
 
 | linux                                            |
 |--------------------------------------------------|
@@ -20,15 +20,16 @@ Actually I'm using CMake and C++ 11.
     cmake ..
     make
 
-By default will generate dynamic libs and compile tools and tests.
+By default it will generate dynamic libs and compile tools and tests.
 
-If you wish to compile a static lib, then you should use **"cmake -DBUILD_STATIC_TR3200=True .."**
+If you wish to compile a static lib, then you should use `cmake -DBUILD_STATIC_VCOMPUTER=True ..`
+** This is required to build in MSVC **
 
-If you not wish to compile the tools, then you should use **"cmake -DBUILD_TOOLS_TR3200=False .."**
+If you not wish to compile the tools, then you should use `cmake -DBUILD_TOOLS_VCOMPUTER=False ..`
 
-If you not wish to compile the tests, then you should use **"cmake -DBUILD_TESTS_TR3200=False .."**
+If you not wish to compile the tests, then you should use `cmake -DBUILD_TESTS_VCOMPUTER=False ..`
 
-Plus you can control if you wish release or debug building using **"-DCMAKE_BUILD_TYPE=Release"** or **"-DCMAKE_BUILD_TYPE=Debug"** flag in cmake.
+Plus you can control if you wish release or debug building using `-DCMAKE_BUILD_TYPE=Release` or `-DCMAKE_BUILD_TYPE=Debug` flag in cmake.
 
 
 ### EMSCRIPTEN
@@ -36,10 +37,10 @@ Plus you can control if you wish release or debug building using **"-DCMAKE_BUIL
   cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Platform/Emscripten.cmake -DEMSCRIPTEN_ROOT_PATH=/usr/bin/ ..
   make
   
-Include vm_wrap.js inside a HTML page or other javascript. A example webpage will be copy to build dir. Also, you can
-try it in (cpu.zardoz.es)[http://cpu.zardoz.es]
+Include vm_wrap.js inside a HTML page or other javascript. A example webpage will be copied to the build dir. Also, you can
+try it in [cpu.zardoz.es](http://cpu.zardoz.es)
 
-NOTE : Depending how do you install Emscripten, you will need to change the -DEMSCRIPTEN_ROOT_PATH value.
+NOTE : Depending how you installed Emscripten, you will need to change the -DEMSCRIPTEN_ROOT_PATH value.
 
 WHAT IT DOES ACTUALLY
 ------------------
@@ -47,19 +48,19 @@ WHAT IT DOES ACTUALLY
 
 #### vm
 
-Is a program that uses Trillek Virtual Computer lib to run a TR3200 emulation. Can run in step mode or in "run mode" where executes all the program without stopping. Needs C++ 11 *std::chrono compilance* for timings; **SDL2 + GLFW + GLM + OpenGL 3.1** is needed if you desire to see the virtual screen.
+Is a program that uses the Trillek Virtual Computer lib to run a TR3200 emulation. Can run in step mode or in "run mode" where it executes all the program without stopping. Needs C++ 11 *std::chrono compilance* for timings; **GLFW + GLM + OpenGL 3.1** is needed if you desire to see the virtual screen.
 
 - Can load a little endian binary file with a program. Has a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
-- Step mode, have a on-line disassembler. Each time that you press a
+- Step mode, has an on-line disassembler. Each time that you press a
   key, one instruction is executed, and the status of registers and stack, is
   shown. '**q**' ends the execution.
-- Run mode, It try to enforce CPU Clock speed (100KHz) with a simple algorithm. Only stops by doing '**Ctrl+C**'. 
-- If SDL2, GLM and OpenGL libs headers are found, then it will create a window of 800x600 showing a virtual screen. This
+- Run mode, It tries to enforce CPU Clock speed (100KHz) with a simple algorithm. Only stops by doing '**Ctrl+C**'. 
+- If GLFW3, GLM and OpenGL libs headers are found, then it will create a window of 800x600 showing a virtual screen. This
   adds the possibility of end the execution closing the window or pressing '**q**'. Additionally '**F3**' key toggles virtual keyboard. When Virtual Keyboard is enabled, 'q' key types to it instead of ending the emulation.
 
 #### benchmark
 
-Is a program that run a quick and dirty benchmark to measure the performance of the Trillek Virtual Computer lib. Needs C++ 11 *std::chrono compilance* for timings.
+Is a program that runs a quick and dirty benchmark to measure the performance of the Trillek Virtual Computer lib. Needs C++ 11 *std::chrono compilance* for timings.
 
 - Can load a list of little endian binary files as ROMs for each Virtual Computer. Has a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
 - Executes a random number of cycles before begin the benchmark to make more realistic.
@@ -73,7 +74,7 @@ Is a small tool that can generate a hexadecimal representation of a user font fo
 
 #### test_cda
 
-It tests the CDA VRAM to RGBA Texture routines, PBO texture streaming, and displays it in a virtual screen in 3D (in a window of 1024x768). This requires SDL2 + GLFW + GLM + OpenGL 3.1 to work.
+It tests the CDA VRAM to RGBA Texture routines, PBO texture streaming, and displays it in a virtual screen in 3D (in a window of 1024x768). This requires GLFW + GLM + OpenGL 3.1 to work.
 It has these shortcuts:
 
 - 'n' Change to the next video/text mode
@@ -91,12 +92,12 @@ Actually you can use <a href="https://github.com/Meisaka/WaveAsm" target="_blank
 
 ADJUNCT TR3200 ASM PROGRAMS
 --------------------------
-There is some TR3200 ASM programs, source code and binary files, in /asm directory. Actually are :
+There are some TR3200 ASM programs, source code and binary files, in /asm directory. Specifically :
 
-- hwm.asm : List the number of attached devices and display his enumeration information
+- hwm.asm : List the number of attached devices and display enumeration information
 - hello.asm : Hello world
 - test.asm : Some tests of TR3200 CPU compliance.
-- type.asm : Basic type program
+- type.asm : Basic typing program
 - clock.asm : Basic clock that prints hours minutes seconds in hexadecimal, and uses PIT TMR0 interrupt plus sleeps waiting it.
 
 IMPLEMENTED DEVICES
