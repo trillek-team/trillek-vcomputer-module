@@ -1,12 +1,13 @@
 #pragma once
-#ifndef __AUX_HPP__
-#define __AUX_HPP__ 1
 /**
- * Some semi-generic auxiliar functions related to the vm
+ * Trillek Virtual Computer - Auxiliar.hpp
+ * Some auciliar functions and methods
  */
 
-#ifdef __NOT_REWRITE_YET_
+#ifndef __AUX_HPP__
+#define __AUX_HPP__ 1
 
+#include "Types.hpp"
 #include "VComputer.hpp"
 
 #include <string>
@@ -14,45 +15,43 @@
 #include <ios>
 
 namespace vm {
-namespace aux {
+  namespace aux {
 
-  /**
-   * Load a raw binary file as ROM
-   * \param filename Binary file with the ROM, max size 64KiB
-   * \param vcomp Virtual Computer
-   * \return Read size or negative value if fails
-   */
-	template <typename CPU_t> 
-  unsigned LoadROM (const std::string& filename, vm::VirtualComputer<CPU_t>& vcomp) {
-		vm::byte_t rom[64*1024]; // Temporal buffer
+    /**
+     * Load a raw binary file as ROM
+     * @param filename Binary file with the ROM
+     * @param rom buffer were to write it
+     * @return Read size or negative value if fails
+     */
+    int LoadROM (const std::string& filename, byte_t* rom) {
+      int count;
+      try {
+        std::fstream f(filename, std::ios::in | std::ios::binary);
+        if (!f.is_open())
+          return -1;
 
-		std::fstream f(filename, std::ios::in | std::ios::binary);
-		if (!f.is_open())
-			return -1;
+        size_t size;
 
-		unsigned count = 0;
-		while (f.good() && count < 64*1024) {
-			f.read(reinterpret_cast<char*>(rom + count++), 1); // Read byte at byte, so the file must be in Little Endian
-		}
-		vcomp.WriteROM(rom, count);
+        auto begin = f.tellg();
+        f.seekg (0, std::ios::end);
+        auto end = f.tellg();
+        f.seekg (0, std::ios::beg);
 
-		return count;
-	}
+        size = end - begin;
+        size = size > (MAX_ROM_SIZE) ? (MAX_ROM_SIZE) : size;
 
-  /**
-   * Maps GLFW3 Key codes to TR3200 keycodes
-   */
-  byte_t GLFWKeyToTR3200 (int key);
+        f.read(reinterpret_cast<char*>(rom), size);
+        count = size;
+      } catch (...) {
+        count = -1;
+      }
 
-  /**
-   * Maps SDL2 Scancodes to TR3200 keycodes
-   */
-  byte_t SDL2KeyToTR3200 (int key);
+      return count;
+    }
 
-} // end of namespace aux
+  } // end of namespace aux
 } // end of namespace vm
 
-#endif //__NOT_REWRITE_YET_
 
 #endif // __AUX_HPP__
 

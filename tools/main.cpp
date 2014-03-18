@@ -104,26 +104,18 @@ int main(int argc, char* argv[]) {
     return -1;
 
   } else {
-    rom = new byte_t[64*1024];
+    rom = new byte_t[32*1024];
 
     std::printf("Opening file %s\n", argv[1]);
-    std::fstream f(argv[1], std::ios::in | std::ios::binary);
-    unsigned count = 0;
-    size_t size;
     
-		auto begin = f.tellg();
-    f.seekg (0, std::ios::end);
-    auto end = f.tellg();
-    f.seekg (0, std::ios::beg);
-
-    size = end - begin;
-    size = size > (MAX_ROM_SIZE) ? (MAX_ROM_SIZE) : size;
-
-    f.read(reinterpret_cast<char*>(rom), size);
-    count = size;
+    int size = vm::aux::LoadROM(argv[1], rom);
+    if (size < 0) {
+      std::fprintf(stderr, "An error hapen when was reading the file %s\n", argv[1]);
+      return -1;
+    }
     
-		std::printf("Read %u bytes and stored in ROM\n", count);
-    rom_size = count;
+		std::printf("Read %d bytes and stored in ROM\n", size);
+    rom_size = size;
   }
 
   // Create the Virtual Machine
