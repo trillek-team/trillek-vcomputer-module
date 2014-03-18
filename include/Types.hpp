@@ -11,6 +11,9 @@
 	#include <cstdint>
 #endif
 
+// size_t in global scope
+#include <stddef.h>
+
 namespace vm {
 
 	// Visual Studio 2010 fix
