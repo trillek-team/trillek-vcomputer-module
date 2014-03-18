@@ -266,7 +266,7 @@ int main(int argc, char* argv[]) {
     if (!debug && ticks_count > 200000) {
       std::printf("Running %u cycles in %f ms ", ticks, delta);
       double ttick = delta / ticks;
-      double tclk = 1000.0 / 1000000.0;
+      double tclk = 1000.0 / 1000000.0; // Base clock 1Mhz
       std::printf("Ttick %f ms ", ttick);
       std::printf("Tclk %f ms ", tclk);
       std::printf("Speed of %f %% \n", 100.0f * (tclk / ttick) );
