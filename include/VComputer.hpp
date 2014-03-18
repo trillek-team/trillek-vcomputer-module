@@ -221,7 +221,7 @@ namespace vm {
 				if (cpu) {
 					unsigned cpu_ticks = cpu->Step();
           unsigned base_ticks = cpu_ticks * (1000000 / cpu->Clock());
-          unsigned dev_ticks = base_ticks / 10; // Devices clock is at 100 KHz
+          unsigned dev_ticks = (base_ticks / 10); // Devices clock is at 100 KHz
 					//timers.Update(dev_ticks);
 
 					word_t msg;
@@ -260,7 +260,7 @@ namespace vm {
 				assert(n >0);
         unsigned dev_ticks = n / 10; // Devices clock is at 100 KHz
 				if (cpu) {
-          unsigned cpu_ticks = n / (1000000 / cpu->Clock());
+          unsigned cpu_ticks = n / (1000000.0f / cpu->Clock());
           
 					cpu->Tick(cpu_ticks);
 					//timers.Update(n);

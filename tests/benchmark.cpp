@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
     rom_size[i] = size;
   }
 
-  std::printf("Runing :\n~1% \@ 1MHz\n~5% \u0040 0.5MHz\n~20% \u0040 0.2MHz\n~74% \u0040 0.1MHz\n");
+  std::printf("Runing :\n~1%% @ 1MHz\n~5%% @ 0.5MHz\n~20%% @ 0.2MHz\n~74%% @ 0.1MHz\n");
   VComputer vc[n_cpus];
   for (auto i=0; i< n_cpus; i++) {
     // Add CPU
