@@ -8,6 +8,7 @@
 #include "DisTR3200.hpp"
 
 #include <iostream>
+#include <vector>
 #include <fstream>
 #include <ios>
 #include <iomanip> 
@@ -104,13 +105,17 @@ int main(int argc, char* argv[]) {
     return -1;
 
   } else {
-    rom = new byte_t[64*1024];
+		rom = new byte_t[64*1024];
 
-    std::printf("Opening file %s\n", argv[1]);
-    std::fstream f(argv[1], std::ios::in | std::ios::binary);
-    unsigned count = 0;
-    size_t size;
-    
+		std::printf("Opening file %s\n", argv[1]);
+		std::fstream f(argv[1], std::ios::in | std::ios::binary);
+		unsigned count = 0;
+		size_t size;
+
+		if(!f.is_open()) {
+			std::printf("Error opening file %s\n", argv[1]);
+			return -1;
+		}
 		auto begin = f.tellg();
     f.seekg (0, std::ios::end);
     auto end = f.tellg();
@@ -121,7 +126,7 @@ int main(int argc, char* argv[]) {
 
     f.read(reinterpret_cast<char*>(rom), size);
     count = size;
-    
+
 		std::printf("Read %u bytes and stored in ROM\n", count);
     rom_size = count;
   }

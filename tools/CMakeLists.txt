@@ -23,7 +23,7 @@ ELSE (GLFW3_ENABLE EQUAL 0)
 		${OPENGL_INCLUDE_DIR}
 		${GLEW_INCLUDE_DIR}
 		${GLM_INCLUDE_DIR}
-		${GLFW3_INCLUDE_DIR}
+		${GLFW3_INCLUDE_PATH}
 		)
 
 	target_link_libraries( vm
@@ -43,7 +43,7 @@ ELSE (GLFW3_ENABLE EQUAL 0)
 		${OPENGL_INCLUDE_DIR}
 		${GLEW_INCLUDE_DIR}
 		${GLM_INCLUDE_DIR}
-		${GLFW3_INCLUDE_DIR}
+		${GLFW3_INCLUDE_PATH}
 		)
 
 	target_link_libraries( tda_view

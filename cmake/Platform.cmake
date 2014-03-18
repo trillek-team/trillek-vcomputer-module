@@ -20,7 +20,11 @@ endif (CMAKE_HOST_APPLE)
 
 
 if (MSVC)
-    message(WARNING "This build has not yet been tested with VC++")
+	if(MSVC_VERSION GREATER 1650)
+    message("This build has not yet been well tested with VC")
+	else(MSVC_VERSION GREATER 1650)
+	message(WARNING "This version of VC does not contain all needed C++11 features")
+	endif(MSVC_VERSION GREATER 1650)
     set(PLATFORM_FLAGS)
     set(DCPU_VM_SEARCH_PATHS
         "C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC"

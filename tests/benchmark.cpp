@@ -39,8 +39,8 @@ int main(int argc, char* argv[])
 	std::srand(std::time(0));
 	
 	unsigned troms = argc -1;
-	byte_t* rom[troms];
-	size_t rom_size[troms];
+	byte_t** rom = new byte_t*[troms];
+	size_t* rom_size = new size_t[troms];
 
 	for (unsigned i=0; i< troms; i++) {
 		rom[i] = new byte_t[64*1024];
