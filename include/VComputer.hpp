@@ -203,17 +203,26 @@ namespace vm {
 				if (cpu) {
 					cpu->Reset();
 				}
+
+        for (unsigned slot = 0; slot < MAX_N_DEVICES; slot++) {
+          if ( !std::get<0>(devices[slot])) {
+            continue;
+          }
+          std::get<0>(devices[slot])->Reset();
+        }
 			}
 
 			/**
 			 * Executes one instruction
-			 * @param delta Number of milliseconds since the last call
-			 * @return number of cycles executed
+			 * @param delta Number of seconds since the last call
+			 * @return number of base clock ticks needed
 			 */
 			unsigned Step( const double delta = 0) {
 				if (cpu) {
-					unsigned cycles = cpu->Step();
-					//timers.Update(cycles);
+					unsigned cpu_ticks = cpu->Step();
+          unsigned base_ticks = cpu_ticks * (1000000 / cpu->Clock());
+          unsigned dev_ticks = (base_ticks / 10); // Devices clock is at 100 KHz
+					//timers.Update(dev_ticks);
 
 					word_t msg;
 					bool interrupted = false;//= timers.DoesInterrupt(msg);
@@ -224,7 +233,7 @@ namespace vm {
 
 						// Does the sync job
 						if ( std::get<0>(devices[i])->IsSyncDev()) {
-							std::get<0>(devices[i])->Tick(cycles, delta);
+							std::get<0>(devices[i])->Tick(dev_ticks, delta);
 						}
 
 						// Try to get the highest priority interrupt
@@ -236,7 +245,7 @@ namespace vm {
 						}
 					}
 
-					return cycles;
+					return base_ticks;
 				}
 
 				return 0;
@@ -244,13 +253,16 @@ namespace vm {
 
 			/**
 			 * Executes N clock ticks
-			 * @param n nubmer of clock ticks, by default 1
-			 * @param delta Number of milliseconds since the last call
+			 * @param n nubmer of base clock ticks, by default 1
+			 * @param delta Number of seconds since the last call
 			 */
 			void Tick( unsigned n=1, const double delta = 0) {
 				assert(n >0);
+        unsigned dev_ticks = n / 10; // Devices clock is at 100 KHz
 				if (cpu) {
-					cpu->Tick(n);
+          unsigned cpu_ticks = n / (1000000.0f / cpu->Clock());
+          
+					cpu->Tick(cpu_ticks);
 					//timers.Update(n);
 
 					word_t msg;
@@ -262,7 +274,7 @@ namespace vm {
 
 						// Does the sync job
 						if ( std::get<0>(devices[i])->IsSyncDev()) {
-							std::get<0>(devices[i])->Tick(n, delta);
+							std::get<0>(devices[i])->Tick(dev_ticks, delta);
 						}
 
 						// Try to get the highest priority interrupt

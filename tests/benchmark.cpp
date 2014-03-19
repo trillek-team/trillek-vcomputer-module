@@ -1,17 +1,14 @@
+/**
+ * Trillek Virtual Computer - benchmark.cpp
+ * Basic benchmark for Virtual Computer lib
+ * Allow to see how many virtual computer can run in a single thread
+ */
 #include <VC.hpp>
-
-#ifndef __NOT_REWRITE_YET_
-
-int main () {
-	return 0;
-}
-
-#else
 
 #include <iostream>
 #include <fstream>
 #include <ios>
-#include <iomanip> 
+#include <iomanip>
 #include <cstdio>
 #include <algorithm>
 #include <memory>
@@ -23,119 +20,126 @@ int main () {
 
 #include <chrono>
 
-#define N_CPUS 1000
+#define NCPUS 1000
 
-int main(int argc, char* argv[])
-{
-	using namespace vm;
-	using namespace vm::cpu;
+int n_cpus = NCPUS;
 
-
-	if (argc < 2) {
-		std::printf("Usage: %s binary_file\n", argv[0]);
-		return -1;
-
-	}
-	std::srand(std::time(0));
-	
-	unsigned troms = argc -1;
-	byte_t** rom = new byte_t*[troms];
-	size_t* rom_size = new size_t[troms];
-
-	for (unsigned i=0; i< troms; i++) {
-		rom[i] = new byte_t[64*1024];
-
-		std::printf("Opening file %s\n", argv[1 + i]);
-		std::fstream f(argv[1 +i ], std::ios::in | std::ios::binary);
-		unsigned count = 0;
-#if (BYTE_ORDER != LITTLE_ENDIAN)
-		while (f.good() && count < 64*1024) {
-			f.read(reinterpret_cast<char*>(rom + count++), 1); // Read byte at byte, so the file must be in Little Endian
-		}
-#else
-		size_t size;
-		auto begin = f.tellg();
-		f.seekg (0, std::ios::end);
-		auto end = f.tellg();
-		f.seekg (0, std::ios::beg);
-
-		size = end - begin;
-		size = size > (64*1024) ? (64*1024) : size;
-
-		f.read(reinterpret_cast<char*>(rom[i]), size);
-		count = size;
-#endif
-		std::printf("Read %u bytes and stored in ROM\n", count);
-		rom_size[i] = count;
-	}
-
-	VirtualComputer<vm::cpu::TR3200> vm[N_CPUS];
-	for (auto i=0; i< N_CPUS; i++) {
-		vm[i].BuildID (std::rand() % 0xffffffff); // Asign random BuildIDs
-
-		auto rom_ptr = rom[i % troms];
-		auto rom_s = rom_size[i % troms];
-		vm[i].WriteROM(rom_ptr, rom_s);
-	}
-
-	for (unsigned i=0; i < troms; i++) {
-		delete[] rom[i];
-	}
-
-	// Add devices
-	cda::CDA gcard[N_CPUS];
-	keyboard::GKeyboard keyb[N_CPUS];
-
-	for (auto i=0; i< N_CPUS; i++) {
-		vm[i].AddDevice(0, gcard[i]); 
-		vm[i].AddDevice(2, keyb[i]);
-		vm[i].Reset();
-	}
-
-	std::cout << "Randomizing every CPU!\nExecuting a random number of cycles from 1 to 255\n";
-	for (auto i=0; i< N_CPUS; i++) {
-		vm[i].Tick((std::rand() % 255) + 1);
-	}	
-
-	std::cout << "Running " << N_CPUS << " CPUs !\n";
-	unsigned ticks = 5000;
-	unsigned long ticks_count = 0;
-
-	using namespace std::chrono;
-	auto clock = high_resolution_clock::now();
-	double delta;
-
-	auto oldClock = clock;
-	clock = high_resolution_clock::now();
-	delta = duration_cast<microseconds>(clock - oldClock).count();
-
-	while ( 1) {
-
-		for (auto i=0; i< N_CPUS; i++)
-			vm[i].Tick(ticks);
-
-		ticks_count += ticks;
-
-		auto oldClock = clock;
-		clock = high_resolution_clock::now();
-		delta = duration_cast<microseconds>(clock - oldClock).count();
+int main(int argc, char* argv[]) {
+  using namespace vm;
+  using namespace vm::cpu;
 
 
-		// Speed info
-		if (ticks_count > 800000) {
-			std::cout << "Running " << ticks << " cycles in " << delta << " uS"
-				<< " Speed of " 
-				<< 100.0f * (((ticks * 1000000.0) / vm[0].Clock()) / delta)
-				<< "% \n";
-			std::cout << std::endl;
-			ticks_count -= 800000;
-		}
-		//ticks = (vm[0].Clock() * delta * 0.000001) + 0.5f; // Rounding bug in VS
+  if (argc < 2) {
+    std::printf("Usage: %s binary_files [number of cpus]\n", argv[0]);
+    return -1;
 
-	}
+  }
+  std::srand(std::time(0));
 
-	return 0;
+  if (std::atoi(argv[argc-1]) > 0) { // Is a number
+    n_cpus = std::atoi(argv[argc-1]);
+    argc--;
+  }
+
+  unsigned troms = argc -1;
+  byte_t* rom[troms];
+  size_t rom_size[troms];
+
+  for (unsigned i=0; i< troms; i++) {
+    rom[i] = new byte_t[32*1024];
+
+    std::printf("Opening file %s\n", argv[1 + i]);
+    int size = vm::aux::LoadROM(argv[1], rom[i]);
+    if (size < 0) {
+      std::fprintf(stderr, "An error hapen when was reading the file %s\n", argv[1]);
+      return -1;
+    }
+
+    std::printf("Read %u bytes and stored in ROM\n", size);
+    rom_size[i] = size;
+  }
+
+  std::printf("Runing :\n~1%% @ 1MHz\n~5%% @ 0.5MHz\n~20%% @ 0.2MHz\n~74%% @ 0.1MHz\n");
+  VComputer vc[n_cpus];
+  for (auto i=0; i< n_cpus; i++) {
+    // Add CPU
+    unsigned cpu_clk = std::rand() % 100;
+    if (cpu_clk <= 1 ) {          // ~1%  -> 1 Mhz
+      cpu_clk = 1000000;
+    } else if (cpu_clk <= 6 ) {   // ~5%  -> 0.5 MHz
+      cpu_clk = 500000;
+    } else if (cpu_clk <= 26 ) {  // ~20% -> 200 KHz
+      cpu_clk = 200000;
+    } else {                      // ~74% -> 100 KHz
+      cpu_clk = 100000;
+    }
+    std::unique_ptr<vm::cpu::TR3200> cpu(new TR3200(cpu_clk));
+    vc[i].SetCPU(std::move(cpu));
+
+    // Add ROM
+    auto rom_ptr = rom[i % troms];
+    auto rom_s = rom_size[i % troms];
+    vc[i].SetROM(rom_ptr, rom_s);
+
+    // Add devices
+    auto gcard = std::make_shared<vm::dev::tda::TDADev>();
+    vc[i].AddDevice(0, gcard);
+
+    // Reset
+    vc[i].Reset();
+  }
+
+  std::cout << "Randomizing every CPU!\nExecuting a random number of cycles from 1 to 255\n";
+  for (auto i=0; i< n_cpus; i++) {
+    vc[i].Tick((std::rand() % 255) + 1);
+  }
+
+  std::cout << "Running " << n_cpus << " CPUs !\n";
+  unsigned ticks = 50000; // 0.05 seconds
+  unsigned long ticks_count = 0;
+
+  using namespace std::chrono;
+  auto clock = high_resolution_clock::now();
+  double delta;
+
+  auto oldClock = clock;
+  clock = high_resolution_clock::now();
+  delta = duration_cast<microseconds>(clock - oldClock).count();
+
+  while ( 1) {
+
+    for (auto i=0; i< n_cpus; i++) {
+      vc[i].Tick(ticks, delta / 1000.0 );
+    }
+
+    ticks_count += ticks;
+
+    auto oldClock = clock;
+    clock = high_resolution_clock::now();
+    delta = duration_cast<milliseconds>(clock - oldClock).count();
+
+
+    // Speed info
+    if (ticks_count > 800000) {
+      std::printf("Running %u cycles in %f ms ", ticks, delta);
+      double ttick = delta / ticks;
+      double tclk = 1000.0 / 1000000.0; // Base clock 1Mhz
+      std::printf("Ttick %f ms ", ttick);
+      std::printf("Tclk %f ms ", tclk);
+      std::printf("Speed of %f %% \n", 100.0f * (tclk / ttick) );
+      ticks_count -= 200000;
+    }
+    //ticks = (vm[0].Clock() * delta * 0.000001) + 0.5f; // Rounding bug in VS
+
+  }
+
+
+  // Free ROMs
+  for (unsigned i=0; i< troms; i++) {
+    delete[] rom[i];
+  }
+
+  return 0;
 }
 
-#endif
 

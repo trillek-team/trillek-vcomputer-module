@@ -105,30 +105,18 @@ int main(int argc, char* argv[]) {
     return -1;
 
   } else {
-		rom = new byte_t[64*1024];
+    rom = new byte_t[32*1024];
 
-		std::printf("Opening file %s\n", argv[1]);
-		std::fstream f(argv[1], std::ios::in | std::ios::binary);
-		unsigned count = 0;
-		size_t size;
-
-		if(!f.is_open()) {
-			std::printf("Error opening file %s\n", argv[1]);
-			return -1;
-		}
-		auto begin = f.tellg();
-    f.seekg (0, std::ios::end);
-    auto end = f.tellg();
-    f.seekg (0, std::ios::beg);
-
-    size = end - begin;
-    size = size > (MAX_ROM_SIZE) ? (MAX_ROM_SIZE) : size;
-
-    f.read(reinterpret_cast<char*>(rom), size);
-    count = size;
-
-		std::printf("Read %u bytes and stored in ROM\n", count);
-    rom_size = count;
+    std::printf("Opening file %s\n", argv[1]);
+    
+    int size = vm::aux::LoadROM(argv[1], rom);
+    if (size < 0) {
+      std::fprintf(stderr, "An error occurred while reading file %s\n", argv[1]);
+      return -1;
+    }
+    
+    std::printf("Read %d bytes and stored in ROM\n", size);
+    rom_size = size;
   }
 
   // Create the Virtual Machine
@@ -163,11 +151,11 @@ int main(int argc, char* argv[]) {
 
 
 #ifdef GLFW3_ENABLE
-	OS glfwos;
-	if (!glfwos.InitializeWindow(1024, 768, "Trillek Virtual Computer demo emulator")) {
-		std::clog << "Failed creating the window or context.";
-		return -1;
-	}
+  OS glfwos;
+  if (!glfwos.InitializeWindow(1024, 768, "Trillek Virtual Computer demo emulator")) {
+    std::clog << "Failed creating the window or context.";
+    return -1;
+  }
   
   initGL(glfwos);
   std::printf("Initiated OpenGL\n");
@@ -271,15 +259,15 @@ int main(int argc, char* argv[]) {
 
     } else {
       ticks = vc.Step(delta / 1000.0 ); 
-			//ticks = 1; vc.Tick(1, delta * 0.001f );
-		}
+      //ticks = 1; vc.Tick(1, delta * 0.001f );
+    }
 
 
     // Speed info
     if (!debug && ticks_count > 200000) {
       std::printf("Running %u cycles in %f ms ", ticks, delta);
       double ttick = delta / ticks;
-      double tclk = 1000.0 / 1000000.0;
+      double tclk = 1000.0 / 1000000.0; // Base clock 1Mhz
       std::printf("Ttick %f ms ", ttick);
       std::printf("Tclk %f ms ", tclk);
       std::printf("Speed of %f %% \n", 100.0f * (tclk / ttick) );
@@ -288,7 +276,7 @@ int main(int argc, char* argv[]) {
 
 
     if (debug) {
-			vc.GetState((void*) &cpu_state, sizeof(cpu_state));
+      vc.GetState((void*) &cpu_state, sizeof(cpu_state));
       std::printf("Takes %u cycles\n", cpu_state.wait_cycles);
       print_regs(cpu_state);
       //print_stack(vm.CPU(), vm.RAM());
@@ -304,8 +292,7 @@ int main(int argc, char* argv[]) {
 
     glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-		
+
     // Model matrix <- Identity
     model = glm::mat4(1.0f); 
 
@@ -454,7 +441,7 @@ int main(int argc, char* argv[]) {
 
 void print_regs(const vm::cpu::TR3200State& state) {
   // Print registers
-	
+
   for (int i=0; i < 11; i++) {
     std::printf("%%r%2d= 0x%08X ", i, state.r[i]);
     if (i == 3 || i == 7 || i == 11 || i == 15 || i == 19 || i == 23 || i == 27 || i == 31)
@@ -463,7 +450,7 @@ void print_regs(const vm::cpu::TR3200State& state) {
   std::printf("%%y= 0x%08X\n", state.r[REG_Y]);
 
   std::printf("%%ia= 0x%08X ", state.r[REG_IA]);
-	auto flags = state.r[REG_FLAGS];
+  auto flags = state.r[REG_FLAGS];
   std::printf("%%flags= 0x%08X ", flags);
   std::printf("%%bp= 0x%08X ",  state.r[BP]);
   std::printf("%%sp= 0x%08X\n", state.r[SP]);
@@ -476,7 +463,7 @@ void print_regs(const vm::cpu::TR3200State& state) {
 }
 
 void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc) {
-	vm::dword_t val = vc.ReadDW(state.pc);
+  vm::dword_t val = vc.ReadDW(state.pc);
 
   std::printf("\tPC : 0x%08X > 0x%08X ", state.pc, val); 
   std::cout << vm::cpu::Disassembly(vc,  state.pc) << std::endl;  
@@ -484,7 +471,7 @@ void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc) {
 
 /*
 void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram) {
-	std::printf("STACK:\n");
+  std::printf("STACK:\n");
 
   for (size_t i =0; i <5*4; i +=4) {
     auto val = ram.RD(cpu.Reg(SP)+ i);
@@ -501,46 +488,46 @@ void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram) {
 
 // Init OpenGL ************************************************************
 void initGL(OS& os) {
-	int OpenGLVersion[2];
+  int OpenGLVersion[2];
 
-	// Use the GL3 way to get the version number
-	glGetIntegerv(GL_MAJOR_VERSION, &OpenGLVersion[0]);
-	glGetIntegerv(GL_MINOR_VERSION, &OpenGLVersion[1]);
-	std::cout << "OpenGL " << OpenGLVersion[0] << "." << OpenGLVersion[1] << "\n";
+  // Use the GL3 way to get the version number
+  glGetIntegerv(GL_MAJOR_VERSION, &OpenGLVersion[0]);
+  glGetIntegerv(GL_MINOR_VERSION, &OpenGLVersion[1]);
+  std::cout << "OpenGL " << OpenGLVersion[0] << "." << OpenGLVersion[1] << "\n";
 
-	// Sanity check to make sure we are at least in a good major version number.
-	assert((OpenGLVersion[0] > 1) && (OpenGLVersion[0] < 5));
+  // Sanity check to make sure we are at least in a good major version number.
+  assert((OpenGLVersion[0] > 1) && (OpenGLVersion[0] < 5));
 
-	winWidth = os.GetWindowWidth(); winHeight = os.GetWindowHeight();
+  winWidth = os.GetWindowWidth(); winHeight = os.GetWindowHeight();
 
-	// Determine the aspect ratio and sanity check it to a safe ratio
-	GLfloat aspectRatio = static_cast<float>(winWidth) / static_cast<float>(winHeight);
-	if (aspectRatio < 1.0f) {
-		aspectRatio = 4.0f / 3.0f;
-	}
+  // Determine the aspect ratio and sanity check it to a safe ratio
+  GLfloat aspectRatio = static_cast<float>(winWidth) / static_cast<float>(winHeight);
+  if (aspectRatio < 1.0f) {
+	  aspectRatio = 4.0f / 3.0f;
+  }
   // Projection matrix : 45° Field of View
   proj = glm::perspective(
-			45.0f,			// FOV
-			aspectRatio, 
-			0.1f,				// Near cliping plane
-			10000.0f);	// Far cliping plane
+      45.0f,			// FOV
+      aspectRatio, 
+      0.1f,				// Near cliping plane
+      10000.0f);	// Far cliping plane
 
-	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-	#if __APPLE__
-		// GL_MULTISAMPLE are Core.
-		glEnable(GL_MULTISAMPLE);
-	#else
-		if (GLEW_ARB_multisample) {
-			glEnable(GL_MULTISAMPLE_ARB);
-		}
-	#endif
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	
-	glEnable(GL_DEPTH_TEST);
+  glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+  #if __APPLE__
+    // GL_MULTISAMPLE are Core.
+    glEnable(GL_MULTISAMPLE);
+  #else
+    if (GLEW_ARB_multisample) {
+      glEnable(GL_MULTISAMPLE_ARB);
+    }
+  #endif
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+
+  glEnable(GL_DEPTH_TEST);
   // Accept fragment if it closer to the camera than the former one
   glDepthFunc(GL_LESS);
-	
+
 
   // Initialize VBOs ********************************************************
   glGenBuffers(1, &vertexbuffer);
@@ -678,7 +665,6 @@ void initGL(OS& os) {
       glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
       );
 
-	
 }
 
 /*

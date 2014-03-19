@@ -11,6 +11,7 @@
 #include "Types.hpp"
 #include "VComputer.hpp"
 
+#include <deque>
 #include <cstdio>
 
 namespace vm {
@@ -36,6 +37,103 @@ namespace vm {
         RAW_KEY
       };
 
+      enum SCANCODES { /// Scan codes of the events
+        SCAN_UNKNOWN         = 0x3FF,
+        SCAN_NULL            = 0,      // Read value when the buffer is empty
+        SCAN_SPACE           = 32,
+        SCAN_APOSTROPHE      = 39,     // '
+        SCAN_COMMA           = 44,     // ,
+        SCAN_MINUS           = 45,     // -
+        SCAN_PERIOD          = 46,     // .
+        SCAN_SLASH           = 47,     // /
+        SCAN_0               = 48,
+        SCAN_1               = 49,
+        SCAN_2               = 50,
+        SCAN_3               = 51,
+        SCAN_4               = 52,
+        SCAN_5               = 53,
+        SCAN_6               = 54,
+        SCAN_7               = 55,
+        SCAN_8               = 56,
+        SCAN_9               = 57,
+        SCAN_SEMICOLON       = 59,     // ;
+        SCAN_EQUAL           = 61,     // =
+        SCAN_A               = 65,
+        SCAN_B               = 66,
+        SCAN_C               = 67,
+        SCAN_D               = 68,
+        SCAN_E               = 69,
+        SCAN_F               = 70,
+        SCAN_G               = 71,
+        SCAN_H               = 72,
+        SCAN_I               = 73,
+        SCAN_J               = 74,
+        SCAN_K               = 75,
+        SCAN_L               = 76,
+        SCAN_M               = 77,
+        SCAN_N               = 78,
+        SCAN_O               = 79,
+        SCAN_P               = 80,
+        SCAN_Q               = 81,
+        SCAN_R               = 82,
+        SCAN_S               = 83,
+        SCAN_T               = 84,
+        SCAN_U               = 85,
+        SCAN_V               = 86,
+        SCAN_W               = 87,
+        SCAN_X               = 88,
+        SCAN_Y               = 89,
+        SCAN_Z               = 90,
+        SCAN_LEFT_BRACKET    = 91,     // [
+        SCAN_BACKSLASH       = 92,
+        SCAN_RIGHT_BRACKET   = 93,     // ]
+        SCAN_GRAVE_ACCENT    = 96,     // `
+        SCAN_WORLD_1         = 161,    // non-US #1
+        SCAN_WORLD_2         = 162,    // non-US #2
+        SCAN_ESCAPE          = 256,
+        SCAN_ENTER           = 257,
+        SCAN_TAB             = 258,
+        SCAN_BACKSPACE       = 259,
+        SCAN_INSERT          = 260,
+        SCAN_DELETE          = 261,
+        SCAN_RIGHT           = 262,
+        SCAN_LEFT            = 263,
+        SCAN_DOWN            = 264,
+        SCAN_UP              = 265,
+        SCAN_LEFT_SHIFT      = 340,
+        SCAN_LEFT_CONTROL    = 341,
+        SCAN_LEFT_ALT        = 342,
+        SCAN_RIGHT_SHIFT     = 344,
+        SCAN_RIGHT_CONTROL   = 345,
+        SCAN_RIGHT_ALT       = 346
+      };
+
+      enum KEYCODES { /// Key codes of the events
+        KEY_NONE            = 0x00,
+        KEY_UNKNOW          = 0x01,
+        KEY_DELETE          = 0x05,
+        KEY_ALT             = 0x06,
+        KEY_BACKSPACE       = 0x08,
+        KEY_TAB             = 0x09,
+        KEY_RETURN          = 0x0D,
+        KEY_SHIFT           = 0x0E,
+        KEY_CONTROL         = 0x0F,
+        KEY_INSERT          = 0x10,
+        KEY_ARROW_UP        = 0x12,
+        KEY_ARROW_DOWN      = 0x13,
+        KEY_ARROW_LEFT      = 0x14,
+        KEY_ARROW_RIGHT     = 0x15,
+        KEY_ESC             = 0x1B,
+        KEY_SPACEBAR        = 0x20
+      };
+
+      enum KEY_MODS { /// Key modifier
+        MOD_SHIFT           = 0x20,
+        MOD_CTRL            = 0x40,
+        MOD_ALTGR           = 0x80
+      };
+
+      static const size_t BSIZE = 64; /// Internal buffer size
       /**
        * Genertic Keyboard
        * Western / Latin generic keyboard
@@ -44,9 +142,20 @@ namespace vm {
         public:
 
           GKeyboardDev () : int_msg(0), do_int(false), mode(KeybMode::KEY) {
+            keybuffer.clear();
           }
 
           virtual ~GKeyboardDev() {
+          }
+
+          virtual void Reset () {
+            int_msg = 0;
+            a = 0;
+            b = 0;
+            do_int = false;
+
+            mode = KeybMode::KEY;
+            keybuffer.clear();
           }
 
           /**
@@ -55,6 +164,13 @@ namespace vm {
            */
           virtual void SendCMD (word_t cmd) {
             switch (cmd) {
+              case 0x0000: // CLR_BUFFER
+                keybuffer.clear();
+                break;
+
+              case 0x0002: // PUSH_KEY
+                //keybuffer.push((b << 8) | a);
+                break;
 
               case 0x0003: // SET_INT
                 int_msg = a;
@@ -137,8 +253,9 @@ namespace vm {
           word_t int_msg;
           word_t a, b;
           bool do_int;
-          
-          KeybMode mode;
+
+          KeybMode mode;                  /// Keyboard mode
+          std::deque<word_t> keybuffer;   /// Stores the key events
       };
 
 

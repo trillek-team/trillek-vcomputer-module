@@ -50,12 +50,11 @@ namespace vm {
 		}
 
 		void TR3200::Tick(unsigned n) {
-			assert (n > 0);
 			assert (vcomp != nullptr);
 			
 			unsigned i = 0;
 			
-			do {
+			while (i < n) {
 				if (!sleeping) {
 					if (wait_cycles <= 0 ) {
 						wait_cycles = RealStep();
@@ -67,7 +66,7 @@ namespace vm {
 				}
 
 				i++;
-			} while (i < n);
+			}
 		}
 
 		bool TR3200::SendInterrupt (word_t msg) {

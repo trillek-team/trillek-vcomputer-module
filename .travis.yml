@@ -24,12 +24,12 @@ before_script:
   - cmake ..
 script: 
   - make
-  - ./module_test
+  - ./unit_test
 
 notifications:
     email:
       - luis.panadero@gmail.com
     # I can also set up Glitch to output build results as well if we don't want the travis bot join/part spam
-    #    irc:
+    irc:
+      - "chat.freenode.net#project-trillek"
     #    - "chat.freenode.net#sigma-gcf"
-    #    - "chat.freenode.net#project-trillek"

@@ -19,7 +19,7 @@
 #include "devices/GKeyb.hpp"
 
 // Misc
-//#include "Auxiliar.hpp"
+#include "Auxiliar.hpp"
 
 
 #endif // ___VC_HPP__
