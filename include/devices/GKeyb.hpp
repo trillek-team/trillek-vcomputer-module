@@ -122,6 +122,7 @@ namespace vm {
       };
 
       enum KEY_MODS { /// Key modifier
+        MOD_NONE            = 0x0,
         MOD_SHIFT           = 0x1,
         MOD_CTRL            = 0x2,
         MOD_ALTGR           = 0x4
@@ -165,11 +166,12 @@ namespace vm {
 
               case 0x0001: // PULL_KEY
                 if (! keybuffer.empty()) {
+                  // keyevent = ((status & 7) << 24) | (keycode << 16) | scancode;
                   auto tmp = keybuffer.front();
                   keybuffer.pop_front();
                   c = tmp >> 24;
-                  b = (tmp >> 16) & 0xFF;
-                  a = tmp & 0xFFFF;
+                  b = tmp & 0xFFFF;
+                  a = (tmp >> 16) & 0xFF;
                 } else {
                   a = b = c = 0;
                 }

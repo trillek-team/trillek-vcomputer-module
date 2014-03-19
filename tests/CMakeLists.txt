@@ -10,6 +10,7 @@ include_directories( unit_test
 
 add_executable( unit_test
 	VComputer_test.cpp
+	GKeyb_test.cpp
   )
 
 target_link_libraries( unit_test
