@@ -90,9 +90,11 @@ namespace vm {
       unsigned phase;
       unsigned madraw;
       word_t acu;
+      dword_t aca;
       word_t bcu;
+      dword_t bca;
       word_t opcl;
-      word_t fetchl;
+      //word_t fetchl;
       word_t fetchh;
       bool addradd;
       bool addrdec;

@@ -164,8 +164,8 @@ namespace vm {
         case DCPU16N_PHASE_ACUFETCH:
           if(addrdec) {
             addrdec = false;
-            cfa = emu[(acu >> 12) & 0xf] | (acu & 0x0fff);
-            acu = (((word_t)vcomp->ReadB(cfa + 1)) << 8) | (word_t)vcomp->ReadB(cfa);
+            aca = emu[(acu >> 12) & 0xf] | (acu & 0x0fff);
+            acu = (((word_t)vcomp->ReadB(aca + 1)) << 8) | (word_t)vcomp->ReadB(aca);
           }
         case DCPU16N_PHASE_UBREAD:
           if((opcl & 0x001f) != 0) {
@@ -229,19 +229,166 @@ namespace vm {
         case DCPU16N_PHASE_BCUFETCH:
           if(addrdec) {
             addrdec = false;
-            cfa = emu[(bcu >> 12) & 0xf] | (bcu & 0x0fff);
-            bcu = (((word_t)vcomp->ReadB(cfa + 1)) << 8) | (word_t)vcomp->ReadB(cfa);
+            bca = emu[(bcu >> 12) & 0xf] | (bcu & 0x0fff);
+            bcu = (((word_t)vcomp->ReadB(bca + 1)) << 8) | (word_t)vcomp->ReadB(bca);
           }
         case DCPU16N_PHASE_EXEC:
-          // TODO
+          if((opcl & 0x001f) != 0) {
+            switch(opcl & 0x001f) {
+            case 0x01: // SET (wb ra)
+              break;
+            case 0x02: // ADD (rwb ra)
+              break;
+            case 0x03: // SUB (rwb ra)
+              break;
+            case 0x04: // MUL (rwb ra)
+              break;
+            case 0x05: // MLI (rwb ra)
+              break;
+            case 0x06: // DIV (rwb ra)
+              break;
+            case 0x07: // DVI (rwb ra)
+              break;
+            case 0x08: // MOD (rwb ra)
+              break;
+            case 0x09: // MDI (rwb ra)
+              break;
+            case 0x0a: // AND (rwb ra)
+              break;
+            case 0x0b: // BOR (rwb ra)
+              break;
+            case 0x0c: // XOR (rwb ra)
+              break;
+            case 0x0d: // SHR (rwb ra)
+              break;
+            case 0x0e: // ASR (rwb ra)
+              break;
+            case 0x0f: // SHL (rwb ra)
+              break;
+            case 0x10: // IFB (rb ra)
+              break;
+            case 0x11: // IFC (rb ra)
+              break;
+            case 0x12: // IFE (rb ra)
+              break;
+            case 0x13: // IFN (rb ra)
+              break;
+            case 0x14: // IFG (rb ra)
+              break;
+            case 0x15: // IFA (rb ra)
+              break;
+            case 0x16: // IFL (rb ra)
+              break;
+            case 0x17: // IFU (rb ra)
+              break;
+            //case 0x18:
+            //  break;
+            //case 0x19:
+            //  break;
+            case 0x1a: // ADX (rwb ra)
+              break;
+            case 0x1b: // SBX (rwb ra)
+              break;
+            case 0x1c: // HWW (rb ra)
+              break;
+            case 0x1d: // HWR (rb wa)
+              break;
+            case 0x1e: // STI (wb ra)
+              break;
+            case 0x1f: // STD (wb ra)
+              break;
+            }
+          }
+          else if((opcl & 0x03e0) != 0) {
+            switch((opcl >> 5) & 0x001f) {
+            case 0x01: // JSR (ra)
+              break;
+            case 0x02: // BSR (ra)
+              break;
+            //case 0x03:
+            //  break;
+            //case 0x04:
+            //  break;
+            case 0x05: // NEG (rwa)
+              break;
+            //case 0x06:
+            //  break;
+            case 0x07: // HCF (^w^OMGFTWBBQa)
+              break;
+            case 0x08: // INT (ra)
+              break;
+            case 0x09: // IAG (wa)
+              break;
+            case 0x0a: // IAS (ra)
+              break;
+            case 0x0b: // RFI (ra)
+              break;
+            case 0x0c: // IAQ (ra)
+              break;
+            //case 0x0d:
+            //  break;
+            //case 0x0e:
+            //  break;
+            //case 0x0f:
+            //  break;
+            case 0x10: // MMW (ra)
+              break;
+            case 0x11: // MMR (rwa)
+              break;
+            //case 0x12:
+            //  break;
+            //case 0x13:
+            //  break;
+            case 0x14: // SXB (rwa)
+              break;
+            case 0x15: // SWP (rwa)
+              break;
+            //case 0x16:
+            //  break;
+            //case 0x17:
+            //  break;
+            //case 0x18:
+            //  break;
+            //case 0x19:
+            //  break;
+            //case 0x1a:
+            //  break;
+            //case 0x1b:
+            //  break;
+            //case 0x1c:
+            //  break;
+            //case 0x1d:
+            //  break;
+            //case 0x1e:
+            //  break;
+            //case 0x1f:
+            //  break;
+            }
+          }
+          else {
+            switch((opcl >> 10) & 0x001f) {
+            case 0x00: // HLT
+              break;
+            case 0x01: // SLP
+              break;
+            //case 0x02:
+            //  break;
+            //case 0x03:
+            //  break;
+            case 0x04: // BYT (rv)
+              break;
+            case 0x10: // SKP
+              break;
+            }
+          }
+
         case DCPU16N_PHASE_UBWRITE:
           // TODO
         case DCPU16N_PHASE_BCUWRITE:
           if(addrdec) {
             addrdec = false;
-            cfa = emu[(bcu >> 12) & 0xf] | (bcu & 0x0fff);
-            vcomp->WriteB(cfa + 1, (byte_t)(acu >> 8));
-            vcomp->WriteB(cfa, (byte_t)(acu & 0x0ff));
+            vcomp->WriteB(bca + 1, (byte_t)(bcu >> 8));
+            vcomp->WriteB(bca, (byte_t)(bcu & 0x0ff));
           }
           break;
         case DCPU16N_PHASE_EXECW:
@@ -250,6 +397,8 @@ namespace vm {
         case DCPU16N_PHASE_SLEEP:
           // TODO
           // Check Interrupts here
+          break;
+        case DCPU16N_PHASE_EXECSKIP:
           break;
         default:
           phase = 0;
