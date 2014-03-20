@@ -234,6 +234,7 @@ namespace vm {
           }
         case DCPU16N_PHASE_EXEC:
           if((opcl & 0x001f) != 0) {
+            wrt = (opcl >> 5) & 0x1f;
             switch(opcl & 0x001f) {
             case 0x01: // SET (wb ra)
               break;
@@ -300,6 +301,7 @@ namespace vm {
             }
           }
           else if((opcl & 0x03e0) != 0) {
+            wrt = (opcl >> 10);
             switch((opcl >> 5) & 0x001f) {
             case 0x01: // JSR (ra)
               break;
@@ -366,6 +368,7 @@ namespace vm {
             }
           }
           else {
+            wrt = 0x003f;
             switch((opcl >> 10) & 0x001f) {
             case 0x00: // HLT
               break;
@@ -383,7 +386,53 @@ namespace vm {
           }
 
         case DCPU16N_PHASE_UBWRITE:
-          // TODO
+          if(wrt) {
+            if(wrt & 0x0020) {
+              // nothing
+            }
+            else {
+              if(wrt & 0x010) {
+                if(wrt & 0x08) {
+                  switch(wrt & 0x7) {
+                  case 0: // PUSH [--SP]
+                    addrdec = true;
+                    break;
+                  case 1: // [SP]
+                    addrdec = true;
+                    break;
+                  case 2: // [SP + nextword]
+                    addrdec = true;
+                    break;
+                  case 3: // SP
+                    sp = bcu;
+                    break;
+                  case 4: // PC
+                    pc = bcu;
+                    break;
+                  case 5: // EX
+                    ex = bcu;
+                    break;
+                  case 6: // [nextword]
+                    addrdec = true;
+                    break;
+                  case 7:
+                    break;
+                  }
+                }
+                else { // [REG + nextword]
+                  addrdec = true;
+                }
+              }
+              else {
+                if(wrt & 0x08) { // [REG]
+                  addrdec = true;
+                }
+                else { // REG
+                  r[wrt & 0x7] = bcu;
+                }
+              }
+            }
+          }
         case DCPU16N_PHASE_BCUWRITE:
           if(addrdec) {
             addrdec = false;

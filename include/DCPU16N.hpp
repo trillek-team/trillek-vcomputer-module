@@ -94,7 +94,7 @@ namespace vm {
       word_t bcu;
       dword_t bca;
       word_t opcl;
-      //word_t fetchl;
+      word_t wrt;
       word_t fetchh;
       bool addradd;
       bool addrdec;
