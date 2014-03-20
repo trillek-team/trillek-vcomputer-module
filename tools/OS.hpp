@@ -84,7 +84,17 @@
 			glfwSetWindowUserPointer(this->window, this);
 
 			// Set up some callbacks.
-			//glfwSetWindowSizeCallback(this->window, &OS::windowResized);
+			glfwSetWindowSizeCallback(this->window, [] (GLFWwindow* window, int width, int height) {
+        // Enforces desired size
+        // Get the user pointer and cast it.
+        OS* os = static_cast<OS*>(glfwGetWindowUserPointer(window));
+        if (os) {
+          if (width != os->width || height != os->height) {
+            glfwSetWindowSize(window, os->width, os->height);
+          }
+        }
+      } );
+
 			//glfwSetKeyCallback(this->window, &keyboardEvent);
 			//glfwSetCursorPosCallback(this->window, &OSmouseMoveEvent);
 			//glfwSetCharCallback(this->window, &characterEvent);
@@ -134,22 +144,15 @@
 			return delta;
 		}
 
-		void windowResized(GLFWwindow* window, int width, int height) {
-			// Get the user pointer and cast it.
-			OS* os = static_cast<OS*>(glfwGetWindowUserPointer(window));
-
-			if (os) {
-				os->UpdateWindowSize(width, height);
-			}
-		}
 
 		void UpdateWindowSize(const int width, const int height) {
 			this->width = width;
 			this->height = height;
 		}
 
-
 	};
+		
+
 #endif
 
 #endif // __OS_HPP_
