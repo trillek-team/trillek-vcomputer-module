@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
     rom[i] = new byte_t[32*1024];
 
     std::printf("Opening file %s\n", argv[1 + i]);
-    int size = vm::aux::LoadROM(argv[1], rom[i]);
+    int size = vm::aux::LoadROM(argv[1+ i], rom[i]);
     if (size < 0) {
       std::fprintf(stderr, "An error hapen when was reading the file %s\n", argv[1]);
       return -1;
