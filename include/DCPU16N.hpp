@@ -14,7 +14,7 @@ namespace vm {
   namespace cpu {
 
     class DCPU16N : public ICPU {
-
+    public:
       DCPU16N(unsigned clock = 100000);
       virtual ~DCPU16N();
 

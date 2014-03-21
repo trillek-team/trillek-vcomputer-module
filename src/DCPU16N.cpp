@@ -234,29 +234,34 @@ namespace vm {
             bcu = (((word_t)vcomp->ReadB(bca + 1)) << 8) | (word_t)vcomp->ReadB(bca);
           }
         case DCPU16N_PHASE_EXEC:
+          phase = DCPU16N_PHASE_OPFETCH;
           if((opcl & 0x001f) != 0) {
             wrt = (opcl >> 5) & 0x1f;
             switch(opcl & 0x001f) {
             case 0x01: // SET (wb ra)
               bcu = acu;
+              wrt |= 0x100;
               break;
             case 0x02: // ADD (rwb ra)
               cfa = bcu;
               cfa += acu;
               bcu = (word_t)cfa;
               ex = (word_t)(cfa >> 16);
+              wrt |= 0x100;
               break;
             case 0x03: // SUB (rwb ra)
               s32 = (int16_t)bcu;
               s32 -= (int16_t)acu;
               bcu = (word_t)s32;
               ex = (word_t)(s32 >> 16);
+              wrt |= 0x100;
               break;
             case 0x04: // MUL (rwb ra)
               cfa = bcu;
               cfa *= acu;
               bcu = (word_t)cfa;
               ex = (word_t)(cfa >> 16);
+              wrt |= 0x100;
               // TODO waste cycles
               break;
             case 0x05: // MLI (rwb ra)
@@ -264,6 +269,7 @@ namespace vm {
               s32 *= (int16_t)acu;
               bcu = (word_t)s32;
               ex = (word_t)(s32 >> 16);
+              wrt |= 0x100;
               break;
             case 0x06: // DIV (rwb ra)
               if(acu) {
@@ -275,6 +281,7 @@ namespace vm {
                 bcu = 0;
                 ex = 0;
               }
+              wrt |= 0x100;
               break;
             case 0x07: // DVI (rwb ra)
               if(acu) {
@@ -290,6 +297,7 @@ namespace vm {
                 bcu = 0;
                 ex = 0;
               }
+              wrt |= 0x100;
               break;
             case 0x08: // MOD (rwb ra)
               if(acu) {
@@ -298,6 +306,7 @@ namespace vm {
               else {
                 bcu = 0;
               }
+              wrt |= 0x100;
               break;
             case 0x09: // MDI (rwb ra)
               if(acu) {
@@ -306,32 +315,39 @@ namespace vm {
               else {
                 bcu = 0;
               }
+              wrt |= 0x100;
               break;
             case 0x0a: // AND (rwb ra)
               bcu &= acu;
+              wrt |= 0x100;
               break;
             case 0x0b: // BOR (rwb ra)
               bcu |= acu;
+              wrt |= 0x100;
               break;
             case 0x0c: // XOR (rwb ra)
               bcu ^= acu;
+              wrt |= 0x100;
               break;
             case 0x0d: // SHR (rwb ra)
               cfa = bcu << 16;
               cfa >>= acu;
               ex = (word_t)cfa;
               bcu = (word_t)(cfa >> 16);
+              wrt |= 0x100;
               break;
             case 0x0e: // ASR (rwb ra)
               s32 = (int16_t)bcu;
               ex = (word_t)(bcu << (16 - acu));
               bcu = (word_t)(s32 >> acu);
+              wrt |= 0x100;
               break;
             case 0x0f: // SHL (rwb ra)
               cfa = bcu;
               cfa <<= acu;
               ex = (word_t)(cfa >> 16);
               bcu = (word_t)cfa;
+              wrt |= 0x100;
               break;
             case 0x10: // IFB (rb ra)
               if((acu & bcu)) {
@@ -382,32 +398,37 @@ namespace vm {
               cfa += acu + ex;
               ex = (word_t)(cfa >> 16);
               bcu = (word_t)cfa;
+              wrt |= 0x100;
               break;
             case 0x1b: // SBX (rwb ra)
               cfa = bcu;
               cfa = cfa - acu + ex;
               ex = (word_t)(cfa >> 16);
               bcu = (word_t)cfa;
+              wrt |= 0x100;
               break;
             case 0x1c: // HWW (rb ra)
               IOWrite(bcu, acu);
               break;
             case 0x1d: // HWR (rb wa)
               bcu = IORead(bcu);
-              wrt = (opcl >> 10);
+              wrt = (opcl >> 10) | 0x100;
               break;
             case 0x1e: // STI (wb ra)
               bcu = acu;
               r[6]++; r[7]++;
+              wrt |= 0x100;
               break;
             case 0x1f: // STD (wb ra)
               bcu = acu;
               r[6]--; r[7]--;
+              wrt |= 0x100;
               break;
             }
           }
           else if((opcl & 0x03e0) != 0) {
             wrt = (opcl >> 10);
+            bca = aca;
             switch((opcl >> 5) & 0x001f) {
             case 0x01: // JSR (ra)
               break;
@@ -418,6 +439,7 @@ namespace vm {
             //case 0x04:
             //  break;
             case 0x05: // NEG (rwa)
+              wrt |= 0x0100;
               break;
             //case 0x06:
             //  break;
@@ -426,6 +448,7 @@ namespace vm {
             case 0x08: // INT (ra)
               break;
             case 0x09: // IAG (wa)
+              wrt |= 0x0100;
               break;
             case 0x0a: // IAS (ra)
               break;
@@ -442,14 +465,17 @@ namespace vm {
             case 0x10: // MMW (ra)
               break;
             case 0x11: // MMR (rwa)
+              wrt |= 0x0100;
               break;
             //case 0x12:
             //  break;
             //case 0x13:
             //  break;
             case 0x14: // SXB (rwa)
+              wrt |= 0x0100;
               break;
             case 0x15: // SWP (rwa)
+              wrt |= 0x0100;
               break;
             //case 0x16:
             //  break;
@@ -492,7 +518,7 @@ namespace vm {
           }
 
         case DCPU16N_PHASE_UBWRITE:
-          if(wrt) {
+          if(wrt & 0x0100) {
             if(wrt & 0x0020) {
               // nothing
             }
