@@ -54,6 +54,7 @@ namespace vm {
     void DCPU16N::Tick(unsigned n)
     {
       dword_t cfa;
+      register int32_t s32;
       word_t opca;
       while(n--) {
         switch(phase) {
@@ -237,66 +238,171 @@ namespace vm {
             wrt = (opcl >> 5) & 0x1f;
             switch(opcl & 0x001f) {
             case 0x01: // SET (wb ra)
+              bcu = acu;
               break;
             case 0x02: // ADD (rwb ra)
+              cfa = bcu;
+              cfa += acu;
+              bcu = (word_t)cfa;
+              ex = (word_t)(cfa >> 16);
               break;
             case 0x03: // SUB (rwb ra)
+              s32 = (int16_t)bcu;
+              s32 -= (int16_t)acu;
+              bcu = (word_t)s32;
+              ex = (word_t)(s32 >> 16);
               break;
             case 0x04: // MUL (rwb ra)
+              cfa = bcu;
+              cfa *= acu;
+              bcu = (word_t)cfa;
+              ex = (word_t)(cfa >> 16);
+              // TODO waste cycles
               break;
             case 0x05: // MLI (rwb ra)
+              s32 = (int16_t)bcu;
+              s32 *= (int16_t)acu;
+              bcu = (word_t)s32;
+              ex = (word_t)(s32 >> 16);
               break;
             case 0x06: // DIV (rwb ra)
+              if(acu) {
+                cfa = (((dword_t)bcu) << 16) / acu;
+                ex = (word_t)cfa;
+                bcu = (word_t)(cfa >> 16);
+              }
+              else {
+                bcu = 0;
+                ex = 0;
+              }
               break;
             case 0x07: // DVI (rwb ra)
+              if(acu) {
+                if(((int16_t)bcu) % ((int16_t)acu)) {
+                  ex = ( ((int32_t)bcu) << 16 ) / ((int16_t)acu);
+                }
+                else {
+                  ex = 0;
+                }
+                bcu = (word_t)( ((int16_t)bcu) / ((int16_t)acu) );
+              }
+              else {
+                bcu = 0;
+                ex = 0;
+              }
               break;
             case 0x08: // MOD (rwb ra)
+              if(acu) {
+                bcu %= acu;
+              }
+              else {
+                bcu = 0;
+              }
               break;
             case 0x09: // MDI (rwb ra)
+              if(acu) {
+                bcu = (word_t)( ((int16_t)bcu) % ((int16_t)acu) );
+              }
+              else {
+                bcu = 0;
+              }
               break;
             case 0x0a: // AND (rwb ra)
+              bcu &= acu;
               break;
             case 0x0b: // BOR (rwb ra)
+              bcu |= acu;
               break;
             case 0x0c: // XOR (rwb ra)
+              bcu ^= acu;
               break;
             case 0x0d: // SHR (rwb ra)
+              cfa = bcu << 16;
+              cfa >>= acu;
+              ex = (word_t)cfa;
+              bcu = (word_t)(cfa >> 16);
               break;
             case 0x0e: // ASR (rwb ra)
+              s32 = (int16_t)bcu;
+              ex = (word_t)(bcu << (16 - acu));
+              bcu = (word_t)(s32 >> acu);
               break;
             case 0x0f: // SHL (rwb ra)
+              cfa = bcu;
+              cfa <<= acu;
+              ex = (word_t)(cfa >> 16);
+              bcu = (word_t)cfa;
               break;
             case 0x10: // IFB (rb ra)
+              if((acu & bcu)) {
+                phase = DCPU16N_PHASE_EXECSKIP;
+              }
               break;
             case 0x11: // IFC (rb ra)
+              if(!(acu & bcu)) {
+                phase = DCPU16N_PHASE_EXECSKIP;
+              }
               break;
             case 0x12: // IFE (rb ra)
+              if(!(acu == bcu)) {
+                phase = DCPU16N_PHASE_EXECSKIP;
+              }
               break;
             case 0x13: // IFN (rb ra)
+              if(!(acu != bcu)) {
+                phase = DCPU16N_PHASE_EXECSKIP;
+              }
               break;
             case 0x14: // IFG (rb ra)
+              if(!(bcu > acu)) {
+                phase = DCPU16N_PHASE_EXECSKIP;
+              }
               break;
             case 0x15: // IFA (rb ra)
+              if(! ( ((int16_t)bcu) > ((int16_t)acu)) ) {
+                phase = DCPU16N_PHASE_EXECSKIP;
+              }
               break;
             case 0x16: // IFL (rb ra)
+              if(!(bcu < acu)) {
+                phase = DCPU16N_PHASE_EXECSKIP;
+              }
               break;
             case 0x17: // IFU (rb ra)
+              if(! ( ((int16_t)bcu) < ((int16_t)acu) ) ) {
+                phase = DCPU16N_PHASE_EXECSKIP;
+              }
               break;
             //case 0x18:
             //  break;
             //case 0x19:
             //  break;
             case 0x1a: // ADX (rwb ra)
+              cfa = bcu;
+              cfa += acu + ex;
+              ex = (word_t)(cfa >> 16);
+              bcu = (word_t)cfa;
               break;
             case 0x1b: // SBX (rwb ra)
+              cfa = bcu;
+              cfa = cfa - acu + ex;
+              ex = (word_t)(cfa >> 16);
+              bcu = (word_t)cfa;
               break;
             case 0x1c: // HWW (rb ra)
+              IOWrite(bcu, acu);
               break;
             case 0x1d: // HWR (rb wa)
+              bcu = IORead(bcu);
+              wrt = (opcl >> 10);
               break;
             case 0x1e: // STI (wb ra)
+              bcu = acu;
+              r[6]++; r[7]++;
               break;
             case 0x1f: // STD (wb ra)
+              bcu = acu;
+              r[6]--; r[7]--;
               break;
             }
           }
