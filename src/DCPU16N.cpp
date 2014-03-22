@@ -536,16 +536,26 @@ namespace vm {
             wrt = 0x003f;
             switch((opcl >> 10) & 0x001f) {
             case 0x00: // HLT
+              bytemode = false;
+              if(ia && !qint) {
+                SendInterrupt(0);
+              }
+              phase = DCPU16N_PHASE_SLEEP;
               break;
             case 0x01: // SLP
+              bytemode = false;
+              phase = DCPU16N_PHASE_SLEEP;
               break;
             //case 0x02:
             //  break;
             //case 0x03:
             //  break;
             case 0x04: // BYT (rv)
+              bytemode = !bytemode;
+              bytehigh = opcl & 0x8000 ? true : false;
               break;
             case 0x10: // SKP
+              phase = DCPU16N_PHASE_EXECSKIP;
               break;
             }
           }
