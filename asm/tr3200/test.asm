@@ -218,7 +218,7 @@ begin_search_tda:
 end_search_tda:
   IFEQ %r10, 0x112100
     MOV %r10, 0xFFFFFFFF ; We put in the var TDA base address
-  
+
   STORE TDA_base_dev, %r10 ; We put in the var that we don't found anything
 
   IFEQ %r10, 0xFFFFFFFF
