@@ -31,11 +31,19 @@ namespace vm {
       madraw = 0;
       phase = 0;
       acu = 0;
+      aca = 0;
+      bcu = 0;
+      bca = 0;
+      opcl = 0;
+      wrt = 0;
+      fetchh = 0;
+      addradd = false;
+      addrdec = false;
       bytemode = false;
       bytehigh = false;
       skip = false;
       fire = false;
-
+      qint = false;
       // point EMU at ROM (page 0x100)
       emu[0] = 0x00100000;
 
@@ -107,7 +115,8 @@ namespace vm {
                 if(opca & 0x08) {
                   switch(opca & 0x7) {
                   case 0: // POP [SP++]
-                    acu = sp++;
+                    acu = sp;
+                    sp += 2;
                     phase = DCPU16N_PHASE_ACUFETCH;
                     addrdec = true;
                     break;
@@ -175,7 +184,8 @@ namespace vm {
               if(opca & 0x08) { // b table
                 switch(opca & 0x7) {
                 case 0: // PUSH [--SP] (READ)
-                  bcu = --sp;
+                  sp -= 2;
+                  bcu = sp;
                   phase = DCPU16N_PHASE_BCUFETCH;
                   addrdec = true;
                   break;
@@ -431,8 +441,19 @@ namespace vm {
             bca = aca;
             switch((opcl >> 5) & 0x001f) {
             case 0x01: // JSR (ra)
+              bcu = pc;
+              phase = DCPU16N_PHASE_EXECJMP;
+              sp-= 2;
+              bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
+              wrt = 0x0118;
               break;
             case 0x02: // BSR (ra)
+              bcu = pc;
+              phase = DCPU16N_PHASE_EXECJMP;
+              sp-= 2;
+              acu += pc;
+              bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
+              wrt = 0x0118;
               break;
             //case 0x03:
             //  break;
@@ -440,21 +461,29 @@ namespace vm {
             //  break;
             case 0x05: // NEG (rwa)
               wrt |= 0x0100;
+              bcu = (word_t)(-((int16_t)acu));
               break;
             //case 0x06:
             //  break;
             case 0x07: // HCF (^w^OMGFTWBBQa)
+              bcu = (word_t)madraw;
+              fire = true;
               break;
             case 0x08: // INT (ra)
+              SendInterrupt(acu);
               break;
             case 0x09: // IAG (wa)
               wrt |= 0x0100;
+              bcu = ia;
               break;
             case 0x0a: // IAS (ra)
+              ia = acu;
               break;
             case 0x0b: // RFI (ra)
+              phase = DCPU16N_PHASE_EXECRFI;
               break;
             case 0x0c: // IAQ (ra)
+              qint = acu ? true : false;
               break;
             //case 0x0d:
             //  break;
@@ -463,9 +492,11 @@ namespace vm {
             //case 0x0f:
             //  break;
             case 0x10: // MMW (ra)
+              emu[acu & 0x0f] = ((dword_t)acu & 0xfff0) << 12;
               break;
             case 0x11: // MMR (rwa)
               wrt |= 0x0100;
+              bcu = (emu[acu & 0x0f] >> 12) | (acu & 0x0f);
               break;
             //case 0x12:
             //  break;
@@ -473,9 +504,11 @@ namespace vm {
             //  break;
             case 0x14: // SXB (rwa)
               wrt |= 0x0100;
+              bcu = (-(acu & 0x80)) | (acu & 0x00ff);
               break;
             case 0x15: // SWP (rwa)
               wrt |= 0x0100;
+              bcu = ((acu >> 8) & 0xff) | ((acu << 8) & 0xFF00);
               break;
             //case 0x16:
             //  break;
@@ -580,6 +613,20 @@ namespace vm {
           // Check Interrupts here
           break;
         case DCPU16N_PHASE_EXECSKIP:
+          break;
+        case DCPU16N_PHASE_EXECJMP:
+          pc = acu;
+          phase = DCPU16N_PHASE_OPFETCH;
+          break;
+        case DCPU16N_PHASE_EXECRFI:
+          phase = DCPU16N_PHASE_OPFETCH;
+          qint = false;
+          bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
+          sp += 2;
+          r[0] = (((word_t)vcomp->ReadB(bca + 1)) << 8) | (word_t)vcomp->ReadB(bca);
+          bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
+          sp += 2;
+          pc = (((word_t)vcomp->ReadB(bca + 1)) << 8) | (word_t)vcomp->ReadB(bca);
           break;
         default:
           phase = 0;

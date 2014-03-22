@@ -102,6 +102,7 @@ namespace vm {
       bool bytehigh;
       bool skip;
       bool fire;
+      bool qint;
 
     };
   }
