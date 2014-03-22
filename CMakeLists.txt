@@ -127,17 +127,10 @@ else (VCOMPUTER_SUB_PROJECT)
 			message(STATUS "Procesing Tests")
 
 			if(DEFINED ENV{GTEST_ROOT})  # Note we omit the $ here!
-				message(" ... using gtest found in $ENV{GTEST_ROOT}")
-			ELSE()
-				message("GTEST_ROOT is not defined. You must tell CMake where
-				to find the gtest source. For example :
-				GTEST_ROOT=path/gtest-1.6.0 ;
-				export GTEST_ROOT ")
-				return()
+			  add_subdirectory($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest)
 			endif()
 
 			add_subdirectory(tests)
-			add_subdirectory($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest)
 		endif(BUILD_TESTS_VCOMPUTER)
 
 	endif (EMSCRIPTEN)

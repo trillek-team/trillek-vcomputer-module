@@ -23,22 +23,16 @@ namespace vm {
        */
       struct GKeyboardState {
         public:
+          word_t a, b, c;
 
+          std::deque<dword_t> keybuffer;    /// Stores the key events
 
+          word_t int_msg;
           bool do_int;
       };
 
-      /**
-       * Keyboard mode
-       */
-      enum KeybMode {
-        KEY,
-        RAW,
-        RAW_KEY
-      };
-
       enum SCANCODES { /// Scan codes of the events
-        SCAN_UNKNOWN         = 0x3FF,
+        SCAN_UNKNOWN         = 0xFFFF,
         SCAN_NULL            = 0,      // Read value when the buffer is empty
         SCAN_SPACE           = 32,
         SCAN_APOSTROPHE      = 39,     // '
@@ -128,9 +122,10 @@ namespace vm {
       };
 
       enum KEY_MODS { /// Key modifier
-        MOD_SHIFT           = 0x20,
-        MOD_CTRL            = 0x40,
-        MOD_ALTGR           = 0x80
+        MOD_NONE            = 0x0,
+        MOD_SHIFT           = 0x1,
+        MOD_CTRL            = 0x2,
+        MOD_ALTGR           = 0x4
       };
 
       static const size_t BSIZE = 64; /// Internal buffer size
@@ -141,7 +136,7 @@ namespace vm {
       class GKeyboardDev : public IDevice {
         public:
 
-          GKeyboardDev () : int_msg(0), do_int(false), mode(KeybMode::KEY) {
+          GKeyboardDev () : int_msg(0), do_int(false) {
             keybuffer.clear();
           }
 
@@ -149,13 +144,14 @@ namespace vm {
           }
 
           virtual void Reset () {
-            int_msg = 0;
             a = 0;
             b = 0;
-            do_int = false;
+            c = 0;
 
-            mode = KeybMode::KEY;
             keybuffer.clear();
+
+            int_msg = 0;
+            do_int = false;
           }
 
           /**
@@ -168,16 +164,28 @@ namespace vm {
                 keybuffer.clear();
                 break;
 
+              case 0x0001: // PULL_KEY
+                if (! keybuffer.empty()) {
+                  // keyevent = ((status & 7) << 24) | (keycode << 16) | scancode;
+                  auto tmp = keybuffer.front();
+                  keybuffer.pop_front();
+                  c = tmp >> 24;
+                  b = tmp & 0xFFFF;
+                  a = (tmp >> 16) & 0xFF;
+                } else {
+                  a = b = c = 0;
+                }
+                break;
+
               case 0x0002: // PUSH_KEY
-                //keybuffer.push((b << 8) | a);
+                if (keybuffer.size() < BSIZE) {
+                  dword_t keyevent = ((c & 7) << 24) | ((a & 0xFF) << 16) | b;
+                  keybuffer.push_front(keyevent);
+                }
                 break;
 
               case 0x0003: // SET_INT
                 int_msg = a;
-                break;
-
-              case 0x0005: // SET_MODE
-                mode = (KeybMode)(a & 3);
                 break;
 
               default:
@@ -187,9 +195,12 @@ namespace vm {
 
           virtual void A (word_t val) { a = val; }
           virtual void B (word_t val) { b = val; }
+          virtual void C (word_t val) { a = val; }
 
           virtual word_t A () { return a; }
           virtual word_t B () { return b; }
+          virtual word_t C () { return c; }
+          virtual word_t E () { return keybuffer.size(); }
 
           /**
            * Device Type
@@ -234,12 +245,32 @@ namespace vm {
           virtual void GetState (void* ptr, std::size_t& size) const {
             if (ptr != nullptr && size >= sizeof(GKeyboardState)) {
               auto state = (GKeyboardState*) ptr;
+
+              state->a = this->a;
+              state->b = this->b;
+              state->c = this->c;
+
+              const std::deque<dword_t>& tmp = this->keybuffer;
+              state->keybuffer = tmp; // Copy
+
+              state->int_msg = this->int_msg;
+              state->do_int = this->do_int;
             }
           }
 
           virtual bool SetState (const void* ptr, std::size_t size) {
             if (ptr != nullptr && size >= sizeof(GKeyboardState)) { // Sanity check
               auto state = (const GKeyboardState*) ptr;
+
+              this->a = state->a;
+              this->b = state->b;
+              this->c = state->c;
+
+              const std::deque<dword_t>& tmp = state->keybuffer;
+              this->keybuffer = tmp; // Copy
+
+              this->int_msg = state->int_msg;
+              this->do_int  = state->do_int;
 
               return true;
             }
@@ -249,13 +280,47 @@ namespace vm {
 
           /* API exterior to the Virtual Computer (affects or afected by stuff outside of the computer) */
 
-        protected:
-          word_t int_msg;
-          word_t a, b;
-          bool do_int;
+          /**
+           * Push a new key event to the keyboard buffer.
+           * @param scancode
+           * @param keycode
+           * @param status Status bits
+           * @return False if the buffer is full
+           */
+          bool SendKeyEvent (word_t scancode, unsigned char keycode, byte_t status) {
+            if (keybuffer.size() >= BSIZE) {
+              return false;
+            }
 
-          KeybMode mode;                  /// Keyboard mode
-          std::deque<word_t> keybuffer;   /// Stores the key events
+            dword_t keyevent = ((status & 7) << 24) | (keycode << 16) | scancode;
+            keybuffer.push_back(keyevent);
+
+            return true;
+          }
+
+          /**
+           * Enforces a Push a new key event to the keyboard buffer, droping
+           * the most old event stored if is full.
+           * @param scancode
+           * @param keycode
+           * @param status Status bits
+           */
+          void EnforceSendKeyEvent (word_t scancode, unsigned char keycode, byte_t status) {
+            if (keybuffer.size() >= BSIZE) {
+              keybuffer.pop_front();
+            }
+
+            dword_t keyevent = ((status & 7) << 24) | (keycode << 16) | scancode;
+            keybuffer.push_back(keyevent);
+          }
+
+        protected:
+          word_t a, b, c;
+
+          std::deque<dword_t> keybuffer;    /// Stores the key events
+
+          word_t int_msg;
+          bool do_int;
       };
 
 

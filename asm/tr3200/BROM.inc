@@ -5,13 +5,13 @@
 ; *****************************************************************************
 ; GetOffsetFromRowCol function : Calculate the offsets of a row & column for
 ; the text buffer
-; $r0 <- Column (X)
-; %r1 <- Row    (Y)
+; $r0 <- Row    (Y)
+; %r1 <- Column (X)
 ; return offset
 get_offset_from_row_col:
-  AND %r0, %r0, 0x3F      ; We cap row and column (faster that mod but not limits to 40 or 30)
-  AND %r1, %r1, 0x1F
-  LLS %r1, %r1, 1         ; Row x2 , as we uses words to store color/character
+  ;AND %r0, %r0, 0x3F      ; We cap row and column (faster that mod but not limits to 40 or 30)
+  ;AND %r1, %r1, 0x1F
+  LLS %r1, %r1, 1         ; Column x2 , as we uses words to store color/character
 
   MUL %r0, %r0, 80
   ADD %r0, %r0, %r1

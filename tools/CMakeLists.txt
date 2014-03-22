@@ -9,50 +9,53 @@ add_executable( vm
   )
 
 IF (GLFW3_ENABLE EQUAL 0)
-	include_directories( vm
-		${VCOMPUTER_INCLUDE_DIRS}
-		)
+  include_directories( vm
+    ${VCOMPUTER_INCLUDE_DIRS}
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    )
 
-	target_link_libraries( vm
-		VCOMPUTER
-		)
+  target_link_libraries( vm
+    VCOMPUTER
+    )
 
 ELSE (GLFW3_ENABLE EQUAL 0)
-	include_directories( vm
-		${VCOMPUTER_INCLUDE_DIRS}
-		${OPENGL_INCLUDE_DIR}
-		${GLEW_INCLUDE_DIR}
-		${GLM_INCLUDE_DIR}
-		${GLFW3_INCLUDE_PATH}
-		)
+  include_directories( vm
+    ${VCOMPUTER_INCLUDE_DIRS}
+    ${OPENGL_INCLUDE_DIR}
+    ${GLEW_INCLUDE_DIR}
+    ${GLM_INCLUDE_DIR}
+    ${GLFW3_INCLUDE_PATH}
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    )
 
-	target_link_libraries( vm
-		VCOMPUTER
-		${OPENGL_LIBRARIES}
-		${GLEW_LIBRARIES}
-		${GLM_LIBRARIES}
-		${GLFW3_LIBRARY}
-		)
+  target_link_libraries( vm
+    VCOMPUTER
+    ${OPENGL_LIBRARIES}
+    ${GLEW_LIBRARIES}
+    ${GLM_LIBRARIES}
+    ${GLFW3_LIBRARY}
+    )
+  MESSAGE (${CMAKE_CURRENT_SOURCE_DIR})
 
   add_executable( tda_view
     ./tda_view.cpp
     )
-	
-  include_directories( tda_view
-		${VCOMPUTER_INCLUDE_DIRS}
-		${OPENGL_INCLUDE_DIR}
-		${GLEW_INCLUDE_DIR}
-		${GLM_INCLUDE_DIR}
-		${GLFW3_INCLUDE_PATH}
-		)
 
-	target_link_libraries( tda_view
-		VCOMPUTER
-		${OPENGL_LIBRARIES}
-		${GLEW_LIBRARIES}
-		${GLM_LIBRARIES}
-		${GLFW3_LIBRARY}
-		)
+  include_directories( tda_view
+    ${VCOMPUTER_INCLUDE_DIRS}
+    ${OPENGL_INCLUDE_DIR}
+    ${GLEW_INCLUDE_DIR}
+    ${GLM_INCLUDE_DIR}
+    ${GLFW3_INCLUDE_PATH}
+    )
+
+  target_link_libraries( tda_view
+    VCOMPUTER
+    ${OPENGL_LIBRARIES}
+    ${GLEW_LIBRARIES}
+    ${GLM_LIBRARIES}
+    ${GLFW3_LIBRARY}
+    )
 
 
 ENDIF (GLFW3_ENABLE EQUAL 0)
