@@ -86,7 +86,9 @@ void initGL(OS::OS& os);
 
 class KeyEventHandler : public OS::event::IKeyboardEventHandler {
 public:
-  KeyEventHandler () : OS::event::IKeyboardEventHandler() {
+  KeyEventHandler () : OS::event::IKeyboardEventHandler(), 
+    prev_key(vm::dev::gkeyboard::SCANCODES::SCAN_NULL),
+    mod (vm::dev::gkeyboard::KEY_MODS::MOD_NONE) {
     // Register listened characters
     for (unsigned c = 0x20; c <= 0x7E; c++){
       this->chars.push_back(c);
@@ -101,7 +103,7 @@ public:
     this->chars.push_back(0x7F); // Delete (need translation)
 
     // Register listened keys.
-    for (unsigned i = 0; i <= 265 ; i++) {
+    for (unsigned i = 32; i <= 265 ; i++) {
       this->keys.push_back(i);
     }
 
@@ -113,31 +115,119 @@ public:
     this->keys.push_back(346);
   }
 
-  std::map<unsigned int, OS::event::KEY_STATE> keyState; // State of the keys.
-  /**
-   * \brief Called when on the keys reported during register has a state change.
-   *
-   * \param[in] unsigned int key The key that has had a state change
-   * \param[in] KEY_STATE state The new state the key is in
-   */
+  // Called when on the keys reported during register has a state change.
   void KeyStateChange(const unsigned int key, const OS::event::KEY_STATE state) {
-    //std::printf("Key 0x%04X -> %d\n", key, state);
+    using namespace vm::dev::gkeyboard;
+    if (state == OS::event::KEY_STATE::KS_DOWN) {
+      prev_key = key & 0xFFFF; // Stores the "scancode"
+
+      std::printf("Scancode : 0x%04X\t ", prev_key);
+      
+      // TODO Use a general if and a lookup table
+      switch (prev_key) { // Special cases that not are catch by character events
+        case GLFW_KEY_ESCAPE :
+          gk->EnforceSendKeyEvent(prev_key, KEY_ESC, mod);
+          break;
+
+        case GLFW_KEY_ENTER :
+          gk->EnforceSendKeyEvent(prev_key, KEY_RETURN, mod);
+          break;
+
+        case GLFW_KEY_TAB :
+          gk->EnforceSendKeyEvent(prev_key, KEY_TAB, mod);
+          break;
+
+        case GLFW_KEY_BACKSPACE :
+          gk->EnforceSendKeyEvent(prev_key, KEY_BACKSPACE, mod);
+          break;
+
+        case GLFW_KEY_INSERT :
+          gk->EnforceSendKeyEvent(prev_key, KEY_INSERT, mod);
+          break;
+
+        case GLFW_KEY_DELETE :
+          gk->EnforceSendKeyEvent(prev_key, KEY_DELETE, mod);
+          break;
+
+        case GLFW_KEY_RIGHT :
+          gk->EnforceSendKeyEvent(prev_key, KEY_ARROW_RIGHT, mod);
+          break;
+
+        case GLFW_KEY_LEFT :
+          gk->EnforceSendKeyEvent(prev_key, KEY_ARROW_LEFT, mod);
+          break;
+
+        case GLFW_KEY_DOWN :
+          gk->EnforceSendKeyEvent(prev_key, KEY_ARROW_DOWN, mod);
+          break;
+
+        case GLFW_KEY_UP :
+          gk->EnforceSendKeyEvent(prev_key, KEY_ARROW_UP, mod);
+          break;
+
+        case GLFW_KEY_LEFT_SHIFT:
+        case GLFW_KEY_RIGHT_SHIFT:
+          gk->EnforceSendKeyEvent(prev_key, KEY_SHIFT, mod);
+          mod |= KEY_MODS::MOD_SHIFT;
+          break;
+
+        case GLFW_KEY_LEFT_CONTROL:
+        case GLFW_KEY_RIGHT_CONTROL:
+          gk->EnforceSendKeyEvent(prev_key, KEY_CONTROL, mod);
+          mod |= KEY_MODS::MOD_CTRL;
+          break;
+
+        case GLFW_KEY_LEFT_ALT:
+        case GLFW_KEY_RIGHT_ALT:
+          gk->EnforceSendKeyEvent(prev_key, KEY_ALT, mod);
+          mod |= KEY_MODS::MOD_ALTGR;
+          break;
+
+        default:
+          return;
+      }
+      std::printf(" nº of events stored : %u \n", gk->E());
+    
+    } else {
+      switch (key) {
+        case GLFW_KEY_LEFT_SHIFT:
+        case GLFW_KEY_RIGHT_SHIFT:
+          mod &= (KEY_MODS::MOD_SHIFT ^ 0xFFFF);
+          break;
+
+        case GLFW_KEY_LEFT_CONTROL:
+        case GLFW_KEY_RIGHT_CONTROL:
+          mod &= (KEY_MODS::MOD_CTRL ^ 0xFFFF);
+          break;
+
+        case GLFW_KEY_LEFT_ALT:
+        case GLFW_KEY_RIGHT_ALT:
+          mod &= (KEY_MODS::MOD_ALTGR ^ 0xFFFF);
+          break;
+
+        default:
+          return;
+      }
+    }
   }
 
   void CharDown(const unsigned int c) {
     unsigned chr = c;
-    if (chr == 0x7F) {
-      chr = 0x05;
-    }
-
-    std::printf("Character %u='%c' -> nº events stored : ", chr, chr);
     if (gk) {
-      gk->SendKeyEvent(vm::dev::gkeyboard::SCANCODES::SCAN_MINUS, c & 0xFF, 0);
+      if (chr == 0x7F) {
+        chr = vm::dev::gkeyboard::KEY_DELETE;
+      }
+
+      std::printf("Character %u='%c' mod=%u -> nº events stored : ", chr, chr, mod);
+      vm::dword_t scancode = prev_key & 0xFFFF;
+      gk->EnforceSendKeyEvent(scancode, c & 0xFF, mod);
+      std::printf("%u \n", gk->E());
     }
-    std::printf("%u \n", gk->E());
   }
 
   std::shared_ptr<vm::dev::gkeyboard::GKeyboardDev> gk;
+  unsigned int prev_key;
+  vm::word_t mod;
 };
 
 #endif
@@ -250,54 +340,6 @@ int main(int argc, char* argv[]) {
 			loop = false;
 			continue;
 		}
-		/*
-    SDL_Event e;
-    while (SDL_PollEvent(&e)){
-      //If user closes he window
-      if (e.type == SDL_QUIT) {
-        loop = false;
-      } else if (e.type == SDL_MOUSEBUTTONDOWN) {
-
-      } else if (e.type == SDL_MOUSEWHEEL) {
-        zoom += e.wheel.y / 10.0f;
-        if (zoom < 2.0f)
-          zoom = 2.0f;
-      } else if (e.type == SDL_KEYDOWN) {
-        if (e.key.keysym.sym == SDLK_F3 ) { // F3 togles capture keyboard
-          capture_keyboard = ! capture_keyboard;
-
-        } else if (capture_keyboard && e.key.repeat == 0) {
-          auto k = vm::aux::SDL2KeyToTR3200(e.key.keysym.scancode);
-          keyb.PushKeyEvent( true, k);
-        } else {
-          if (e.key.keysym.sym == SDLK_q ) {
-            loop = false;
-          } else if (e.key.keysym.sym == SDLK_a) { // Turn to left
-            yaw -= 0.1;
-          } else if (e.key.keysym.sym == SDLK_d) { // Turn to right
-            yaw += 0.1;
-          } else if (e.key.keysym.sym == SDLK_w) { // Turn to up
-            pith += 0.1;
-          } else if (e.key.keysym.sym == SDLK_s) { // Turn to down
-            pith -= 0.1;
-
-          } else if (e.key.keysym.sym == SDLK_r) { // Zoom In
-            zoom = (zoom > 2.0)? zoom - 0.1 : zoom;
-          } else if (e.key.keysym.sym == SDLK_f) { // Zoom out
-            zoom += 0.1;
-          }
-
-        }
-
-      } else if (e.type == SDL_KEYUP) {
-        if (capture_keyboard) {
-          auto k = vm::aux::SDL2KeyToTR3200(e.key.keysym.scancode);
-          keyb.PushKeyEvent( false, k);
-        }
-
-      }
-    }
-		*/
 #endif
 
     if (debug) {
@@ -323,14 +365,14 @@ int main(int argc, char* argv[]) {
 
 
     // Speed info
-    if (!debug && ticks_count > 200000) {
+    if (!debug && ticks_count > 400000) {
       std::printf("Running %u cycles in %f ms ", ticks, delta);
       double ttick = delta / ticks;
       double tclk = 1000.0 / 1000000.0; // Base clock 1Mhz
       std::printf("Ttick %f ms ", ttick);
       std::printf("Tclk %f ms ", tclk);
       std::printf("Speed of %f %% \n", 100.0f * (tclk / ttick) );
-      ticks_count -= 200000;
+      ticks_count -= 400000;
     }
 
 
