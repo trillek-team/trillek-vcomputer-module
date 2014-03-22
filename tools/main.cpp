@@ -10,7 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <ios>
-#include <iomanip> 
+#include <iomanip>
 #include <cstdio>
 #include <algorithm>
 #include <memory>
@@ -84,6 +84,62 @@ void initGL(OS::OS& os);
 
 //void updatePBO (vm::cda::CDA*);
 
+class KeyEventHandler : public OS::event::IKeyboardEventHandler {
+public:
+  KeyEventHandler () : OS::event::IKeyboardEventHandler() {
+    // Register listened characters
+    for (unsigned c = 0x20; c <= 0x7E; c++){
+      this->chars.push_back(c);
+    }
+    for (unsigned c = 0xA0; c <= 0xFF; c++){
+      this->chars.push_back(c);
+    }
+    this->chars.push_back(0x08); // Backspace
+    this->chars.push_back(0x09); // Tabulator
+    this->chars.push_back(0x0D); // Return
+    this->chars.push_back(0x1B); // Escape
+    this->chars.push_back(0x7F); // Delete (need translation)
+
+    // Register listened keys.
+    for (unsigned i = 0; i <= 265 ; i++) {
+      this->keys.push_back(i);
+    }
+
+    this->keys.push_back(340);
+    this->keys.push_back(341);
+    this->keys.push_back(342);
+    this->keys.push_back(344);
+    this->keys.push_back(345);
+    this->keys.push_back(346);
+  }
+
+  std::map<unsigned int, OS::event::KEY_STATE> keyState; // State of the keys.
+  /**
+   * \brief Called when on the keys reported during register has a state change.
+   *
+   * \param[in] unsigned int key The key that has had a state change
+   * \param[in] KEY_STATE state The new state the key is in
+   */
+  void KeyStateChange(const unsigned int key, const OS::event::KEY_STATE state) {
+    //std::printf("Key 0x%04X -> %d\n", key, state);
+  }
+
+  void CharDown(const unsigned int c) {
+    unsigned chr = c;
+    if (chr == 0x7F) {
+      chr = 0x05;
+    }
+
+    std::printf("Character %u='%c' -> nº events stored : ", chr, chr);
+    if (gk) {
+      gk->SendKeyEvent(vm::dev::gkeyboard::SCANCODES::SCAN_MINUS, c & 0xFF, 0);
+    }
+    std::printf("%u \n", gk->E());
+  }
+
+  std::shared_ptr<vm::dev::gkeyboard::GKeyboardDev> gk;
+};
+
 #endif
 
 //vm::cda::CDA* cda_ptr = nullptr;
@@ -107,13 +163,13 @@ int main(int argc, char* argv[]) {
     rom = new byte_t[32*1024];
 
     std::printf("Opening file %s\n", argv[1]);
-    
+
     int size = vm::aux::LoadROM(argv[1], rom);
     if (size < 0) {
       std::fprintf(stderr, "An error hapen when was reading the file %s\n", argv[1]);
       return -1;
     }
-    
+
 		std::printf("Read %d bytes and stored in ROM\n", size);
     rom_size = size;
   }
@@ -123,16 +179,16 @@ int main(int argc, char* argv[]) {
 	std::unique_ptr<vm::cpu::TR3200> cpu(new TR3200());
 	cpu->Clock();
 	vc.SetCPU(std::move(cpu));
-	
+
   vc.SetROM(rom, rom_size);
 
   // Add devices to tue Virtual Machine
   auto gcard = std::make_shared<vm::dev::tda::TDADev>();
   vm::dev::tda::TDAScreen gcard_screen = {0};
-  //cda::CDA gcard(0, 10);
-  //keyboard::GKeyboard keyb;
   vc.AddDevice(0, gcard);
-  //vm.AddDevice(5, keyb);
+
+  auto gk = std::make_shared<vm::dev::gkeyboard::GKeyboardDev>();
+  vc.AddDevice(5, gk);
 
   vc.Reset();
 
@@ -155,11 +211,15 @@ int main(int argc, char* argv[]) {
 		std::clog << "Failed creating the window or context.";
 		return -1;
 	}
-  
+
   initGL(glfwos);
   std::printf("Initiated OpenGL\n");
   float frame_count = 0; // Count frames
-	
+
+  KeyEventHandler keyhandler;
+  keyhandler.gk = gk;
+  glfwos.RegisterKeyboardEventHandler(&keyhandler);
+
 #endif
 
   std::cout << "Running!\n";
@@ -176,7 +236,7 @@ int main(int argc, char* argv[]) {
 	vm::cpu::TR3200State cpu_state;
 
   while ( loop) {
-    // Calcs delta time 
+    // Calcs delta time
 
     auto oldClock = clock;
     clock = high_resolution_clock::now();
@@ -213,18 +273,18 @@ int main(int argc, char* argv[]) {
           if (e.key.keysym.sym == SDLK_q ) {
             loop = false;
           } else if (e.key.keysym.sym == SDLK_a) { // Turn to left
-            yaw -= 0.1; 
+            yaw -= 0.1;
           } else if (e.key.keysym.sym == SDLK_d) { // Turn to right
-            yaw += 0.1; 
+            yaw += 0.1;
           } else if (e.key.keysym.sym == SDLK_w) { // Turn to up
-            pith += 0.1; 
+            pith += 0.1;
           } else if (e.key.keysym.sym == SDLK_s) { // Turn to down
-            pith -= 0.1; 
+            pith -= 0.1;
 
           } else if (e.key.keysym.sym == SDLK_r) { // Zoom In
-            zoom = (zoom > 2.0)? zoom - 0.1 : zoom; 
+            zoom = (zoom > 2.0)? zoom - 0.1 : zoom;
           } else if (e.key.keysym.sym == SDLK_f) { // Zoom out
-            zoom += 0.1; 
+            zoom += 0.1;
           }
 
         }
@@ -257,7 +317,7 @@ int main(int argc, char* argv[]) {
       //  ticks = 3;
 
     } else {
-      ticks = vc.Step(delta / 1000.0 ); 
+      ticks = vc.Step(delta / 1000.0 );
 			//ticks = 1; vc.Tick(1, delta * 0.001f );
 		}
 
@@ -291,22 +351,22 @@ int main(int argc, char* argv[]) {
 
     glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-		
+
+
     // Model matrix <- Identity
-    model = glm::mat4(1.0f); 
+    model = glm::mat4(1.0f);
 
     // Camera Matrix
     view = glm::lookAt(
         glm::vec3(
-          (float)(zoom * sin(yaw)*cos(pith)), 
-          (float)(zoom * sin(pith)), 
+          (float)(zoom * sin(yaw)*cos(pith)),
+          (float)(zoom * sin(pith)),
           (float)(zoom * cos(yaw))*cos(pith)), // Were is the camera
         glm::vec3(0,0,0), // and looks at the origin
         glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
         );
 
-    // Drawing ... 
+    // Drawing ...
     glUseProgram(shaderProgram);
     // Set sampler to user Texture Unit 0
     glUniform1i(glGetUniformLocation( shaderProgram, "texture0" ), 0);
@@ -344,11 +404,11 @@ int main(int argc, char* argv[]) {
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
     glVertexAttribPointer(
-        sh_in_Position, 
-        3, 
-        GL_FLOAT, 
-        GL_FALSE, 
-        0, 
+        sh_in_Position,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        0,
         0 );
 
     // Enable attribute in_Color as being used
@@ -356,11 +416,11 @@ int main(int argc, char* argv[]) {
     glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
     // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
     glVertexAttribPointer(
-        sh_in_Color, 
-        3, 
-        GL_FLOAT, 
-        GL_FALSE, 
-        0, 
+        sh_in_Color,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        0,
         0 );
 
     // Enable attribute in_UV as being used
@@ -368,11 +428,11 @@ int main(int argc, char* argv[]) {
     glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
     // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
     glVertexAttribPointer(
-        sh_in_UV, 
-        2, 
-        GL_FLOAT, 
-        GL_FALSE, 
-        0, 
+        sh_in_UV,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+        0,
         0 );
 
     // Send M, V, P matrixes to the uniform inputs,
@@ -441,7 +501,7 @@ int main(int argc, char* argv[]) {
 
 void print_regs(const vm::cpu::TR3200State& state) {
   // Print registers
-	
+
   for (int i=0; i < 11; i++) {
     std::printf("%%r%2d= 0x%08X ", i, state.r[i]);
     if (i == 3 || i == 7 || i == 11 || i == 15 || i == 19 || i == 23 || i == 27 || i == 31)
@@ -459,14 +519,14 @@ void print_regs(const vm::cpu::TR3200State& state) {
   std::printf("ESS: %d EI: %d \t IF: %d DE %d OF: %d CF: %d\n",
       GET_ESS(flags), GET_EI(flags), GET_IF(flags) , GET_DE(flags) , GET_OF(flags) , GET_CF(flags));
   std::printf("\n");
-  
+
 }
 
 void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc) {
 	vm::dword_t val = vc.ReadDW(state.pc);
 
-  std::printf("\tPC : 0x%08X > 0x%08X ", state.pc, val); 
-  std::cout << vm::cpu::Disassembly(vc,  state.pc) << std::endl;  
+  std::printf("\tPC : 0x%08X > 0x%08X ", state.pc, val);
+  std::cout << vm::cpu::Disassembly(vc,  state.pc) << std::endl;
 }
 
 /*
@@ -508,7 +568,7 @@ void initGL(OS::OS& os) {
   // Projection matrix : 45° Field of View
   proj = glm::perspective(
 			45.0f,			// FOV
-			aspectRatio, 
+			aspectRatio,
 			0.1f,				// Near cliping plane
 			10000.0f);	// Far cliping plane
 
@@ -523,11 +583,11 @@ void initGL(OS::OS& os) {
 	#endif
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-	
+
 	glEnable(GL_DEPTH_TEST);
   // Accept fragment if it closer to the camera than the former one
   glDepthFunc(GL_LESS);
-	
+
 
   // Initialize VBOs ********************************************************
   glGenBuffers(1, &vertexbuffer);
@@ -619,14 +679,14 @@ void initGL(OS::OS& os) {
   // Vertex Shader compiling error messages
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &Result);
   glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &InfoLogLength);
-  std::vector<char> VertexShaderErrorMessage(InfoLogLength); 
+  std::vector<char> VertexShaderErrorMessage(InfoLogLength);
   glGetShaderInfoLog(vertexShader, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
   std::printf("%s\n", &VertexShaderErrorMessage[0]);
 
   // Fragment Shader compiling error messages
   glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &Result);
   glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &InfoLogLength);
-  std::vector<char> FragmentShaderErrorMessage(InfoLogLength); 
+  std::vector<char> FragmentShaderErrorMessage(InfoLogLength);
   glGetShaderInfoLog(fragmentShader, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
   std::printf("%s\n", &FragmentShaderErrorMessage[0]);
 
@@ -642,7 +702,7 @@ void initGL(OS::OS& os) {
   glLinkProgram(shaderProgram);
 
 
-  // Bind attributes indexes 
+  // Bind attributes indexes
   glBindAttribLocation(shaderProgram, sh_in_Position, "in_Position");
   glBindAttribLocation(shaderProgram, sh_in_Color, "in_Color");
   glBindAttribLocation(shaderProgram, sh_in_UV, "in_UV");
@@ -665,7 +725,7 @@ void initGL(OS::OS& os) {
       glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
       );
 
-	
+
 }
 
 /*

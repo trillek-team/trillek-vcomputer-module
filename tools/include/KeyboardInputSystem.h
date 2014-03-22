@@ -3,6 +3,8 @@
 #include <map>
 #include <vector>
 
+#include <cstdio>
+
 namespace OS {
   namespace event {
     enum KEY_STATE {KS_UP, KS_DOWN};

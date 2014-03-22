@@ -15,6 +15,8 @@
 #ifdef GLFW3_ENABLE
 #include "KeyboardInputSystem.h"
 
+#include <cstdio>
+
 namespace OS {
   class OS {
   public:
@@ -83,7 +85,7 @@ namespace OS {
 
       glfwSetKeyCallback(this->window, &keyboardEvent);
       //glfwSetCursorPosCallback(this->window, &OSmouseMoveEvent);
-      //glfwSetCharCallback(this->window, &characterEvent);
+      glfwSetCharCallback(this->window, &characterEvent);
       //glfwSetMouseButtonCallback(this->window, &mouseButtonEvent);
       //glfwSetWindowFocusCallback(this->window, &windowFocusChange);
 
@@ -259,11 +261,9 @@ namespace OS {
     void DispatchKeyboardEvent(const int key, const int scancode, const int action, const int mods) {
       if (action == GLFW_PRESS) {
         KeyboardEventSystem.KeyDown(key);
-      }
-      else if (action == GLFW_REPEAT) {
+      }else if (action == GLFW_REPEAT) {
         KeyboardEventSystem.KeyRepeat(key);
-      }
-      else if (action == GLFW_RELEASE) {
+      } else if (action == GLFW_RELEASE) {
         KeyboardEventSystem.KeyUp(key);
       }
     }
@@ -278,7 +278,6 @@ namespace OS {
       this->KeyboardEventSystem.CharDown(uchar);
     }
 
-  private:
     GLFWwindow* window;
     int width, height; // Current window's client width and height.
     double oldMouseX, oldMouseY;
