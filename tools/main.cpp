@@ -275,10 +275,10 @@ int main(int argc, char* argv[]) {
   // Add devices to tue Virtual Machine
   auto gcard = std::make_shared<vm::dev::tda::TDADev>();
   vm::dev::tda::TDAScreen gcard_screen = {0};
-  vc.AddDevice(0, gcard);
+  vc.AddDevice(5, gcard);
 
   auto gk = std::make_shared<vm::dev::gkeyboard::GKeyboardDev>();
-  vc.AddDevice(5, gk);
+  vc.AddDevice(4, gk);
 
   vc.Reset();
 

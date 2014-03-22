@@ -188,42 +188,66 @@ test_alu:                       ; PC = 0x010C
   ;IFNEQ %r1, %r0
   ;    JMP crash
 
-  ; Try to detect if a TDA devices is in the slot 0
-  LOAD.B %r0, 0x110000
-  IFNEQ %r0, 0xFF   ; Present
+;******************************************************************************
+  ; Check if we did this alredy
+  LOAD %r0, TDA_base_dev
+  IFNEQ %r0, 0
     JMP begin
 
-  LOAD.B %r0, 0x110001
-  IFNEQ %r0, 0x0E   ; Graphics device
-    JMP begin
+  ; Code to find the first TDA plugged device
+  MOV %r10, 0x10FF00
+begin_search_tda:
+  ADD %r10, %r10, 0x100
+  IFEQ %r10, 0x112100  ; Not found any TDA device
+    JMP end_search_tda
 
-  LOAD.B %r0, 0x110002
-  IFNEQ %r0, 0x01   ; TDA compatible
-    JMP begin
+  LOAD.B %r0, %r10
+  IFNEQ %r0, 0xFF   ; Device Present ?
+    JMP begin_search_tda
 
-  MOV %r1, 0x010000
-  STORE  0x11000A, %r1 ; Set B:A to point to 0x001000
+  ADD %r1, %r10, 1
+  LOAD.B %r0, %r1
+  IFNEQ %r0, 0x0E   ; Is a Graphics device ?
+    JMP begin_search_tda
 
+  ADD %r1, %r10, 2
+  LOAD.B %r0, %r1
+  IFNEQ %r0, 0x01   ; Is TDA compatible ?
+    JMP begin_search_tda
+
+end_search_tda:
+  IFEQ %r10, 0x112100
+    MOV %r10, 0xFFFFFFFF ; We put in the var TDA base address
+  
+  STORE TDA_base_dev, %r10 ; We put in the var that we don't found anything
+
+  IFEQ %r10, 0xFFFFFFFF
+    JMP begin ; We skips  print code
+
+  ; ******* Print on screen *******
+  ; Configure TDA to use a text buffer in 0x001000
+  ADD %r0, %r10, 0x0A
+
+  MOV %r1, 0x002000
+  STORE %r0, %r1          ; Set B:A to point to 0x001000
+
+  ADD %r0, %r10, 0x08
   MOV %r1, 0
-  STORE  0x110008, %r1 ; Seen command to point Text buffer to B:A address
+  STORE.W %r0, %r1        ; Send command to point Text buffer to B:A address
 
-  MOV %r0, 0x0F61
-  STORE.W 0x010000, %r0
-  MOV %r0, 0x1F62
-  STORE.W 0x010002, %r0
-  MOV %r0, 0x2F63
-  STORE.W 0x010004, %r0
-  MOV %r0, 0x3F64
-  STORE.W 0x010006, %r0
+  ; Clears the screen
+  MOV %r0, 0x002000
+  MOV %r1, 0x40           ; Dark brown paper, Black Ink
+  CALL clr_screen
+
+  ; Prints the string
+  MOV %r1, 0x002000       ; %r1 ptr to text buffer
+  MOV %r0, string01       ; %r0 ptr to string
+  MOV %r2, 0x45           ; Dark blue paper, Light Green Ink
+  CALL print
+
 
   JMP begin
-
-  ; Try LOAD and STORE
-  ;MOV %r10, countervar
-  ;STORE.W %r10, 0xBEBA
-  ;LOAD.W %r0, %r10
-  ;IFNEQ %r0, 0xBEBA
-  ;    JMP crash
 
   ; TODO Signed Multiplication/Division
   ; TODO Check Division error flag
@@ -233,7 +257,19 @@ test_alu:                       ; PC = 0x010C
 :crash
   SLEEP
 
-  .ORG 0x0  ; RAM
+
+  .include "BROM.inc"
+
+;******************************************************************************
+; Const Data
+string01: .DB "OK!", 0   ; ASCIIz string
+
+;******************************************************************************
+; RAM data
+  .ORG 0x0
 :data
   .data 0
+
+  .ORG 0x0100 ; Some special variables
+:TDA_base_dev   .dw 0
 
