@@ -86,7 +86,7 @@ void initGL(OS::OS& os);
 
 class KeyEventHandler : public OS::event::IKeyboardEventHandler {
 public:
-  KeyEventHandler () : OS::event::IKeyboardEventHandler(), 
+  KeyEventHandler () : OS::event::IKeyboardEventHandler(),
     prev_key(vm::dev::gkeyboard::SCANCODES::SCAN_NULL),
     mod (vm::dev::gkeyboard::KEY_MODS::MOD_NONE) {
     // Register listened characters
@@ -122,7 +122,7 @@ public:
       prev_key = key & 0xFFFF; // Stores the "scancode"
 
       std::printf("Scancode : 0x%04X\t ", prev_key);
-      
+
       // TODO Use a general if and a lookup table
       switch (prev_key) { // Special cases that not are catch by character events
         case GLFW_KEY_ESCAPE :
@@ -154,6 +154,7 @@ public:
           break;
 
         case GLFW_KEY_LEFT :
+          std::printf("Keycode : 0x%04X\t ", KEY_ARROW_LEFT);
           gk->EnforceSendKeyEvent(prev_key, KEY_ARROW_LEFT, mod);
           break;
 
@@ -187,7 +188,7 @@ public:
           return;
       }
       std::printf(" nº of events stored : %u \n", gk->E());
-    
+
     } else {
       switch (key) {
         case GLFW_KEY_LEFT_SHIFT:

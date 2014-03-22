@@ -134,12 +134,18 @@ end_search_gkeyb:
   ; Now A register contains the key
   ADD %r1, %r0, 0x0A  ; %r1 points to A register of keyboard
   LOAD.B %r4, %r1
-  ; Check the key
+  ; Check the keys
   IFEQ %r4, 0x0D      ; Return KEY
     JMP enter
 
   IFEQ %r4, 0x08      ; Backspace KEY
     JMP delete
+
+  IFEQ %r4, 0x14      ; Left Arrow KEY
+    JMP arrow_left
+
+  IFEQ %r4, 0x15      ; Right Arrow KEY
+    JMP arrow_right
 
   IFL %r4, 0x20       ; Ignores some no printable characters
     JMP loop
@@ -164,6 +170,24 @@ end_search_gkeyb:
   MOV %r4, 0x4F20     ; We enforce to clear actual cursor position
   STORE.W %r8, %r4
   CALL next_line
+  JMP loop
+
+;******************************************************************************
+:arrow_left
+  ; We must clear the atribute color
+  ADD %r8, %r8, 1
+  MOV %r4, 0x4F
+  STORE.B %r8, %r4
+  CALL dec_cursor
+  JMP loop
+
+;******************************************************************************
+:arrow_right
+  ; We must clear the atribute color
+  ADD %r8, %r8, 1
+  MOV %r4, 0x4F
+  STORE.B %r8, %r4
+  CALL inc_cursor
   JMP loop
 
 ;******************************************************************************
