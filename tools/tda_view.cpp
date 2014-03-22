@@ -72,7 +72,7 @@ float yaw  = 0.0;
 float pith = 0.0;
 float zoom = 6.0;
 
-void initGL(OS& os);
+void initGL(OS::OS& os);
 
 int main (int argc, char* argv[]) {
   using namespace vm;
@@ -80,7 +80,7 @@ int main (int argc, char* argv[]) {
 
   // TODO load screen from a file
 
-	OS glfwos;
+  OS::OS glfwos;
 	if (!glfwos.InitializeWindow(1024, 768, "TDA screen dump viewer")) {
 		std::clog << "Failed creating the window or context.";
 		return -1;
@@ -231,7 +231,7 @@ int main (int argc, char* argv[]) {
 }
 
 // Init OpenGL ************************************************************
-void initGL(OS& os) {
+void initGL(OS::OS& os) {
 	int OpenGLVersion[2];
 
 	// Use the GL3 way to get the version number

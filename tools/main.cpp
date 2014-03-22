@@ -80,7 +80,7 @@ float yaw  = 0.0;
 float pith = 0.0;
 float zoom = 6.0;
 
-void initGL(OS& os);
+void initGL(OS::OS& os);
 
 //void updatePBO (vm::cda::CDA*);
 
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
 
 
 #ifdef GLFW3_ENABLE
-	OS glfwos;
+  OS::OS glfwos;
 	if (!glfwos.InitializeWindow(1024, 768, "Trillek Virtual Computer demo emulator")) {
 		std::clog << "Failed creating the window or context.";
 		return -1;
@@ -487,7 +487,7 @@ void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram) {
 
 
 // Init OpenGL ************************************************************
-void initGL(OS& os) {
+void initGL(OS::OS& os) {
 	int OpenGLVersion[2];
 
 	// Use the GL3 way to get the version number

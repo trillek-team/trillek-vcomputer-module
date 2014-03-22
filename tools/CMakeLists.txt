@@ -24,6 +24,7 @@ ELSE (GLFW3_ENABLE EQUAL 0)
 		${GLEW_INCLUDE_DIR}
 		${GLM_INCLUDE_DIR}
 		${GLFW3_INCLUDE_DIR}
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/"
 		)
 
 	target_link_libraries( vm
@@ -33,6 +34,7 @@ ELSE (GLFW3_ENABLE EQUAL 0)
 		${GLM_LIBRARIES}
 		${GLFW3_LIBRARY}
 		)
+  MESSAGE (${CMAKE_CURRENT_SOURCE_DIR})
 
   add_executable( tda_view
     ./tda_view.cpp
