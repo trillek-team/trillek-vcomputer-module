@@ -7,7 +7,7 @@ The design of the Virtual Computer allows to plug and use different CPUs. Actual
 
 This repo contains of the Trillek Virtual Computer lib and some extra tools, including a toy emulator build over the lib. 
 
-| GNU/L                                            |
+| GNU/Linux                                        |
 |--------------------------------------------------|
 | [![Build Status](https://travis-ci.org/trillek-team/trillek-vcomputer-module.png?branch=new-version)](https://travis-ci.org/trillek-team/trillek-vcomputer-module) |
 
