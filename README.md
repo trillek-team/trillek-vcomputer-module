@@ -3,24 +3,24 @@ Trillek Virtual Computer Lib
 
 Using these [specs](https://github.com/trillek-team/trillek-computer)
 
-The design of the Virtual Computer should allow to plug and use different CPUs. 
+The design of the Virtual Computer allows to plug and use different CPUs. Actually are the TR3200 and the DCPU-16N. 
 
-This repo is composed of the Trillek Virtual Computer lib and some extra tools. 
+This repo contains of the Trillek Virtual Computer lib and some extra tools, including a toy emulator build over the lib. 
 
-| linux                                            |
+| GNU/L                                            |
 |--------------------------------------------------|
 | [![Build Status](https://travis-ci.org/trillek-team/trillek-vcomputer-module.png?branch=new-version)](https://travis-ci.org/trillek-team/trillek-vcomputer-module) |
 
 COMPILING
 ---------
-Actually I'm using CMake and C++ 11. 
+We are using CMake and C++ 11 (Vs2013/4 , G++ >= 4.7, LLVM). So if you are in GNU/Linux you could compile with this :
 
     mkdir build
     cd build
     cmake ..
     make
 
-By default it will generate dynamic libs and compile tools and tests.
+By default it will generate a dynamic library and compile tools and tests.
 
 If you wish to compile a static lib, then you should use `cmake -DBUILD_STATIC_VCOMPUTER=True ..`
 ** This is required to build in MSVC **
@@ -31,8 +31,10 @@ If you not wish to compile the tests, then you should use `cmake -DBUILD_TESTS_V
 
 Plus you can control if you wish release or debug building using `-DCMAKE_BUILD_TYPE=Release` or `-DCMAKE_BUILD_TYPE=Debug` flag in cmake.
 
+In windows, you should add the "-g" parameter with the apropiated generator for VS2013 (you can get the list running cmake --help), or you can use the CMake GUI. With this, you can generate VS2013/4 project/solution files that you can open and compile.
 
 ### EMSCRIPTEN
+Emscripten compilation has not been rewrite/checked yet with the new version. Expect it to fail.
 
   cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Platform/Emscripten.cmake -DEMSCRIPTEN_ROOT_PATH=/usr/bin/ ..
   make
@@ -48,43 +50,46 @@ WHAT IT DOES ACTUALLY
 
 #### vm
 
-Is a program that uses the Trillek Virtual Computer lib to run a TR3200 emulation. Can run in step mode or in "run mode" where it executes all the program without stopping. Needs C++ 11 *std::chrono compilance* for timings; **GLFW + GLM + OpenGL 3.1** is needed if you desire to see the virtual screen.
+Is a program that uses the Trillek Virtual Computer lib to run a TR3200 emulation. Can run in step mode or in "run mode" where it executes all the program without stopping. Needs C++ 11 *std::chrono compilance* for measuring times; **GLFW3 + GLM + OpenGL 3.2** is needed if you desire to see the virtual screen.
 
-- Can load a little endian binary file with a program. Has a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
+- Can load a little endian binary file with a program with a max size of 32KiB as will be upload to the computer ROM.
 - Step mode, has an on-line disassembler. Each time that you press a
   key, one instruction is executed, and the status of registers and stack, is
   shown. '**q**' ends the execution.
-- Run mode, It tries to enforce CPU Clock speed (100KHz) with a simple algorithm. Only stops by doing '**Ctrl+C**'. 
-- If GLFW3, GLM and OpenGL libs headers are found, then it will create a window of 800x600 showing a virtual screen. This
-  adds the possibility of end the execution closing the window or pressing '**q**'. Additionally '**F3**' key toggles virtual keyboard. When Virtual Keyboard is enabled, 'q' key types to it instead of ending the emulation.
-
-#### benchmark
-
-Is a program that runs a quick and dirty benchmark to measure the performance of the Trillek Virtual Computer lib. Needs C++ 11 *std::chrono compilance* for timings.
-
-- Can load a list of little endian binary files as ROMs for each Virtual Computer. Has a 64KiB ROM were the program is uploaded. 128KiB of RAM begins at 0x10000 and ends at 0x30000.
-- Executes a random number of cycles before begin the benchmark to make more realistic.
-- Tries to execute 1000 Virtual Computers with the TR3200 CPUs in a single thread at what your computer can give. It does not enforce a particular speed, but it does compare the real speed against a CPU clock of 100KHz. Only stops by doing 'Ctrl+C'.
+- Run mode, It tries to enforce CPU Clock speed (100KHz) with a simple algorithm. Only stops by doing '**Ctrl+C**' or closing the virtual screen window. 
 
 #### pbm2font
 
-Is a small tool that can generate a hexadecimal representation of a user font for the CDA display card. Uses as source image, a b&w **pbm** file (Gimp can generate it). It expects that the image have a width and height multiple of 8, as it divides the image in cells of 8x8 pixels each being a glyph of the font.
+Is a small tool that can generate a hexadecimal representation of a user font for the TDA display card. Uses as source image, a b&w ASCII **pbm** file (Gimp can generate it). It expects that the image have a width and height multiple of 8, as it divides the image in cells of 8x8 pixels each being a glyph of the font.
 
 ### Tests
 
-#### test_cda
+#### benchmark
 
-It tests the CDA VRAM to RGBA Texture routines, PBO texture streaming, and displays it in a virtual screen in 3D (in a window of 1024x768). This requires GLFW + GLM + OpenGL 3.1 to work.
-It has these shortcuts:
+Is a program that runs a quick and dirty benchmark to measure the performance of the Trillek Virtual Computer lib. Needs C++ 11 *std::chrono compilance* for measuring times.
 
-- 'n' Change to the next video/text mode
-- 'wasd' orbits the camera around the virtual screen
-- 'r' Zoom In
-- 'f' Zoom Out
+- Can load a list of little endian binary files as ROMs for each Virtual Computer.
+- Aceepts a final optional parameter with the number of CPUs to run, if not especified, then will be 1000.
+- Each Virtual Computer have the same set of devices plugged and the same amount of RAM
+- Executes a random number of cycles before begin the benchmark to make more realistic.
+- Runs CPUs at different clock speeds, aroung 70% are at 100KHz, 20% at 200KHz, 5% at 500KHz and 1% at 1Mhz.
+- Tries to execute Virtual Computers with the TR3200 CPUs in a single thread at what your computer can give. It does not enforce a particular speed, but it gives information of the emulation speed. To know how many Virtual Computer you can run in your computer, tune the number of CPUs to get a speed around 110%, and these value will be the number of CPUs adecuate for your machine.
+- Only stops by doing 'Ctrl+C'.
+- Try it with with **Release** compile mode, there is an apreciable difference.
 
-Example image of text mode :
+#### unit test
 
-<a href="http://img856.imageshack.us/img856/683/fp7n.png" target="_blank"><img width="300px" src="http://img856.imageshack.us/img856/683/fp7n.png"/></a>
+If before calling CMake, you setup a enviroment variable called "GTEST_ROOT" with the path to GTest suite, then the unit tests could be compiled and will generate an executable file "unit_test". This allow to check if some basic code gets broken if someone try to edit the source code. Are far of being a exaustive tests, but it's far better that nothing.
+
+To set a enviroment variable on GNU/Linux (and Mac):
+
+    export GTEST_ROOT=...
+
+If you are using fish shell :
+
+    set -x GTEST_ROOT /usr/src/gtest/
+  
+In windows, you should do that in Control Panel.
 
 HOW I CAN CREATE PROGRAMS ?
 ---------------------------
@@ -94,18 +99,23 @@ ADJUNCT TR3200 ASM PROGRAMS
 --------------------------
 There are some TR3200 ASM programs, source code and binary files, in /asm directory. Specifically :
 
-- hwm.asm : List the number of attached devices and display enumeration information
 - hello.asm : Hello world
 - test.asm : Some tests of TR3200 CPU compliance.
-- type.asm : Basic typing program
-- clock.asm : Basic clock that prints hours minutes seconds in hexadecimal, and uses PIT TMR0 interrupt plus sleeps waiting it.
+- type1.asm : Basic typing program
+
 
 IMPLEMENTED DEVICES
 -------------------
 
+- TDA graphics card
+- Generic Wester/Latin keyboard
+- Dummy device (Used only to test stuff)
 
 TODO
 ----
 
-- Nearly all, as we are moving to the new version of the specs.
+- Integrated stuff of the mother board (RTC, RNG, NVRAM, Timers)
+- Check interrupts
+- Implement Floppy drive
+- DCPU-16N cpu (Actually being implemented)
 
