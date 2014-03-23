@@ -4,9 +4,6 @@
  * All in one header file
  */
 
-#ifndef ___VC_HPP__
-#define ___VC_HPP__ 1
-
 #include "Types.hpp"
 #include "VComputer.hpp"
 
@@ -20,7 +17,4 @@
 
 // Misc
 #include "Auxiliar.hpp"
-
-
-#endif // ___VC_HPP__
 

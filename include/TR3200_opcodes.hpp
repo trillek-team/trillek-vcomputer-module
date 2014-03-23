@@ -5,9 +5,6 @@
  * @see https://github.com/trillek-team/trillek-computer/blob/master/TR3200.md
  */
 
-#ifndef __TR3200_OPCODES__
-#define __TR3200_OPCODES__ 1
-
 namespace vm {
   namespace cpu {
 
@@ -126,4 +123,3 @@ namespace vm {
   } // End of namespace cpu
 } // End of namespace vm
 
-#endif // __TR3200_OPCODES__

@@ -5,9 +5,6 @@
  * @see https://github.com/trillek-team/trillek-computer/blob/master/Keyboard.md
  */
 
-#ifndef __GKEYBOARD_DEV_HPP__
-#define __GKEYBOARD_DEV_HPP__ 1
-
 #include "Types.hpp"
 #include "VComputer.hpp"
 
@@ -327,6 +324,4 @@ namespace vm {
     } // End of namespace tda
   } // End of namespace dev
 } // End of namespace vm
-
-#endif
 

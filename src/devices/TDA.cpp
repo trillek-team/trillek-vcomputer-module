@@ -5,6 +5,7 @@
  */
 
 #include "devices/TDA.hpp"
+#include "VSFix.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -16,19 +17,14 @@ namespace vm {
       void TDAtoRGBATexture (const TDAScreen& screen, dword_t* texture) {
         assert(texture != nullptr);
 
-        //if (state.buffer_ptr == 0) {
-        //  std::fill_n(texture, TEXTURE_SIZE, 0xFF000000); // fill with black
-        //  return;
-        //}
-
         const byte_t* font = ROM_FONT;
         if (screen.user_font) {
           font = (byte_t*) screen.font_buffer;
         }
-				
-        // TODO Rewrite this to be more efficient and cache friendly, as now 
+
+        // TODO Rewrite this to be more efficient and cache friendly, as now
         // writes "jumping" in the output texture
-        
+
         // Reads one by one each character of the text buffer
         for (unsigned row = 0; row < HEIGHT_CHARS; row++) {
           for (unsigned col = 0; col < WIDTH_CHARS; col++) {

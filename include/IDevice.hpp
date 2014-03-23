@@ -4,9 +4,6 @@
  * Defines a base interface for all Devices in the Virtual Computer
  */
 
-#ifndef __IDEVICE_HPP__
-#define __IDEVICE_HPP__ 1
-
 #include "Types.hpp"
 #include "VComputer.hpp"
 
@@ -135,4 +132,3 @@ namespace vm {
 
 } // End of namespace vm
 
-#endif

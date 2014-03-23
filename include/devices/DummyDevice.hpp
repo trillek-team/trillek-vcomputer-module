@@ -4,9 +4,6 @@
  * DummyDevice for testing
  */
 
-#ifndef __DUMMY_DEV_HPP__
-#define __DUMMY_DEV_HPP__ 1
-
 #include "Types.hpp"
 #include "VComputer.hpp"
 
@@ -89,6 +86,4 @@ namespace vm {
 
 
 } // End of namespace vm
-
-#endif
 

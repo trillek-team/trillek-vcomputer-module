@@ -20,7 +20,7 @@ TEST(GKeyboard, E_reg) {
 
   gk.SendKeyEvent ( SCANCODES::SCAN_MINUS, '-', 0 );
   ASSERT_EQ(1, gk.E());
-  
+
   gk.SendKeyEvent ( SCANCODES::SCAN_SPACE, ' ', 0 );
   ASSERT_EQ(2, gk.E());
 
@@ -59,7 +59,7 @@ TEST(GKeyboard, Fill_buffer) {
     gk.SendKeyEvent ( SCANCODES::SCAN_MINUS, '-', 0 );
     ASSERT_EQ(i+1, gk.E());
   }
-  
+
   gk.SendKeyEvent ( SCANCODES::SCAN_SPACE, ' ', 0 );
   ASSERT_EQ(BSIZE, gk.E()) << "Buffer bigger that BSIZE (= 64)";
 

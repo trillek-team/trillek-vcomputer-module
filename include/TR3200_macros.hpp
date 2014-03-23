@@ -4,9 +4,6 @@
  * Macros used by TR3200 implementation
  */
 
-#ifndef __TR3200_MACROS_HPP__
-#define __TR3200_MACROS_HPP__
-
 // Alias to special registers
 #define REG_Y			(11)
 #define BP				(12)
@@ -27,13 +24,13 @@
 #define HAVE_LITERAL(x)     (((x) & 0x00800000) != 0)
 
 /// Extract operands
-#define GRD(x)              ( (x)       & 0x0F) 
-#define GRS(x)              (((x) >> 5) & 0x0F) 
-#define GRN(x)              (((x) >> 10)& 0x0F) 
+#define GRD(x)              ( (x)       & 0x0F)
+#define GRS(x)              (((x) >> 5) & 0x0F)
+#define GRN(x)              (((x) >> 10)& 0x0F)
 
-#define LIT13(x)            (((x) >> 10)& 0x1FFF) 
-#define LIT18(x)            (((x) >> 5) & 0x3FFFF) 
-#define LIT22(x)            ( (x)       & 0x7FFFFF) 
+#define LIT13(x)            (((x) >> 10)& 0x1FFF)
+#define LIT18(x)            (((x) >> 5) & 0x3FFFF)
+#define LIT22(x)            ( (x)       & 0x7FFFFF)
 
 /// Uses next dword as literal
 #define IS_BIG_LITERAL_L13(x)   ((x) == 0x1000)
@@ -82,6 +79,4 @@
 #define IA      r[REG_IA]
 #define FLAGS   r[REG_FLAGS]
 
-
-#endif // __TR3200_MACROS_HPP__
 

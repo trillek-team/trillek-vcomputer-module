@@ -30,12 +30,12 @@ namespace vm {
       bool literal = HAVE_LITERAL(inst);
 
       if (IS_PAR3(inst)) {
-        // 3 parameter instruction ******************************************** 
+        // 3 parameter instruction ********************************************
         opcode = (inst >> 24) & 0x3F;
 
         if (literal) {
           rn = LIT13(inst);
-          if (IS_BIG_LITERAL_L13(rn)) { // Next dword is literal value 
+          if (IS_BIG_LITERAL_L13(rn)) { // Next dword is literal value
             rn = vc.ReadDW(pc);
             pc +=4;
           } else if (O13_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
@@ -205,21 +205,21 @@ namespace vm {
           case P3_OPCODE::STORE :
             if (literal)
               snprintf(buf, BUF_SIZE, "STORE [%%r%02u + 0x%08X], %%r%02u", rs, rn, rd);
-            else                                                           
+            else
               snprintf(buf, BUF_SIZE, "STORE [%%r%02u + %%r%02u], %%r%02u",rs, rn, rd);
             break;
 
           case P3_OPCODE::STOREW :
             if (literal)
               snprintf(buf, BUF_SIZE, "STOREW [%%r%02u + 0x%08X], %%r%02u", rs, rn, rd);
-            else                                                            
+            else
               snprintf(buf, BUF_SIZE, "STOREW [%%r%02u + %%r%02u], %%r%02u", rs, rn, rd);
-            break;                                                          
+            break;
 
-          case P3_OPCODE::STOREB :                                            
-            if (literal)                                                    
+          case P3_OPCODE::STOREB :
+            if (literal)
               snprintf(buf, BUF_SIZE, "STOREB [%%r%02u + 0x%08X], %%r%02u", rs, rn, rd);
-            else                                                            
+            else
               snprintf(buf, BUF_SIZE, "STOREB [%%r%02u + %%r%02u], %%r%02u", rs, rn, rd);
             break;
 
@@ -237,7 +237,7 @@ namespace vm {
         // Fetch Rn operand
         if (literal) {
           rn = LIT18(inst);
-          if (IS_BIG_LITERAL_L18(rn)) { // Next dword is literal value 
+          if (IS_BIG_LITERAL_L18(rn)) { // Next dword is literal value
             rn = vc.ReadDW(pc);
             pc +=4;
           } else if (O18_SIGN_BIT(rn)) { // Negative Literal -> Extend sign
@@ -276,7 +276,7 @@ namespace vm {
               snprintf(buf, BUF_SIZE, "SIGXW %%r%02u, %%r%02u", rd, rn);
             break;
 
-					/*	
+					/*
           case P2_OPCODE::NOT :
             if (literal)
               snprintf(buf, BUF_SIZE, "NOT %%r%02u, 0x%08X",  rd, rn);
@@ -309,76 +309,76 @@ namespace vm {
           case P2_OPCODE::STORE2 :
             if (literal)
               snprintf(buf, BUF_SIZE, "STORE [0x%08X], %%r%02u",  rn, rd);
-            else                                                 
+            else
               snprintf(buf, BUF_SIZE, "STORE [%%r%02u], %%r%02u", rn, rd);
             break;
 
           case P2_OPCODE::STOREW2 :
             if (literal)
               snprintf(buf, BUF_SIZE, "STOREW [0x%08X], %%r%02u", rn, rd);
-            else                                                  
+            else
               snprintf(buf, BUF_SIZE, "STOREW [%%r%02u], %%r%02u", rn, rd);
-            break;                                                
+            break;
 
-          case P2_OPCODE::STOREB2 :                                  
-            if (literal)                                          
+          case P2_OPCODE::STOREB2 :
+            if (literal)
               snprintf(buf, BUF_SIZE, "STOREB [0x%08X], %%r%02u", rn, rd);
-            else                                                  
+            else
               snprintf(buf, BUF_SIZE, "STOREB [%%r%02u], %%r%02u", rn, rd);
             break;
 
 
           case P2_OPCODE::IFEQ :
-            if (literal)                                          
+            if (literal)
               snprintf(buf, BUF_SIZE, "IFEQ %%r%02u, 0x%08X",  rd, rn);
             else
               snprintf(buf, BUF_SIZE, "IFEQ %%r%02u, %%r%02u", rd, rn);
             break;
 
           case P2_OPCODE::IFNEQ :
-            if (literal)                                          
+            if (literal)
               snprintf(buf, BUF_SIZE, "IFNEQ %%r%02u, 0x%08X",  rd, rn);
             else
               snprintf(buf, BUF_SIZE, "IFNEQ %%r%02u, %%r%02u", rd, rn);
             break;
 
           case P2_OPCODE::IFL :
-            if (literal)                                          
+            if (literal)
               snprintf(buf, BUF_SIZE, "IFL %%r%02u, 0x%08X",  rd, rn);
             else
               snprintf(buf, BUF_SIZE, "IFL %%r%02u, %%r%02u", rd, rn);
             break;
 
           case P2_OPCODE::IFSL :
-            if (literal)                                          
+            if (literal)
               snprintf(buf, BUF_SIZE, "IFSL %%r%02u, 0x%08X",  rd, rn);
             else
               snprintf(buf, BUF_SIZE, "IFSL %%r%02u, %%r%02u", rd, rn);
             break;
 
           case P2_OPCODE::IFLE :
-            if (literal)                                          
+            if (literal)
               snprintf(buf, BUF_SIZE, "IFLE %%r%02u, 0x%08X",  rd, rn);
             else
               snprintf(buf, BUF_SIZE, "IFLE %%r%02u, %%r%02u", rd, rn);
             break;
 
           case P2_OPCODE::IFSLE :
-            if (literal)                                          
+            if (literal)
               snprintf(buf, BUF_SIZE, "IFSLE %%r%02u, 0x%08X",  rd, rn);
             else
               snprintf(buf, BUF_SIZE, "IFSLE %%r%02u, %%r%02u", rd, rn);
             break;
 
           case P2_OPCODE::IFBITS :
-            if (literal)                                          
+            if (literal)
               snprintf(buf, BUF_SIZE, "IFBITS %%r%02u, 0x%08X",  rd, rn);
             else
               snprintf(buf, BUF_SIZE, "IFBITS %%r%02u, %%r%02u", rd, rn);
             break;
 
           case P2_OPCODE::IFCLEAR :
-            if (literal)                                          
+            if (literal)
               snprintf(buf, BUF_SIZE, "IFCLEAR %%r%02u, 0x%08X",  rd, rn);
             else
               snprintf(buf, BUF_SIZE, "IFCLEAR %%r%02u, %%r%02u", rd, rn);
@@ -386,14 +386,14 @@ namespace vm {
 
 
           case P2_OPCODE::JMP2 :
-            if (literal)                                          
+            if (literal)
               snprintf(buf, BUF_SIZE, "JMP %%r%02u + 0x%08X",  rd, rn);
             else
               snprintf(buf, BUF_SIZE, "JMP %%r%02u + %%r%02u", rd, rn);
             break;
 
           case P2_OPCODE::CALL2 :
-            if (literal)                                          
+            if (literal)
               snprintf(buf, BUF_SIZE, "CALL %%r%02u + 0x%08X",  rd, rn);
             else
               snprintf(buf, BUF_SIZE, "CALL %%r%02u + %%r%02u", rd, rn);
@@ -416,7 +416,7 @@ namespace vm {
         // Fetch Rn operand
         if (literal) {
           rn = LIT22(inst);
-          if (IS_BIG_LITERAL_L22(rn)) { // Next dword is literal value 
+          if (IS_BIG_LITERAL_L22(rn)) { // Next dword is literal value
             rn = vc.ReadDW(pc);
             pc +=4;
           } else if (O22_SIGN_BIT(rn)) { // Negative Literal -> Extend sign

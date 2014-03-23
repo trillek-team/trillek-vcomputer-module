@@ -5,6 +5,7 @@
  */
 
 #include "VComputer.hpp"
+#include "VSFix.hpp"
 
 #include <cassert>
 
@@ -127,7 +128,7 @@ namespace vm {
 		addr -= 0x110000 | (slot<<8);
 		switch (addr) {
 			// Control and status stuff
-			// NOTE: Only the MSB byte write send the command as wll be usually the 
+			// NOTE: Only the MSB byte write send the command as wll be usually the
 			// last write value
 			case 8: // Cmd
 				cmd = (cmd & 0xFF00) | val;
