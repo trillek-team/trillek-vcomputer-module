@@ -6,6 +6,7 @@
 #include "devices/TDA.hpp"
 
 #include <iostream>
+#include <vector>
 #include <fstream>
 #include <ios>
 #include <iomanip> 

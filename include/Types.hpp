@@ -9,6 +9,9 @@
 
 #if (! defined(_MSC_VER) || (_MSC_VER >= 1700))
 	#include <cstdint>
+namespace std {
+	typedef size_t size_t;
+}
 #endif
 
 namespace vm {

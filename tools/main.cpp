@@ -8,6 +8,7 @@
 #include "DisTR3200.hpp"
 
 #include <iostream>
+#include <vector>
 #include <fstream>
 #include <ios>
 #include <iomanip>
@@ -257,7 +258,7 @@ int main(int argc, char* argv[]) {
 
     int size = vm::aux::LoadROM(argv[1], rom);
     if (size < 0) {
-      std::fprintf(stderr, "An error hapen when was reading the file %s\n", argv[1]);
+      std::fprintf(stderr, "An error occurred while reading file %s\n", argv[1]);
       return -1;
     }
 
@@ -378,7 +379,7 @@ int main(int argc, char* argv[]) {
 
 
     if (debug) {
-			vc.GetState((void*) &cpu_state, sizeof(cpu_state));
+      vc.GetState((void*) &cpu_state, sizeof(cpu_state));
       std::printf("Takes %u cycles\n", cpu_state.wait_cycles);
       print_regs(cpu_state);
       //print_stack(vm.CPU(), vm.RAM());
@@ -394,7 +395,6 @@ int main(int argc, char* argv[]) {
 
     glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
     // Model matrix <- Identity
     model = glm::mat4(1.0f);
@@ -553,7 +553,7 @@ void print_regs(const vm::cpu::TR3200State& state) {
   std::printf("%%y= 0x%08X\n", state.r[REG_Y]);
 
   std::printf("%%ia= 0x%08X ", state.r[REG_IA]);
-	auto flags = state.r[REG_FLAGS];
+  auto flags = state.r[REG_FLAGS];
   std::printf("%%flags= 0x%08X ", flags);
   std::printf("%%bp= 0x%08X ",  state.r[BP]);
   std::printf("%%sp= 0x%08X\n", state.r[SP]);
@@ -566,7 +566,7 @@ void print_regs(const vm::cpu::TR3200State& state) {
 }
 
 void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc) {
-	vm::dword_t val = vc.ReadDW(state.pc);
+  vm::dword_t val = vc.ReadDW(state.pc);
 
   std::printf("\tPC : 0x%08X > 0x%08X ", state.pc, val);
   std::cout << vm::cpu::Disassembly(vc,  state.pc) << std::endl;
@@ -574,7 +574,7 @@ void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc) {
 
 /*
 void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram) {
-	std::printf("STACK:\n");
+  std::printf("STACK:\n");
 
   for (size_t i =0; i <5*4; i +=4) {
     auto val = ram.RD(cpu.Reg(SP)+ i);
@@ -593,21 +593,21 @@ void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram) {
 void initGL(OS::OS& os) {
 	int OpenGLVersion[2];
 
-	// Use the GL3 way to get the version number
-	glGetIntegerv(GL_MAJOR_VERSION, &OpenGLVersion[0]);
-	glGetIntegerv(GL_MINOR_VERSION, &OpenGLVersion[1]);
-	std::cout << "OpenGL " << OpenGLVersion[0] << "." << OpenGLVersion[1] << "\n";
+  // Use the GL3 way to get the version number
+  glGetIntegerv(GL_MAJOR_VERSION, &OpenGLVersion[0]);
+  glGetIntegerv(GL_MINOR_VERSION, &OpenGLVersion[1]);
+  std::cout << "OpenGL " << OpenGLVersion[0] << "." << OpenGLVersion[1] << "\n";
 
-	// Sanity check to make sure we are at least in a good major version number.
-	assert((OpenGLVersion[0] > 1) && (OpenGLVersion[0] < 5));
+  // Sanity check to make sure we are at least in a good major version number.
+  assert((OpenGLVersion[0] > 1) && (OpenGLVersion[0] < 5));
 
-	winWidth = os.GetWindowWidth(); winHeight = os.GetWindowHeight();
+  winWidth = os.GetWindowWidth(); winHeight = os.GetWindowHeight();
 
-	// Determine the aspect ratio and sanity check it to a safe ratio
-	GLfloat aspectRatio = static_cast<float>(winWidth) / static_cast<float>(winHeight);
-	if (aspectRatio < 1.0f) {
-		aspectRatio = 4.0f / 3.0f;
-	}
+  // Determine the aspect ratio and sanity check it to a safe ratio
+  GLfloat aspectRatio = static_cast<float>(winWidth) / static_cast<float>(winHeight);
+  if (aspectRatio < 1.0f) {
+	  aspectRatio = 4.0f / 3.0f;
+  }
   // Projection matrix : 45° Field of View
   proj = glm::perspective(
 			45.0f,			// FOV
@@ -767,7 +767,6 @@ void initGL(OS::OS& os) {
       glm::vec3(0,0,0), // and looks at the origin
       glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
       );
-
 
 }
 

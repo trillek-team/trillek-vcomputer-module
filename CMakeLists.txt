@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 if (VCOMPUTER_SUB_PROJECT)
-	message ("Setting SRC and INCLUDE for Trillek VCOMPUTER")
+	message (STATUS "Setting SRC and INCLUDE for Trillek VCOMPUTER")
 
 	# Include dirs
 	set(VCOMPUTER_INCLUDE_DIRS
@@ -55,17 +55,17 @@ else (VCOMPUTER_SUB_PROJECT)
 		set(CMAKE_CXX_FLAGS "-std=c++11 ${MAKE_CXX_FLAGS}")
 		set(CMAKE_EXECUTABLE_SUFFIX ".js")
 
-		message( "Procesing Source Code - Build Library JS Wrapper")
+		message(STATUS "Procesing Source Code - Build Library JS Wrapper")
 		add_subdirectory(emscripten)
 
 	else (EMSCRIPTEN)
 
 		include(Platform)
 
-		message( "Procesing Source Code - Build library")
+		message(STATUS "Procesing Source Code - Build library")
 		# VCOMPUTER VM core lib
 		if(BUILD_STATIC_VCOMPUTER)
-			add_library( VCOMPUTER	STATIC
+			add_library( VCOMPUTER STATIC
 				${VCOMPUTER_SRC}
 				)
 
@@ -74,7 +74,7 @@ else (VCOMPUTER_SUB_PROJECT)
 				)
 
 		else(BUILD_STATIC_VCOMPUTER)
-			add_library( VCOMPUTER	SHARED
+			add_library( VCOMPUTER SHARED
 				${VCOMPUTER_SRC}
 				)
 
@@ -86,12 +86,12 @@ else (VCOMPUTER_SUB_PROJECT)
 
 		if(BUILD_TOOLS_VCOMPUTER OR BUILD_TESTS_VCOMPUTER)
 
-			# Find SDL2 and OpenGL libs
+			# Find GLFW3 and OpenGL libs
 			find_package(GLFW3)
 			if (NOT GLFW3_FOUND)
 				message("GLFW3 not found! main executable will not display screen and virtual keyboard")
 				set (GLFW3_ENABLE 0)
-			else (NOT SDL2_FOUND)
+			else (NOT GLFW3_FOUND)
 				set (GLFW3_ENABLE 1)
 			endif (NOT GLFW3_FOUND)
 
@@ -114,17 +114,17 @@ else (VCOMPUTER_SUB_PROJECT)
 			endif(NOT GLM_FOUND)
 
 			if(BUILD_TOOLS_VCOMPUTER)
-				message( "Procesing Tools")
+				message(STATUS "Procesing Tools")
 				add_subdirectory(tools)
 			endif(BUILD_TOOLS_VCOMPUTER)
 
-			message( "Procesing Assets")
+			message(STATUS "Procesing Assets")
 			add_subdirectory(assets)
 
 		endif(BUILD_TOOLS_VCOMPUTER OR BUILD_TESTS_VCOMPUTER)
 
 		if(BUILD_TESTS_VCOMPUTER)
-			message( "Procesing Tests")
+			message(STATUS "Procesing Tests")
 
 			if(DEFINED ENV{GTEST_ROOT})  # Note we omit the $ here!
 			  add_subdirectory($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest)

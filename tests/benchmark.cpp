@@ -42,8 +42,8 @@ int main(int argc, char* argv[]) {
   }
 
   unsigned troms = argc -1;
-  byte_t* rom[troms];
-  size_t rom_size[troms];
+  byte_t **rom = new byte_t*[troms];
+  size_t *rom_size = new size_t[troms];
 
   for (unsigned i=0; i< troms; i++) {
     rom[i] = new byte_t[32*1024];
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
   }
 
   std::printf("Runing :\n~1%% @ 1MHz\n~5%% @ 0.5MHz\n~20%% @ 0.2MHz\n~74%% @ 0.1MHz\n");
-  VComputer vc[n_cpus];
+  VComputer *vc = new VComputer[n_cpus];
   for (auto i=0; i< n_cpus; i++) {
     // Add CPU
     unsigned cpu_clk = std::rand() % 100;
