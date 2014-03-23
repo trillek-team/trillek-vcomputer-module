@@ -5,17 +5,16 @@
  */
 
 #include "Types.hpp"
-#include "VComputer.hpp"
+#include "AddrListener.hpp"
 
 namespace vm {
 
   class Timer : public AddrListener {
-    friend class VComputer; // Necesary to do a copy of the internal data
 
     public:
       Timer ();
       virtual ~Timer();
-      
+
       virtual byte_t ReadB (dword_t addr);
       virtual word_t ReadW (dword_t addr);
       virtual dword_t ReadDW (dword_t addr);
@@ -46,7 +45,6 @@ namespace vm {
        */
       void IACK ();
 
-    private:
       dword_t tmr0;     /// Timer 0
       dword_t tmr1;     /// Timer 1
 

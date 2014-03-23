@@ -122,7 +122,7 @@ public:
     if (state == OS::event::KEY_STATE::KS_DOWN) {
       prev_key = key & 0xFFFF; // Stores the "scancode"
 
-      std::printf("Scancode : 0x%04X\t ", prev_key);
+      std::printf("Scancode : 0x%04X\n", prev_key);
 
       // TODO Use a general if and a lookup table
       switch (prev_key) { // Special cases that not are catch by character events
@@ -155,7 +155,6 @@ public:
           break;
 
         case GLFW_KEY_LEFT :
-          std::printf("Keycode : 0x%04X\t ", KEY_ARROW_LEFT);
           gk->EnforceSendKeyEvent(prev_key, KEY_ARROW_LEFT, mod);
           break;
 
@@ -188,7 +187,6 @@ public:
         default:
           return;
       }
-      std::printf(" nº of events stored : %u \n", gk->E());
 
     } else {
       switch (key) {
@@ -220,10 +218,10 @@ public:
         chr = vm::dev::gkeyboard::KEY_DELETE;
       }
 
-      std::printf("Character %u='%c' mod=%u -> nº events stored : ", chr, chr, mod);
+      //std::printf("Character %u='%c' mod=%u -> nº events stored : ", chr, chr, mod);
       vm::dword_t scancode = prev_key & 0xFFFF;
       gk->EnforceSendKeyEvent(scancode, c & 0xFF, mod);
-      std::printf("%u \n", gk->E());
+      //std::printf("%u \n", gk->E());
     }
   }
 
@@ -233,8 +231,6 @@ public:
 };
 
 #endif
-
-//vm::cda::CDA* cda_ptr = nullptr;
 
 void print_regs(const vm::cpu::TR3200State& state);
 void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc);

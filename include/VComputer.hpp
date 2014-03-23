@@ -9,6 +9,7 @@
 #include "ICPU.hpp"
 #include "IDevice.hpp"
 #include "AddrListener.hpp"
+#include "Timer.hpp"
 
 #include <map>
 #include <tuple>
@@ -117,7 +118,7 @@ namespace vm {
           return false;
         }
 
-        // TODO Ver donde almacenar el dichoso puntero o usar un shared_ptr
+        // TODO See were store the pointer or use a shared_ptr
         auto enumblk = new EnumAndCtrlBlk(slot, dev.get());
         std::get<2>(devices[slot]) = this->AddAddrListener(enumblk->GetRange(), enumblk);
         if (std::get<2>(devices[slot]) != -1) {
@@ -201,6 +202,8 @@ namespace vm {
           cpu->Reset();
         }
 
+        pit.Reset();
+
         for (unsigned slot = 0; slot < MAX_N_DEVICES; slot++) {
           if ( !std::get<0>(devices[slot])) {
             continue;
@@ -219,10 +222,10 @@ namespace vm {
           unsigned cpu_ticks = cpu->Step();
           unsigned base_ticks = cpu_ticks * (1000000 / cpu->Clock());
           unsigned dev_ticks = (base_ticks / 10); // Devices clock is at 100 KHz
-          //timers.Update(dev_ticks);
+          pit.Tick(dev_ticks, delta);
 
           word_t msg;
-          bool interrupted = false;//= timers.DoesInterrupt(msg);
+          bool interrupted = pit.DoesInterrupt(msg);
           for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
             if (! std::get<0>(devices[i])) {
               continue; // Slot without device
@@ -260,10 +263,10 @@ namespace vm {
           unsigned cpu_ticks = n / (1000000.0f / cpu->Clock());
 
           cpu->Tick(cpu_ticks);
-          //timers.Update(n);
+          pit.Tick(n, delta);
 
           word_t msg;
-          bool interrupted =false; // timers.DoesInterrupt(msg);
+          bool interrupted = pit.DoesInterrupt(msg);
           for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
             if (! std::get<0>(devices[i])) {
               continue; // Slot without device
@@ -458,11 +461,13 @@ namespace vm {
       std::size_t ram_size;   /// Computer RAM size
       std::size_t rom_size;   /// Computer ROM size
 
-      std::unique_ptr<ICPU> cpu;  /// Virtual CPU
+      std::unique_ptr<ICPU> cpu;                /// Virtual CPU
 
-      device_t devices[MAX_N_DEVICES];  /// Devices atached to the virtual computer
+      device_t devices[MAX_N_DEVICES];          /// Devices atached to the virtual computer
 
-      std::map<Range, AddrListener*> listeners;         /// Container of AddrListeners
+      std::map<Range, AddrListener*> listeners; /// Container of AddrListeners
+
+      Timer pit;  /// Programable Interval Timer
 
   };
 
