@@ -31,7 +31,7 @@ end_search_tda:
   STORE TDA_base_dev, %r10 ; We put in the var that we don't found anything
 
   IFEQ %r10, 0xFFFFFFFF
-    JMP begin ; We skips  print code
+    JMP crash ; We skips  print code
 
   ; Configure TDA to use a text buffer in 0x001000
   ADD %r0, %r10, 0x0A
