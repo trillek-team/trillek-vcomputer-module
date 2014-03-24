@@ -258,15 +258,15 @@ int main(int argc, char* argv[]) {
       return -1;
     }
 
-		std::printf("Read %d bytes and stored in ROM\n", size);
+    std::printf("Read %d bytes and stored in ROM\n", size);
     rom_size = size;
   }
 
   // Create the Virtual Machine
   VComputer vc;
-	std::unique_ptr<vm::cpu::TR3200> cpu(new TR3200());
-	cpu->Clock();
-	vc.SetCPU(std::move(cpu));
+  std::unique_ptr<vm::cpu::TR3200> cpu(new TR3200());
+  cpu->Clock();
+  vc.SetCPU(std::move(cpu));
 
   vc.SetROM(rom, rom_size);
 
@@ -295,10 +295,10 @@ int main(int argc, char* argv[]) {
 
 #ifdef GLFW3_ENABLE
   OS::OS glfwos;
-	if (!glfwos.InitializeWindow(1024, 768, "Trillek Virtual Computer demo emulator")) {
-		std::clog << "Failed creating the window or context.";
-		return -1;
-	}
+  if (!glfwos.InitializeWindow(1024, 768, "Trillek Virtual Computer demo emulator")) {
+    std::clog << "Failed creating the window or context.";
+    return -1;
+  }
 
   initGL(glfwos);
   std::printf("Initiated OpenGL\n");
@@ -321,7 +321,7 @@ int main(int argc, char* argv[]) {
 
   int c = ' ';
   bool loop = true;
-	vm::cpu::TR3200State cpu_state;
+  vm::cpu::TR3200State cpu_state;
 
   while ( loop) {
     // Calcs delta time
@@ -334,14 +334,14 @@ int main(int argc, char* argv[]) {
 
 
 #ifdef GLFW3_ENABLE
-		if (glfwos.Closing()) {
-			loop = false;
-			continue;
-		}
+    if (glfwos.Closing()) {
+      loop = false;
+      continue;
+    }
 #endif
 
     if (debug) {
-			vc.GetState((void*) &cpu_state, sizeof(cpu_state));
+      vc.GetState((void*) &cpu_state, sizeof(cpu_state));
       print_pc(cpu_state, vc);
       //if (vm.CPU().Skiping())
       //  std::printf("Skiping!\n");
@@ -364,7 +364,7 @@ int main(int argc, char* argv[]) {
 
     } else {
       ticks = vc.Step(delta / 1000.0 );
-		}
+    }
 
 
     // Speed info
@@ -493,23 +493,23 @@ int main(int argc, char* argv[]) {
     glDisableVertexAttribArray(sh_in_UV);
 
     // Update host window
-		glfwos.SwapBuffers();
-		glfwos.OSMessageLoop();
+    glfwos.SwapBuffers();
+    glfwos.OSMessageLoop();
 #endif
   }
 
 #ifdef GLFW3_ENABLE
-	glfwos.Terminate();
+  glfwos.Terminate();
 #endif
 
   return 0;
 }
 
 // Alias to special registers
-#define REG_Y			(11)
-#define BP				(12)
-#define SP				(13)
-#define REG_IA		(14)
+#define REG_Y     (11)
+#define BP        (12)
+#define SP        (13)
+#define REG_IA    (14)
 #define REG_FLAGS (15)
 
 // Operation in Flags bits
@@ -592,7 +592,7 @@ void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram) {
 
 // Init OpenGL ************************************************************
 void initGL(OS::OS& os) {
-	int OpenGLVersion[2];
+  int OpenGLVersion[2];
 
   // Use the GL3 way to get the version number
   glGetIntegerv(GL_MAJOR_VERSION, &OpenGLVersion[0]);
@@ -607,28 +607,28 @@ void initGL(OS::OS& os) {
   // Determine the aspect ratio and sanity check it to a safe ratio
   GLfloat aspectRatio = static_cast<float>(winWidth) / static_cast<float>(winHeight);
   if (aspectRatio < 1.0f) {
-	  aspectRatio = 4.0f / 3.0f;
+    aspectRatio = 4.0f / 3.0f;
   }
   // Projection matrix : 45° Field of View
   proj = glm::perspective(
-			45.0f,			// FOV
-			aspectRatio,
-			0.1f,				// Near cliping plane
-			10000.0f);	// Far cliping plane
+      45.0f,      // FOV
+      aspectRatio,
+      0.1f,       // Near cliping plane
+      10000.0f);  // Far cliping plane
 
-	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-	#if __APPLE__
-		// GL_MULTISAMPLE are Core.
-		glEnable(GL_MULTISAMPLE);
-	#else
-		if (GLEW_ARB_multisample) {
-			glEnable(GL_MULTISAMPLE_ARB);
-		}
-	#endif
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+  glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+  #if __APPLE__
+    // GL_MULTISAMPLE are Core.
+    glEnable(GL_MULTISAMPLE);
+  #else
+    if (GLEW_ARB_multisample) {
+      glEnable(GL_MULTISAMPLE_ARB);
+    }
+  #endif
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
 
-	glEnable(GL_DEPTH_TEST);
+  glEnable(GL_DEPTH_TEST);
   // Accept fragment if it closer to the camera than the former one
   glDepthFunc(GL_LESS);
 
