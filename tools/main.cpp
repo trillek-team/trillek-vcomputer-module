@@ -352,13 +352,18 @@ int main(int argc, char* argv[]) {
     if (!debug) {
       ticks_count += ticks;
       vc.Tick(ticks, delta / 1000.0 );
-      //ticks = (vc.Clock() * delta * 0.000001) + 0.5f; // Rounding bug in VS
-      //if (ticks <= 3)
-      //  ticks = 3;
+      // NOTE This algorith is no-stable, as if the computer takes too time, will increase
+      // the number of ticks forever, so we must put a top value to avoid these problem and
+      // assume that we can runt at 100% of speed in these case.
+      ticks = (vm::BaseClock * delta  / 1000.0) + 0.5f; // Rounding bug in VS
+      if (ticks <= 3) {
+        ticks = 3;
+      } else if (ticks >= 80000) {
+        ticks = 80000;
+      }
 
     } else {
       ticks = vc.Step(delta / 1000.0 );
-			//ticks = 1; vc.Tick(1, delta * 0.001f );
 		}
 
 

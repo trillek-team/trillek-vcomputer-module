@@ -28,6 +28,8 @@ namespace vm {
   const std::size_t MAX_RAM_SIZE  = 1024*1024;  /// Max RAM size
 
   const unsigned EnumCtrlBlkSize  = 20;         /// Enumeration and Control registers blk size
+  
+  const unsigned BaseClock  = 1000000;          /// Computer Base Clock rate
 
   /**
    * An specialized Address Listener used by VComputer to implement
@@ -82,6 +84,10 @@ namespace vm {
         ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0) {
 
           ram = new byte_t[ram_size];
+
+          // Add timers addresses
+          Range pit_range(0x11E000, 0x11E010);
+          AddAddrListener(pit_range, &pit);
         }
 
       ~VComputer () {
@@ -220,12 +226,18 @@ namespace vm {
       unsigned Step( const double delta = 0) {
         if (cpu) {
           unsigned cpu_ticks = cpu->Step();
-          unsigned base_ticks = cpu_ticks * (1000000 / cpu->Clock());
+          unsigned base_ticks = cpu_ticks * (BaseClock / cpu->Clock());
           unsigned dev_ticks = (base_ticks / 10); // Devices clock is at 100 KHz
           pit.Tick(dev_ticks, delta);
 
           word_t msg;
-          bool interrupted = pit.DoesInterrupt(msg);
+          bool interrupted = pit.DoesInterrupt(msg); // Highest priority interrupt
+          if (interrupted) {
+            if (cpu->SendInterrupt(msg)) { // Send the interrupt to the CPU
+              pit.IACK();
+            }
+          }
+
           for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
             if (! std::get<0>(devices[i])) {
               continue; // Slot without device
@@ -260,13 +272,19 @@ namespace vm {
         assert(n >0);
         unsigned dev_ticks = n / 10; // Devices clock is at 100 KHz
         if (cpu) {
-          unsigned cpu_ticks = n / (1000000.0f / cpu->Clock());
+          unsigned cpu_ticks = n / (BaseClock / cpu->Clock());
 
           cpu->Tick(cpu_ticks);
-          pit.Tick(n, delta);
+          pit.Tick(dev_ticks, delta);
 
           word_t msg;
-          bool interrupted = pit.DoesInterrupt(msg);
+          bool interrupted = pit.DoesInterrupt(msg); // Highest priority interrupt
+          if (interrupted) {
+            if (cpu->SendInterrupt(msg)) { // Send the interrupt to the CPU
+              pit.IACK();
+            }
+          }
+
           for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
             if (! std::get<0>(devices[i])) {
               continue; // Slot without device
@@ -290,7 +308,6 @@ namespace vm {
       }
 
       byte_t ReadB (dword_t addr) const {
-        //std::fprintf(stderr, "\t B addr: 0x%06X\n", addr);
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 
         if (!(addr & 0xF00000 )) { // RAM address (0x000000-0x0FFFFF)
@@ -311,7 +328,6 @@ namespace vm {
       }
 
       word_t ReadW (dword_t addr) const {
-        //std::fprintf(stderr, "\t DW addr: 0x%06X\n", addr);
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
         size_t tmp;
 
@@ -336,7 +352,6 @@ namespace vm {
       }
 
       dword_t ReadDW (dword_t addr) const {
-        //std::fprintf(stderr, "\t DW addr: 0x%06X\n", addr);
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
         size_t tmp;
 

@@ -1,4 +1,6 @@
-  ;.ORG 0x108000 ; In last 32 KiB of ROM space
+; Some usefull functions that could end being part of the ROM
+
+  ;.ORG 0x108000 ; In last 32 KiB of ROM space (Don't uncoment this yet!)
 
   .DD 0xBEEFCAFE ; Nice mark of were begin this stuff
 
