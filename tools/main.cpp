@@ -5,6 +5,7 @@
 #include "OS.hpp"
 
 #include "VC.hpp"
+#include "devices/DummyDevice.hpp"
 #include "DisTR3200.hpp"
 
 #include <iostream>
@@ -278,6 +279,9 @@ int main(int argc, char* argv[]) {
   auto gk = std::make_shared<vm::dev::gkeyboard::GKeyboardDev>();
   vc.AddDevice(4, gk);
 
+  auto ddev = std::make_shared<vm::DummyDevice>();
+  vc.AddDevice(10, ddev);
+  
   vc.Reset();
 
   std::cout << "Run program (r) or Step Mode (s) ?\n";

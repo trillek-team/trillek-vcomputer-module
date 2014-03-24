@@ -4,6 +4,7 @@
  * Allow to see how many virtual computer can run in a single thread
  */
 #include <VC.hpp>
+#include "devices/DummyDevice.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -59,18 +60,18 @@ int main(int argc, char* argv[]) {
     rom_size[i] = size;
   }
 
-  std::printf("Runing :\n~1%% @ 1MHz\n~5%% @ 0.5MHz\n~20%% @ 0.2MHz\n~74%% @ 0.1MHz\n");
+  std::printf("Runing :\n~1%% @ 1MHz\n~10%% @ 0.5MHz\n~20%% @ 0.2MHz\n~64%% @ 0.1MHz\n");
   VComputer *vc = new VComputer[n_cpus];
   for (auto i=0; i< n_cpus; i++) {
     // Add CPU
     unsigned cpu_clk = std::rand() % 100;
     if (cpu_clk <= 1 ) {          // ~1%  -> 1 Mhz
       cpu_clk = 1000000;
-    } else if (cpu_clk <= 6 ) {   // ~5%  -> 0.5 MHz
+    } else if (cpu_clk <= 11 ) {  // ~10% -> 0.5 MHz
       cpu_clk = 500000;
-    } else if (cpu_clk <= 26 ) {  // ~20% -> 200 KHz
+    } else if (cpu_clk <= 36 ) {  // ~20% -> 200 KHz
       cpu_clk = 200000;
-    } else {                      // ~74% -> 100 KHz
+    } else {                      // ~64% -> 100 KHz
       cpu_clk = 100000;
     }
     std::unique_ptr<vm::cpu::TR3200> cpu(new TR3200(cpu_clk));
@@ -83,7 +84,13 @@ int main(int argc, char* argv[]) {
 
     // Add devices
     auto gcard = std::make_shared<vm::dev::tda::TDADev>();
-    vc[i].AddDevice(0, gcard);
+    vc[i].AddDevice(5, gcard);
+
+    auto gk = std::make_shared<vm::dev::gkeyboard::GKeyboardDev>();
+    vc[i].AddDevice(4, gcard);
+
+    auto ddev = std::make_shared<vm::DummyDevice>();
+    vc[i].AddDevice(10, ddev);
 
     // Reset
     vc[i].Reset();
