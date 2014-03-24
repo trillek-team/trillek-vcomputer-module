@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     rom_size[i] = size;
   }
 
-  std::printf("Runing :\n~1%% @ 1MHz\n~10%% @ 0.5MHz\n~20%% @ 0.2MHz\n~64%% @ 0.1MHz\n");
+  std::printf("Runing :\n~1%% @ 1MHz\n~10%% @ 0.5MHz\n~20%% @ 0.2MHz\n~59%% @ 0.1MHz\n~10%% @ 0.01MHz\n");
   VComputer *vc = new VComputer[n_cpus];
   for (auto i=0; i< n_cpus; i++) {
     // Add CPU
@@ -69,9 +69,11 @@ int main(int argc, char* argv[]) {
       cpu_clk = 1000000;
     } else if (cpu_clk <= 11 ) {  // ~10% -> 0.5 MHz
       cpu_clk = 500000;
-    } else if (cpu_clk <= 36 ) {  // ~20% -> 200 KHz
+    } else if (cpu_clk <= 21 ) {  // ~10% -> 10 KHz
+      cpu_clk = 10000;
+    } else if (cpu_clk <= 46 ) {  // ~20% -> 200 KHz
       cpu_clk = 200000;
-    } else {                      // ~64% -> 100 KHz
+    } else {                      // ~59% -> 100 KHz
       cpu_clk = 100000;
     }
     std::unique_ptr<vm::cpu::TR3200> cpu(new TR3200(cpu_clk));
