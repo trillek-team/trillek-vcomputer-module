@@ -1,166 +1,117 @@
-        .ORG 0
-        MOV %sp, 0x30000    ; Sets Stack Pointer to the end of the 128KiB RAM     
+  ; Hello World in TR3200 ASM
+  .ORG 0x100000       ; This a ROM image, so jumps need to know the real address
 
-        ; Setup screen
-        MOV %r0, 0x80
-        STORE.B 0xFF0ACC00, %r0 ; Text mode 0, default font and palette, no vsync
+  MOV %sp, 0x020000    ; Sets Stack Pointer to the end of the 128KiB RAM
 
-        MOV %r0, 0xFF0A0000
-        MOV %r1, 0x70
-        CALL clr_screen  ; Clear the screen
+;******************************************************************************
+  ; Code to find the first TDA plugged device
+  MOV %r10, 0x10FF00
+  MOV %r5, 0
+begin_search_tda:
+  ADD %r10, %r10, 0x100
+  IFEQ %r10, 0x112100  ; Not found any TDA device
+    JMP end_search_tda
 
-        ; Print "Nº Dev :"
-        MOV %r0, str01
-        MOV %r1, 0xFF0A0000
-        MOV %r2, 0x70
-        CALL print
+  LOAD.B %r0, %r10
+  IFNEQ %r0, 0xFF   ; Device Present ?
+    JMP begin_search_tda
 
-        ; Ask how many devices are
-        MOV %r0, 0
-        STORE.W 0xFF000000, %r0 ; GET-NUMBER command
-        LOAD.W %r10, 0xFF000000  ; Read value
+  ADD %r1, %r10, 1
+  LOAD.B %r0, %r1
+  IFNEQ %r0, 0x0E   ; Is a Graphics device ?
+    JMP begin_search_tda
 
-        ; Print first digit
-        DIV %r0, %r10, 10
-        ADD %r0, %r0, '0'
-        MOV %r1, 8
-        MOV %r2, 0x70
-        CALL print_chr
-        
-        ; Print second digit
-        ADD %r0, %y, '0'
-        MOV %r1, 9
-        CALL print_chr
-       
-        ; Print Header
-        MOV %r0, str02
-        MOV %r1, 0xFF0A0050 ; Second row
-        MOV %r2, 0x70
-        CALL print
-        
-        MOV %r0, str03
-        MOV %r1, 0xFF0A00A0 ; Third row
-        MOV %r2, 0x70
-        CALL print
+  ADD %r1, %r10, 2
+  LOAD.B %r0, %r1
+  IFNEQ %r0, 0x01   ; Is TDA compatible ?
+    JMP begin_search_tda
 
-        ; TODO Ask for the 32 posible devices and print a list of connected devices
-        ; %r10 as device counter
-        ; %r11 as screen pointer
-        MOV %r10, -1
-        MOV %r1, 0xFF0A00F0 ; Forth row
+end_search_tda:
+  IFEQ %r10, 0x112100
+    JMP crash       ; Not found, so type on what ?
+  STORE TDA_base_dev, %r10 ; We put in the var that we don't found anything
 
-loop_dev:
-        ADD %r10, %r10, 1
-        IFL %r10, 32          ; if >= 32 then finish
-          RJMP loop_dev_cont
-        RJMP loop_dev_end
+  IFEQ %r10, 0xFFFFFFFF
+    JMP crash ; We skips  print code
 
-loop_dev_cont:
-        ; 1 Ask Dev class
-        OR %r3, %r10, 0x0100
-        STORE.W 0xFF000000, %r3
-        LOAD.B %r3, 0xFF000000
-        IFEQ %r3, 0
-          RJMP loop_dev       ; Not atached, so skips
+  ; Configure TDA to use a text buffer in 0x001000
+  ADD %r0, %r10, 0x0A
 
-        ; Print Dev Slot
-        MOV %r0, %r10
-        MOV %r2, 0x70
-        CALL print_hex_b
+  MOV %r1, 0x001000
+  STORE %r0, %r1 ; Set B:A to point to 0x001000
 
-        ; Print Dev Class
-        MOV %r0, %r3
-        ADD %r1, %r1, 4
-        MOV %r2, 0x70
-        CALL print_hex_b
+  ADD %r0, %r10, 0x08
+  MOV %r1, 0
+  STORE.W %r0, %r1 ; Send command to point Text buffer to B:A address
 
-        ; Ask Builder
-        OR %r3, %r10, 0x0200
-        STORE.W 0xFF000000, %r3
-        LOAD.W %r0, 0xFF000000
+  ; Clears the screen
+  MOV %r0, 0x001000
+  MOV %r1, 0x40           ; Dark blue paper, Black Ink
+  CALL clr_screen
 
-        ; Print Dev Builder
-        ADD %r1, %r1, 6
-        MOV %r2, 0x70
-        CALL print_hex_w
+;******************************************************************************
+  ; TODO Here code that counts the number of devices and stores their values
+  ; for late print
+;******************************************************************************
 
-        ; Ask ID
-        OR %r3, %r10, 0x0300
-        STORE.W 0xFF000000, %r3
-        LOAD.W %r0, 0xFF000000
+  ; Print "Nº Dev :0x"
+  MOV %r0, 29             ; Row 29
+  MOV %r1, 0              ; Column 0
+  CALL get_offset_from_row_col
+  ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
 
-        ; Print Dev ID
-        ADD %r1, %r1, 6
-        MOV %r2, 0x70
-        CALL print_hex_w
+  MOV %r0, str01
+  MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
+  CALL print
 
-        ; Ask Version
-        OR %r3, %r10, 0x0400
-        STORE.W 0xFF000000, %r3
-        LOAD.W %r0, 0xFF000000
+  ; Print number of devices in hex
+  MOV %r0, 29             ; Row 29
+  MOV %r1, 10             ; Column 10
+  CALL get_offset_from_row_col
+  ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
 
-        ; Print Dev Version
-        ADD %r1, %r1, 6
-        MOV %r2, 0x70
-        CALL print_hex_w
+  LOAD.B %r0, n_dev
+  MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
+  CALL print_hex_b
 
-        ; Ask JMP1
-        OR %r3, %r10, 0x1000
-        STORE.W 0xFF000000, %r3
-        LOAD.W %r0, 0xFF000000
+  ; Print Header
+  MOV %r0, 0              ; Row 0
+  MOV %r1, 0              ; Column 0
+  CALL get_offset_from_row_col
+  ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
 
-        ; Print Dev Jmp 1
-        ADD %r1, %r1, 6
-        MOV %r2, 0x70
-        CALL print_hex_w
+  MOV %r0, str02
+  MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
+  CALL print
 
-        ; Ask JMP2
-        OR %r3, %r10, 0x2000
-        STORE.W 0xFF000000, %r3
-        LOAD.W %r0, 0xFF000000
+  ; Print Separator
+  MOV %r0, 1              ; Row 1
+  MOV %r1, 0              ; Column 0
+  CALL get_offset_from_row_col
+  ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
 
-        ; Print Dev Jmp 2
-        ADD %r1, %r1, 6
-        MOV %r2, 0x70
-        CALL print_hex_w
-
-        ADD %r1, %r1, 12    ; Jumps to the next row
-        RJMP loop_dev         ; Next dev to ask
+  MOV %r0, str03
+  MOV %r2, 0x49           ; Dark blue paper, Copper Ink
+  CALL print
 
 
-loop_dev_end:
+:crash
+  SLEEP
 
-        SLEEP  ; End of program
+  .include "BROM.inc"
 
-; Prints a %r0 digit in screen 0 with textmode 0, at column %r1[0:7], row %r1[8:15]
-;       attribute  %r2
-; Asummes that row < 30 and column < 40
-print_chr:
-      PUSH %r4
-      PUSH %r5
-      PUSH %y
+;******************************************************************************
+; Const Data
+str01:  .db "Nº Dev: 0x", 0
+str02:  .db "| Slot | Type | SubType | ID | Vendor |", 0
+str03:  .db "+------+----------------+----+--------+", 0
 
-      AND %r4, %r1, 0x3F          ; Grabs column and puts in %r4
-      LRS %r5, %r1, 8             ; Grabs row and puts in %r5
-      MUL %r5, %r5, 0x28
-      ADD %r4, %r4, %r5           ; %r4 = row*40 + column
-      LLS %r4, %r4, 1             ; %r4 *= 2
-      ADD %r4, %r4 ,0xFF0A0000
-      STORE.B %r4, %r0            ; Write character
-      ADD %r4, %r4, 1
-      STORE.B %r4, %r2            ; Write Attribute
+;******************************************************************************
+; RAM data
+  .ORG 0x0
+:n_dev            .db 0
+:dev_table        .dw 0
 
-      POP %y
-      POP %r5
-      POP %r4
+  .ORG 0x0200 ; Some special variables
+:TDA_base_dev     .dw 0
 
-      RET
-
-      .include "lib.inc"
-
-; *****************************************************************************
-; Strings
-
-str01:  .DB "Nº Dev: ", 0 
-str02:  .DB "S  Cl  Buil  ID    Ver   J1    J2", 0
-str03:  .DB "-----------------------------------", 0

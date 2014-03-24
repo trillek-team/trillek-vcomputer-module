@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
       cpu_clk = 500000;
     } else if (cpu_clk <= 21 ) {  // ~10% -> 10 KHz
       cpu_clk = 10000;
-    } else if (cpu_clk <= 46 ) {  // ~20% -> 200 KHz
+    } else if (cpu_clk <= 41 ) {  // ~20% -> 200 KHz
       cpu_clk = 200000;
     } else {                      // ~59% -> 100 KHz
       cpu_clk = 100000;
