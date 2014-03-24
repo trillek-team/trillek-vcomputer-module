@@ -49,7 +49,7 @@ end_search_tda:
   CALL clr_screen
 
 ;******************************************************************************
-  ; Code to find the first TDA plugged device
+  ; Code to find the first Keyboard plugged device
   MOV %r10, 0x10FF00
 begin_search_gkeyb:
   ADD %r10, %r10, 0x100

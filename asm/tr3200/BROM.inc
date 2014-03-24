@@ -163,4 +163,66 @@ clr_screen_loop:
 
   RET
 
+;******************************************************************************
+; hwn function Generate a list of plugged devices and returns the total number
+; of devices
+; $r0 <- Ptr. were to write the list
+; Each entry of the list, uses 8 bytes, that are :
+; Slot number byte, Type byte, SubType byte, Dev ID byte, double word Vendor ID
+; return Number of devices
+:hwn
+  PUSH %r4
+  PUSH %r5
+  MOV %r3, %r0            ; Ptr to %r3
+  MOV %r0, 0              ; %r0 is number of devices found
+  MOV %r1, 0              ; %r2 is for loop counter
+
+hwn_for_loop:
+
+  LLS %r4, %r1, 8         ; 0xXX00
+  ADD %r4, %r4, 0x110000  ; %r2 points to the base address of device X
+
+  ; Check if there is a device present
+  LOAD.B %r2, %r4
+  IFNEQ %r2, 0xFF
+    RJMP hwn_check_cond_for_loop ; continue;
+
+  LLS %r5, %r0, 3         ; %r5 = %r0 x 8
+  ADD %r0, %r0, 1         ; %r0++
+  STORE.B %r5, %r1        ; Write Slot number
+
+  ; Get Device Type
+  ADD %r4, %r4, 1
+  LOAD.B %r2, %r4         ; LOAD.B %r2, %r4 + 1 should do this
+  ADD %r5, %r5, 1         ; STORE.B %r5 + 1, %r2 should do this
+  STORE.B %r5, %r2        ; Write Device Type
+
+  ; Get Device SubType
+  ADD %r4, %r4, 1
+  LOAD.B %r2, %r4         ; LOAD.B %r2, %r4 + 1 should do this
+  ADD %r5, %r5, 1         ; STORE.B %r5 + 1, %r2 should do this
+  STORE.B %r5, %r2        ; Write Device SubType
+
+  ; Get Device ID
+  ADD %r4, %r4, 1
+  LOAD.B %r2, %r4         ; LOAD.B %r2, %r4 + 1 should do this
+  ADD %r5, %r5, 1         ; STORE.B %r5 + 1, %r2 should do this
+  STORE.B %r5, %r2        ; Write Device ID
+
+  ; Get Device Vendor ID
+  ADD %r4, %r4, 1
+  LOAD %r2, %r4           ; LOAD %r2, %r4 + 1 should do this
+  ADD %r5, %r5, 1         ; STORE %r5 + 1, %r2 should do this
+  STORE %r5, %r2          ; Write Device Type
+
+hwn_check_cond_for_loop
+  ; do %r2++ and check exit condition
+  ADD %r1, %r1, 1
+  IFL %r1, 32
+    RJMP hwn_for_loop
+
+end_hwn:
+  POP %r5
+  POP %r4
+  RET
 
