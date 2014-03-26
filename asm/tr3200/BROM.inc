@@ -68,7 +68,7 @@ print_hex_b:
   OR %r5, %r5, %r2
   STORE.W %r1, %r5
 
-  ; Print LS nible first
+  ; Print LS nible
   ADD %r1, %r1, 2
   ADD %r5, %r0, 55
   IFL %r5, 'A'
@@ -91,9 +91,8 @@ print_hex_w:
   PUSH %r5
 
   LLS %r2, %r2, 8
-  LRS %r5, %r0, 12         ; MS nible to %r5
 
-  ; Print MS nible first
+  LRS %r5, %r0, 12         ; MS nible to %r5
   ; 0xA + 55 = 'A'
   ; 0x9 + 55 = 64 -> 64 -7 = 57 = '9'
   ADD %r5, %r5, 55
@@ -103,7 +102,7 @@ print_hex_w:
   OR %r5, %r5, %r2
   STORE.W %r1, %r5
 
-  ; Print next nible first
+  ; Print next nible
   LRS %r5, %r0, 8
   AND %r5, %r5, 0x0F
 
@@ -115,7 +114,7 @@ print_hex_w:
   OR %r5, %r5, %r2
   STORE.W %r1, %r5
 
-  ; Print next nible first
+  ; Print next nible
   LRS %r5, %r0, 4
   AND %r5, %r5, 0x0F
 
@@ -127,7 +126,115 @@ print_hex_w:
   OR %r5, %r5, %r2
   STORE.W %r1, %r5
 
-  ; Print next nible first
+  ; Print next nible
+  AND %r5, %r0, 0x0F
+
+  ADD %r1, %r1, 2
+  ADD %r5, %r5, 55
+  IFL %r5, 'A'
+    SUB %r5, %r5, 7
+
+  OR %r5, %r5, %r2
+  STORE.W %r1, %r5
+
+  POP %r5
+
+  RET
+
+; *****************************************************************************
+; Print HEX double word function
+; %r0 <- Double Word to print
+; %r1 <- Ptr to text buffer
+; %r2 <- Color atributte
+; return nothing
+print_hex_dw:
+  PUSH %r5
+
+  LLS %r2, %r2, 8
+
+  LRS %r5, %r0, 28         ; MS nible to %r5
+  ; 0xA + 55 = 'A'
+  ; 0x9 + 55 = 64 -> 64 -7 = 57 = '9'
+  ADD %r5, %r5, 55
+  IFL %r5, 'A'
+    SUB %r5, %r5, 7
+
+  OR %r5, %r5, %r2
+  STORE.W %r1, %r5
+
+  ; Print next nible
+  LRS %r5, %r0, 24
+  AND %r5, %r5, 0x0F
+
+  ADD %r1, %r1, 2
+  ADD %r5, %r5, 55
+  IFL %r5, 'A'
+    SUB %r5, %r5, 7
+
+  OR %r5, %r5, %r2
+  STORE.W %r1, %r5
+
+  ; Print next nible
+  LRS %r5, %r0, 20
+  AND %r5, %r5, 0x0F
+
+  ADD %r1, %r1, 2
+  ADD %r5, %r5, 55
+  IFL %r5, 'A'
+    SUB %r5, %r5, 7
+
+  OR %r5, %r5, %r2
+  STORE.W %r1, %r5
+
+  ; Print next nible
+  LRS %r5, %r0, 16
+  AND %r5, %r5, 0x0F
+
+  ADD %r1, %r1, 2
+  ADD %r5, %r5, 55
+  IFL %r5, 'A'
+    SUB %r5, %r5, 7
+
+  OR %r5, %r5, %r2
+  STORE.W %r1, %r5
+
+  ; Print next nible
+  LRS %r5, %r0, 12
+  AND %r5, %r5, 0x0F
+
+  ADD %r1, %r1, 2
+  ADD %r5, %r5, 55
+  IFL %r5, 'A'
+    SUB %r5, %r5, 7
+
+  OR %r5, %r5, %r2
+  STORE.W %r1, %r5
+
+  ; Print next nible
+  LRS %r5, %r0, 8
+  AND %r5, %r5, 0x0F
+
+  ADD %r1, %r1, 2
+  ADD %r5, %r5, 55
+  IFL %r5, 'A'
+    SUB %r5, %r5, 7
+
+  OR %r5, %r5, %r2
+  STORE.W %r1, %r5
+
+  ; Print next nible
+  LRS %r5, %r0, 4
+  AND %r5, %r5, 0x0F
+
+  ADD %r1, %r1, 2
+  ADD %r5, %r5, 55
+  IFL %r5, 'A'
+    SUB %r5, %r5, 7
+
+  OR %r5, %r5, %r2
+  STORE.W %r1, %r5
+
+  ; Print next nible
   AND %r5, %r0, 0x0F
 
   ADD %r1, %r1, 2
@@ -164,18 +271,17 @@ clr_screen_loop:
   RET
 
 ;******************************************************************************
-; hwn function Generate a list of plugged devices and returns the total number
-; of devices
+; hwn function Counts the number plugged devices and generate a list of the
+: slots were they are plugged.
 ; $r0 <- Ptr. were to write the list
-; Each entry of the list, uses 8 bytes, that are :
-; Slot number byte, Type byte, SubType byte, Dev ID byte, double word Vendor ID
+; Each entry of the list, uses 1 byte, and contains the slot were is plugged.
 ; return Number of devices
-:hwn
+hwn:
   PUSH %r4
   PUSH %r5
   MOV %r3, %r0            ; Ptr to %r3
   MOV %r0, 0              ; %r0 is number of devices found
-  MOV %r1, 0              ; %r2 is for loop counter
+  MOV %r1, 0              ; %r1 is for loop counter
 
 hwn_for_loop:
 
@@ -187,36 +293,12 @@ hwn_for_loop:
   IFNEQ %r2, 0xFF
     RJMP hwn_check_cond_for_loop ; continue;
 
-  LLS %r5, %r0, 3         ; %r5 = %r0 x 8
-  ADD %r0, %r0, 1         ; %r0++
-  STORE.B %r5, %r1        ; Write Slot number
+  ADD %r5, %r3, %r0
+  STORE.B %r5, %r1        ; Write Slot number (%r3[%r0] = slot)
+  ADD %r0, %r0, 1         ; Count device %r0++
 
-  ; Get Device Type
-  ADD %r4, %r4, 1
-  LOAD.B %r2, %r4         ; LOAD.B %r2, %r4 + 1 should do this
-  ADD %r5, %r5, 1         ; STORE.B %r5 + 1, %r2 should do this
-  STORE.B %r5, %r2        ; Write Device Type
-
-  ; Get Device SubType
-  ADD %r4, %r4, 1
-  LOAD.B %r2, %r4         ; LOAD.B %r2, %r4 + 1 should do this
-  ADD %r5, %r5, 1         ; STORE.B %r5 + 1, %r2 should do this
-  STORE.B %r5, %r2        ; Write Device SubType
-
-  ; Get Device ID
-  ADD %r4, %r4, 1
-  LOAD.B %r2, %r4         ; LOAD.B %r2, %r4 + 1 should do this
-  ADD %r5, %r5, 1         ; STORE.B %r5 + 1, %r2 should do this
-  STORE.B %r5, %r2        ; Write Device ID
-
-  ; Get Device Vendor ID
-  ADD %r4, %r4, 1
-  LOAD %r2, %r4           ; LOAD %r2, %r4 + 1 should do this
-  ADD %r5, %r5, 1         ; STORE %r5 + 1, %r2 should do this
-  STORE %r5, %r2          ; Write Device Type
-
-hwn_check_cond_for_loop
-  ; do %r2++ and check exit condition
+hwn_check_cond_for_loop:
+  ; do %r1++ and check exit condition
   ADD %r1, %r1, 1
   IFL %r1, 32
     RJMP hwn_for_loop

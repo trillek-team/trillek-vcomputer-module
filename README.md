@@ -102,6 +102,8 @@ There are some TR3200 ASM programs, source code and binary files, in /asm direct
 - hello.asm : Hello world
 - test.asm : Some tests of TR3200 CPU compliance.
 - type1.asm : Basic typing program
+- hwn.asm : List how many devices are pluged and what are.
+- clock.asm : Basic example of system clock using Timer0
 
 
 IMPLEMENTED DEVICES
@@ -114,7 +116,7 @@ IMPLEMENTED DEVICES
 TODO
 ----
 
-- Integrated stuff of the mother board (RTC, RNG, NVRAM, Timers)
+- Integrated stuff of the mother board (RTC, RNG, NVRAM)
 - Check interrupts
 - Implement Floppy drive
 - DCPU-16N cpu (Actually being implemented)

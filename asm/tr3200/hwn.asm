@@ -52,7 +52,7 @@ end_search_tda:
   ; Get a list of pluged devices
   MOV %r0, dev_table
   CALL hwn
-  STORE n_dev, %r0
+  STORE.B n_dev, %r0
 
 ;******************************************************************************
   ; Print "Nº Dev :0x"
@@ -101,39 +101,44 @@ end_search_tda:
   MOV %r5, 0  ; %r5 is the counter of the for loop
 
 :for_loop
-  LLS %r6, %r5, 3         ; %r2 points to the begin of each element of the list
 
- ; *** Print Slot number
+  ; *** Print Slot number
   ADD %r0, %r5, 2         ; Row %r5 +2
-  MOV %r1, 2              ; Column 2
+  MOV %r1, 3              ; Column 3
+  CALL get_offset_from_row_col
+  ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
+  MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
+
+  ADD %r6, %r5, dev_table
+  MOV %r0, 0
+  LOAD.B %r0, %r6         ; Read slot number (%r0 = dev_table[%r5])
+  CALL print_hex_b        ; And print it
+
+  LLS %r7, %r0, 8         ; 0xXX00
+  ADD %r7, %r7, 0x110000  ; 0x11XX00
+
+  ; *** Print Dev Type
+  ADD %r6, %r7, 1         ; %r6 Points to Slot XX Dev Type
+  ADD %r0, %r5, 2         ; Row %r5 +2
+  MOV %r1, 10             ; Column 10
   CALL get_offset_from_row_col
   ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
   MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
   LOAD.B %r0, %r6         ; Read slot number
   CALL print_hex_b        ; And print it
 
- ; *** Print Dev Type
-  ADD %r6, %r6, 1
+  ; *** Print Dev SubType
+  ADD %r6, %r7, 2         ; %r6 Points to Slot XX Dev SubType
   ADD %r0, %r5, 2         ; Row %r5 +2
-  MOV %r1, 9              ; Column 9
+  MOV %r1, 18             ; Column 18
   CALL get_offset_from_row_col
   ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
   MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
   LOAD.B %r0, %r6         ; Read slot number
   CALL print_hex_b        ; And print it
 
- ; *** Print Dev SubType
-  ADD %r6, %r6, 1
-  ADD %r0, %r5, 2         ; Row %r5 +2
-  MOV %r1, 16             ; Column 16
-  CALL get_offset_from_row_col
-  ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
-  MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
-  LOAD.B %r0, %r6         ; Read slot number
-  CALL print_hex_b        ; And print it
-
- ; *** Print Dev ID
-  ADD %r6, %r6, 1
+  ; *** Print Dev ID
+  ADD %r6, %r7, 3         ; %r6 Points to Slot XX Dev ID
   ADD %r0, %r5, 2         ; Row %r5 +2
   MOV %r1, 26             ; Column 26
   CALL get_offset_from_row_col
@@ -142,8 +147,8 @@ end_search_tda:
   LOAD.B %r0, %r6         ; Read slot number
   CALL print_hex_b        ; And print it
 
- ; *** Print Dev ID
-  ADD %r6, %r6, 1
+  ; *** Print Dev ID
+  ADD %r6, %r7, 4         ; %r6 Points to Slot XX Dev ID
   ADD %r0, %r5, 2         ; Row %r5 +2
   MOV %r1, 30             ; Column 30
   CALL get_offset_from_row_col
@@ -151,8 +156,7 @@ end_search_tda:
   MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
   LOAD %r0, %r6           ; Read slot number
 
-  AND %r0, %r0, 0xFFFF    ; TODO Implement print_hex_dw and remove this line
-  CALL print_hex_w        ; And print it
+  CALL print_hex_dw       ; And print it
 
 :for_loop_check
   ADD %r5, %r5, 1
@@ -176,7 +180,7 @@ str03:  .db "+------+------+---------+----+--------+", 0
 ; RAM data
   .ORG 0x0
 :n_dev            .db 0
-:dev_table        .dw 0
+:dev_table        .db 0, 1, 2, 3 ,4 ,5 ,6 ,7, 8, 9 ,10, 'a', 'b', 0, 1, 2 ,3 ,4 ,5 ,6, 7, 8
 
   .ORG 0x0200 ; Some special variables
 :TDA_base_dev     .dw 0
