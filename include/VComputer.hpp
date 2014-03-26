@@ -84,6 +84,7 @@ namespace vm {
         ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0) {
 
           ram = new byte_t[ram_size];
+          std::fill_n(ram, ram_size, 0);
 
           // Add timers addresses
           Range pit_range(0x11E000, 0x11E010);
