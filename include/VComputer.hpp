@@ -28,7 +28,7 @@ namespace vm {
   const std::size_t MAX_RAM_SIZE  = 1024*1024;  /// Max RAM size
 
   const unsigned EnumCtrlBlkSize  = 20;         /// Enumeration and Control registers blk size
-  
+
   const unsigned BaseClock  = 1000000;          /// Computer Base Clock rate
 
   /**
@@ -94,6 +94,11 @@ namespace vm {
       ~VComputer () {
         if (ram != nullptr)
           delete[] ram;
+
+        // Drops plugged devices
+        for (unsigned i=0; i < MAX_N_DEVICES; i++) {
+          this->RmDevice(i);
+        }
       }
 
       /**

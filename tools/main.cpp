@@ -281,7 +281,7 @@ int main(int argc, char* argv[]) {
 
   auto ddev = std::make_shared<vm::DummyDevice>();
   vc.AddDevice(10, ddev);
-  
+
   vc.Reset();
 
   std::cout << "Run program (r) or Step Mode (s) ?\n";
@@ -506,6 +506,9 @@ int main(int argc, char* argv[]) {
   glfwos.Terminate();
 #endif
 
+  if (rom != nullptr) {
+    delete[] rom;
+  }
   return 0;
 }
 
