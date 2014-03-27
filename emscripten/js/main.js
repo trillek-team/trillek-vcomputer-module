@@ -92,8 +92,8 @@
   vm.SetTR3200CPU(100000);
   var tda = new Module.TDADev();
   vm.AddDevice(5, Module.TDADev.ToIDevice(tda));
-  //var key = new Module.GKeyboard(0,2);
-  //vm.AddKeyboard(3, key);
+  var gkey = new Module.GKeyboardDev();
+  vm.AddDevice(3, Module.GKeyboardDev.ToIDevice(gkey));
 
   // Generate a Buffer that bridges ToRGBATexture and WebGL texture
   // Get data byte size, allocate memory on Emscripten heap, and get pointer
@@ -446,7 +446,7 @@
 
       } else {
         vm.Tick(cycles, elapsed);
-        cycles = (100000.0 * elapsed * 0.001);
+        cycles = (1000000.0 * elapsed * 0.001);
         if (cycles <= 3)
           cycles = 3;
 
@@ -644,31 +644,25 @@
     'caps_lock' : false,
   };
 
-  $(document).on('keydown', function (evt) {
+  var prevKey; /*
+  $(document).keydown( function (evt) {
     // read : http://unixpapa.com/js/key.html
+   trace(' -> ' + evt);
     if (running) {
-      evt.preventDefault(); // Not anoying quick search in firefox
+      //evt.preventDefault(); // Not anoying quick search in firefox
       if (evt.repeat)
         return false; // Stops anoying repeat
 
-      /*var k = evt.keyCode;  // Note this gets scancodes !!!
-        if (k == 16) // Shift key
-        keyb.shift_key = true;
-
-        if (k == 20) // Caps locks key
-        keyb.caps_lock = ! keyb.caps_lock;
-        var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
-        if (! uppercase && (k >= 65 && k <= 90 )) // Undercase the scan codes
-        k = k +32;*/
-      var k = JSKeyCodeToTR3200(evt.keyCode);
+      //this['prevKey'] = evt.keyCode; //JSKeyCodeToTR3200(evt.keyCode);
       //key.PushKeyEvent (true, k);
     }
     return false;
-  });
+  });*/
 
-  $(document).on('keyup', function (evt) {
+  $(document).keypress( function (evt) {
+    trace(' -> ' + evt.which);
+    evt.preventDefault();
     if (running) {
-      evt.preventDefault();
       /*
          var k = evt.keyCode;
          if (k == 16) // Shift key
@@ -677,7 +671,7 @@
          var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
          if (! uppercase && (k >= 65 && k <= 90 ))
          k = k +32;*/
-      var k = JSKeyCodeToTR3200(evt.keyCode);
+      //var k = JSKeyCodeToTR3200(evt.keyCode);
       //key.PushKeyEvent (false, k);
     }
     return false;

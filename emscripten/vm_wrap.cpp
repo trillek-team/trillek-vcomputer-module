@@ -38,6 +38,14 @@ std::shared_ptr<vm::IDevice> TDAtoIDevice_(std::shared_ptr<vm::dev::tda::TDADev>
   return tda;
 }
 
+// Generic Keyboard
+//
+std::shared_ptr<vm::IDevice> GKeybtoIDevice_(std::shared_ptr<vm::dev::gkeyboard::GKeyboardDev> gk ) {
+  return gk;
+}
+
+// Bindings *******************************************************************
+
 EMSCRIPTEN_BINDINGS(trillek_vc) {
 
     class_<vm::VComputer>("VComputer")
@@ -66,12 +74,19 @@ EMSCRIPTEN_BINDINGS(trillek_vc) {
       .constructor()
       .function("toRGBATexture",&WriteTDATexture_)
       ;
-    
+
     class_<vm::dev::tda::TDADev>("TDADev")
       .smart_ptr_constructor(   &std::make_shared<vm::dev::tda::TDADev>)
       .function("DumpScreen",   &vm::dev::tda::TDADev::DumpScreen)
       .function("DoVSync",      &vm::dev::tda::TDADev::DoVSync)
       .class_function("ToIDevice", &TDAtoIDevice_)
+      ;
+
+    // Genetic Keyboard
+    class_<vm::dev::gkeyboard::GKeyboardDev>("GKeyboardDev")
+      .smart_ptr_constructor(   &std::make_shared<vm::dev::gkeyboard::GKeyboardDev>)
+      .function("SendKeyEvent", &vm::dev::gkeyboard::GKeyboardDev::SendKeyEvent)
+      .class_function("ToIDevice", &GKeybtoIDevice_)
       ;
 }
 
