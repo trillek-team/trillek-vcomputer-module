@@ -1,3 +1,6 @@
+var prevKey;
+var kmod;
+
 +function ($) { "use strict";
 
   // Trace function to console
@@ -644,35 +647,29 @@
     'caps_lock' : false,
   };
 
-  var prevKey; /*
   $(document).keydown( function (evt) {
     // read : http://unixpapa.com/js/key.html
-   trace(' -> ' + evt);
+    var kCode = evt.charCode || evt.keyCode;
+    //trace('down -> ' + kCode);
     if (running) {
       //evt.preventDefault(); // Not anoying quick search in firefox
       if (evt.repeat)
         return false; // Stops anoying repeat
 
-      //this['prevKey'] = evt.keyCode; //JSKeyCodeToTR3200(evt.keyCode);
-      //key.PushKeyEvent (true, k);
+      prevKey = JSKeyCodeToTR3200(kCode);
     }
-    return false;
-  });*/
+    return true;
+  });
 
   $(document).keypress( function (evt) {
-    trace(' -> ' + evt.which);
+    trace('scan: '+ prevKey+ ' key: ' + evt.which);
     evt.preventDefault();
     if (running) {
-      /*
-         var k = evt.keyCode;
-         if (k == 16) // Shift key
-         keyb.shift_key = false;
-
-         var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
-         if (! uppercase && (k >= 65 && k <= 90 ))
-         k = k +32;*/
-      //var k = JSKeyCodeToTR3200(evt.keyCode);
-      //key.PushKeyEvent (false, k);
+      var chr = evt.which;
+      if (chr === 0x7F) {
+        chr = 0x05; // KEY_DELETE
+      }
+      gkey.EnforceSendKeyEvent (prevKey, chr, 0);
     }
     return false;
   });

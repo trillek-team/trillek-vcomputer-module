@@ -86,6 +86,7 @@ EMSCRIPTEN_BINDINGS(trillek_vc) {
     class_<vm::dev::gkeyboard::GKeyboardDev>("GKeyboardDev")
       .smart_ptr_constructor(   &std::make_shared<vm::dev::gkeyboard::GKeyboardDev>)
       .function("SendKeyEvent", &vm::dev::gkeyboard::GKeyboardDev::SendKeyEvent)
+      .function("EnforceSendKeyEvent", &vm::dev::gkeyboard::GKeyboardDev::EnforceSendKeyEvent)
       .class_function("ToIDevice", &GKeybtoIDevice_)
       ;
 }
