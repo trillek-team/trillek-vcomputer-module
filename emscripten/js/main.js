@@ -89,10 +89,11 @@
   }
 
   var vm = new Module.VComputer(128*1024);
-  //var cda = new Module.CDA(0,0);
+  vm.SetTR3200CPU(100000);
+  var tda = new Module.TDADev();
+  vm.AddDevice(5, Module.TDADev.ToIDevice(tda));
   //var key = new Module.GKeyboard(0,2);
   //vm.AddKeyboard(3, key);
-  //vm.AddCDA(5, cda);
 
   // Generate a Buffer that bridges ToRGBATexture and WebGL texture
   // Get data byte size, allocate memory on Emscripten heap, and get pointer
@@ -206,9 +207,12 @@
    * Updated Texture with CDA last state
    * Also In Canvas 2d API redraws it
    */
-  function updateTexture(texture, cda) {
+  function updateTexture(texture, tda) {
+    var dump = new Module.TDAScreen();
+    tda.DumpScreen(dump);
     if (mode2d) {
-      //cda.ToRGBATexture(texture.rawdata.byteOffset);
+      dump.toRGBATexture(texture.rawdata.byteOffset);
+
       var buf8 = new Uint8ClampedArray(texture.rawdata);
       imageData.data.set(buf8);
       // We paint in a temporal canvas to use canvas scale
@@ -221,13 +225,13 @@
     } else {
       gl.bindTexture(gl.TEXTURE_2D, texture);
 
-      //cda.ToRGBATexture(texture.rawdata.byteOffset);
+      dump.toRGBATexture(texture.rawdata.byteOffset);
 
       gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0 , 320, 240,
                        gl.RGBA, gl.UNSIGNED_BYTE, texture.rawdata);
                        gl.bindTexture(gl.TEXTURE_2D, null);
     }
-    cda.VSync();
+    tda.DoVSync();
   }
 
   /**
@@ -251,7 +255,9 @@
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     // Call function and get result
-    //cda.ToRGBATexture(texture.rawdata.byteOffset);
+    var dump = new Module.TDAScreen();
+    tda.DumpScreen(dump);
+    dump.toRGBATexture(texture.rawdata.byteOffset);
 
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 320, 240, 0,
                   gl.RGBA, gl.UNSIGNED_BYTE, texture.rawdata);
@@ -406,8 +412,8 @@
   var updTexTime = 40;
   var updSpeed = 3000;
 
-  var cycles = 1750; // How many cycles are being executed in a bath
-  var tms = (cycles / 100000.0) * 1000; // Time in ms that should be running
+  var cycles = 17500; // How many cycles are being executed in a bath
+  var tms = (cycles / 1000000.0) * 1000; // Time in ms that should be running
 
   var running = false;  // Looping ?
   var step_mode = false; // Step mode ?
@@ -425,7 +431,7 @@
         //$('#pc_ex').text( decimalToHex(vm.PC()) );
         //$('#instr').text( vm.Disassembly() );
 
-        //var ticks = vm.Step(elapsed);
+        var ticks = vm.Step(elapsed);
 
         // Update VM machine state display
         for (var i=0; i <= 11; i++ ) {
@@ -439,7 +445,7 @@
         //$('#flags').text( decimalToHex(vm.Reg(15)) );
 
       } else {
-        //vm.Tick(cycles, elapsed);
+        vm.Tick(cycles, elapsed);
         cycles = (100000.0 * elapsed * 0.001);
         if (cycles <= 3)
           cycles = 3;
@@ -450,7 +456,7 @@
 
       updTexTime += elapsed;
       if (updTexTime >= 40) { // 25 FPS in milliseconds
-        //updateTexture(glTexture, cda);
+        updateTexture(glTexture, tda);
         updTexTime -= 40;
       }
 
@@ -515,7 +521,7 @@
 
   // Reset button
   $('#reset_btn').on('click', function (evt) {
-    //vm.Reset();
+    vm.Reset();
 
     if (!mode2d) {
       cleanTexture(glTexture);
@@ -596,7 +602,7 @@
             fileHeap = new Uint8Array(Module.HEAPU8.buffer, filePtr, bytes);
             var tmp = new Uint8Array(reader.result, 0, bytes);
             fileHeap.set(tmp);
-            //vm.SetROM(fileHeap.byteOffset, bytes);
+            vm.SetROM(fileHeap.byteOffset, bytes);
             // Free memory
             //Module._free(fileHeap.byteOffset);
 
@@ -613,7 +619,7 @@
         $('#webgl').prop('checked', ! mode2d);
         $('#webgl').prop('disabled', true);
 
-        //vm.Reset(); // Enforces reset
+        vm.Reset(); // Enforces reset
       } else {
         trace('The File APIs are not fully supported in this browser.');
       }
