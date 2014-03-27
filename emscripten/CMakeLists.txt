@@ -7,12 +7,12 @@ SET(linkFlags " --bind ${linkFlags}")
 
 # Fake executable
 add_executable( vm
-  ${TR3200_SRC}
+  ${VCOMPUTER_SRC}
   ./vm_wrap.cpp
   )
 
 include_directories( vm
-  ${TR3200_INCLUDE_DIRS}
+  ${VCOMPUTER_INCLUDE_DIRS}
   
   )
 

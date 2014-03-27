@@ -1,29 +1,24 @@
 +function ($) { "use strict";
 
   // Trace function to console
-  var debug_trace = true;
   function trace( msg ) {
-    if (typeof debug_trace != 'undefined' && debug_trace) {
-      if (window.console) {
-          console.log(msg);
-      } else if ( typeof( jsTrace ) != 'undefined' ) {
-          jsTrace.send( msg );
-      } else {
-          //alert(msg);
-      }
+    if (window.console) {
+      console.log(msg);
+    } else if ( typeof( jsTrace ) != 'undefined' ) {
+      jsTrace.send( msg );
     }
   };
 
   // Beauty hexadecimal numbers
   function decimalToHex(d, padding) {
     if (d < 0)
-    	d = 0xFFFFFFFF + d + 1;
+      d = 0xFFFFFFFF + d + 1;
 
     var hex = Number(d).toString(16).toUpperCase();
     padding = typeof (padding) === "undefined" || padding === null ? padding = 8 : padding;
 
     while (hex.length < padding) {
-        hex = "0" + hex;
+      hex = "0" + hex;
     }
 
     return hex;
@@ -40,36 +35,36 @@
   function JSKeyCodeToTR3200 (key) {
     switch (key) {
       case 16: // Shift
-        return 0x0E; 
-      
+        return 0x0E;
+
       case 17: // Control
-        return 0x0F; 
-    
+        return 0x0F;
+
       case 18:  // Alt
-      case 225: // Alt Gr
+        case 225: // Alt Gr
         return 0x06;
 
       case 16: // Shift
-        return 0x0E; 
-    
+        return 0x0E;
+
       case 37: // Left arrow
-        return 0x14; 
-    
+        return 0x14;
+
       case 38: // Up arrow
-        return 0x12; 
-    
+        return 0x12;
+
       case 39: // Right arrow
-        return 0x15; 
-    
+        return 0x15;
+
       case 40: // Down arrow
-        return 0x13; 
-    
+        return 0x13;
+
       case 45: // Insert
-        return 0x10; 
-    
+        return 0x10;
+
       case 46: // Delete
-        return 0x05; 
-  
+        return 0x05;
+
       case 219: // Left Bracket
         return 0x5B;
 
@@ -93,13 +88,13 @@
     return key;
   }
 
-  var vm = new Module.VirtualComputer(128*1024);
-  var cda = new Module.CDA(0,0);
-  var key = new Module.GKeyboard(0,2);
-  vm.AddKeyboard(3, key);
-  vm.AddCDA(5, cda);
+  var vm = new Module.VComputer(128*1024);
+  //var cda = new Module.CDA(0,0);
+  //var key = new Module.GKeyboard(0,2);
+  //vm.AddKeyboard(3, key);
+  //vm.AddCDA(5, cda);
 
-  // Generate a Buffer that bridges ToRGBATexture and WebGL texture 
+  // Generate a Buffer that bridges ToRGBATexture and WebGL texture
   // Get data byte size, allocate memory on Emscripten heap, and get pointer
   var nBytes = 320*240*4;
   var texturePtr = Module._malloc(nBytes);
@@ -107,26 +102,26 @@
   // Creates a Type Array using this emscripten heap memory block
   var textureHeap = new Uint8Array(Module.HEAPU8.buffer, texturePtr, nBytes);
   for (var i=0; i < 320*240*4; i = i + 4) // And fill it of black
-    textureHeap.set([0, 0 ,0 ,0], i);
+  textureHeap.set([0, 0 ,0 ,0], i);
 
 
-  
+
   var canvas;         // Canvas were to write
   var mode2d = false; // We must use canvas 2D ?
   var context;        // Canvas 2D context
   var imageData;
-  
+
   // WebGL stuff
   var gl;                       // WebGL context
-  
+
   var shaderProgram;            // Id of linked shader program
-  
+
   var glTexture;                // Id of WebGL texture were to paint CDA screen
-  
+
   var VPBuffer;                 // Vertex Position Buffer
   var VTexCoordBuffer;          // Vertex UV coord Buffer
   var VIndexBuffer;             // Vertex Index Buffer
-  
+
   var mvMatrix = mat4.create(); // Model-View matrix
   var mvMatrixStack = [];
   var pMatrix = mat4.create();  // Proy matrix
@@ -138,7 +133,7 @@
     gl = canvas.getContext("experimental-webgl");
     gl.viewportWidth = canvas.width;
     gl.viewportHeight = canvas.height;
-    
+
     if (!gl) {
       throw("Could not initialise WebGL, sorry :-(");
     }
@@ -182,29 +177,29 @@
 
   // Initialize and load the shaders
   function initShaders() {
-      var fragmentShader = getShader(gl, "shader-fs");
-      var vertexShader = getShader(gl, "shader-vs");
+    var fragmentShader = getShader(gl, "shader-fs");
+    var vertexShader = getShader(gl, "shader-vs");
 
-      shaderProgram = gl.createProgram();
-      gl.attachShader(shaderProgram, vertexShader);
-      gl.attachShader(shaderProgram, fragmentShader);
-      gl.linkProgram(shaderProgram);
+    shaderProgram = gl.createProgram();
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+    gl.linkProgram(shaderProgram);
 
-      if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-          throw "Could not initialise shaders";
-      }
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+      throw "Could not initialise shaders";
+    }
 
-      gl.useProgram(shaderProgram);
+    gl.useProgram(shaderProgram);
 
-      shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-      gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
 
-      shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
-      gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+    shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+    gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
 
-      shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-      shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-      shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+    shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+    shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+    shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
   }
 
   /**
@@ -213,7 +208,7 @@
    */
   function updateTexture(texture, cda) {
     if (mode2d) {
-      cda.ToRGBATexture(texture.rawdata.byteOffset);
+      //cda.ToRGBATexture(texture.rawdata.byteOffset);
       var buf8 = new Uint8ClampedArray(texture.rawdata);
       imageData.data.set(buf8);
       // We paint in a temporal canvas to use canvas scale
@@ -221,33 +216,32 @@
         .attr("width", 320)
         .attr("height", 240)[0];
       newCanvas.getContext("2d").putImageData(imageData, 0, 0);
-      context.drawImage(newCanvas, 0, 0); 
+      context.drawImage(newCanvas, 0, 0);
 
     } else {
       gl.bindTexture(gl.TEXTURE_2D, texture);
-      
-      cda.ToRGBATexture(texture.rawdata.byteOffset);
-    
-      gl.texSubImage2D(gl.TEXTURE_2D, 0, 
-          0, 0 , 320, 240,
-          gl.RGBA, gl.UNSIGNED_BYTE, texture.rawdata);
-      gl.bindTexture(gl.TEXTURE_2D, null);
+
+      //cda.ToRGBATexture(texture.rawdata.byteOffset);
+
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0 , 320, 240,
+                       gl.RGBA, gl.UNSIGNED_BYTE, texture.rawdata);
+                       gl.bindTexture(gl.TEXTURE_2D, null);
     }
     cda.VSync();
   }
-  
+
   /**
    * Cleans the texture
    */
   function cleanTexture(texture) {
     for (var i=0; i < 320*240*4; i = i + 4) // Fill screen texture of black
-      texture.rawdata.set([0, 0 ,0 ,0], i);
-    
+    texture.rawdata.set([0, 0 ,0 ,0], i);
+
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texSubImage2D(gl.TEXTURE_2D, 0, 
-        0, 0 , 320, 240,
-        gl.RGBA, gl.UNSIGNED_BYTE, texture.rawdata);
-    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0,
+                     0, 0 , 320, 240,
+                     gl.RGBA, gl.UNSIGNED_BYTE, texture.rawdata);
+                     gl.bindTexture(gl.TEXTURE_2D, null);
   }
 
 
@@ -257,15 +251,15 @@
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     // Call function and get result
-    cda.ToRGBATexture(texture.rawdata.byteOffset);
-  
+    //cda.ToRGBATexture(texture.rawdata.byteOffset);
+
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 320, 240, 0,
-        gl.RGBA, gl.UNSIGNED_BYTE, texture.rawdata);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); 
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.bindTexture(gl.TEXTURE_2D, null);
+                  gl.RGBA, gl.UNSIGNED_BYTE, texture.rawdata);
+                  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                  gl.bindTexture(gl.TEXTURE_2D, null);
   }
 
   // Init the texture
@@ -280,59 +274,59 @@
   }
 
   function mvPushMatrix() {
-      var copy = mat4.create();
-      mat4.set(mvMatrix, copy);
-      mvMatrixStack.push(copy);
+    var copy = mat4.create();
+    mat4.set(mvMatrix, copy);
+    mvMatrixStack.push(copy);
   }
 
   function mvPopMatrix() {
-      if (mvMatrixStack.length == 0) {
-          throw "Invalid popMatrix!";
-      }
-      mvMatrix = mvMatrixStack.pop();
+    if (mvMatrixStack.length == 0) {
+      throw "Invalid popMatrix!";
+    }
+    mvMatrix = mvMatrixStack.pop();
   }
 
   function setMatrixUniforms() {
-      gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
-      gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+    gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+    gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
   }
 
   // Init Vertex Buffers
   function initBuffers() {
-      VPBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, VPBuffer);
-      var vertices = [
-          // Front face
-          -3.2, -2.4,  0.0,
-           3.2, -2.4,  0.0,
-           3.2,  2.4,  0.0,
-          -3.2,  2.4,  0.0,
-      ];
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-      VPBuffer.itemSize = 3;
-      VPBuffer.numItems = 4;
+    VPBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, VPBuffer);
+    var vertices = [
+      // Front face
+      -3.2, -2.4,  0.0,
+      3.2, -2.4,  0.0,
+      3.2,  2.4,  0.0,
+      -3.2,  2.4,  0.0,
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    VPBuffer.itemSize = 3;
+    VPBuffer.numItems = 4;
 
-      VTexCoordBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, VTexCoordBuffer);
-      var textureCoords = [
-        // Front face
-        0.0, 0.0,
-        1.0, 0.0,
-        1.0, 1.0,
-        0.0, 1.0,
-      ];
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
-      VTexCoordBuffer.itemSize = 2;
-      VTexCoordBuffer.numItems = 4;
+    VTexCoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, VTexCoordBuffer);
+    var textureCoords = [
+      // Front face
+      0.0, 0.0,
+      1.0, 0.0,
+      1.0, 1.0,
+      0.0, 1.0,
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+    VTexCoordBuffer.itemSize = 2;
+    VTexCoordBuffer.numItems = 4;
 
-      VIndexBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, VIndexBuffer);
-      var vertexIndices = [
-          0, 1, 2,      0, 2, 3,    // Front face
-      ];
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW);
-      VIndexBuffer.itemSize = 1;
-      VIndexBuffer.numItems = 6;
+    VIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, VIndexBuffer);
+    var vertexIndices = [
+      0, 1, 2,      0, 2, 3,    // Front face
+    ];
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW);
+    VIndexBuffer.itemSize = 1;
+    VIndexBuffer.numItems = 6;
   }
 
   // Update WebGL scene
@@ -356,7 +350,7 @@
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, glTexture);
     gl.uniform1i(shaderProgram.samplerUniform, 0);
-    
+
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, VIndexBuffer);
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, VIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
@@ -382,10 +376,10 @@
 
           gl.clearColor(0.2, 0.2, 0.2, 1.0);
           gl.enable(gl.DEPTH_TEST);
-    
+
           gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        
+
         } catch (e) {
           trace(e);
           mode2d = true;
@@ -417,35 +411,35 @@
 
   var running = false;  // Looping ?
   var step_mode = false; // Step mode ?
-  
+
   function tick() { // This is executed every tick
     if (running)
       requestAnimFrame(tick);
 
-    var timeNow = new Date().getTime(); 
+    var timeNow = new Date().getTime();
     if (lastTime != 0) {
       var elapsed = timeNow - lastTime;
       //trace("PC:" + vm.PC());
       if (step_mode) {
         step_mode = false;
-        $('#pc_ex').text( decimalToHex(vm.PC()) );
-        $('#instr').text( vm.Disassembly() );
-        
-        var ticks = vm.Step(elapsed);
-        
+        //$('#pc_ex').text( decimalToHex(vm.PC()) );
+        //$('#instr').text( vm.Disassembly() );
+
+        //var ticks = vm.Step(elapsed);
+
         // Update VM machine state display
         for (var i=0; i <= 11; i++ ) {
-          var r = vm.Reg(i);
-          $('#r' + i.toString() ).text( decimalToHex(r) );
+          //var r = vm.Reg(i);
+          //$('#r' + i.toString() ).text( decimalToHex(r) );
         }
-        
-        $('#bp').text( decimalToHex(vm.Reg(12)) );
-        $('#sp').text( decimalToHex(vm.Reg(13)) );
-        $('#ia').text( decimalToHex(vm.Reg(14)) );
-        $('#flags').text( decimalToHex(vm.Reg(15)) );
+
+        //$('#bp').text( decimalToHex(vm.Reg(12)) );
+        //$('#sp').text( decimalToHex(vm.Reg(13)) );
+        //$('#ia').text( decimalToHex(vm.Reg(14)) );
+        //$('#flags').text( decimalToHex(vm.Reg(15)) );
 
       } else {
-        vm.Tick(cycles, elapsed);
+        //vm.Tick(cycles, elapsed);
         cycles = (100000.0 * elapsed * 0.001);
         if (cycles <= 3)
           cycles = 3;
@@ -456,7 +450,7 @@
 
       updTexTime += elapsed;
       if (updTexTime >= 40) { // 25 FPS in milliseconds
-        updateTexture(glTexture, cda);
+        //updateTexture(glTexture, cda);
         updTexTime -= 40;
       }
 
@@ -470,7 +464,7 @@
 
     if (! mode2d)
       drawSceneGL();
-    
+
     lastTime = timeNow;
   }
 
@@ -508,7 +502,7 @@
       $('#reset_btn').prop('disabled', false);
       $('#step_btn').prop('disabled', false);
       $('#load_btn').prop('disabled', false);
-    
+
     } else {
       running = true;
       tick();
@@ -518,10 +512,10 @@
       $('#load_btn').prop('disabled', true);
     }
   });
-  
+
   // Reset button
   $('#reset_btn').on('click', function (evt) {
-    vm.Reset();
+    //vm.Reset();
 
     if (!mode2d) {
       cleanTexture(glTexture);
@@ -537,9 +531,9 @@
     if (! running) {
       step_mode = true;
       tick();
-    } 
+    }
   });
- 
+
   // File chooser
   var selector = $('#romfile');
   if (isIE()) { // Piece of crap of IE !!!
@@ -597,18 +591,18 @@
             var filePtr;
             var fileHeap;
             // Get data byte size, allocate memory on Emscripten heap, and get pointer
-            filePtr = Module._malloc(bytes); 
+            filePtr = Module._malloc(bytes);
             // Creates a Type Array using this emscripten heap memory block
             fileHeap = new Uint8Array(Module.HEAPU8.buffer, filePtr, bytes);
             var tmp = new Uint8Array(reader.result, 0, bytes);
             fileHeap.set(tmp);
-            vm.WriteROM(fileHeap.byteOffset, bytes);
+            //vm.SetROM(fileHeap.byteOffset, bytes);
             // Free memory
-            Module._free(fileHeap.byteOffset);
+            //Module._free(fileHeap.byteOffset);
 
           };
         })(file);
-        
+
         reader.readAsArrayBuffer(file)
         $("#run_btn").prop('disabled', false);
         $('#step_btn').prop('disabled', false);
@@ -619,7 +613,7 @@
         $('#webgl').prop('checked', ! mode2d);
         $('#webgl').prop('disabled', true);
 
-        vm.Reset(); // Enforces reset
+        //vm.Reset(); // Enforces reset
       } else {
         trace('The File APIs are not fully supported in this browser.');
       }
@@ -650,35 +644,35 @@
       evt.preventDefault(); // Not anoying quick search in firefox
       if (evt.repeat)
         return false; // Stops anoying repeat
-      
+
       /*var k = evt.keyCode;  // Note this gets scancodes !!!
-      if (k == 16) // Shift key
+        if (k == 16) // Shift key
         keyb.shift_key = true;
-      
-      if (k == 20) // Caps locks key
+
+        if (k == 20) // Caps locks key
         keyb.caps_lock = ! keyb.caps_lock;
-      var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
-      if (! uppercase && (k >= 65 && k <= 90 )) // Undercase the scan codes
+        var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
+        if (! uppercase && (k >= 65 && k <= 90 )) // Undercase the scan codes
         k = k +32;*/
       var k = JSKeyCodeToTR3200(evt.keyCode);
-      key.PushKeyEvent (true, k);
+      //key.PushKeyEvent (true, k);
     }
     return false;
   });
-  
+
   $(document).on('keyup', function (evt) {
     if (running) {
       evt.preventDefault();
       /*
-      var k = evt.keyCode;
-      if (k == 16) // Shift key
-        keyb.shift_key = false;
+         var k = evt.keyCode;
+         if (k == 16) // Shift key
+         keyb.shift_key = false;
 
-      var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
-      if (! uppercase && (k >= 65 && k <= 90 ))
-        k = k +32;*/
+         var uppercase = (keyb.caps_lock && !keyb.shift_key) || (!keyb.caps_lock && keyb.shift_key) ;
+         if (! uppercase && (k >= 65 && k <= 90 ))
+         k = k +32;*/
       var k = JSKeyCodeToTR3200(evt.keyCode);
-      key.PushKeyEvent (false, k);
+      //key.PushKeyEvent (false, k);
     }
     return false;
   });
