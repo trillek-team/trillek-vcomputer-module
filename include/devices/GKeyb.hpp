@@ -131,6 +131,14 @@ namespace vm {
        * Western / Latin generic keyboard
        */
       class GKeyboardDev : public IDevice {
+        protected:
+          word_t a, b, c;
+
+          std::deque<dword_t> keybuffer;    /// Stores the key events
+
+          word_t int_msg;
+          bool do_int;
+
         public:
 
           GKeyboardDev () : int_msg(0), do_int(false) {
@@ -311,13 +319,6 @@ namespace vm {
             keybuffer.push_back(keyevent);
           }
 
-        protected:
-          word_t a, b, c;
-
-          std::deque<dword_t> keybuffer;    /// Stores the key events
-
-          word_t int_msg;
-          bool do_int;
       };
 
 

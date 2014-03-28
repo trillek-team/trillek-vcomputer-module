@@ -90,7 +90,7 @@ end_search_gkeyb:
   ADD %r0, %r0, 0x001000
 
   ; Makes the cursor to blink
-  LOAD %r3, blink
+  LOAD.B %r3, blink
   ADD %r3, %r3, 1
   IFL %r3, 256
     RJMP  blink_off
@@ -101,20 +101,20 @@ end_search_gkeyb:
   MOV %r3, 0        ; Resets the counter
 
 :blink_on_real
-  STORE blink, %r3  ; Increment value in blink variable
+  STORE.W blink, %r3; Increment value in blink variable
 
   ADD %r8, %r0, 1   ; We only need to change colors
   MOV %r3, 0xF4     ; White paper, Dark blue Ink
-  STORE.B %r8, %r3
+  STORE.W %r8, %r3
 
   JMP read_keyb
 
 :blink_off
-  STORE blink, %r3  ; Increment value in blink variable
+  STORE.W blink, %r3; Increment value in blink variable
 
   ADD %r8, %r0, 1   ; We only need to change colors
   MOV %r3, 0x4F     ; Dark blue paper, White Ink
-  STORE.B %r8, %r3
+  STORE.W %r8, %r3
 
 
 ;******************************************************************************
@@ -267,9 +267,9 @@ str_not_found:
 
 :col .db 0
 :row .db 0
-:blink .db 0
+:blink .dw 0
 
   .ORG 0x0100 ; Some special variables
-:TDA_base_dev     .dw 0
-:GKeyb_base_dev   .dw 0
+:TDA_base_dev     .dd 0
+:GKeyb_base_dev   .dd 0
 
