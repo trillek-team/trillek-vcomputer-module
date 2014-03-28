@@ -272,7 +272,7 @@ clr_screen_loop:
 
 ;******************************************************************************
 ; hwn function Counts the number plugged devices and generate a list of the
-: slots were they are plugged.
+; slots were they are plugged.
 ; $r0 <- Ptr. were to write the list
 ; Each entry of the list, uses 1 byte, and contains the slot were is plugged.
 ; return Number of devices
