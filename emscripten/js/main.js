@@ -92,7 +92,7 @@ var kmod;
   }
 
   var vm = new Module.VComputer(128*1024);
-  vm.SetTR3200CPU(100000);
+  Module.SetTR3200CPU(vm, 100000);
   var tda = new Module.TDADev();
   vm.AddDevice(5, Module.TDADev.ToIDevice(tda));
   var gkey = new Module.GKeyboardDev();
@@ -426,28 +426,31 @@ var kmod;
       requestAnimFrame(tick);
 
     var timeNow = new Date().getTime();
-    if (lastTime != 0) {
+    if (lastTime != 0) {  
       var elapsed = timeNow - lastTime;
-      //trace("PC:" + vm.PC());
-      if (step_mode) {
+
+      if (step_mode) {    // Step mode ! **************************************
         step_mode = false;
-        //$('#pc_ex').text( decimalToHex(vm.PC()) );
-        //$('#instr').text( vm.Disassembly() );
+        var state = new Module.TR3200State();
+        Module.GetTR3200State(vm, state);
+
+        $('#pc_ex').text( decimalToHex(state.GetPC()) );
+        $('#instr').text( Module.DisassemblyTR3200(vm, state.GetPC()) );
 
         var ticks = vm.Step(elapsed);
 
         // Update VM machine state display
         for (var i=0; i <= 11; i++ ) {
-          //var r = vm.Reg(i);
-          //$('#r' + i.toString() ).text( decimalToHex(r) );
+          var r = state.GetR(i);
+          $('#r' + i.toString() ).text( decimalToHex(r) );
         }
 
-        //$('#bp').text( decimalToHex(vm.Reg(12)) );
-        //$('#sp').text( decimalToHex(vm.Reg(13)) );
-        //$('#ia').text( decimalToHex(vm.Reg(14)) );
-        //$('#flags').text( decimalToHex(vm.Reg(15)) );
+        $('#bp').text( decimalToHex(state.GetR(12)) );
+        $('#sp').text( decimalToHex(state.GetR(13)) );
+        $('#ia').text( decimalToHex(state.GetR(14)) );
+        $('#flags').text( decimalToHex(state.GetR(15)) );
 
-      } else {
+      } else {  // Run mode ! *************************************************
         vm.Tick(cycles, elapsed);
         cycles = (1000000.0 * elapsed * 0.001);
         if (cycles <= 3)
