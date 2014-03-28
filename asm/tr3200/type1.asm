@@ -90,7 +90,7 @@ end_search_gkeyb:
   ADD %r0, %r0, 0x001000
 
   ; Makes the cursor to blink
-  LOAD.B %r3, blink
+  LOAD.W %r3, blink
   ADD %r3, %r3, 1
   IFL %r3, 256
     RJMP  blink_off
@@ -104,8 +104,8 @@ end_search_gkeyb:
   STORE.W blink, %r3; Increment value in blink variable
 
   ADD %r8, %r0, 1   ; We only need to change colors
-  MOV %r3, 0xF4     ; White paper, Dark blue Ink
-  STORE.W %r8, %r3
+  MOV %r3, 0xF4    ; White paper, Dark blue Ink
+  STORE.B %r8, %r3
 
   JMP read_keyb
 
@@ -114,7 +114,7 @@ end_search_gkeyb:
 
   ADD %r8, %r0, 1   ; We only need to change colors
   MOV %r3, 0x4F     ; Dark blue paper, White Ink
-  STORE.W %r8, %r3
+  STORE.B %r8, %r3
 
 
 ;******************************************************************************
