@@ -1,5 +1,5 @@
-var prevKey;
-var kmod;
+var prevKey = 0;
+var kmod = 0;
 
 +function ($) { "use strict";
 
@@ -35,53 +35,55 @@ var kmod;
   /**
    * Convert JS KeyCodes from evt.keyCode to TR3200 keyboard codes
    */
-  function JSKeyCodeToTR3200 (key) {
+  function JSKeyCodeToScanCode (key) {
     switch (key) {
+      case 13: // Return
+        return 257;
+
       case 16: // Shift
-        return 0x0E;
+        return 340;
 
       case 17: // Control
-        return 0x0F;
+        return 341;
 
       case 18:  // Alt
-        case 225: // Alt Gr
-        return 0x06;
+        return 342;
 
-      case 16: // Shift
-        return 0x0E;
+      case 225: // Alt Gr
+        return 346;
 
       case 37: // Left arrow
-        return 0x14;
+        return 263;
 
       case 38: // Up arrow
-        return 0x12;
+        return 265;
 
       case 39: // Right arrow
-        return 0x15;
+        return 262;
 
       case 40: // Down arrow
-        return 0x13;
+        return 264;
 
       case 45: // Insert
-        return 0x10;
+        return 260;
 
       case 46: // Delete
-        return 0x05;
+        return 261;
 
       case 219: // Left Bracket
-        return 0x5B;
+        return 91;
 
       case 221: // Right Bracket
-        return 0x5D;
+        return 93;
 
       case 222: // Apostrophe (' ")
-        return 0x27;
+        return 39;
 
       case 188: // Comma (, < )
-        return 0x2C;
+        return 44;
 
       case 190: // Period (. >)
-        return 0x2E;
+        return 46;
 
       // TODO More cases
 
@@ -426,7 +428,7 @@ var kmod;
       requestAnimFrame(tick);
 
     var timeNow = new Date().getTime();
-    if (lastTime != 0) {  
+    if (lastTime != 0) {
       var elapsed = timeNow - lastTime;
 
       if (step_mode) {    // Step mode ! **************************************
@@ -650,29 +652,93 @@ var kmod;
     'caps_lock' : false,
   };
 
+  // Keyboard events to feed the generic keyboard
   $(document).keydown( function (evt) {
     // read : http://unixpapa.com/js/key.html
     var kCode = evt.charCode || evt.keyCode;
-    //trace('down -> ' + kCode);
     if (running) {
-      //evt.preventDefault(); // Not anoying quick search in firefox
-      if (evt.repeat)
-        return false; // Stops anoying repeat
+      trace('down -> ' + kCode);
+      prevKey = JSKeyCodeToScanCode(kCode);
 
-      prevKey = JSKeyCodeToTR3200(kCode);
+      switch (prevKey) { // Keys that not generate a keypress event
+        case 340:
+        case 344:   // Shift
+          gkey.EnforceSendKeyEvent (prevKey, 0x0E, kmod);
+          kmod |= 1;
+          break;
+
+        case 341:
+        case 345:   // Ctrl
+          gkey.EnforceSendKeyEvent (prevKey, 0x0F, kmod);
+          kmod |= 2;
+          break;
+
+        case 342:
+        case 346:   // Alt
+          gkey.EnforceSendKeyEvent (prevKey, 0x06, kmod);
+          kmod |= 3;
+          break;
+
+        default:
+          break;
+      }
+    }
+    return true;
+  });
+
+  $(document).keyup( function (evt) { // We only use this to change kmod value
+    var kCode = evt.charCode || evt.keyCode;
+    if (running) {
+      prevKey = JSKeyCodeToScanCode(kCode);
+
+      switch (prevKey) { // Keys that not generate a keypress event
+        case 340:
+        case 344:   // Shift
+          kmod &= (1 ^0xFFFF);
+          break;
+
+        case 341:
+        case 345:   // Ctrl
+          kmod &= (2 ^0xFFFF);
+          break;
+
+        case 342:
+        case 346:   // Alt
+          kmod &= (3 ^0xFFFF);
+          break;
+
+        default:
+          break;
+      }
     }
     return true;
   });
 
   $(document).keypress( function (evt) {
-    trace('scan: '+ prevKey+ ' key: ' + evt.which);
     evt.preventDefault();
     if (running) {
-      var chr = evt.which;
-      if (chr === 0x7F) {
-        chr = 0x05; // KEY_DELETE
+      var chr = evt.which & 0xFF; // Ascii / Latin 1
+      switch (prevKey) {
+        case 257: // Return
+          chr = 0x0D;
+          break;
+
+        case 262: // Right Arrow
+          chr = 0x15;
+          break;
+
+        case 263: // Left Arrow
+          chr = 0x14;
+          break;
+
+        // TODO More cases
+
+        default:
+          break;
+
       }
-      gkey.EnforceSendKeyEvent (prevKey, chr, 0);
+      trace('scan: '+ prevKey + ' key: ' + chr + ' mod: ' + kmod);
+      gkey.EnforceSendKeyEvent (prevKey, chr, kmod);
     }
     return false;
   });
