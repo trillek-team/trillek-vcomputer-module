@@ -14,7 +14,7 @@
 namespace vm {
   namespace cpu {
 
-    std::string Disassembly (const VComputer& vc, dword_t pc) {
+    std::string DisassemblyTR3200 (const VComputer& vc, dword_t pc) {
 #define BUF_SIZE (32)
       char buf[BUF_SIZE] = {0};
 
