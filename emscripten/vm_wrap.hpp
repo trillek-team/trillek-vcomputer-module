@@ -5,7 +5,7 @@
  */
 
 #include "VC.hpp"
-#include "DisTR3200.hpp"
+#include "TR3200/DisTR3200.hpp"
 
 // Wrapper functions **********************************************************
 // Generic

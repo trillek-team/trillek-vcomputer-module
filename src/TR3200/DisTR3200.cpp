@@ -4,9 +4,9 @@
  */
 
 #include "VComputer.hpp"
-#include "DisTR3200.hpp"
-#include "TR3200_opcodes.hpp"
-#include "TR3200_macros.hpp"
+#include "TR3200/DisTR3200.hpp"
+#include "TR3200/TR3200_opcodes.hpp"
+#include "TR3200/TR3200_macros.hpp"
 #include "VSFix.hpp"
 
 #include <cstdio>

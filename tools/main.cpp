@@ -6,7 +6,7 @@
 
 #include "VC.hpp"
 #include "devices/DummyDevice.hpp"
-#include "DisTR3200.hpp"
+#include "TR3200/DisTR3200.hpp"
 
 #include <iostream>
 #include <vector>
