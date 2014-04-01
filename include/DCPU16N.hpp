@@ -78,17 +78,21 @@ namespace vm {
       word_t sp;
       word_t ex;
       word_t ia;
+
       // EMU
       dword_t emu[16];
 
       // Interrupt
-      word_t intq[256];
       word_t iqp;
       word_t iqc;
+      word_t intq[256];
 
-      // Internal use
+      // hardware status
       unsigned phase;
-      unsigned madraw;
+      unsigned pwrdraw;
+      unsigned wait_cycles;
+
+      // Internal use registers
       word_t acu;
       dword_t aca;
       word_t bcu;
@@ -96,6 +100,8 @@ namespace vm {
       word_t opcl;
       word_t wrt;
       word_t fetchh;
+
+      // Status flags
       bool addradd;
       bool addrdec;
       bool bytemode;
@@ -104,6 +110,41 @@ namespace vm {
       bool fire;
       bool qint;
 
+    };
+
+    struct DCPU16NState {
+      // CPU Core
+      word_t r[8];
+      word_t pc;
+      word_t sp;
+      word_t ex;
+      word_t ia;
+      // status flags
+      bool addradd;
+      bool addrdec;
+      bool bytemode;
+      bool bytehigh;
+      bool skip;
+      bool fire;
+      bool qint;
+      // hardware status
+      unsigned phase;
+      unsigned pwrdraw;
+      unsigned wait_cycles;
+      // EMU
+      dword_t emu[16];
+      // Interrupt
+      word_t iqp;
+      word_t iqc;
+      word_t intq[256];
+      // Internal use registers
+      word_t acu;
+      dword_t aca;
+      word_t bcu;
+      dword_t bca;
+      word_t opcl;
+      word_t wrt;
+      word_t fetchh;
     };
   }
 }

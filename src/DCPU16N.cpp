@@ -10,6 +10,24 @@
 namespace vm {
   namespace cpu {
 
+    static const word_t DCPU16N_skipadd[64] = {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 0, 0, 0, 2, 2,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+    static const bool DCPU16N_skipstateN[32] = {
+      false, false, false, false, false, false, false, false,
+      false, false, false, false, false, false, false, false,
+      true , true , true , true , true , true , true , true ,
+      false, false, false, false, false, false, false, false
+    };
+    static const bool DCPU16N_skipstateI[32] = {
+      false, false, false, false, false, false, false, false,
+      false, false, false, false, false, false, false, false,
+      true , false, false, false, false, false, false, false,
+      false, false, false, false, false, false, false, false,
+    };
     DCPU16N::DCPU16N(unsigned clock) : ICPU(), cpu_clock(clock) {
       this->Reset();
     }
@@ -19,18 +37,22 @@ namespace vm {
     void DCPU16N::Reset()
     {
       int i;
-
       // Generic initialization
       std::fill_n(r, 8, 0);
       pc = 0;
       sp = 0;
       ex = 0;
       ia = 0;
+
       for(i = 0; i < 16; i++) emu[i] = i << 12;
+
       iqp = 0;
       iqc = 0;
-      madraw = 0;
+
+      pwrdraw = 0;
       phase = 0;
+      wait_cycles = 0;
+
       acu = 0;
       aca = 0;
       bcu = 0;
@@ -38,6 +60,7 @@ namespace vm {
       opcl = 0;
       wrt = 0;
       fetchh = 0;
+
       addradd = false;
       addrdec = false;
       bytemode = false;
@@ -56,7 +79,7 @@ namespace vm {
       do {
         Tick(1);
         x++;
-      } while((!fire) && (phase != 0));
+      } while((!fire) && (phase != 0) && (phase != DCPU16N_PHASE_SLEEP));
       return x;
     }
 
@@ -71,7 +94,10 @@ namespace vm {
           cfa = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
           opcl = (((word_t)vcomp->ReadB(cfa + 1)) << 8) | (word_t)vcomp->ReadB(cfa);
           pc += 2;
-          phase = DCPU16N_PHASE_UAREAD;
+          if(skip)
+            phase = DCPU16N_PHASE_EXECSKIP;
+          else
+            phase = DCPU16N_PHASE_UAREAD;
           break;
         case DCPU16N_PHASE_NWAFETCH:
           cfa = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
@@ -362,42 +388,42 @@ namespace vm {
               break;
             case 0x10: // IFB (rb ra)
               if((acu & bcu)) {
-                phase = DCPU16N_PHASE_EXECSKIP;
+                phase = DCPU16N_PHASE_MARKSKIP;
               }
               break;
             case 0x11: // IFC (rb ra)
               if(!(acu & bcu)) {
-                phase = DCPU16N_PHASE_EXECSKIP;
+                phase = DCPU16N_PHASE_MARKSKIP;
               }
               break;
             case 0x12: // IFE (rb ra)
               if(!(acu == bcu)) {
-                phase = DCPU16N_PHASE_EXECSKIP;
+                phase = DCPU16N_PHASE_MARKSKIP;
               }
               break;
             case 0x13: // IFN (rb ra)
               if(!(acu != bcu)) {
-                phase = DCPU16N_PHASE_EXECSKIP;
+                phase = DCPU16N_PHASE_MARKSKIP;
               }
               break;
             case 0x14: // IFG (rb ra)
               if(!(bcu > acu)) {
-                phase = DCPU16N_PHASE_EXECSKIP;
+                phase = DCPU16N_PHASE_MARKSKIP;
               }
               break;
             case 0x15: // IFA (rb ra)
               if(! ( ((int16_t)bcu) > ((int16_t)acu)) ) {
-                phase = DCPU16N_PHASE_EXECSKIP;
+                phase = DCPU16N_PHASE_MARKSKIP;
               }
               break;
             case 0x16: // IFL (rb ra)
               if(!(bcu < acu)) {
-                phase = DCPU16N_PHASE_EXECSKIP;
+                phase = DCPU16N_PHASE_MARKSKIP;
               }
               break;
             case 0x17: // IFU (rb ra)
               if(! ( ((int16_t)bcu) < ((int16_t)acu) ) ) {
-                phase = DCPU16N_PHASE_EXECSKIP;
+                phase = DCPU16N_PHASE_MARKSKIP;
               }
               break;
             //case 0x18:
@@ -467,7 +493,7 @@ namespace vm {
             //case 0x06:
             //  break;
             case 0x07: // HCF (^w^OMGFTWBBQa)
-              bcu = (word_t)madraw;
+              bcu = (word_t)pwrdraw;
               fire = true;
               break;
             case 0x08: // INT (ra)
@@ -556,7 +582,7 @@ namespace vm {
               bytehigh = opcl & 0x8000 ? true : false;
               break;
             case 0x10: // SKP
-              phase = DCPU16N_PHASE_EXECSKIP;
+              phase = DCPU16N_PHASE_MARKSKIP;
               break;
             }
           }
@@ -624,6 +650,18 @@ namespace vm {
           // Check Interrupts here
           break;
         case DCPU16N_PHASE_EXECSKIP:
+          if((opcl & 0x001f) != 0) {
+            skip = DCPU16N_skipstateN[opcl & 0x001f];
+            pc += DCPU16N_skipadd[(opcl >> 10) & 0x3f];
+            pc += DCPU16N_skipadd[(opcl >> 5) & 0x1f];
+          }
+          else if((opcl & 0x03e0) != 0) {
+            pc += DCPU16N_skipadd[(opcl >> 10) & 0x3f];
+          }
+          else {
+            skip = DCPU16N_skipstateI[(opcl >> 10) & 0x001f];
+          }
+          phase = DCPU16N_PHASE_OPFETCH;
           break;
         case DCPU16N_PHASE_EXECJMP:
           pc = acu;
@@ -638,6 +676,10 @@ namespace vm {
           bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
           sp += 2;
           pc = (((word_t)vcomp->ReadB(bca + 1)) << 8) | (word_t)vcomp->ReadB(bca);
+          break;
+        case DCPU16N_PHASE_MARKSKIP:
+          skip = true;
+          phase = DCPU16N_PHASE_OPFETCH;
           break;
         default:
           phase = 0;
@@ -663,7 +705,43 @@ namespace vm {
 
     void DCPU16N::GetState(void* ptr, std::size_t& size) const
     {
-      size = 0;
+      if(ptr != nullptr && size >= sizeof(DCPU16NState)) {
+        DCPU16NState *sptr = (DCPU16NState*)ptr;
+        std::copy_n(this->r, 8, sptr->r);
+        sptr->pc = this->pc;
+        sptr->sp = this->sp;
+        sptr->ex = this->ex;
+        sptr->ia = this->ia;
+
+        sptr->addradd = this->addradd;
+        sptr->addrdec = this->addrdec;
+        sptr->bytemode = this->bytemode;
+        sptr->bytehigh = this->bytehigh;
+        sptr->skip = this->skip;
+        sptr->fire = this->fire;
+        sptr->qint = this->qint;
+
+        sptr->phase = this->phase;
+        sptr->pwrdraw = this->pwrdraw;
+        sptr->wait_cycles = this->wait_cycles;
+        std::copy_n(this->emu, 16, sptr->emu);
+
+        sptr->iqp = this->iqp;
+        sptr->iqc = this->iqc;
+        std::copy_n(this->intq, 256, sptr->intq);
+
+        sptr->acu = this->acu;
+        sptr->aca = this->aca;
+        sptr->bcu = this->bcu;
+        sptr->bca = this->bca;
+        sptr->opcl = this->opcl;
+        sptr->wrt = this->wrt;
+        sptr->fetchh = this->fetchh;
+        size = sizeof(DCPU16NState);
+      }
+      else {
+        size = 0;
+      }
     }
 
     bool DCPU16N::SetState(const void* ptr, std::size_t size)
