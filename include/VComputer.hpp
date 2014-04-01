@@ -9,15 +9,11 @@
 #include "ICPU.hpp"
 #include "IDevice.hpp"
 #include "AddrListener.hpp"
+#include "EnumAndCtrlBlk.hpp"
 #include "Timer.hpp"
 
 #include <map>
-#include <tuple>
-#include <algorithm>
 #include <memory>
-
-#include <cstdio>
-
 #include <cassert>
 
 namespace vm {
@@ -31,47 +27,7 @@ namespace vm {
 
   const unsigned BaseClock  = 1000000;          /// Computer Base Clock rate
 
-  /**
-   * An specialized Address Listener used by VComputer to implement
-   * Enumeration and Control registers in a slot
-   */
-  class EnumAndCtrlBlk : public AddrListener {
-    public:
-      /**
-       * Builds the Enumeartion and Control register block for a device plugged
-       * in slot XX
-       */
-      EnumAndCtrlBlk (unsigned slot, IDevice* dev);
-
-      virtual ~EnumAndCtrlBlk () { }
-
-
-      /**
-       * Returns the address Range used by this register block
-       */
-      Range GetRange () const;
-
-      byte_t ReadB (dword_t addr);
-      word_t ReadW (dword_t addr);
-      dword_t ReadDW (dword_t addr);
-
-      void WriteB (dword_t addr, byte_t val);
-      void WriteW (dword_t addr, word_t val);
-      void WriteDW (dword_t addr, dword_t val);
-
-    private:
-      unsigned slot;  /// Slot number
-      IDevice* dev;   /// Ptr to the device
-
-      dword_t cmd;    /// Buffer used when a byte write hapens in CMD
-      dword_t a;      /// Buffer used when a byte write hapens in A
-      dword_t b;      /// Buffer used when a byte write hapens in B
-      dword_t c;      /// Buffer used when a byte write hapens in C
-      dword_t d;      /// Buffer used when a byte write hapens in D
-      dword_t e;      /// Buffer used when a byte write hapens in E
-  };
-
-  typedef std::tuple<std::shared_ptr<IDevice>, EnumAndCtrlBlk*, int32_t> device_t;    /// Storage of a device
+  class EnumAndCtrlBlk;
 
   class VComputer {
     public:
@@ -80,44 +36,21 @@ namespace vm {
        * Creates a Virtual Computer
        * @param ram_size RAM size in BYTES
        */
-      VComputer (std::size_t ram_size = 128*1024) :
-        ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0) {
+      VComputer (std::size_t ram_size = 128*1024);
 
-          ram = new byte_t[ram_size];
-          std::fill_n(ram, ram_size, 0);
-
-          // Add timers addresses
-          Range pit_range(0x11E000, 0x11E010);
-          AddAddrListener(pit_range, &pit);
-        }
-
-      ~VComputer () {
-        if (ram != nullptr)
-          delete[] ram;
-
-        // Drops plugged devices
-        for (unsigned i=0; i < MAX_N_DEVICES; i++) {
-          this->RmDevice(i);
-        }
-      }
+      ~VComputer ();
 
       /**
        * Sets the CPU of the computer
        * @param cpu New CPU in the computer
        */
-      void SetCPU (std::unique_ptr<ICPU> cpu) {
-        this->cpu = std::move(cpu);
-        this->cpu->SetVComputer(this);
-      }
+      void SetCPU (std::unique_ptr<ICPU> cpu);
 
       /**
        * Removes the CPU of the computer
        * @return Returns the ICPU
        */
-      std::unique_ptr<ICPU> RmCPU () {
-        this->cpu->SetVComputer(nullptr);
-        return std::move(cpu);
-      }
+      std::unique_ptr<ICPU> RmCPU ();
 
       /**
        * Adds a Device to a slot
@@ -125,61 +58,23 @@ namespace vm {
        * @param dev The device to be pluged in the slot
        * @return False if the slot have a device or the slot is invalid.
        */
-      bool AddDevice (unsigned slot , std::shared_ptr<IDevice> dev) {
-        if (slot >= MAX_N_DEVICES || std::get<0>(devices[slot])) {
-          return false;
-        }
-
-        // TODO See were store the pointer or use a shared_ptr
-        auto enumblk = new EnumAndCtrlBlk(slot, dev.get());
-        std::get<2>(devices[slot]) = this->AddAddrListener(enumblk->GetRange(), enumblk);
-        if (std::get<2>(devices[slot]) != -1) {
-          std::get<0>(devices[slot]) = dev;
-          dev->SetVComputer(this);
-          std::get<1>(devices[slot]) = enumblk;
-        } else { // Wops ! Problem!
-          delete enumblk;
-          return false;
-        }
-
-        return true;
-      }
+      bool AddDevice (unsigned slot , std::shared_ptr<IDevice> dev);
 
       /**
        * Gets the DEvice plugged in the slot
        */
-      std::shared_ptr<IDevice> GetDevice (unsigned slot) {
-        if (slot >= MAX_N_DEVICES || !std::get<0>(devices[slot])) {
-          return nullptr;
-        }
-
-        return std::get<0>(devices[slot]);
-      }
-
+      std::shared_ptr<IDevice> GetDevice (unsigned slot);
 
       /**
        * Remove a device from a slot
        * @param slot Slot were unplug the device
        */
-      void RmDevice (unsigned slot) {
-        if (slot < MAX_N_DEVICES && std::get<0>(devices[slot])) {
-          std::get<0>(devices[slot])->SetVComputer(nullptr);
-          std::get<0>(devices[slot]).reset(); // Cleans the slot
-          delete std::get<1>(devices[slot]);
-          std::get<1>(devices[slot]) = nullptr;
-          std::get<2>(devices[slot]) = -1;
-        }
-      }
+      void RmDevice (unsigned slot);
 
       /**
        * CPU clock speed in Hz
        */
-      unsigned CPUClock() const {
-        if (cpu) {
-          return cpu->Clock();
-        }
-        return 0;
-      }
+      unsigned CPUClock() const;
 
       /**
        * Writes a copy of CPU state in a chunk of memory pointer by ptr.
@@ -187,87 +82,26 @@ namespace vm {
        * @param size Size of the chunk of memory were can write. If is
        * sucesfull, it will be set to the size of the write data.
        */
-      inline void GetState (void* ptr, std::size_t size) const {
-        if (cpu) {
-          return cpu->GetState(ptr, size);
-        }
-      }
+      void GetState (void* ptr, std::size_t size) const;
 
       /**
        * Gets a pointer were is stored the ROM data
        * @param *rom Ptr to the ROM data
        * @param rom_size Size of the ROM data that must be less or equal to 32KiB. Big sizes will be ignored
        */
-      void SetROM (const byte_t* rom, std::size_t rom_size) {
-        assert (rom != nullptr);
-        assert (rom_size > 0);
-
-        this->rom = rom;
-        this->rom_size = (rom_size > MAX_ROM_SIZE) ? MAX_ROM_SIZE : rom_size;
-      }
+      void SetROM (const byte_t* rom, std::size_t rom_size);
 
       /**
        * Resets the virtual machine (but not clears RAM!)
        */
-      void Reset() {
-        if (cpu) {
-          cpu->Reset();
-        }
-
-        pit.Reset();
-
-        for (unsigned slot = 0; slot < MAX_N_DEVICES; slot++) {
-          if ( !std::get<0>(devices[slot])) {
-            continue;
-          }
-          std::get<0>(devices[slot])->Reset();
-        }
-      }
+      void Reset();
 
       /**
        * Executes one instruction
        * @param delta Number of seconds since the last call
        * @return number of base clock ticks needed
        */
-      unsigned Step( const double delta = 0) {
-        if (cpu) {
-          unsigned cpu_ticks = cpu->Step();
-          unsigned base_ticks = cpu_ticks * (BaseClock / cpu->Clock());
-          unsigned dev_ticks = (base_ticks / 10); // Devices clock is at 100 KHz
-          pit.Tick(dev_ticks, delta);
-
-          word_t msg;
-          bool interrupted = pit.DoesInterrupt(msg); // Highest priority interrupt
-          if (interrupted) {
-            if (cpu->SendInterrupt(msg)) { // Send the interrupt to the CPU
-              pit.IACK();
-            }
-          }
-
-          for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
-            if (! std::get<0>(devices[i])) {
-              continue; // Slot without device
-            }
-
-            // Does the sync job
-            if ( std::get<0>(devices[i])->IsSyncDev()) {
-              std::get<0>(devices[i])->Tick(dev_ticks, delta);
-            }
-
-            // Try to get the highest priority interrupt
-            if (! interrupted && std::get<0>(devices[i])->DoesInterrupt(msg) ) {
-              interrupted = true;
-              if (cpu->SendInterrupt(msg)) { // Send the interrupt to the CPU
-                std::get<0>(devices[i])->IACK(); // Informs to the device that his interrupt has been accepted by the CPU
-              }
-            }
-          }
-
-          return base_ticks;
-        }
-
-        return 0;
-      }
+      unsigned Step( const double delta = 0);
 
       /**
        * Executes N clock ticks
@@ -442,23 +276,14 @@ namespace vm {
        * @param listener AddrListener using these range
        * @return And ID oif the listener or -1 if can't add the listener
        */
-      int32_t AddAddrListener (const Range& range, AddrListener* listener) {
-        assert(listener != nullptr);
-        if (listeners.insert(std::make_pair(range, listener)).second ) { // Correct insertion
-          return range.start;
-        }
-        return -1;
-      }
+      int32_t AddAddrListener (const Range& range, AddrListener* listener);
 
       /**
        * Removes an AddrListener from the computer
        * @param id ID of the address listener to remove (ID from AddAddrListener)
        * @return True if can find these listener and remove it.
        */
-      bool RmAddrListener (int32_t id) {
-        Range r(id);
-        return listeners.erase(r) >= 1;
-      }
+      bool RmAddrListener (int32_t id);
 
       /**
        * Sizeo of the RAM in bytes
@@ -472,6 +297,14 @@ namespace vm {
        * Use only for GetState methods or dump a snapshot of the computer state
        */
       const byte_t* Ram() const {
+        return ram;
+      }
+
+      /**
+       * Returns a pointer to the RAM for writing raw values to it
+       * Use only for SetState methods or load a snapshot of the computer state
+       */
+      byte_t* Ram() {
         return ram;
       }
 

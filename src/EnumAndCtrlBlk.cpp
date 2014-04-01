@@ -5,6 +5,7 @@
  */
 
 #include "VComputer.hpp"
+#include "EnumAndCtrlBlk.hpp"
 #include "VSFix.hpp"
 
 #include <cassert>
@@ -17,7 +18,6 @@ namespace vm {
 			assert (dev != nullptr);
 		}
 
-
 	Range EnumAndCtrlBlk::GetRange () const {
 		dword_t start = 0x110000 | (slot<<8);
 		dword_t end = start + EnumCtrlBlkSize;
@@ -29,7 +29,7 @@ namespace vm {
 		switch (addr) {
 			// Enumeration stuff
 			case 0:
-				return 0xFF;
+				return 0xFF;  // Presence byte
 				break;
 
 			case 1:
