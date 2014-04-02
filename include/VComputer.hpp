@@ -61,7 +61,7 @@ namespace vm {
       bool AddDevice (unsigned slot , std::shared_ptr<IDevice> dev);
 
       /**
-       * Gets the DEvice plugged in the slot
+       * Gets the Device plugged in the slot
        */
       std::shared_ptr<IDevice> GetDevice (unsigned slot);
 
