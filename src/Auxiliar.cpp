@@ -10,11 +10,14 @@
 
 #include <fstream>
 #include <ios>
+#include <cassert>
 
 namespace vm {
   namespace aux {
 
     int LoadROM (const std::string& filename, byte_t* rom) {
+      assert(rom != nullptr);
+
       int count;
       try {
         std::fstream f(filename, std::ios::in | std::ios::binary);
