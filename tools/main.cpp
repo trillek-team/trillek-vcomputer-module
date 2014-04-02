@@ -7,6 +7,7 @@
 #include "VC.hpp"
 #include "devices/DummyDevice.hpp"
 #include "TR3200/DisTR3200.hpp"
+#include "DCPU16N/DisDCPU16N.hpp"
 
 #include <iostream>
 #include <vector>
@@ -21,6 +22,8 @@
 #include <clocale>
 
 #include <chrono>
+
+#define VM_DCPU16N
 
 #ifdef GLFW3_ENABLE
 
@@ -612,8 +615,8 @@ void print_pc(const vm::cpu::DCPU16NState& state, const vm::VComputer& vc) {
   vm::dword_t addr = state.emu[(state.pc >> 12) & 0xf] | (state.pc & 0x0fff);
   vm::word_t val = vc.ReadW(addr);
 
-  std::printf("    PC : 0x%04X > 0x%08X: 0x%04X \n", state.pc, addr, val);
-  //std::cout << vm::cpu::Disassembly(vc, state.pc) << std::endl;
+  std::printf("   PC : 0x%04X > 0x%08X: 0x%04X  ", state.pc, addr, val);
+  std::cout << vm::cpu::DisassemblyDCPU16N(vc, addr) << std::endl;
 }
 
 void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc) {

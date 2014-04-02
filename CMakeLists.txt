@@ -12,7 +12,8 @@ if (VCOMPUTER_SUB_PROJECT)
 	# Source dirs
 	file(GLOB VCOMPUTER_SRC_
 		"${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/TR3200/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/src/TR3200/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/src/DCPU16N/*.cpp"
 		"${CMAKE_CURRENT_SOURCE_DIR}/src/devices/*.cpp"
 		)
 
@@ -44,7 +45,8 @@ else (VCOMPUTER_SUB_PROJECT)
 	# Source dirs
 	file(GLOB VCOMPUTER_SRC
 		"src/*.cpp"
-    "src/TR3200/*.cpp"
+		"src/TR3200/*.cpp"
+		"src/DCPU16N/*.cpp"
 		"src/devices/*.cpp"
 		)
 

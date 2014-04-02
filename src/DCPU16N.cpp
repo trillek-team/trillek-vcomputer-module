@@ -453,12 +453,12 @@ namespace vm {
               break;
             case 0x1e: // STI (wb ra)
               bcu = acu;
-              r[6]++; r[7]++;
+              r[6]+=2; r[7]+=2;
               wrt |= 0x100;
               break;
             case 0x1f: // STD (wb ra)
               bcu = acu;
-              r[6]--; r[7]--;
+              r[6]-=2; r[7]-=2;
               wrt |= 0x100;
               break;
             }
