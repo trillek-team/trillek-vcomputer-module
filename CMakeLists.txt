@@ -12,8 +12,8 @@ if (VCOMPUTER_SUB_PROJECT)
 	# Source dirs
 	file(GLOB VCOMPUTER_SRC_
 		"${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/TR3200/*.cpp"
 		"${CMAKE_CURRENT_SOURCE_DIR}/src/devices/*.cpp"
-		"${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
 		)
 
 	set(VCOMPUTER_SRC
@@ -44,8 +44,8 @@ else (VCOMPUTER_SUB_PROJECT)
 	# Source dirs
 	file(GLOB VCOMPUTER_SRC
 		"src/*.cpp"
+    "src/TR3200/*.cpp"
 		"src/devices/*.cpp"
-		"include/*.hpp"
 		)
 
 

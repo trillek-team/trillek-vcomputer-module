@@ -6,7 +6,7 @@
 
 #include "VC.hpp"
 #include "devices/DummyDevice.hpp"
-#include "DisTR3200.hpp"
+#include "TR3200/DisTR3200.hpp"
 
 #include <iostream>
 #include <vector>
@@ -620,7 +620,7 @@ void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc) {
   vm::dword_t val = vc.ReadDW(state.pc);
 
   std::printf("\tPC : 0x%08X > 0x%08X ", state.pc, val);
-  std::cout << vm::cpu::Disassembly(vc,  state.pc) << std::endl;
+  std::cout << vm::cpu::DisassemblyTR3200(vc,  state.pc) << std::endl;
 }
 
 /*

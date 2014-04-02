@@ -4,9 +4,9 @@
  * @see https://github.com/trillek-team/trillek-computer/blob/master/TR3200.md
  */
 
-#include "TR3200.hpp"
-#include "TR3200_opcodes.hpp"
-#include "TR3200_macros.hpp"
+#include "TR3200/TR3200.hpp"
+#include "TR3200/TR3200_opcodes.hpp"
+#include "TR3200/TR3200_macros.hpp"
 #include "VSFix.hpp"
 
 #include <cstdio>

@@ -35,7 +35,7 @@ EMSCRIPTEN_BINDINGS(trillek_vc) {
 
     // TR3200 stuff
     function("SetTR3200CPU",        &SetTR3200CPU_);
-    function("DisassemblyTR3200",   &vm::cpu::Disassembly);
+    function("DisassemblyTR3200",   &vm::cpu::DisassemblyTR3200);
 
     class_<vm::cpu::TR3200State>("TR3200State")
       .constructor()

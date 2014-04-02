@@ -4,9 +4,9 @@
  */
 
 #include "VComputer.hpp"
-#include "DisTR3200.hpp"
-#include "TR3200_opcodes.hpp"
-#include "TR3200_macros.hpp"
+#include "TR3200/DisTR3200.hpp"
+#include "TR3200/TR3200_opcodes.hpp"
+#include "TR3200/TR3200_macros.hpp"
 #include "VSFix.hpp"
 
 #include <cstdio>
@@ -14,7 +14,7 @@
 namespace vm {
   namespace cpu {
 
-    std::string Disassembly (const VComputer& vc, dword_t pc) {
+    std::string DisassemblyTR3200 (const VComputer& vc, dword_t pc) {
 #define BUF_SIZE (32)
       char buf[BUF_SIZE] = {0};
 
