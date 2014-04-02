@@ -7,6 +7,8 @@
 #include "DCPU16N_macros.hpp"
 #include "VSFix.hpp"
 
+#include <algorithm>
+
 namespace vm {
   namespace cpu {
 
