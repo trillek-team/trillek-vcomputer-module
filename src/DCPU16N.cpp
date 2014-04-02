@@ -519,11 +519,11 @@ namespace vm {
             //case 0x0f:
             //  break;
             case 0x10: // MMW (ra)
-              emu[acu & 0x0f] = ((dword_t)acu & 0xfff0) << 12;
+              emu[acu & 0x0f] = ((dword_t)acu & 0xfff0) << 8;
               break;
             case 0x11: // MMR (rwa)
               wrt |= 0x0100;
-              bcu = (emu[acu & 0x0f] >> 12) | (acu & 0x0f);
+              bcu = (emu[acu & 0x0f] >> 8) | (acu & 0x0f);
               break;
             //case 0x12:
             //  break;
@@ -638,8 +638,11 @@ namespace vm {
         case DCPU16N_PHASE_BCUWRITE:
           if(addrdec) {
             addrdec = false;
+            /* // WriteB does not control hardware correct WTF!?
             vcomp->WriteB(bca + 1, (byte_t)(bcu >> 8));
             vcomp->WriteB(bca, (byte_t)(bcu & 0x0ff));
+            */
+            vcomp->WriteW(bca, bcu);
           }
           break;
         case DCPU16N_PHASE_EXECW:
@@ -656,6 +659,7 @@ namespace vm {
             pc += DCPU16N_skipadd[(opcl >> 5) & 0x1f];
           }
           else if((opcl & 0x03e0) != 0) {
+            skip = false;
             pc += DCPU16N_skipadd[(opcl >> 10) & 0x3f];
           }
           else {

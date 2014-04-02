@@ -398,7 +398,8 @@ int main(int argc, char* argv[]) {
 
     if (debug) {
       vc.GetState((void*) &cpu_state, sizeof(cpu_state));
-      std::printf("Takes %u cycles\n", cpu_state.wait_cycles);
+      //std::printf("Takes %u cycles\n", cpu_state.wait_cycles);
+      print_pc(cpu_state, vc);
       print_regs(cpu_state);
       //print_stack(vm.CPU(), vm.RAM());
       c = std::getchar();
