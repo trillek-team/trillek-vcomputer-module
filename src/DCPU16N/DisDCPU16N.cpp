@@ -29,8 +29,8 @@ namespace vm {
       "???", "???", "???", "???", "???", "???", "???", "???"
     };
     struct DCPU16N_DisInfo {
-      char *pre;
-      char *suf;
+      const char *pre;
+      const char *suf;
       bool fetch;
     };
     const DCPU16N_DisInfo DCPU16N_Operand[] = {

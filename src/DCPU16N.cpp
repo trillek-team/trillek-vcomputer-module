@@ -608,13 +608,36 @@ namespace vm {
                     addrdec = true;
                     break;
                   case 3: // SP
-                    sp = bcu;
+                    if(bytemode) {
+                      if(bytehigh)
+                        sp = (bcu & 0x00ff) | (sp & 0xff00);
+                      else
+                        sp = (bcu & 0xff00) | (sp & 0x00ff);
+                    } else {
+                      sp = bcu;
+                    }
                     break;
                   case 4: // PC
-                    pc = bcu;
+                    if(bytemode) {
+                      if(bytehigh)
+                        pc = (bcu & 0x00ff) | (pc & 0xff00);
+                      else
+                        pc = (bcu & 0xff00) | (pc & 0x00ff);
+                    }
+                    else {
+                      pc = bcu;
+                    }
                     break;
                   case 5: // EX
-                    ex = bcu;
+                    if(bytemode) {
+                      if(bytehigh)
+                        ex = (bcu & 0x00ff) | (ex & 0xff00);
+                      else
+                        ex = (bcu & 0xff00) | (ex & 0x00ff);
+                    }
+                    else {
+                      ex = bcu;
+                    }
                     break;
                   case 6: // [nextword]
                     addrdec = true;
@@ -632,7 +655,15 @@ namespace vm {
                   addrdec = true;
                 }
                 else { // REG
-                  r[wrt & 0x7] = bcu;
+                  if(bytemode) {
+                    if(bytehigh)
+                      r[wrt & 0x7] = (bcu & 0x00ff) | (r[wrt & 0x7] & 0xff00);
+                    else
+                      r[wrt & 0x7] = (bcu & 0xff00) | (r[wrt & 0x7] & 0x00ff);
+                  }
+                  else {
+                    r[wrt & 0x7] = bcu;
+                  }
                 }
               }
             }
@@ -640,12 +671,11 @@ namespace vm {
         case DCPU16N_PHASE_BCUWRITE:
           if(addrdec) {
             addrdec = false;
-            /* // WriteB does not control hardware correct WTF!?
-            vcomp->WriteB(bca + 1, (byte_t)(bcu >> 8));
-            vcomp->WriteB(bca, (byte_t)(bcu & 0x0ff));
-            */
-            vcomp->WriteW(bca, bcu);
+            if(bytehigh || !bytemode) vcomp->WriteB(bca, (byte_t)(bcu & 0x0ff));
+            if(!bytehigh || !bytemode) vcomp->WriteB(bca + 1, (byte_t)(bcu >> 8));
           }
+          if(wrt & 0x0100)
+            bytemode = false;
           break;
         case DCPU16N_PHASE_EXECW:
           // TODO

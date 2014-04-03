@@ -1,0 +1,79 @@
+2	00000000  	.org	0000	
+5	00000000 devtablelen	.equ	2000	
+6	00000000 devtabledat	.equ	2002	
+8	00000000  	set	i,0	C184
+9	00000002  	set	j,0	E184
+10	00000004  	set	[devtablelen],j	C11F0020
+11	00000008  	set	j,devtabledat	E17C0220
+12	0000000c scanloop		
+13	0000000c  	hwr	i,a	DD00
+14	0000000e  	and	a,ff	0A7CFF00
+15	00000012  	ife	a,ff	127CFF00
+16	00000016  	jsr	checkdev	207C2A00
+17	0000001a  	swp	i	A01A
+18	0000001c  	add	i,1	C288
+19	0000001e  	ifg	i,31	D47C1F00
+20	00000022  	set	pc,endscan	817F7C00
+21	00000026  	swp	i	A01A
+22	00000028  	set	pc,scanloop	81B7
+24	0000002a checkdev		
+25	0000002a  	set	[j],i	E119
+26	0000002c  	add	j,2	E28C
+27	0000002e  	add	[devtablelen],1	C28B0020
+28	00000032  	set	c,i	4118
+29	00000034  	add	c,2	428C
+30	00000036  	hwr	c,x	5D0C
+31	00000038  	add	c,2	428C
+32	0000003a  	hwr	c,y	5D10
+33	0000003c  	add	c,2	428C
+34	0000003e  	hwr	c,z	5D14
+35	00000040  	and	x,ff00	6A7C00FF
+36	00000044  	ife	x,0100	727C0001
+37	00000048  	ife	y,8B36	927C368B
+38	0000004c  	ife	z,1c6c	B27C6C1C
+39	00000050  	set	pc,monitor	817F5600
+40	00000054  	set	pc,pop	8163
+42	00000056 monitor		
+43	00000056  	swp	c	A00A
+44	00000058  	and	c,f0	4A7CF000
+45	0000005c  	bor	c,1106	4B7C0611
+46	00000060  	mmw	c	000A
+47	00000062  	set	c,i	4118
+48	00000064  	and	c,0f00	4A7C000F
+49	00000068  	bor	c,6000	4B7C0060
+53	0000006c  	set	[c+A],A000	417E00A00A00
+54	00000072  	set	[c+C],0	41860C00
+55	00000076  	set	[c+8],0	41860800
+56	0000007a  	set	pc,pop	8163
+58	0000007c endscan		
+59	0000007c  	set	a,7D00	017C007D
+60	00000080  	set	i,0	C184
+61	00000082  	set	j,A000	E17C00A0
+62	00000086 clearloop		
+63	00000086  	sti	[j],a	FE01
+64	00000088  	ifl	i,2400	D67C6009
+65	0000008c  	set	pc,clearloop	817F8600
+66	00000090  	set	i,histring	C17CB000
+67	00000094  	set	j,A000	E17C00A0
+68	00000098  	add	j,1214	E27CBE04
+69	0000009c  	set	a,4E4E	017C4E4E
+70	000000a0 disploop		
+71	000000a0  	set	b,[i]	2138
+72	000000a2  	ife	b,0	3284
+73	000000a4  	hlt		0000
+74	000000a6  	byt.l		0010
+75	000000a8  	bor	b,a	2B00
+76	000000aa  	sti	[j],b	FE05
+77	000000ac  	set	pc,disploop	817FA000
+79	000000b0 histring		
+80	000000b0  	.dw	H,e,l,l,o, ,W,o,r,l,d,!,0	4800 6500 6C00 6C00 6F00 2000 5700 6F00 7200 6C00 6400 2100 0000
+Symbols:
+0000002a  checkdev
+0000007c  endscan
+00000056  monitor
+0000000c  scanloop
+00002000  devtablelen
+00000086  clearloop
+00002002  devtabledat
+000000a0  disploop
+000000b0  histring
