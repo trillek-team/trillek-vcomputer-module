@@ -23,8 +23,6 @@
 
 #include <chrono>
 
-#define VM_DCPU16N
-
 #ifdef GLFW3_ENABLE
 
 unsigned winWidth;
@@ -248,19 +246,26 @@ int main(int argc, char* argv[]) {
 
   byte_t* rom = nullptr;
   size_t rom_size = 0;
+  int cputype = 0;
 
-  if (argc < 2) {
-    std::printf("Usage: %s binary_file\n", argv[0]);
+  if(argc < 2) {
+    std::printf("Usage: %s [-d] binary_file\n", argv[0]);
     return -1;
 
-  } else {
-    rom = new byte_t[32*1024];
+  }
+  else {
+    rom = new byte_t[32 * 1024];
+    int argf = 1;
+    if(std::strcmp(argv[argf], "-d") == 0) {
+      cputype = 1;
+      std::printf("Using DCPU-16N\n");
+      argf++;
+    }
+    std::printf("Opening file %s\n", argv[argf]);
 
-    std::printf("Opening file %s\n", argv[1]);
-
-    int size = vm::aux::LoadROM(argv[1], rom);
-    if (size < 0) {
-      std::fprintf(stderr, "An error occurred while reading file %s\n", argv[1]);
+    int size = vm::aux::LoadROM(argv[argf], rom);
+    if(size < 0) {
+      std::fprintf(stderr, "An error occurred while reading file %s\n", argv[argf]);
       return -1;
     }
 
@@ -270,14 +275,16 @@ int main(int argc, char* argv[]) {
 
   // Create the Virtual Machine
   VComputer vc;
-#ifdef VM_DCPU16N
-  std::unique_ptr<vm::cpu::DCPU16N> cpu(new DCPU16N());
-  vc.SetCPU(std::move(cpu));
-#else
-  std::unique_ptr<vm::cpu::TR3200> cpu(new TR3200());
+  std::unique_ptr<vm::cpu::ICPU> cpu;
+
+  if(cputype = 1) {
+    cpu = std::unique_ptr<vm::cpu::ICPU>(new DCPU16N());
+  }
+  else {
+    cpu = std::unique_ptr<vm::cpu::ICPU>(new TR3200());
+  }
   cpu->Clock();
   vc.SetCPU(std::move(cpu));
-#endif
   vc.SetROM(rom, rom_size);
 
   // Add devices to tue Virtual Machine
@@ -334,11 +341,9 @@ int main(int argc, char* argv[]) {
 
   int c = ' ';
   bool loop = true;
-#ifdef VM_DCPU16N
-  vm::cpu::DCPU16NState cpu_state;
-#else
-  vm::cpu::TR3200State cpu_state;
-#endif
+
+  vm::cpu::DCPU16NState cpu_state_dn;
+  vm::cpu::TR3200State cpu_state_tr;
 
   while ( loop) {
     // Calcs delta time
@@ -358,12 +363,18 @@ int main(int argc, char* argv[]) {
 #endif
 
     if (debug) {
-      vc.GetState((void*) &cpu_state, sizeof(cpu_state));
-      print_pc(cpu_state, vc);
-      //if (vm.CPU().Skiping())
-      //  std::printf("Skiping!\n");
-      //if (vm.CPU().Sleeping())
-      //  std::printf("ZZZZzzzz...\n");
+      if(cputype = 1) {
+        vc.GetState((void*)&cpu_state_dn, sizeof(cpu_state_dn));
+        print_pc(cpu_state_dn, vc);
+      }
+      else {
+        vc.GetState((void*)&cpu_state_tr, sizeof(cpu_state_tr));
+        print_pc(cpu_state_tr, vc);
+        //if (vm.CPU().Skiping())
+        //  std::printf("Skiping!\n");
+        //if (vm.CPU().Sleeping())
+        //  std::printf("ZZZZzzzz...\n");
+      }
     }
 
     if (!debug) {
@@ -397,11 +408,17 @@ int main(int argc, char* argv[]) {
 
 
     if (debug) {
-      vc.GetState((void*) &cpu_state, sizeof(cpu_state));
-      //std::printf("Takes %u cycles\n", cpu_state.wait_cycles);
-      print_pc(cpu_state, vc);
-      print_regs(cpu_state);
-      //print_stack(vm.CPU(), vm.RAM());
+      if(cputype = 1) {
+        vc.GetState((void*)&cpu_state_dn, sizeof(cpu_state_dn));
+        print_pc(cpu_state_dn, vc);
+        print_regs(cpu_state_dn);
+      }
+      else {
+        vc.GetState((void*)&cpu_state_tr, sizeof(cpu_state_tr));
+        std::printf("Takes %u cycles\n", cpu_state_tr.wait_cycles);
+        print_regs(cpu_state_tr);
+        //print_stack(vm.CPU(), vm.RAM());
+      }
       c = std::getchar();
       if (c == 'q' || c == 'Q')
         loop = false;
