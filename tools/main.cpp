@@ -256,7 +256,7 @@ int main(int argc, char* argv[]) {
   else {
     rom = new byte_t[32 * 1024];
     int argf = 1;
-    if(std::strcmp(argv[argf], "-d") == 0) {
+    if(std::string(argv[argf]).compare("-d") == 0) {
       cputype = 1;
       std::printf("Using DCPU-16N\n");
       argf++;
@@ -277,7 +277,7 @@ int main(int argc, char* argv[]) {
   VComputer vc;
   std::unique_ptr<vm::cpu::ICPU> cpu;
 
-  if(cputype = 1) {
+  if(cputype == 1) {
     cpu = std::unique_ptr<vm::cpu::ICPU>(new DCPU16N());
   }
   else {
@@ -363,7 +363,7 @@ int main(int argc, char* argv[]) {
 #endif
 
     if (debug) {
-      if(cputype = 1) {
+      if(cputype == 1) {
         vc.GetState((void*)&cpu_state_dn, sizeof(cpu_state_dn));
         print_pc(cpu_state_dn, vc);
       }
@@ -408,7 +408,7 @@ int main(int argc, char* argv[]) {
 
 
     if (debug) {
-      if(cputype = 1) {
+      if(cputype == 1) {
         vc.GetState((void*)&cpu_state_dn, sizeof(cpu_state_dn));
         print_pc(cpu_state_dn, vc);
         print_regs(cpu_state_dn);
