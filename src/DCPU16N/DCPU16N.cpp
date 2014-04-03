@@ -3,8 +3,8 @@
 * Implementation of the DCPU-16N CPU
 */
 
-#include "DCPU16N.hpp"
-#include "DCPU16N_macros.hpp"
+#include "DCPU16N/DCPU16N.hpp"
+#include "DCPU16N/DCPU16N_macros.hpp"
 #include "VSFix.hpp"
 
 #include <algorithm>
