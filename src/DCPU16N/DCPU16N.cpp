@@ -49,6 +49,7 @@ namespace vm {
       for(i = 0; i < 16; i++) emu[i] = i << 12;
 
       iqp = 0;
+      iqe = 0;
       iqc = 0;
 
       pwrdraw = 0;
@@ -93,6 +94,15 @@ namespace vm {
       while(n--) {
         switch(phase) {
         case DCPU16N_PHASE_OPFETCH:
+          if(iqc > 0 && !qint && !(skip || bytemode)) {
+            if(ia != 0) { // interrupts are enabled
+              phase = DCPU16N_PHASE_INTERRUPT;
+              break;
+            }
+            else {
+              iqc = 0;
+            }
+          }
           cfa = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
           opcl = (((word_t)vcomp->ReadB(cfa + 1)) << 8) | (word_t)vcomp->ReadB(cfa);
           pc += 2;
@@ -681,8 +691,21 @@ namespace vm {
           // TODO
           break;
         case DCPU16N_PHASE_SLEEP:
-          // TODO
           // Check Interrupts here
+          if(iqc > 0 && !qint) {
+            if(ia != 0) { // interrupts are enabled
+              skip = false;
+              bytemode = false;
+              phase = DCPU16N_PHASE_INTERRUPT;
+              break;
+            }
+            else {
+              iqc = 0;
+            }
+          }
+          else {
+            n = 0;
+          }
           break;
         case DCPU16N_PHASE_EXECSKIP:
           if((opcl & 0x001f) != 0) {
@@ -717,15 +740,45 @@ namespace vm {
           skip = true;
           phase = DCPU16N_PHASE_OPFETCH;
           break;
+        case DCPU16N_PHASE_INTERRUPT:
+          phase = DCPU16N_PHASE_OPFETCH;
+          qint = true; // Queue interrupts
+          sp -= 2;
+          bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
+          vcomp->WriteB(bca, (byte_t)(pc & 0x0ff));
+          vcomp->WriteB(bca + 1, (byte_t)(pc >> 8));
+          sp -= 2;
+          bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
+          vcomp->WriteB(bca, (byte_t)(r[0] & 0x0ff));
+          vcomp->WriteB(bca + 1, (byte_t)(r[0] >> 8));
+          pc = ia;
+          r[0] = intq[iqe]; // remove one from queue
+          iqe++; iqc--;
+          if(iqe > 255)
+            iqe = 0;
+          break;
         default:
           phase = 0;
           break;
         }
+        pwrdraw += 5;
       }
     }
 
     bool DCPU16N::SendInterrupt(word_t msg)
     {
+      if(ia == 0)
+        return true;
+
+      if(iqc > 256) {
+        fire = true;
+        return false;
+      }
+      iqc++;
+      intq[iqp] = msg;
+      iqp++;
+      if(iqp > 255)
+        iqp = 0;
       return true;
     }
 

@@ -84,6 +84,7 @@ namespace vm {
 
       // Interrupt
       word_t iqp;
+      word_t iqe;
       word_t iqc;
       word_t intq[256];
 
@@ -135,6 +136,7 @@ namespace vm {
       dword_t emu[16];
       // Interrupt
       word_t iqp;
+      word_t iqe;
       word_t iqc;
       word_t intq[256];
       // Internal use registers
