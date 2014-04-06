@@ -411,6 +411,7 @@ int main(int argc, char* argv[]) {
       if(cputype == 1) {
         vc.GetState((void*)&cpu_state_dn, sizeof(cpu_state_dn));
         print_pc(cpu_state_dn, vc);
+        std::printf("Step took %u cycles\n", cpu_state_dn.last_cycles);
         print_regs(cpu_state_dn);
       }
       else {

@@ -30,6 +30,19 @@ namespace vm {
       true , false, false, false, false, false, false, false,
       false, false, false, false, false, false, false, false,
     };
+    // Number of execution cycles per instruction usually minus 1
+    // Each instruction is at least 1 cycle, operand writes add a cycle
+    // instructions that go into skip mode add a cycle.
+    static const unsigned DCPU16N_cycletable[96] = {
+      0, 0, 1, 1, 2, 3, 8, 9, 5, 6, 0, 0, 0, 0, 0, 0,
+      2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 1, 1,
+
+      0, 1, 3, 0, 0, 0, 0, 420, 4, 0, 0, 2, 1, 0, 0, 0,
+      3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+
+      4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
     DCPU16N::DCPU16N(unsigned clock) : ICPU(), cpu_clock(clock) {
       this->Reset();
     }
@@ -55,6 +68,7 @@ namespace vm {
       pwrdraw = 0;
       phase = 0;
       wait_cycles = 0;
+      last_cycles = 0;
 
       acu = 0;
       aca = 0;
@@ -83,6 +97,7 @@ namespace vm {
         Tick(1);
         x++;
       } while((!fire) && (phase != 0) && (phase != DCPU16N_PHASE_SLEEP));
+      last_cycles = x;
       return x;
     }
 
@@ -91,26 +106,9 @@ namespace vm {
       dword_t cfa;
       register int32_t s32;
       word_t opca;
+      register unsigned csc;
       while(n--) {
         switch(phase) {
-        case DCPU16N_PHASE_OPFETCH:
-          if(iqc > 0 && !qint && !(skip || bytemode)) {
-            if(ia != 0) { // interrupts are enabled
-              phase = DCPU16N_PHASE_INTERRUPT;
-              break;
-            }
-            else {
-              iqc = 0;
-            }
-          }
-          cfa = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
-          opcl = (((word_t)vcomp->ReadB(cfa + 1)) << 8) | (word_t)vcomp->ReadB(cfa);
-          pc += 2;
-          if(skip)
-            phase = DCPU16N_PHASE_EXECSKIP;
-          else
-            phase = DCPU16N_PHASE_UAREAD;
-          break;
         case DCPU16N_PHASE_NWAFETCH:
           cfa = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
           fetchh = (((word_t)vcomp->ReadB(cfa + 1)) << 8) | (word_t)vcomp->ReadB(cfa);
@@ -143,6 +141,25 @@ namespace vm {
             phase = DCPU16N_PHASE_EXEC;
           }
           break;
+        case DCPU16N_PHASE_OPFETCH:
+          if(iqc > 0 && !qint && !(skip || bytemode)) {
+            if(ia != 0) { // interrupts are enabled
+              phase = DCPU16N_PHASE_INTERRUPT;
+              break;
+            }
+            else {
+              iqc = 0;
+            }
+          }
+          cfa = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
+          opcl = (((word_t)vcomp->ReadB(cfa + 1)) << 8) | (word_t)vcomp->ReadB(cfa);
+          pc += 2;
+          if(skip) {
+            phase = DCPU16N_PHASE_EXECSKIP;
+            break;
+          }
+          else
+            phase = DCPU16N_PHASE_UAREAD;
         case DCPU16N_PHASE_UAREAD:
           if((opcl & 0x001f) != 0 || (opcl & 0x03e0) != 0) {
             opca = opcl >> 10;
@@ -474,6 +491,16 @@ namespace vm {
               wrt |= 0x100;
               break;
             }
+            if(wrt & 0x0100)
+              phase = DCPU16N_PHASE_UBWRITE;
+            csc = DCPU16N_cycletable[opcl & 0x001f];
+            if(csc) {
+              //if(csc == 1) break;
+              phasenext = phase;
+              phase = DCPU16N_PHASE_EXECW;
+              wait_cycles = csc - 1;
+              break;
+            }
           }
           else if((opcl & 0x03e0) != 0) {
             wrt = (opcl >> 10);
@@ -482,17 +509,11 @@ namespace vm {
             case 0x01: // JSR (ra)
               bcu = pc;
               phase = DCPU16N_PHASE_EXECJMP;
-              sp-= 2;
-              bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
-              wrt = 0x0118;
               break;
             case 0x02: // BSR (ra)
               bcu = pc;
               phase = DCPU16N_PHASE_EXECJMP;
-              sp-= 2;
               acu += pc;
-              bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
-              wrt = 0x0118;
               break;
             //case 0x03:
             //  break;
@@ -500,6 +521,7 @@ namespace vm {
             //  break;
             case 0x05: // NEG (rwa)
               wrt |= 0x0100;
+              phase = DCPU16N_PHASE_UBWRITE;
               bcu = (word_t)(-((int16_t)acu));
               break;
             //case 0x06:
@@ -513,6 +535,7 @@ namespace vm {
               break;
             case 0x09: // IAG (wa)
               wrt |= 0x0100;
+              phase = DCPU16N_PHASE_UBWRITE;
               bcu = ia;
               break;
             case 0x0a: // IAS (ra)
@@ -535,6 +558,7 @@ namespace vm {
               break;
             case 0x11: // MMR (rwa)
               wrt |= 0x0100;
+              phase = DCPU16N_PHASE_UBWRITE;
               bcu = (emu[acu & 0x0f] >> 8) | (acu & 0x0f);
               break;
             //case 0x12:
@@ -543,10 +567,12 @@ namespace vm {
             //  break;
             case 0x14: // SXB (rwa)
               wrt |= 0x0100;
+              phase = DCPU16N_PHASE_UBWRITE;
               bcu = (-(acu & 0x80)) | (acu & 0x00ff);
               break;
             case 0x15: // SWP (rwa)
               wrt |= 0x0100;
+              phase = DCPU16N_PHASE_UBWRITE;
               bcu = ((acu >> 8) & 0xff) | ((acu << 8) & 0xFF00);
               break;
             //case 0x16:
@@ -569,6 +595,14 @@ namespace vm {
             //  break;
             //case 0x1f:
             //  break;
+            }
+            csc = DCPU16N_cycletable[32 + ((opcl >> 5) & 0x001f)];
+            if(csc) {
+              //if(csc == 1) break;
+              phasenext = phase;
+              phase = DCPU16N_PHASE_EXECW;
+              wait_cycles = csc - 1;
+              break;
             }
           }
           else {
@@ -597,10 +631,19 @@ namespace vm {
               phase = DCPU16N_PHASE_MARKSKIP;
               break;
             }
+            csc = DCPU16N_cycletable[64 + ((opcl >> 10) & 0x001f)];
+            if(csc) {
+              //if(csc == 1) break;
+              phasenext = phase;
+              phase = DCPU16N_PHASE_EXECW;
+              wait_cycles = csc - 1;
+              break;
+            }
           }
 
         case DCPU16N_PHASE_UBWRITE:
           if(wrt & 0x0100) {
+            phase = DCPU16N_PHASE_OPFETCH;
             if(wrt & 0x0020) {
               // nothing
             }
@@ -688,7 +731,16 @@ namespace vm {
             bytemode = false;
           break;
         case DCPU16N_PHASE_EXECW:
-          // TODO
+          if(wait_cycles > 0) {
+            wait_cycles--;
+            if(n >= wait_cycles) {
+              n -= wait_cycles;
+              phase = phasenext;
+            }
+          }
+          else {
+            phase = phasenext;
+          }
           break;
         case DCPU16N_PHASE_SLEEP:
           // Check Interrupts here
@@ -723,6 +775,10 @@ namespace vm {
           phase = DCPU16N_PHASE_OPFETCH;
           break;
         case DCPU16N_PHASE_EXECJMP:
+          sp -= 2;
+          bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
+          vcomp->WriteB(bca, (byte_t)(bcu & 0x0ff));
+          vcomp->WriteB(bca + 1, (byte_t)(bcu >> 8));
           pc = acu;
           phase = DCPU16N_PHASE_OPFETCH;
           break;
@@ -811,8 +867,10 @@ namespace vm {
         sptr->qint = this->qint;
 
         sptr->phase = this->phase;
+        sptr->phasenext = this->phasenext;
         sptr->pwrdraw = this->pwrdraw;
         sptr->wait_cycles = this->wait_cycles;
+        sptr->last_cycles = this->last_cycles;
         std::copy_n(this->emu, 16, sptr->emu);
 
         sptr->iqp = this->iqp;

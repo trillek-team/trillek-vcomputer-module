@@ -90,8 +90,10 @@ namespace vm {
 
       // hardware status
       unsigned phase;
+      unsigned phasenext;
       unsigned pwrdraw;
       unsigned wait_cycles;
+      unsigned last_cycles;
 
       // Internal use registers
       word_t acu;
@@ -130,8 +132,10 @@ namespace vm {
       bool qint;
       // hardware status
       unsigned phase;
+      unsigned phasenext;
       unsigned pwrdraw;
       unsigned wait_cycles;
+      unsigned last_cycles;
       // EMU
       dword_t emu[16];
       // Interrupt
