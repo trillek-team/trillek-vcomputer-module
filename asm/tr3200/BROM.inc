@@ -30,12 +30,12 @@ print:
   LLS %r2, %r2, 8
 
 print_loop:
-  LOAD.B %r3, %r0         ; Loads in %r3 a character
+  LOADB %r3, %r0         ; Loads in %r3 a character
   IFEQ %r3, 0             ; If is NULL then ends
     RJMP print_end
 
   OR %r3, %r3, %r2        ; Add color attribute
-  STORE.W %r1, %r3
+  STOREW %r1, %r3
 
   ADD %r1, %r1, 2         ; Increment pointers and do the loop
   ADD %r0, %r0, 1
@@ -66,7 +66,7 @@ print_hex_b:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   ; Print LS nible
   ADD %r1, %r1, 2
@@ -75,7 +75,7 @@ print_hex_b:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   POP %r5
 
@@ -100,7 +100,7 @@ print_hex_w:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   ; Print next nible
   LRS %r5, %r0, 8
@@ -112,7 +112,7 @@ print_hex_w:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   ; Print next nible
   LRS %r5, %r0, 4
@@ -124,7 +124,7 @@ print_hex_w:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   ; Print next nible
   AND %r5, %r0, 0x0F
@@ -135,7 +135,7 @@ print_hex_w:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   POP %r5
 
@@ -160,7 +160,7 @@ print_hex_dw:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   ; Print next nible
   LRS %r5, %r0, 24
@@ -172,7 +172,7 @@ print_hex_dw:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   ; Print next nible
   LRS %r5, %r0, 20
@@ -184,7 +184,7 @@ print_hex_dw:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   ; Print next nible
   LRS %r5, %r0, 16
@@ -196,7 +196,7 @@ print_hex_dw:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   ; Print next nible
   LRS %r5, %r0, 12
@@ -208,7 +208,7 @@ print_hex_dw:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   ; Print next nible
   LRS %r5, %r0, 8
@@ -220,7 +220,7 @@ print_hex_dw:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   ; Print next nible
   LRS %r5, %r0, 4
@@ -232,7 +232,7 @@ print_hex_dw:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   ; Print next nible
   AND %r5, %r0, 0x0F
@@ -243,7 +243,7 @@ print_hex_dw:
     SUB %r5, %r5, 7
 
   OR %r5, %r5, %r2
-  STORE.W %r1, %r5
+  STOREW %r1, %r5
 
   POP %r5
 
@@ -262,7 +262,7 @@ clr_screen:
   OR %r1, %r1, 0x20  ; Prepare fill word
 
 clr_screen_loop:
-  STORE.W %r0, %r1
+  STOREW %r0, %r1
   ADD %r0, %r0, 2
 
   IFLE %r0, %r3
@@ -289,12 +289,12 @@ hwn_for_loop:
   ADD %r4, %r4, 0x110000  ; %r2 points to the base address of device X
 
   ; Check if there is a device present
-  LOAD.B %r2, %r4
+  LOADB %r2, %r4
   IFNEQ %r2, 0xFF
     RJMP hwn_check_cond_for_loop ; continue;
 
   ADD %r5, %r3, %r0
-  STORE.B %r5, %r1        ; Write Slot number (%r3[%r0] = slot)
+  STOREB %r5, %r1        ; Write Slot number (%r3[%r0] = slot)
   ADD %r0, %r0, 1         ; Count device %r0++
 
 hwn_check_cond_for_loop:
