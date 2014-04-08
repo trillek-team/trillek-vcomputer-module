@@ -7,6 +7,8 @@
 #include "Types.hpp"
 #include "VComputer.hpp"
 
+#include <functional>
+
 namespace vm {
   namespace dev {
 
@@ -111,6 +113,34 @@ namespace vm {
 
         virtual bool SetState (const void* ptr, std::size_t size) {
           return true;
+        }
+
+        // Extenal API
+
+        /**
+         * Asigns a Callback callable element executed when software ask to the
+         * device for a new wordt to read
+         * @param cb callable element that returns a word_t
+         */
+        void OnRead (std::function<word_t()> cb) {
+          this->onRead = cb;
+        }
+
+        /**
+         * Asigns a Callback callable element executed when software sends to the
+         * device a new wordt
+         * @param cb callable element that gets a word_t
+         */
+        void OnWrite (std::function<void(word_t)> cb) {
+          this->onWrite = cb;
+        }
+
+        /**
+         * Sends a interrupt when the external code needs to indicate to the
+         * software that there is a word ready to be read
+         */
+        void RX_Ready() {
+          do_int = int_msg != 0x0000;
         }
 
       protected:
