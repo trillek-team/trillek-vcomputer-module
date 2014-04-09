@@ -75,7 +75,7 @@ namespace vm {
     }
 
     bool TR3200::SendInterrupt (word_t msg) {
-      if (GET_EI(FLAGS)) {
+      if (GET_EI(REG_FLAGS)) {
         // The CPU accepts a new interrupt
         interrupt = true;
         int_msg = msg;
@@ -246,7 +246,7 @@ namespace vm {
               break;
 
             case P3_OPCODE::RSBB :
-              ltmp = ((qword_t)rn) - (rs + GET_CF(FLAGS));
+              ltmp = ((qword_t)rn) - (rs + GET_CF(REG_FLAGS));
               if (rn < (rs + GET_CF(REG_FLAGS)) ) // We grab carry bit
                 SET_ON_CF(REG_FLAGS);
               else
