@@ -18,10 +18,8 @@ namespace vm {
 #define BUF_SIZE (32)
       char buf[BUF_SIZE] = {0};
 
-      dword_t inst = vc.ReadB(pc++); // Fetch
-      inst |= (vc.ReadB(pc++) << 8);
-      inst |= (vc.ReadB(pc++) << 16);
-      inst |= (vc.ReadB(pc++) << 24); // Little Endian
+      dword_t inst = vc.ReadDW(pc); // Fetch
+      pc = pc +4;
 
       dword_t opcode, rd, rn, rs;
       rd = GRD(inst);
@@ -33,7 +31,6 @@ namespace vm {
 
       if (IS_P3(inst)) {
         // 3 parameter instruction ********************************************
-        std::fprintf(stderr, "P3\n");
         if (literal) {
           rn = LIT15(inst);
           if (IS_BIG_LITERAL_L15(rn)) { // Next dword is literal value
@@ -191,16 +188,16 @@ namespace vm {
 
           case P3_OPCODE::LOADW :
             if (literal)
-              snprintf(buf, BUF_SIZE, "LOAD.W %%r%u, [%%r%u + 0x%08X]",  rd, rs, rn);
+              snprintf(buf, BUF_SIZE, "LOADW %%r%u, [%%r%u + 0x%08X]",  rd, rs, rn);
             else
-              snprintf(buf, BUF_SIZE, "LOAD.W %%r%u, [%%r%u + %%r%u]", rd, rs, rn);
+              snprintf(buf, BUF_SIZE, "LOADW %%r%u, [%%r%u + %%r%u]", rd, rs, rn);
             break;
 
           case P3_OPCODE::LOADB :
             if (literal)
-              snprintf(buf, BUF_SIZE, "LOAD.B %%r%u, [%%r%u + 0x%08X]",  rd, rs, rn);
+              snprintf(buf, BUF_SIZE, "LOADB %%r%u, [%%r%u + 0x%08X]",  rd, rs, rn);
             else
-              snprintf(buf, BUF_SIZE, "LOAD.B %%r%u, [%%r%u + %%r%u]", rd, rs, rn);
+              snprintf(buf, BUF_SIZE, "LOADB %%r%u, [%%r%u + %%r%u]", rd, rs, rn);
             break;
 
           case P3_OPCODE::STORE :
@@ -233,7 +230,6 @@ namespace vm {
             break;
         }
       } else if (IS_P2(inst)) {
-        std::fprintf(stderr, "P2\n");
         // Fetch Rn operand
         if (literal) {
           rn = LIT19(inst);
@@ -292,16 +288,16 @@ namespace vm {
 
           case P2_OPCODE::LOADW2 :
             if (literal)
-              snprintf(buf, BUF_SIZE, "LOAD.W %%r%u, [0x%08X]",  rd, rn);
+              snprintf(buf, BUF_SIZE, "LOADW %%r%u, [0x%08X]",  rd, rn);
             else
-              snprintf(buf, BUF_SIZE, "LOAD.W %%r%u, [%%r%u]", rd, rn);
+              snprintf(buf, BUF_SIZE, "LOADW %%r%u, [%%r%u]", rd, rn);
             break;
 
           case P2_OPCODE::LOADB2 :
             if (literal)
-              snprintf(buf, BUF_SIZE, "LOAD.B %%r%u, [0x%08X]",  rd, rn);
+              snprintf(buf, BUF_SIZE, "LOADB %%r%u, [0x%08X]",  rd, rn);
             else
-              snprintf(buf, BUF_SIZE, "LOAD.B %%r%u, [%%r%u]", rd, rn);
+              snprintf(buf, BUF_SIZE, "LOADB %%r%u, [%%r%u]", rd, rn);
             break;
 
           case P2_OPCODE::STORE2 :
@@ -408,7 +404,6 @@ namespace vm {
 
       } else if (IS_P1(inst)) {
         // 1 parameter instrucction *******************************************
-        std::fprintf(stderr, "P1\n");
         // Fetch Rn operand
         if (literal) {
           rn = LIT23(inst);
@@ -506,7 +501,6 @@ namespace vm {
         }
       } else {
         // 0 parameter instrucction *******************************************
-        std::fprintf(stderr, "NP\n");
 
         switch (opcode) {
           case NP_OPCODE::SLEEP :
@@ -520,7 +514,6 @@ namespace vm {
           case NP_OPCODE::RFI :
             snprintf(buf, BUF_SIZE, "RFI");
             break;
-
 
           default:
             snprintf(buf, BUF_SIZE, "????");

@@ -55,10 +55,10 @@ namespace vm {
       MOV             = 0x40,
       SWP             = 0x41,
 
-      SIGXB           = 0x42,
-      SIGXW           = 0x43,
+      NOT             = 0x42,
 
-      NOT             = 0x44,
+      SIGXB           = 0x43,
+      SIGXW           = 0x44,
 
       LOAD2           = 0x45,
       LOADW2          = 0x46,

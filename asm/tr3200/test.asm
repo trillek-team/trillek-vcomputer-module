@@ -61,9 +61,9 @@ test_alu:                       ; PC = 0x010C
   ; Testing BOOLEAN instructions
   MOV %r7, 0x5555AAAA
   MOV %r6, 0xAAFFFF55
-  ;NOT %r11, %r6           ; %r11 = 0x550000AA
-  ;IFNEQ %r11, 0x550000AA
-  ;    JMP crash
+  NOT %r11, %r6           ; %r11 = 0x550000AA
+  IFNEQ %r11, 0x550000AA
+      JMP crash
 
   AND %r11, %r7, %r6      ; %r11 = 0x0055AA00
   IFNEQ %r11, 0x0055AA00
@@ -183,10 +183,11 @@ test_alu:                       ; PC = 0x010C
   MOV %r1, 0
   MOV %r3, 0xBEBACAFE
 
+  ; Basic test of RAM W/R
   STORE %r0, %r3
   LOAD %r1, %r0
-  ;IFNEQ %r1, %r0
-  ;    JMP crash
+  IFNEQ %r3, %r1
+      JMP crash
 
 ;******************************************************************************
   ; Check if we did this alredy

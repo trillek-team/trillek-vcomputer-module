@@ -32,14 +32,14 @@ print:
 print_loop:
   LOADB %r3, %r0         ; Loads in %r3 a character
   IFEQ %r3, 0             ; If is NULL then ends
-    RJMP print_end
+    JMP print_end
 
   OR %r3, %r3, %r2        ; Add color attribute
   STOREW %r1, %r3
 
   ADD %r1, %r1, 2         ; Increment pointers and do the loop
   ADD %r0, %r0, 1
-  RJMP print_loop
+  JMP print_loop
 
 print_end:
 
@@ -266,7 +266,7 @@ clr_screen_loop:
   ADD %r0, %r0, 2
 
   IFLE %r0, %r3
-    RJMP clr_screen_loop
+    JMP clr_screen_loop
 
   RET
 
@@ -291,7 +291,7 @@ hwn_for_loop:
   ; Check if there is a device present
   LOADB %r2, %r4
   IFNEQ %r2, 0xFF
-    RJMP hwn_check_cond_for_loop ; continue;
+    JMP hwn_check_cond_for_loop ; continue;
 
   ADD %r5, %r3, %r0
   STOREB %r5, %r1        ; Write Slot number (%r3[%r0] = slot)
@@ -301,7 +301,7 @@ hwn_check_cond_for_loop:
   ; do %r1++ and check exit condition
   ADD %r1, %r1, 1
   IFL %r1, 32
-    RJMP hwn_for_loop
+    JMP hwn_for_loop
 
 end_hwn:
   POP %r5
