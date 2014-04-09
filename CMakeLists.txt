@@ -50,6 +50,9 @@ else (VCOMPUTER_SUB_PROJECT)
 		"src/*.cpp"
     "src/TR3200/*.cpp"
 		"src/devices/*.cpp"
+		"include/*.hpp"
+    "include/TR3200/*.hpp"
+		"include/devices/*.hpp"
 		)
 
 
