@@ -12,7 +12,7 @@
 
 namespace vm {
   using namespace vm::cpu;
-  
+
   VComputer::VComputer (std::size_t ram_size ) :
       ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0) {
 

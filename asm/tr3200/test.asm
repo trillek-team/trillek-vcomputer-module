@@ -15,7 +15,7 @@ begin:
   MOV %r11, 11
   MOV %bp, 0
   MOV %sp, 0x20000    ; Sets Stack Pointer to the end of the 128KiB RAM
-  MOV %ia, vtable
+  ;MOV %ia, vtable
   MOV %flags, 0x100    ; Enable interrupts
   MOV %r1, 0xBEBECAFE
   ; Tested seting registers and using bit literal
@@ -61,9 +61,9 @@ test_alu:                       ; PC = 0x010C
   ; Testing BOOLEAN instructions
   MOV %r7, 0x5555AAAA
   MOV %r6, 0xAAFFFF55
-  ;NOT %r11, %r6           ; %r11 = 0x550000AA
-  ;IFNEQ %r11, 0x550000AA
-  ;    JMP crash
+  NOT %r11, %r6           ; %r11 = 0x550000AA
+  IFNEQ %r11, 0x550000AA
+      JMP crash
 
   AND %r11, %r7, %r6      ; %r11 = 0x0055AA00
   IFNEQ %r11, 0x0055AA00
@@ -183,10 +183,11 @@ test_alu:                       ; PC = 0x010C
   MOV %r1, 0
   MOV %r3, 0xBEBACAFE
 
+  ; Basic test of RAM W/R
   STORE %r0, %r3
   LOAD %r1, %r0
-  ;IFNEQ %r1, %r0
-  ;    JMP crash
+  IFNEQ %r3, %r1
+      JMP crash
 
 ;******************************************************************************
   ; Check if we did this alredy
@@ -201,17 +202,17 @@ begin_search_tda:
   IFEQ %r10, 0x112100  ; Not found any TDA device
     JMP end_search_tda
 
-  LOAD.B %r0, %r10
+  LOADB %r0, %r10
   IFNEQ %r0, 0xFF   ; Device Present ?
     JMP begin_search_tda
 
   ADD %r1, %r10, 1
-  LOAD.B %r0, %r1
+  LOADB %r0, %r1
   IFNEQ %r0, 0x0E   ; Is a Graphics device ?
     JMP begin_search_tda
 
   ADD %r1, %r10, 2
-  LOAD.B %r0, %r1
+  LOADB %r0, %r1
   IFNEQ %r0, 0x01   ; Is TDA compatible ?
     JMP begin_search_tda
 
@@ -233,7 +234,7 @@ end_search_tda:
 
   ADD %r0, %r10, 0x08
   MOV %r1, 0
-  STORE.W %r0, %r1        ; Send command to point Text buffer to B:A address
+  STOREW %r0, %r1        ; Send command to point Text buffer to B:A address
 
   ; Clears the screen
   MOV %r0, 0x002000
@@ -268,7 +269,7 @@ string01: .DB "OK!", 0   ; ASCIIz string
 ; RAM data
   .ORG 0x0
 :data
-  .data 0
+  .db 0
 
   .ORG 0x0100 ; Some special variables
 :TDA_base_dev   .dw 0
