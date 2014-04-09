@@ -6,6 +6,8 @@ if (VCOMPUTER_SUB_PROJECT)
 	# Include dirs
 	set(VCOMPUTER_INCLUDE_DIRS
 		"${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/TR3200"
+		"${CMAKE_CURRENT_SOURCE_DIR}/include/devices"
 		PARENT_SCOPE
 		)
 
@@ -39,6 +41,8 @@ else (VCOMPUTER_SUB_PROJECT)
 	set(VCOMPUTER_INCLUDE_DIRS
 		${PROJECT_BINARY_DIR}
 		${VCOMPUTER_SOURCE_DIR}/include
+    ${VCOMPUTER_SOURCE_DIR}/include/TR3200
+		${VCOMPUTER_SOURCE_DIR}/include/devices
 		)
 
 	# Source dirs
