@@ -68,26 +68,26 @@ int main (int argc, char **argv)
                 use_fout = fout.is_open();
             } else if  (opt == "-output" || opt == "-o") {
               std::cerr  << "Option " + opt +
-                        " requiered another argument it will be ignored here";
+                        " requiered another argument it will be ignored here" << std::endl;
             } else if (opt == "-format=dat" ) {
                 format = OUTPUT_FORMAT::DAT;
             } else if (opt == "-format=hex_dump") {
                 format = OUTPUT_FORMAT::HEX_DUMP;
             } else {
-              std::cerr << "Unknown option " + opt + " it will be ignored !";
+              std::cerr << "Unknown option " + opt + " it will be ignored !" << std::endl;
             }
         } else {
             filename = argv[k];
         }
     }
     if (filename.size() <= 0) {
-      std::cerr << "Missing or invalid input filename";
+      std::cerr << "Missing or invalid input filename" << std::endl;
       return -1;
     }
 
     fin.open(filename);
     if (! fin.is_open()) {
-        std::cerr << "Error opening input file " + filename;
+        std::cerr << "Error opening input file " + filename << std::endl;
         return -1;
     }
 
@@ -103,7 +103,7 @@ int main (int argc, char **argv)
 
     // Check header
     if (str.size() <= 0 || str.substr(0, 2) != "P1") {
-        std::cerr << "Invalid input file. Must be a ASCII PBM file. Aborting.";
+        std::cerr << "Invalid input file. Must be a ASCII PBM file. Aborting." << std::endl;
         return -1;
     }
 
@@ -139,7 +139,7 @@ int main (int argc, char **argv)
     }
 
     if (!framebuffer) {
-        std::cerr << "Invalid file format. Missing framebuffer size";
+        std::cerr << "Invalid file format. Missing framebuffer size" << std::endl;
         return -1;
     }
 
