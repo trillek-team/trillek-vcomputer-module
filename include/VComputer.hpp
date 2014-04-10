@@ -323,7 +323,7 @@ namespace vm {
       std::map<Range, AddrListener*> listeners; /// Container of AddrListeners
 
       Timer pit;  /// Programable Interval Timer
-	  RNG rng; /// Random Number Generator
+      RNG rng; /// Random Number Generator
 
   };
 
