@@ -11,6 +11,7 @@
 #include "AddrListener.hpp"
 #include "EnumAndCtrlBlk.hpp"
 #include "Timer.hpp"
+#include "RNG.hpp"
 
 #include <map>
 #include <memory>
@@ -322,6 +323,7 @@ namespace vm {
       std::map<Range, AddrListener*> listeners; /// Container of AddrListeners
 
       Timer pit;  /// Programable Interval Timer
+	  RNG rng; /// Random Number Generator
 
   };
 

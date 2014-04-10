@@ -22,6 +22,10 @@ namespace vm {
     // Add timers addresses
     Range pit_range(0x11E000, 0x11E010);
     AddAddrListener(pit_range, &pit);
+
+	  // Add RNG address
+	  Range rng_range(0x11E040, 0x11E043);
+	  AddAddrListener(rng_range, &rng);
   }
 
   VComputer::~VComputer () {
@@ -110,6 +114,7 @@ namespace vm {
 
     // Reset embed devices
     pit.Reset();
+	rng.Reset();
 
     // Reset devices
     for (unsigned slot = 0; slot < MAX_N_DEVICES; slot++) {
