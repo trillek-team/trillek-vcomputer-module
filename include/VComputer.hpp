@@ -12,6 +12,7 @@
 #include "EnumAndCtrlBlk.hpp"
 #include "Timer.hpp"
 #include "RNG.hpp"
+#include "RTC.hpp"
 
 #include <map>
 #include <memory>
@@ -324,7 +325,7 @@ namespace vm {
 
       Timer pit;  /// Programable Interval Timer
       RNG rng; /// Random Number Generator
-
+      RTC rtc; /// Real Time Clock
   };
 
 

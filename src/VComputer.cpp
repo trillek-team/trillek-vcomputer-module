@@ -26,6 +26,10 @@ namespace vm {
     // Add RNG address
     Range rng_range(0x11E040, 0x11E043);
     AddAddrListener(rng_range, &rng);
+
+    // Add RTC address
+    Range rtc_range(0x11E030, 0x11E035);
+    AddAddrListener(rtc_range, &rtc);
   }
 
   VComputer::~VComputer () {
