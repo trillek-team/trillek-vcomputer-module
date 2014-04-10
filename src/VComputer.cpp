@@ -23,9 +23,9 @@ namespace vm {
     Range pit_range(0x11E000, 0x11E010);
     AddAddrListener(pit_range, &pit);
 
-	// Add RNG address
-	Range rng_range(0x11E040);
-	AddAddrListener(rng_range, &rng);
+	  // Add RNG address
+	  Range rng_range(0x11E040, 0x11E043);
+	  AddAddrListener(rng_range, &rng);
   }
 
   VComputer::~VComputer () {
