@@ -1,21 +1,18 @@
 #pragma once
 /**
- * Trillek Virtual Computer - RNG.hpp
- * Implementation of embedded PRNG device
- */
+* Trillek Virtual Computer - RTC.hpp
+* Implementation of embedded RTC device
+*/
 
 #include "Types.hpp"
 #include "AddrListener.hpp"
 
-#include <random>
+#include <ctime>
 
 namespace vm {
 
-  class RNG : public AddrListener{
+  class RTC : public AddrListener{
   public:
-    RNG();
-    virtual ~RNG();
-
     virtual byte_t ReadB(dword_t addr);
     virtual word_t ReadW(dword_t addr);
     virtual dword_t ReadDW(dword_t addr);
@@ -24,14 +21,8 @@ namespace vm {
     virtual void WriteW(dword_t addr, word_t val);
     virtual void WriteDW(dword_t addr, dword_t val);
 
-    void Reset();
-
   private:
-    std::uniform_int_distribution<int> distribution;
-    std::mt19937 engine;
-    dword_t seed;
-    bool blockGenerate;
-    dword_t number;
+    static const int EPOCH_YEAR_OFFSET = 1900 + 0;
   };
 
 } // End of namespace vm
