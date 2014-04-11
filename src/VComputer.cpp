@@ -28,7 +28,7 @@ namespace vm {
     AddAddrListener(rng_range, &rng);
 
     // Add RTC address
-    Range rtc_range(0x11E030, 0x11E035);
+    Range rtc_range(0x11E030, 0x11E036);
     AddAddrListener(rtc_range, &rtc);
   }
 
