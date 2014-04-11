@@ -51,7 +51,7 @@ namespace vm {
       return (byte_t)((clock->tm_year + EPOCH_YEAR_OFFSET) >> 8);
 
     default:
-      return 0;
+      return this->ReadB(addr) | (this->ReadB(addr + 1) << 8);
     }
   }
 
@@ -68,7 +68,7 @@ namespace vm {
       return (clock->tm_mon << 24) + ((clock->tm_year + EPOCH_YEAR_OFFSET) << 8);
 
     default:
-      return 0;
+      return this->ReadW(addr) | (this->ReadW(addr + 2) << 16);
     }
   }
 

@@ -30,6 +30,8 @@ namespace vm {
     std::uniform_int_distribution<int> distribution;
     std::mt19937 engine;
     dword_t seed;
+    bool blockGenerate;
+    dword_t number;
   };
 
 } // End of namespace vm

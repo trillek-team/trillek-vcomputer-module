@@ -12,6 +12,7 @@ namespace vm {
     engine = std::mt19937();
 
     seed = engine.default_seed;
+    blockGenerate = false;
   }
 
   RNG::~RNG() {
@@ -24,7 +25,8 @@ namespace vm {
 
   byte_t RNG::ReadB(dword_t addr) {
 
-    int number = distribution(engine);
+    if (!blockGenerate)
+      number = distribution(engine);
 
     switch (addr)
     {
@@ -44,7 +46,8 @@ namespace vm {
 
   word_t RNG::ReadW(dword_t addr) {
 
-    int number = distribution(engine);
+    if (!blockGenerate)
+      number = distribution(engine);
 
     switch (addr)
     {
@@ -54,17 +57,27 @@ namespace vm {
       return (word_t)(number >> 16);
 
     default:
-      return this->ReadB(addr) | (this->ReadB(addr + 1) << 8);
+      blockGenerate = true;
+      word_t value = this->ReadB(addr) | (this->ReadB(addr + 1) << 8);
+      blockGenerate = false;
+      return value;
     }
   }
 
   dword_t RNG::ReadDW(dword_t addr) {
+
+    number = distribution(engine);
+
     switch (addr) {
     case 0x11E040:
-      return distribution(engine);
+      return number;
       break;
+
     default:
-      return this->ReadW(addr) | (this->ReadW(addr + 2) << 16);
+      blockGenerate = true;
+      dword_t value = this->ReadW(addr) | (this->ReadW(addr + 2) << 16);
+      blockGenerate = false;
+      return value;
     }
   }
 
