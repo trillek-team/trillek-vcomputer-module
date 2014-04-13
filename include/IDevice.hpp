@@ -1,7 +1,7 @@
 #pragma once
 /*!
  * \brief       Virtual Computer Device API
- * \file        ICPU.hpp
+ * \file        IDevice.hpp
  * \copyright   The MIT License (MIT)
  *
  * Defines a base interface for all Devices in the Virtual Computer
