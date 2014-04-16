@@ -18,6 +18,7 @@
 #include "RTC.hpp"
 
 #include <map>
+#include <set>
 #include <memory>
 #include <cassert>
 
@@ -275,7 +276,7 @@ namespace vm {
         /*!
          * Sizeo of the RAM in bytes
          */
-        std::size_t RamSize() const {
+        std::size_t RamSize () const {
             return ram_size;
         }
 
@@ -283,7 +284,7 @@ namespace vm {
          * Returns a pointer to the RAM for reading raw values from it
          * Use only for GetState methods or dump a snapshot of the computer state
          */
-        const byte_t* Ram() const {
+        const byte_t* Ram () const {
             return ram;
         }
 
@@ -293,6 +294,58 @@ namespace vm {
          */
         byte_t* Ram() {
             return ram;
+        }
+
+
+        /*!
+         * Add a breakpoint at the desired address
+         * \param addr Address were will be the breakpoint
+         */
+        void SetBreakPoint (dword_t addr) {
+            breakpoints.insert(addr);
+        }
+
+        /*!
+         * Erase a breakpoint at the desired address
+         * \param addr Address were will be the breakpoint
+         */
+        void RmBreakPoint (dword_t addr) {
+            breakpoints.erase(addr);
+        }
+
+        /*!
+         * Remove all breakpoints
+         */
+        void ClearBreakPoints () {
+            breakpoints.clear();
+        }
+
+        /*!
+         * Check if there isa breakpoint at an particular address
+         * \param addr Address to verify
+         * \return True if there is a breakpoint in these address
+         */
+        bool isBreakPoint (dword_t addr) {
+            if (breakpoints.find(addr) != breakpoints.end() ) {
+                breaking = true;
+                return true;
+            }
+            return false;
+        }
+
+        /*!
+         * Check if the Virtual Computer is halted by a breakpoint
+         * \return True if a breakpoint happened
+         */
+        bool isBreraked () {
+            return breaking;
+        }
+
+        /*!
+         * Allows to continue if a Breakpoint happened
+         */
+        void Continue () {
+            breaking = false;
         }
 
     private:
@@ -313,6 +366,10 @@ namespace vm {
         Timer pit;              //! Programable Interval Timer
         RNG rng;                //! Random Number Generator
         RTC rtc;                //! Real Time Clock
+
+
+        std::set<dword_t> breakpoints; //! Breakpoints list
+        bool breaking;
     };
 
 

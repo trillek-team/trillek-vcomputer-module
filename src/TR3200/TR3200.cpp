@@ -92,6 +92,10 @@ namespace vm {
     unsigned TR3200::RealStep() {
       unsigned wait_cycles;
 
+      if (vcomp->isBreakPoint(pc)) { // Breakpoint !
+        return 0;
+      }
+
       dword_t inst = vcomp->ReadDW(pc);
       pc +=4;
 

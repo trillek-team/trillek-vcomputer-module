@@ -94,8 +94,8 @@ int main(int argc, char* argv[]) {
     auto ddev = std::make_shared<vm::DummyDevice>();
     vc[i].AddDevice(10, ddev);
 
-    // Reset
-    vc[i].Reset();
+    // Powering itt
+    vc[i].On();
   }
 
   std::cout << "Randomizing every CPU!\nExecuting a random number of cycles from 1 to 255\n";

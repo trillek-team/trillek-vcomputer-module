@@ -14,7 +14,7 @@ namespace vm {
     using namespace vm::cpu;
 
     VComputer::VComputer (std::size_t ram_size ) :
-        is_on(false), ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0) {
+        is_on(false), ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0), breaking(false) {
 
             ram = new byte_t[ram_size];
             std::fill_n(ram, ram_size, 0);
@@ -127,6 +127,10 @@ namespace vm {
             }
             std::get<0>(devices[slot])->Reset();
         }
+
+
+        // Cleat Break status
+        breaking = false;
     }
 
     void VComputer::On() {
@@ -159,6 +163,11 @@ namespace vm {
     unsigned VComputer::Step( const double delta) {
         if (is_on) {
             unsigned cpu_ticks = cpu->Step();
+
+            if (breaking) {
+                return 0; // We not executed yet the instruction!
+            }
+
             unsigned base_ticks = cpu_ticks * (BaseClock / cpu->Clock());
             unsigned dev_ticks = (base_ticks / 10); // Devices clock is at 100 KHz
             pit.Tick(dev_ticks, delta);
@@ -188,6 +197,7 @@ namespace vm {
                         std::get<0>(devices[i])->IACK(); // Informs to the device that his interrupt has been accepted by the CPU
                     }
                 }
+
             }
 
             return base_ticks;
@@ -203,6 +213,9 @@ namespace vm {
             unsigned cpu_ticks = n / (BaseClock / cpu->Clock());
 
             cpu->Tick(cpu_ticks);
+            // TODO ICPU.Tick should return the number of cycles that executed,
+            // so we can accrutraly execute the apropaite number of Device
+            // cycles if a breakpoint happens
             pit.Tick(dev_ticks, delta);
 
             word_t msg;
