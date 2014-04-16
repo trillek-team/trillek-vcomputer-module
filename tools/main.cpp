@@ -7,6 +7,7 @@
 #include "VC.hpp"
 #include "devices/DummyDevice.hpp"
 #include "TR3200/DisTR3200.hpp"
+#include "devices/M5FDD.hpp"
 
 #include <iostream>
 #include <vector>
@@ -281,6 +282,12 @@ int main(int argc, char* argv[]) {
 
   auto ddev = std::make_shared<vm::DummyDevice>();
   vc.AddDevice(10, ddev);
+
+  // Floppy drive
+  auto fd = std::make_shared<vm::dev::m5fdd::M35FD>();
+  vc.AddDevice(6, fd);
+  auto floppy = std::make_shared<vm::dev::m5fdd::M35_Floppy>("disk.dsk");
+  fd->insertFloppy(floppy);
 
   vc.Reset();
 
