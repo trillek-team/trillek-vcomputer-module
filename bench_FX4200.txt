@@ -1,0 +1,32 @@
+~/R/t/build (master) $ ./benchmark ../asm/tr3200/test.ffi ../asm/tr3200/hello.ffi ../asm/tr3200/type1.ffi ../asm/tr3200/clock.ffi 
+Opening file ../asm/tr3200/test.ffi
+Read 1046 bytes and stored in ROM
+Opening file ../asm/tr3200/hello.ffi
+Read 481 bytes and stored in ROM
+Opening file ../asm/tr3200/type1.ffi
+Read 1328 bytes and stored in ROM
+Opening file ../asm/tr3200/clock.ffi
+Read 740 bytes and stored in ROM
+Runing :
+~1% @ 1MHz
+~10% @ 0.5MHz
+~20% @ 0.2MHz
+~59% @ 0.1MHz
+~10% @ 0.01MHz
+Randomizing every CPU!
+Executing a random number of cycles from 1 to 255
+Running 1000 CPUs !
+Running 50000 cycles in 46.000000 ms Ttick 0.000920 ms Tclk 0.001000 ms Speed of 108.695652 % 
+Running 50000 cycles in 40.000000 ms Ttick 0.000800 ms Tclk 0.001000 ms Speed of 125.000000 % 
+Running 50000 cycles in 41.000000 ms Ttick 0.000820 ms Tclk 0.001000 ms Speed of 121.951220 % 
+Running 50000 cycles in 41.000000 ms Ttick 0.000820 ms Tclk 0.001000 ms Speed of 121.951220 % 
+Running 50000 cycles in 42.000000 ms Ttick 0.000840 ms Tclk 0.001000 ms Speed of 119.047619 % 
+Running 50000 cycles in 41.000000 ms Ttick 0.000820 ms Tclk 0.001000 ms Speed of 121.951220 % 
+Running 50000 cycles in 41.000000 ms Ttick 0.000820 ms Tclk 0.001000 ms Speed of 121.951220 % 
+Running 50000 cycles in 41.000000 ms Ttick 0.000820 ms Tclk 0.001000 ms Speed of 121.951220 % 
+Running 50000 cycles in 41.000000 ms Ttick 0.000820 ms Tclk 0.001000 ms Speed of 121.951220 % 
+Running 50000 cycles in 41.000000 ms Ttick 0.000820 ms Tclk 0.001000 ms Speed of 121.951220 % 
+Running 50000 cycles in 41.000000 ms Ttick 0.000820 ms Tclk 0.001000 ms Speed of 121.951220 % 
+Running 50000 cycles in 41.000000 ms Ttick 0.000820 ms Tclk 0.001000 ms Speed of 121.951220 % 
+Running 50000 cycles in 41.000000 ms Ttick 0.000820 ms Tclk 0.001000 ms Speed of 121.951220 % 
+

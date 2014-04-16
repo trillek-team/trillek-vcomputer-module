@@ -12,7 +12,7 @@
 
 namespace vm {
   using namespace vm::cpu;
-  
+
   VComputer::VComputer (std::size_t ram_size ) :
       ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0) {
 
@@ -22,6 +22,14 @@ namespace vm {
     // Add timers addresses
     Range pit_range(0x11E000, 0x11E010);
     AddAddrListener(pit_range, &pit);
+
+    // Add RNG address
+    Range rng_range(0x11E040, 0x11E043);
+    AddAddrListener(rng_range, &rng);
+
+    // Add RTC address
+    Range rtc_range(0x11E030, 0x11E036);
+    AddAddrListener(rtc_range, &rtc);
   }
 
   VComputer::~VComputer () {
@@ -110,6 +118,7 @@ namespace vm {
 
     // Reset embed devices
     pit.Reset();
+    rng.Reset();
 
     // Reset devices
     for (unsigned slot = 0; slot < MAX_N_DEVICES; slot++) {

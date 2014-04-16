@@ -10,17 +10,17 @@ begin_search_tda:
   IFEQ %r10, 0x112100  ; Not found any TDA device
     JMP end
 
-  LOAD.B %r0, %r10
+  LOADB %r0, %r10
   IFNEQ %r0, 0xFF   ; Device Present ?
     JMP begin_search_tda
 
   ADD %r1, %r10, 1
-  LOAD.B %r0, %r1
+  LOADB %r0, %r1
   IFNEQ %r0, 0x0E   ; Is a Graphics device ?
     JMP begin_search_tda
 
   ADD %r1, %r10, 2
-  LOAD.B %r0, %r1
+  LOADB %r0, %r1
   IFNEQ %r0, 0x01   ; Is TDA compatible ?
     JMP begin_search_tda
 
@@ -33,7 +33,7 @@ end_search_tda:
 
   ADD %r0, %r10, 0x08
   MOV %r1, 0
-  STORE.W %r0, %r1 ; Send command to point Text buffer to B:A address
+  STOREW %r0, %r1 ; Send command to point Text buffer to B:A address
 
   ; Clears the screen
   MOV %r0, 0x001000

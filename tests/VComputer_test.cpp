@@ -3,6 +3,7 @@
  */
 #include "VComputer.hpp"
 #include "devices/DummyDevice.hpp"
+#include "devices/DebugSerialConsole.hpp"
 
 #include "gtest/gtest.h"
 

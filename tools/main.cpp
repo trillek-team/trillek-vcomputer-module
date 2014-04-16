@@ -416,7 +416,8 @@ int main(int argc, char* argv[]) {
       }
       else {
         vc.GetState((void*)&cpu_state_tr, sizeof(cpu_state_tr));
-        std::printf("Takes %u cycles\n", cpu_state_tr.wait_cycles);
+        auto cpu_cycles = ticks / 10; // TODO Cahnge this to calc it base on CPU Clock speed
+        std::printf("Takes %u cycles\n", cpu_cycles);
         print_regs(cpu_state_tr);
         //print_stack(vm.CPU(), vm.RAM());
       }

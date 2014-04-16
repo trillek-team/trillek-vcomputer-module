@@ -1,0 +1,37 @@
+~/R/t/build (master) $ ./benchmark ../asm/tr3200/test.ffi ../asm/tr3200/hello.ffi ../asm/tr3200/type1.ffi ../asm/tr3200/clock.ffi 
+Opening file ../asm/tr3200/test.ffi
+Read 1046 bytes and stored in ROM
+Opening file ../asm/tr3200/hello.ffi
+Read 481 bytes and stored in ROM
+Opening file ../asm/tr3200/type1.ffi
+Read 1328 bytes and stored in ROM
+Opening file ../asm/tr3200/clock.ffi
+Read 740 bytes and stored in ROM
+Runing :
+~1% @ 1MHz
+~10% @ 0.5MHz
+~20% @ 0.2MHz
+~59% @ 0.1MHz
+~10% @ 0.01MHz
+Randomizing every CPU!
+Executing a random number of cycles from 1 to 255
+Running 1000 CPUs !
+Running 50000 cycles in 44.000000 ms Ttick 0.000880 ms Tclk 0.001000 ms Speed of 113.636364 % 
+Running 50000 cycles in 44.000000 ms Ttick 0.000880 ms Tclk 0.001000 ms Speed of 113.636364 % 
+Running 50000 cycles in 45.000000 ms Ttick 0.000900 ms Tclk 0.001000 ms Speed of 111.111111 % 
+Running 50000 cycles in 44.000000 ms Ttick 0.000880 ms Tclk 0.001000 ms Speed of 113.636364 % 
+Running 50000 cycles in 44.000000 ms Ttick 0.000880 ms Tclk 0.001000 ms Speed of 113.636364 % 
+Running 50000 cycles in 44.000000 ms Ttick 0.000880 ms Tclk 0.001000 ms Speed of 113.636364 % 
+Running 50000 cycles in 44.000000 ms Ttick 0.000880 ms Tclk 0.001000 ms Speed of 113.636364 % 
+Running 50000 cycles in 45.000000 ms Ttick 0.000900 ms Tclk 0.001000 ms Speed of 111.111111 % 
+Running 50000 cycles in 44.000000 ms Ttick 0.000880 ms Tclk 0.001000 ms Speed of 113.636364 % 
+Running 50000 cycles in 44.000000 ms Ttick 0.000880 ms Tclk 0.001000 ms Speed of 113.636364 % 
+Running 50000 cycles in 45.000000 ms Ttick 0.000900 ms Tclk 0.001000 ms Speed of 111.111111 % 
+Running 50000 cycles in 44.000000 ms Ttick 0.000880 ms Tclk 0.001000 ms Speed of 113.636364 % 
+Running 50000 cycles in 45.000000 ms Ttick 0.000900 ms Tclk 0.001000 ms Speed of 111.111111 % 
+Running 50000 cycles in 44.000000 ms Ttick 0.000880 ms Tclk 0.001000 ms Speed of 113.636364 % 
+Running 50000 cycles in 44.000000 ms Ttick 0.000880 ms Tclk 0.001000 ms Speed of 113.636364 % 
+Running 50000 cycles in 43.000000 ms Ttick 0.000860 ms Tclk 0.001000 ms Speed of 116.279070 % 
+Running 50000 cycles in 44.000000 ms Ttick 0.000880 ms Tclk 0.001000 ms Speed of 113.636364 % 
+Running 50000 cycles in 45.000000 ms Ttick 0.000900 ms Tclk 0.001000 ms Speed of 111.111111 % 
+

@@ -41,7 +41,7 @@ EMSCRIPTEN_BINDINGS(trillek_vc) {
       .constructor()
       .function("GetR",             &TR3200_GetReg_)
       .function("GetPC",            &TR3200_GetPC_)
-      /*  
+      /*
       .field("wait_cycles",     &vm::cpu::TR3200State::wait_cycles)
       .field("int_msg",         &vm::cpu::TR3200State::int_msg)
       .field("interrupt",       &vm::cpu::TR3200State::interrupt)
@@ -50,9 +50,9 @@ EMSCRIPTEN_BINDINGS(trillek_vc) {
       .field("sleeping",        &vm::cpu::TR3200State::sleeping)
       */
       ;
-    
+
     function("GetTR3200State",      &TR3200_DumpState_);
-    
+
 
     // TDA stuff
     class_<vm::dev::tda::TDAScreen>("TDAScreen")
