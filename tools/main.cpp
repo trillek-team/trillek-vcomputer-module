@@ -289,7 +289,7 @@ int main(int argc, char* argv[]) {
   auto floppy = std::make_shared<vm::dev::m5fdd::M35_Floppy>("disk.dsk");
   fd->insertFloppy(floppy);
 
-  vc.Reset();
+  vc.On();  // Powering it !
 
   std::cout << "Run program (r) or Step Mode (s) ?\n";
   char mode;
@@ -334,6 +334,11 @@ int main(int argc, char* argv[]) {
   bool loop = true;
   vm::cpu::TR3200State cpu_state;
 
+  // Delay here to enforce initial delta != 0
+  for (long i=0; i< 600000; i++) {
+    ;
+  }
+
   while ( loop) {
     // Calcs delta time
 
@@ -361,17 +366,19 @@ int main(int argc, char* argv[]) {
     }
 
     if (!debug) {
+      double ds = delta / 1000.0;
       ticks_count += ticks;
-      vc.Tick(ticks, delta / 1000.0 );
+      //vc.Tick(ticks, delta / 1000.0 );
+      ticks = vc.Update(ds);
       // NOTE This algorith is no-stable, as if the computer takes too time, will increase
       // the number of ticks forever, so we must put a top value to avoid these problem and
       // assume that we can runt at 100% of speed in these case.
-      ticks = (vm::BaseClock * delta  / 1000.0) + 0.5f; // Rounding bug in VS
-      if (ticks <= 3) {
-        ticks = 3;
-      } else if (ticks >= 80000) {
-        ticks = 80000;
-      }
+      //ticks = (vm::BaseClock * delta  / 1000.0) + 0.5f; // Rounding bug in VS
+      //if (ticks <= 3) {
+      //  ticks = 3;
+      //} else if (ticks >= 80000) {
+      //  ticks = 80000;
+      //}
 
     } else {
       ticks = vc.Step(delta / 1000.0 );
