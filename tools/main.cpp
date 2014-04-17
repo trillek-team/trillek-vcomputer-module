@@ -394,6 +394,9 @@ int main(int argc, char* argv[]) {
         }
 #ifdef GLFW3_ENABLE
         gl.UpdScreen (glfwos, delta / 1000.0);
+        if (debug) {
+            gl.Halted();
+        }
 #endif
 
     }

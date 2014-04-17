@@ -57,6 +57,13 @@ public:
      */
     void UpdScreen (OS::OS& os, const double delta);
 
+    /*!
+     * Handles that the Virtual computer is halted by abreakpoitn or something
+     */
+    void Halted() {
+        t_acu = 0;
+    }
+
 private:
     unsigned winWidth;
     unsigned winHeight;
