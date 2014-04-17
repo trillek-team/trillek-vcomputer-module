@@ -329,13 +329,9 @@ int main(int argc, char* argv[]) {
         }
 #endif
 
-        if (debug) {
+        if (debug) { // Print PC and instruction BEFORE executing it
             vc.GetState((void*) &cpu_state, sizeof(cpu_state));
             print_pc(cpu_state, vc);
-            //if (vm.CPU().Skiping())
-            //  std::printf("Skiping!\n");
-            //if (vm.CPU().Sleeping())
-            //  std::printf("ZZZZzzzz...\n");
         }
 
         if (!debug) {
@@ -345,28 +341,17 @@ int main(int argc, char* argv[]) {
                 ds = 0.0000001;
             }
             ticks_count += ticks;
-            //vc.Tick(ticks, delta / 1000.0 );
             ticks = vc.Update(ds);
-            // NOTE This algorith is no-stable, as if the computer takes too time, will increase
-            // the number of ticks forever, so we must put a top value to avoid these problem and
-            // assume that we can runt at 100% of speed in these case.
-            //ticks = (vm::BaseClock * delta  / 1000.0) + 0.5f; // Rounding bug in VS
-            //if (ticks <= 3) {
-            //  ticks = 3;
-            //} else if (ticks >= 80000) {
-            //  ticks = 80000;
-            //}
 
         } else {
             ticks = vc.Step(delta / 1000.0 );
         }
 
         if (vc.isBreaked()) { // Here is a breakpoint !
-            std::printf("\t\tBREAKPOINT\n\nSwithching to Step mode\n");
+            std::printf("\t\tBREAKPOINT\n\nSwithching to Step mode\n\n");
             debug = true;
             vc.Continue();
         }
-
 
         // Speed info
         if (!debug && ticks_count > 400000) {
@@ -386,9 +371,25 @@ int main(int argc, char* argv[]) {
             std::printf("Takes %u cycles\n", cpu_cycles);
             print_regs(cpu_state);
             //print_stack(vm.CPU(), vm.RAM());
-            c = std::getchar();
-            if (c == 'q' || c == 'Q')
-                loop = false;
+
+            while (1) { // Parse "command"
+                c = std::getchar();
+
+                if (c == 'q' || c == 'Q') {
+                    loop = false;
+                    break;
+                }
+
+                if (c == 'r' || c == 'R') {
+                    debug = false;
+                    break;
+                }
+
+                if (c == 's' || c == 'S' || c =='\n') {
+                    debug = true;
+                    break;
+                }
+            }
 
         }
 #ifdef GLFW3_ENABLE
