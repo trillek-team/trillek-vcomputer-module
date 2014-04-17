@@ -327,9 +327,16 @@ namespace vm {
          */
         bool isBreakPoint (dword_t addr) {
             if (breakpoints.find(addr) != breakpoints.end() ) {
+                last_break = addr;
                 breaking = true;
                 return true;
             }
+
+            if (recover_break) { // Recover temporaly removed breakpoint
+                SetBreakPoint(last_break);
+                recover_break = false;
+            }
+
             return false;
         }
 
@@ -337,7 +344,7 @@ namespace vm {
          * Check if the Virtual Computer is halted by a breakpoint
          * \return True if a breakpoint happened
          */
-        bool isBreraked () {
+        bool isBreaked () {
             return breaking;
         }
 
@@ -346,6 +353,10 @@ namespace vm {
          */
         void Continue () {
             breaking = false;
+
+            // Temporaly, we remove the last break point
+            RmBreakPoint(last_break);
+            recover_break = true;
         }
 
     private:
@@ -368,8 +379,11 @@ namespace vm {
         RTC rtc;                //! Real Time Clock
 
 
-        std::set<dword_t> breakpoints; //! Breakpoints list
-        bool breaking;
+        std::set<dword_t> breakpoints;  //! Breakpoints list
+        bool breaking;                  //! The Virtual Computer is halted in a BreakPoint ?
+
+        dword_t last_break; //! Address tof the last breakpoint finded
+        bool recover_break; //! Flag to know if a recovered the temporaly erases break
     };
 
 

@@ -244,6 +244,13 @@ int main(int argc, char* argv[]) {
     std::printf("Floppy image file %s \n", options.dsk_file);
     fd->insertFloppy(floppy);
 
+    while (! options.breaks.empty()) {
+        auto brk = options.breaks.back();
+        options.breaks.pop_back();
+        vc.SetBreakPoint(brk);
+        std::printf("Inserting break point at 0x%06X\n", brk);
+    }
+
     vc.On();  // Powering it !
 
     std::cout << "Run program (r) or Step Mode (s) ?\n";
@@ -352,6 +359,12 @@ int main(int argc, char* argv[]) {
 
         } else {
             ticks = vc.Step(delta / 1000.0 );
+        }
+
+        if (vc.isBreaked()) { // Here is a breakpoint !
+            std::printf("\t\tBREAKPOINT\n\nSwithching to Step mode\n");
+            debug = true;
+            vc.Continue();
         }
 
 

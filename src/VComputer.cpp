@@ -17,7 +17,7 @@ namespace vm {
     using namespace vm::cpu;
 
     VComputer::VComputer (std::size_t ram_size ) :
-        is_on(false), ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0), breaking(false) {
+        is_on(false), ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0), breaking(false), recover_break(false) {
 
             ram = new byte_t[ram_size];
             std::fill_n(ram, ram_size, 0);

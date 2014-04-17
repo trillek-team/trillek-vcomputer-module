@@ -7,9 +7,13 @@
  * Parameters parser for vm tool (main.cpp)
  */
 
+#include "Types.hpp"
+
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
+
+#include <vector>
 
 enum class CpuToUse {
     TR3200,
@@ -81,7 +85,7 @@ struct VmParamaters {
                         std::fprintf(stderr, "Missing or invalid value for parameter %s\n", argv[i-1]);
                         break;
                     }
-                    auto ram = std::atoi(arg);
+                    auto ram = std::strtol(arg, nullptr, 0);
                     if (ram <= 0 || ram > 1024) {
                         std::fprintf(stderr, "Invalid value for parameter %s\nUsing 128KiB\n", argv[i-1]);
                         ram = 128*1024;
@@ -108,6 +112,18 @@ struct VmParamaters {
 
                     clock = clk * 1000;
 
+                } else if (strncmp(arg, "b", 1) == 0 ) {
+                    // A breakpoint
+                    i++;
+                    arg = argv[i];
+                    if (i >= argc || arg[0] == '-') {
+                        valid_params = false;
+                        std::fprintf(stderr, "Missing or invalid value for parameter %s\n", argv[i-1]);
+                        break;
+                    }
+                    vm::dword_t addr = std::strtol(arg, nullptr, 0);
+                    breaks.push_back(addr);
+
                 } else if (strncmp(arg, "h", 1) == 0 || strncmp(arg, "-help", 5) == 0) {
                     // Asked for help
                     std::printf("Virtual Computer toy Emulator\n\n");
@@ -119,6 +135,7 @@ struct VmParamaters {
                     std::printf("\t-c val or --cpu val : Sets the CPU to use, from \"tr3200\" or \"dcpu-16n\"\n");
                     std::printf("\t-m val or --disk val : How many RAM have the computer in KiB. Must be > 128 and < 1024. Will be round to a multiple of 128\n");
                     std::printf("\t--clock val : CPU clock speed in Khz. Must be 100, 250, 500 or 1000.\n");
+                    std::printf("\t-b val : Inserts a breakpoint at address val (could be hexadecimal or decimal).\n");
                     std::printf("\t-h or --help : Shows this help\n");
 
                     ask_help = true;
@@ -137,6 +154,7 @@ struct VmParamaters {
     CpuToUse cpu;                   //! CPU to use (default TR3200)
     unsigned clock = 100000;        //! CPU clock speed (default 100Khz)
 
+    std::vector<vm::dword_t> breaks;//" List of breakpoints
 
     bool valid_params = true;       //! Parsed correctly all parameters
     bool ask_help = false;          //! User asked by help
