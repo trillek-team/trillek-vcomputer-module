@@ -1,5 +1,8 @@
-/**
- * Trillek Virtual Computer - VComputer.cpp
+/*!
+ * \brief       Virtual Computer Core
+ * \file        VComputer.cpp
+ * \copyright   The MIT License (MIT)
+ *
  * Virtual Computer core
  */
 
