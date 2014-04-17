@@ -7,8 +7,8 @@
  */
 
 #include "OS.hpp"
-
 #include "GlEngine.hpp"
+#include "VmParser.hpp"
 
 #include "VC.hpp"
 #include "devices/DummyDevice.hpp"
@@ -189,32 +189,41 @@ int main(int argc, char* argv[]) {
     byte_t* rom = nullptr;
     size_t rom_size = 0;
 
-    // TODO Write a paramater parser
-    if (argc < 2) {
-        std::printf("Usage: %s binary_file\n", argv[0]);
+    VmParamaters options(argc, (const char**)argv); // Parse parameters
+
+    if (options.valid_params == false) {
         return -1;
-
-    } else {
-        rom = new byte_t[32*1024];
-
-        std::printf("Opening file %s\n", argv[1]);
-
-        int size = vm::aux::LoadROM(argv[1], rom);
-        if (size < 0) {
-            std::fprintf(stderr, "An error occurred while reading file %s\n", argv[1]);
-            return -1;
-        }
-
-        std::printf("Read %d bytes and stored in ROM\n", size);
-        rom_size = size;
+    } else if (options.ask_help) {
+        return 0;
     }
 
-    // Create the Virtual Machine
-    VComputer vc;
-    std::unique_ptr<vm::cpu::TR3200> cpu(new TR3200());
-    cpu->Clock();
-    vc.SetCPU(std::move(cpu));
+    rom = new byte_t[32*1024];
 
+    std::printf("Opening ROM image %s\n", options.rom_file);
+
+    int size = vm::aux::LoadROM(options.rom_file, rom);
+    if (size < 0) {
+        std::fprintf(stderr, "An error occurred while reading file %s\n", argv[1]);
+        return -1;
+    }
+
+    std::printf("Read %d bytes and stored in ROM\n", size);
+    rom_size = size;
+
+    // Create the Virtual Machine
+    VComputer vc(options.ram_size);
+    std::printf("Creating Virtual Computer with %d KiB of RAM\n", options.ram_size / 1024);
+
+    if (options.cpu == CpuToUse::DCPU16N) {
+        std::printf("Using CPU DCPU-16N\n");
+        std::unique_ptr<vm::ICPU> cpu(new DCPU16N(options.clock) );
+        vc.SetCPU(std::move(cpu));
+    } else {
+        std::printf("Using CPU TR3200\n");
+        std::unique_ptr<vm::ICPU> cpu(new TR3200(options.clock) );
+        vc.SetCPU(std::move(cpu));
+    }
+    std::printf("CPU clock speed set to %u KHz \n", options.clock / 1000);
     vc.SetROM(rom, rom_size);
 
     // Add devices to tue Virtual Machine
@@ -231,7 +240,8 @@ int main(int argc, char* argv[]) {
     // Floppy drive
     auto fd = std::make_shared<vm::dev::m5fdd::M35FD>();
     vc.AddDevice(6, fd);
-    auto floppy = std::make_shared<vm::dev::m5fdd::M35_Floppy>("disk.dsk");
+    auto floppy = std::make_shared<vm::dev::m5fdd::M35_Floppy>(options.dsk_file);
+    std::printf("Floppy image file %s \n", options.dsk_file);
     fd->insertFloppy(floppy);
 
     vc.On();  // Powering it !
