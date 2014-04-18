@@ -1,6 +1,9 @@
 #pragma once
-/**
- * Trillek Virtual Computer - VComputer.hpp
+/*!
+ * \brief       Virtual Computer Core
+ * \file        VComputer.hpp
+ * \copyright   The MIT License (MIT)
+ *
  * Virtual Computer core
  */
 
@@ -15,318 +18,373 @@
 #include "RTC.hpp"
 
 #include <map>
+#include <set>
 #include <memory>
 #include <cassert>
 
 namespace vm {
-  using namespace vm::cpu;
+    using namespace vm::cpu;
 
-  const unsigned MAX_N_DEVICES    = 32;         /// Max number of devices attached
-  const std::size_t MAX_ROM_SIZE  = 32*1024;    /// Max ROM size
-  const std::size_t MAX_RAM_SIZE  = 1024*1024;  /// Max RAM size
+    const unsigned MAX_N_DEVICES    = 32;         //! Max number of devices attached
+    const std::size_t MAX_ROM_SIZE  = 32*1024;    //! Max ROM size
+    const std::size_t MAX_RAM_SIZE  = 1024*1024;  //! Max RAM size
 
-  const unsigned EnumCtrlBlkSize  = 20;         /// Enumeration and Control registers blk size
+    const unsigned EnumCtrlBlkSize  = 20;         //! Enumeration and Control registers blk size
 
-  const unsigned BaseClock  = 1000000;          /// Computer Base Clock rate
+    const unsigned BaseClock  = 1000000;          //! Computer Base Clock rate
 
-  class EnumAndCtrlBlk;
+    class EnumAndCtrlBlk;
 
-  class VComputer {
+    class VComputer {
     public:
 
-      /**
-       * Creates a Virtual Computer
-       * @param ram_size RAM size in BYTES
-       */
-      VComputer (std::size_t ram_size = 128*1024);
+        /*!
+         * Creates a Virtual Computer
+         * \param ram_size RAM size in BYTES
+         */
+        VComputer (std::size_t ram_size = 128*1024);
 
-      ~VComputer ();
+        ~VComputer ();
 
-      /**
-       * Sets the CPU of the computer
-       * @param cpu New CPU in the computer
-       */
-      void SetCPU (std::unique_ptr<ICPU> cpu);
+        /*!
+         * Sets the CPU of the computer
+         * \param cpu New CPU in the computer
+         */
+        void SetCPU (std::unique_ptr<ICPU> cpu);
 
-      /**
-       * Removes the CPU of the computer
-       * @return Returns the ICPU
-       */
-      std::unique_ptr<ICPU> RmCPU ();
+        /*!
+         * Removes the CPU of the computer
+         * \return Returns the ICPU
+         */
+        std::unique_ptr<ICPU> RmCPU ();
 
-      /**
-       * Adds a Device to a slot
-       * @param slot Were plug the device
-       * @param dev The device to be pluged in the slot
-       * @return False if the slot have a device or the slot is invalid.
-       */
-      bool AddDevice (unsigned slot , std::shared_ptr<IDevice> dev);
+        /*!
+         * Adds a Device to a slot
+         * \param slot Were plug the device
+         * \param dev The device to be pluged in the slot
+         * \return False if the slot have a device or the slot is invalid.
+         */
+        bool AddDevice (unsigned slot , std::shared_ptr<IDevice> dev);
 
-      /**
-       * Gets the Device plugged in the slot
-       */
-      std::shared_ptr<IDevice> GetDevice (unsigned slot);
+        /*!
+         * Gets the Device plugged in the slot
+         */
+        std::shared_ptr<IDevice> GetDevice (unsigned slot);
 
-      /**
-       * Remove a device from a slot
-       * @param slot Slot were unplug the device
-       */
-      void RmDevice (unsigned slot);
+        /*!
+         * Remove a device from a slot
+         * \param slot Slot were unplug the device
+         */
+        void RmDevice (unsigned slot);
 
-      /**
-       * CPU clock speed in Hz
-       */
-      unsigned CPUClock() const;
+        /*!
+         * CPU clock speed in Hz
+         */
+        unsigned CPUClock() const;
 
-      /**
-       * Writes a copy of CPU state in a chunk of memory pointer by ptr.
-       * @param ptr Pointer were to write
-       * @param size Size of the chunk of memory were can write. If is
-       * sucesfull, it will be set to the size of the write data.
-       */
-      void GetState (void* ptr, std::size_t size) const;
+        /*!
+         * Writes a copy of CPU state in a chunk of memory pointer by ptr.
+         * \param ptr Pointer were to write
+         * \param size Size of the chunk of memory were can write. If is
+         * sucesfull, it will be set to the size of the write data.
+         */
+        void GetState (void* ptr, std::size_t size) const;
 
-      /**
-       * Gets a pointer were is stored the ROM data
-       * @param *rom Ptr to the ROM data
-       * @param rom_size Size of the ROM data that must be less or equal to 32KiB. Big sizes will be ignored
-       */
-      void SetROM (const byte_t* rom, std::size_t rom_size);
+        /*!
+         * Gets a pointer were is stored the ROM data
+         * \param *rom Ptr to the ROM data
+         * \param rom_size Size of the ROM data that must be less or equal to 32KiB. Big sizes will be ignored
+         */
+        void SetROM (const byte_t* rom, std::size_t rom_size);
 
-      /**
-       * Resets the virtual machine (but not clears RAM!)
-       */
-      void Reset();
+        /*!
+         * Resets the virtual machine (but not clears RAM!)
+         */
+        void Reset();
 
-      /**
-       * Executes one instruction
-       * @param delta Number of seconds since the last call
-       * @return number of base clock ticks needed
-       */
-      unsigned Step( const double delta = 0);
+        /*!
+         * Power On the computer
+         */
+        void On();
 
-      /**
-       * Executes N clock ticks
-       * @param n nubmer of base clock ticks, by default 1
-       * @param delta Number of seconds since the last call
-       */
-      void Tick( unsigned n=1, const double delta = 0) {
-        assert(n >0);
-        unsigned dev_ticks = n / 10; // Devices clock is at 100 KHz
-        if (cpu) {
-          unsigned cpu_ticks = n / (BaseClock / cpu->Clock());
+        /*!
+         * Power Off the computer
+         */
+        void Off();
 
-          cpu->Tick(cpu_ticks);
-          pit.Tick(dev_ticks, delta);
+        /*!
+         * Executes the apropaited number of Virtual Computer base clock cycles
+         * in function of the elapsed time since the last call (delta time)
+         *
+         * \param delta Number of seconds since the last call
+         * \return Number of base clock cycles executed
+         */
+        unsigned Update( const double delta);
 
-          word_t msg;
-          bool interrupted = pit.DoesInterrupt(msg); // Highest priority interrupt
-          if (interrupted) {
-            if (cpu->SendInterrupt(msg)) { // Send the interrupt to the CPU
-              pit.IACK();
+        /*!
+         * Executes one instruction
+         * \param delta Number of seconds since the last call
+         * \return number of base clock ticks needed
+         */
+        unsigned Step( const double delta = 0);
+
+        /*!
+         * Executes N clock ticks
+         * \param n nubmer of base clock ticks, by default 1
+         * \param delta Number of seconds since the last call
+         */
+        void Tick( unsigned n=1, const double delta = 0);
+
+        byte_t ReadB (dword_t addr) const {
+            addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+
+            if (!(addr & 0xF00000 )) { // RAM address (0x000000-0x0FFFFF)
+                return ram[addr];
             }
-          }
 
-          for (std::size_t i=0; i < MAX_N_DEVICES; i++) {
-            if (! std::get<0>(devices[i])) {
-              continue; // Slot without device
+            if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
+                return rom[addr & 0x00FFFF];
             }
 
-            // Does the sync job
-            if ( std::get<0>(devices[i])->IsSyncDev()) {
-              std::get<0>(devices[i])->Tick(dev_ticks, delta);
+            Range r(addr);
+            auto search = listeners.find(r);
+            if (search != listeners.end()) {
+                return search->second->ReadB(addr);
             }
 
-            // Try to get the highest priority interrupt
-            if (! interrupted && std::get<0>(devices[i])->DoesInterrupt(msg) ) {
-              interrupted = true;
-              if (cpu->SendInterrupt(msg)) { // Send the interrupt to the CPU
-                std::get<0>(devices[i])->IACK(); // Informs to the device that his interrupt has been accepted by the CPU
-              }
+            return 0;
+        }
+
+        word_t ReadW (dword_t addr) const {
+            addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+            size_t tmp;
+
+            if (!(addr & 0xF00000 )) { // RAM address
+                tmp = ((size_t)ram) + addr;
+                return ((word_t*)tmp)[0];
             }
-          }
 
-        }
-      }
+            if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
+                addr &= 0x00FFFF; // Dirty tricks with pointers
+                tmp = ((size_t)rom) + addr;
+                return ((word_t*)tmp)[0];
+            }
 
-      byte_t ReadB (dword_t addr) const {
-        addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+            Range r(addr);
+            auto search = listeners.find(r);
+            if (search != listeners.end()) {
+                return search->second->ReadW(addr);
+            }
 
-        if (!(addr & 0xF00000 )) { // RAM address (0x000000-0x0FFFFF)
-          return ram[addr];
-        }
-
-        if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
-          return rom[addr & 0x00FFFF];
-        }
-
-        Range r(addr);
-        auto search = listeners.find(r);
-        if (search != listeners.end()) {
-          return search->second->ReadB(addr);
+            return 0;
         }
 
-        return 0;
-      }
+        dword_t ReadDW (dword_t addr) const {
+            addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+            size_t tmp;
 
-      word_t ReadW (dword_t addr) const {
-        addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
-        size_t tmp;
+            if (!(addr & 0xF00000 )) { // RAM address
+                tmp = ((size_t)ram) + addr;
+                return ((dword_t*)tmp)[0];
+            }
 
-        if (!(addr & 0xF00000 )) { // RAM address
-          tmp = ((size_t)ram) + addr;
-          return ((word_t*)tmp)[0];
+            if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
+                addr &= 0x00FFFF; // Dirty tricks with pointers
+                tmp = ((size_t)rom) + addr;
+                return ((dword_t*)tmp)[0];
+            }
+
+            Range r(addr);
+            auto search = listeners.find(r);
+            if (search != listeners.end()) {
+                return search->second->ReadDW(addr);
+            }
+
+            return 0;
         }
 
-        if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
-          addr &= 0x00FFFF; // Dirty tricks with pointers
-          tmp = ((size_t)rom) + addr;
-          return ((word_t*)tmp)[0];
+        void WriteB (dword_t addr, byte_t val) {
+            addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+
+            if (addr < ram_size) { // RAM address
+                ram[addr] = val;
+            }
+
+            Range r(addr);
+            auto search = listeners.find(r);
+            if (search != listeners.end()) {
+                search->second->WriteB(addr, val);
+            }
+
         }
 
-        Range r(addr);
-        auto search = listeners.find(r);
-        if (search != listeners.end()) {
-          return search->second->ReadW(addr);
+        void WriteW (dword_t addr, word_t val) {
+            size_t tmp;
+            addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
+
+            if (addr < ram_size-1 ) { // RAM address
+                tmp = ((size_t)ram) + addr;
+                ((word_t*)tmp)[0] = val;
+            }
+            // TODO What hapens when there is a write that falls half in RAM and
+            // half outside ?
+            // I actually forbid these cases to avoid buffer overun, but should be
+            // allowed and only use the apropiate portion of the data in the RAM.
+
+            Range r(addr);
+            auto search = listeners.find(r);
+            if (search != listeners.end()) {
+                search->second->WriteW(addr, val);
+            }
+
         }
 
-        return 0;
-      }
+        void WriteDW (dword_t addr, dword_t val) {
+            size_t tmp;
+            addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 
-      dword_t ReadDW (dword_t addr) const {
-        addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
-        size_t tmp;
+            if (addr < ram_size-3 ) { // RAM address
+                tmp = ((size_t)ram) + addr;
+                ((dword_t*)tmp)[0] = val;
+            }
+            // TODO What hapens when there is a write that falls half in RAM and
+            // half outside ?
 
-        if (!(addr & 0xF00000 )) { // RAM address
-          tmp = ((size_t)ram) + addr;
-          return ((dword_t*)tmp)[0];
+            Range r(addr);
+            auto search = listeners.find(r);
+            if (search != listeners.end()) {
+                search->second->WriteDW(addr, val);
+            }
+
         }
 
-        if ((addr & 0xFF0000) == 0x100000 ) { // ROM (0x100000-0x10FFFF)
-          addr &= 0x00FFFF; // Dirty tricks with pointers
-          tmp = ((size_t)rom) + addr;
-          return ((dword_t*)tmp)[0];
+        /*!
+         * Adds an AddrListener to the computer
+         * \param range Range of addresses that the listerner listens
+         * \param listener AddrListener using these range
+         * \return And ID oif the listener or -1 if can't add the listener
+         */
+        int32_t AddAddrListener (const Range& range, AddrListener* listener);
+
+        /*!
+         * Removes an AddrListener from the computer
+         * \param id ID of the address listener to remove (ID from AddAddrListener)
+         * \return True if can find these listener and remove it.
+         */
+        bool RmAddrListener (int32_t id);
+
+        /*!
+         * Sizeo of the RAM in bytes
+         */
+        std::size_t RamSize () const {
+            return ram_size;
         }
 
-        Range r(addr);
-        auto search = listeners.find(r);
-        if (search != listeners.end()) {
-          return search->second->ReadDW(addr);
+        /*!
+         * Returns a pointer to the RAM for reading raw values from it
+         * Use only for GetState methods or dump a snapshot of the computer state
+         */
+        const byte_t* Ram () const {
+            return ram;
         }
 
-        return 0;
-      }
-
-      void WriteB (dword_t addr, byte_t val) {
-        addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
-
-        if (addr < ram_size) { // RAM address
-          ram[addr] = val;
+        /*!
+         * Returns a pointer to the RAM for writing raw values to it
+         * Use only for SetState methods or load a snapshot of the computer state
+         */
+        byte_t* Ram() {
+            return ram;
         }
 
-        Range r(addr);
-        auto search = listeners.find(r);
-        if (search != listeners.end()) {
-          search->second->WriteB(addr, val);
+
+        /*!
+         * Add a breakpoint at the desired address
+         * \param addr Address were will be the breakpoint
+         */
+        void SetBreakPoint (dword_t addr) {
+            breakpoints.insert(addr);
         }
 
-      }
-
-      void WriteW (dword_t addr, word_t val) {
-        size_t tmp;
-        addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
-
-        if (addr < ram_size-1 ) { // RAM address
-          tmp = ((size_t)ram) + addr;
-          ((word_t*)tmp)[0] = val;
-        }
-        // TODO What hapens when there is a write that falls half in RAM and
-        // half outside ?
-        // I actually forbid these cases to avoid buffer overun, but should be
-        // allowed and only use the apropiate portion of the data in the RAM.
-
-        Range r(addr);
-        auto search = listeners.find(r);
-        if (search != listeners.end()) {
-          search->second->WriteW(addr, val);
+        /*!
+         * Erase a breakpoint at the desired address
+         * \param addr Address were will be the breakpoint
+         */
+        void RmBreakPoint (dword_t addr) {
+            breakpoints.erase(addr);
         }
 
-      }
-
-      void WriteDW (dword_t addr, dword_t val) {
-        size_t tmp;
-        addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
-
-        if (addr < ram_size-3 ) { // RAM address
-          tmp = ((size_t)ram) + addr;
-          ((dword_t*)tmp)[0] = val;
-        }
-        // TODO What hapens when there is a write that falls half in RAM and
-        // half outside ?
-
-        Range r(addr);
-        auto search = listeners.find(r);
-        if (search != listeners.end()) {
-          search->second->WriteDW(addr, val);
+        /*!
+         * Remove all breakpoints
+         */
+        void ClearBreakPoints () {
+            breakpoints.clear();
         }
 
-      }
+        /*!
+         * Check if there isa breakpoint at an particular address
+         * \param addr Address to verify
+         * \return True if there is a breakpoint in these address
+         */
+        bool isBreakPoint (dword_t addr) {
+            if (breakpoints.find(addr) != breakpoints.end() ) {
+                last_break = addr;
+                breaking = true;
+                return true;
+            }
 
-      /**
-       * Adds an AddrListener to the computer
-       * @param range Range of addresses that the listerner listens
-       * @param listener AddrListener using these range
-       * @return And ID oif the listener or -1 if can't add the listener
-       */
-      int32_t AddAddrListener (const Range& range, AddrListener* listener);
+            if (recover_break) { // Recover temporaly removed breakpoint
+                SetBreakPoint(last_break);
+                recover_break = false;
+            }
 
-      /**
-       * Removes an AddrListener from the computer
-       * @param id ID of the address listener to remove (ID from AddAddrListener)
-       * @return True if can find these listener and remove it.
-       */
-      bool RmAddrListener (int32_t id);
+            return false;
+        }
 
-      /**
-       * Sizeo of the RAM in bytes
-       */
-      std::size_t RamSize() const {
-        return ram_size;
-      }
+        /*!
+         * Check if the Virtual Computer is halted by a breakpoint
+         * \return True if a breakpoint happened
+         */
+        bool isBreaked () {
+            return breaking;
+        }
 
-      /**
-       * Returns a pointer to the RAM for reading raw values from it
-       * Use only for GetState methods or dump a snapshot of the computer state
-       */
-      const byte_t* Ram() const {
-        return ram;
-      }
+        /*!
+         * Allows to continue if a Breakpoint happened
+         */
+        void Continue () {
+            breaking = false;
 
-      /**
-       * Returns a pointer to the RAM for writing raw values to it
-       * Use only for SetState methods or load a snapshot of the computer state
-       */
-      byte_t* Ram() {
-        return ram;
-      }
+            // Temporaly, we remove the last break point
+            RmBreakPoint(last_break);
+            recover_break = true;
+        }
 
     private:
 
-      byte_t* ram;            /// Computer RAM
-      const byte_t* rom;      /// Computer ROM chip (could be shared between some VComputers)
-      std::size_t ram_size;   /// Computer RAM size
-      std::size_t rom_size;   /// Computer ROM size
+        bool is_on;             //! Is PowerOn the computer ?
 
-      std::unique_ptr<ICPU> cpu;                /// Virtual CPU
+        byte_t* ram;            //! Computer RAM
+        const byte_t* rom;      //! Computer ROM chip (could be shared between some VComputers)
+        std::size_t ram_size;   //! Computer RAM size
+        std::size_t rom_size;   //! Computer ROM size
 
-      device_t devices[MAX_N_DEVICES];          /// Devices atached to the virtual computer
+        std::unique_ptr<ICPU> cpu;                //! Virtual CPU
 
-      std::map<Range, AddrListener*> listeners; /// Container of AddrListeners
+        device_t devices[MAX_N_DEVICES];          //! Devices atached to the virtual computer
 
-      Timer pit;  /// Programable Interval Timer
-      RNG rng; /// Random Number Generator
-      RTC rtc; /// Real Time Clock
-  };
+        std::map<Range, AddrListener*> listeners; //! Container of AddrListeners
+
+        Timer pit;              //! Programable Interval Timer
+        RNG rng;                //! Random Number Generator
+        RTC rtc;                //! Real Time Clock
+
+
+        std::set<dword_t> breakpoints;  //! Breakpoints list
+        bool breaking;                  //! The Virtual Computer is halted in a BreakPoint ?
+
+        dword_t last_break; //! Address tof the last breakpoint finded
+        bool recover_break; //! Flag to know if a recovered the temporaly erases break
+    };
 
 
 } // End of namespace vm

@@ -6,6 +6,7 @@ configure_file (./config_main.hpp.in
 
 add_executable( vm
   ./main.cpp
+  ./GlEngine.cpp
   )
 
 IF (GLFW3_ENABLE EQUAL 0)

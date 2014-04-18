@@ -8,6 +8,7 @@
 #include "TR3200/TR3200_opcodes.hpp"
 #include "TR3200/TR3200_macros.hpp"
 #include "VSFix.hpp"
+#include "Config.hpp"
 
 #include <cstdio>
 #include <algorithm>
@@ -91,6 +92,12 @@ namespace vm {
      */
     unsigned TR3200::RealStep() {
       unsigned wait_cycles;
+
+#ifdef BRKPOINTS
+      if (vcomp->isBreakPoint(pc)) { // Breakpoint !
+        return 0;
+      }
+#endif
 
       dword_t inst = vcomp->ReadDW(pc);
       pc +=4;
