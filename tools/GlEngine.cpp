@@ -8,6 +8,8 @@
 
 #include "GlEngine.hpp"
 
+#ifdef GLFW3_ENABLE
+
 const unsigned int GlEngine::sh_in_Position = 0;
 const unsigned int GlEngine::sh_in_Color = 1;
 const unsigned int GlEngine::sh_in_UV = 3;
@@ -350,4 +352,5 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
     os.OSMessageLoop();
 }
 
+#endif
 
