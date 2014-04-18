@@ -318,7 +318,11 @@ int main(int argc, char* argv[]) {
 
         auto oldClock = clock;
         clock = high_resolution_clock::now();
-        delta = duration_cast<milliseconds>(clock - oldClock).count();
+        if (!debug) { // Calc delta
+            delta = duration_cast<milliseconds>(clock - oldClock).count();
+        } else {
+            delta = 0.04;
+        }
 
 
 
@@ -351,6 +355,9 @@ int main(int argc, char* argv[]) {
             std::printf("\t\tBREAKPOINT\n\nSwithching to Step mode\n\n");
             debug = true;
             vc.Continue();
+
+            vc.GetState((void*) &cpu_state, sizeof(cpu_state));
+            print_pc(cpu_state, vc);
         }
 
         // Speed info
@@ -394,9 +401,6 @@ int main(int argc, char* argv[]) {
         }
 #ifdef GLFW3_ENABLE
         gl.UpdScreen (glfwos, delta / 1000.0);
-        if (debug) {
-            gl.Halted();
-        }
 #endif
 
     }

@@ -8,6 +8,7 @@
 
 #include "VComputer.hpp"
 #include "VSFix.hpp"
+#include "Config.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -167,9 +168,11 @@ namespace vm {
         if (is_on) {
             unsigned cpu_ticks = cpu->Step();
 
+#ifdef BRKPOINTS
             if (breaking) {
                 return 0; // We not executed yet the instruction!
             }
+#endif
 
             unsigned base_ticks = cpu_ticks * (BaseClock / cpu->Clock());
             unsigned dev_ticks = (base_ticks / 10); // Devices clock is at 100 KHz
