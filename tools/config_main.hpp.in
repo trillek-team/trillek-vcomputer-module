@@ -32,6 +32,7 @@
 
     #include <GLFW/glfw3.h>
 
+    #define GLM_FORCE_RADIANS  // Removes anoying messages of depracated angles on degress
     #include <glm/glm.hpp>
     #include <glm/ext.hpp>
 
