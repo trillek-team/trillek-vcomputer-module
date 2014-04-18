@@ -24,6 +24,7 @@ struct VmParamaters {
 
     VmParamaters (const int argc, const char** argv) {
         dsk_file = def_dsk_file;
+        rom_file = nullptr;
 
         for (int i = 1; i < argc; i++) {
             const char* arg = argv[i];
@@ -141,6 +142,11 @@ struct VmParamaters {
                     ask_help = true;
                 }
             }
+        }
+
+        if (rom_file == nullptr) {
+            valid_params = false;
+            std::fprintf(stderr, "Missing ROM file\n");
         }
     }
 
