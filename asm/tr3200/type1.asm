@@ -254,7 +254,7 @@ end_search_gkeyb:
 :crash
   SLEEP
 
-  .include "BROM.inc"
+  .include "BROM.ainc"
 
 ;******************************************************************************
 ; Const Data

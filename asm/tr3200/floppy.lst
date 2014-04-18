@@ -110,10 +110,10 @@
 154	001001a0  	RET		00000001
 Symbols:
 00100170  _memcmp_loop
-001000f8  _sleep1
 001000cc  genLoop
-00100154  int_m5fdd
 0010011c  _sleep2
+001000f8  _sleep1
+0010014c  crash
 00100190  _memcmp_loop_end
 0010015c  LIB_memcmp
-0010014c  crash
+00100154  int_m5fdd

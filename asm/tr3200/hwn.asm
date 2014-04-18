@@ -55,7 +55,7 @@ end_search_tda:
   STOREB n_dev, %r0
 
 ;******************************************************************************
-  ; Print "NÂº Dev :0x"
+  ; Print "Nº Dev: "
   MOV %r0, 29             ; Row 29
   MOV %r1, 0              ; Column 0
   CALL get_offset_from_row_col
@@ -67,13 +67,13 @@ end_search_tda:
 
   ; Print number of devices in hex
   MOV %r0, 29             ; Row 29
-  MOV %r1, 10             ; Column 10
+  MOV %r1, 8              ; Column 8
   CALL get_offset_from_row_col
   ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
 
   LOADB %r0, n_dev
   MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
-  CALL print_hex_b
+  CALL print_uint
 
   ; Print Header
   MOV %r0, 0              ; Row 0
@@ -112,7 +112,7 @@ end_search_tda:
   ADD %r6, %r5, dev_table
   MOV %r0, 0
   LOADB %r0, %r6         ; Read slot number (%r0 = dev_table[%r5])
-  CALL print_hex_b        ; And print it
+  CALL print_uint        ; And print it
 
   LLS %r7, %r0, 8         ; 0xXX00
   ADD %r7, %r7, 0x110000  ; 0x11XX00
@@ -168,11 +168,11 @@ end_search_tda:
   SLEEP
 
 
-  .include "BROM.inc"
+  .include "BROM.ainc"
 
 ;******************************************************************************
 ; Const Data
-str01:  .db "NÂº Dev: 0x", 0
+str01:  .db "Nº Dev: ", 0
 str02:  .db "| Slot | Type | SubType | ID | Vendor |", 0
 str03:  .db "+------+------+---------+----+--------+", 0
 

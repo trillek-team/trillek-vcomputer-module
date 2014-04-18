@@ -60,7 +60,7 @@ end:
   SLEEP                   ; End of program
 
 
-  .include "BROM.inc"
+  .include "BROM.ainc"
 
 
 ;******************************************************************************
