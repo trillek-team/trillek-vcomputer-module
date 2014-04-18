@@ -11,17 +11,17 @@ begin_search_tda:
   IFEQ %r10, 0x112100  ; Not found any TDA device
     JMP end_search_tda
 
-  LOAD.B %r0, %r10
+  LOADB %r0, %r10
   IFNEQ %r0, 0xFF   ; Device Present ?
     JMP begin_search_tda
 
   ADD %r1, %r10, 1
-  LOAD.B %r0, %r1
+  LOADB %r0, %r1
   IFNEQ %r0, 0x0E   ; Is a Graphics device ?
     JMP begin_search_tda
 
   ADD %r1, %r10, 2
-  LOAD.B %r0, %r1
+  LOADB %r0, %r1
   IFNEQ %r0, 0x01   ; Is TDA compatible ?
     JMP begin_search_tda
 
@@ -41,7 +41,7 @@ end_search_tda:
 
   ADD %r0, %r10, 0x08
   MOV %r1, 0
-  STORE.W %r0, %r1 ; Send command to point Text buffer to B:A address
+  STOREW %r0, %r1 ; Send command to point Text buffer to B:A address
 
   ; Clears the screen
   MOV %r0, 0x001000
@@ -52,10 +52,10 @@ end_search_tda:
   ; Get a list of pluged devices
   MOV %r0, dev_table
   CALL hwn
-  STORE.B n_dev, %r0
+  STOREB n_dev, %r0
 
 ;******************************************************************************
-  ; Print "Nº Dev :0x"
+  ; Print "NÂº Dev :0x"
   MOV %r0, 29             ; Row 29
   MOV %r1, 0              ; Column 0
   CALL get_offset_from_row_col
@@ -71,7 +71,7 @@ end_search_tda:
   CALL get_offset_from_row_col
   ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
 
-  LOAD.B %r0, n_dev
+  LOADB %r0, n_dev
   MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
   CALL print_hex_b
 
@@ -97,7 +97,7 @@ end_search_tda:
 
 ;******************************************************************************
   ; Prints the list
-  LOAD.B %r10, n_dev
+  LOADB %r10, n_dev
   MOV %r5, 0  ; %r5 is the counter of the for loop
 
 :for_loop
@@ -111,7 +111,7 @@ end_search_tda:
 
   ADD %r6, %r5, dev_table
   MOV %r0, 0
-  LOAD.B %r0, %r6         ; Read slot number (%r0 = dev_table[%r5])
+  LOADB %r0, %r6         ; Read slot number (%r0 = dev_table[%r5])
   CALL print_hex_b        ; And print it
 
   LLS %r7, %r0, 8         ; 0xXX00
@@ -124,7 +124,7 @@ end_search_tda:
   CALL get_offset_from_row_col
   ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
   MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
-  LOAD.B %r0, %r6         ; Read slot number
+  LOADB %r0, %r6         ; Read slot number
   CALL print_hex_b        ; And print it
 
   ; *** Print Dev SubType
@@ -134,7 +134,7 @@ end_search_tda:
   CALL get_offset_from_row_col
   ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
   MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
-  LOAD.B %r0, %r6         ; Read slot number
+  LOADB %r0, %r6         ; Read slot number
   CALL print_hex_b        ; And print it
 
   ; *** Print Dev ID
@@ -144,7 +144,7 @@ end_search_tda:
   CALL get_offset_from_row_col
   ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
   MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
-  LOAD.B %r0, %r6         ; Read slot number
+  LOADB %r0, %r6         ; Read slot number
   CALL print_hex_b        ; And print it
 
   ; *** Print Dev ID
@@ -172,7 +172,7 @@ end_search_tda:
 
 ;******************************************************************************
 ; Const Data
-str01:  .db "Nº Dev: 0x", 0
+str01:  .db "NÂº Dev: 0x", 0
 str02:  .db "| Slot | Type | SubType | ID | Vendor |", 0
 str03:  .db "+------+------+---------+----+--------+", 0
 
