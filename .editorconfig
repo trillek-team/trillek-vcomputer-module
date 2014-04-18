@@ -13,6 +13,13 @@ indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
 
+# 4 space indentation
+[*.{asm,ainc}]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+charset = ISO-8859-15
+
 # Matches the exact files either package.json or .travis.yml
 [{package.json,.travis.yml}]
 indent_style = space
