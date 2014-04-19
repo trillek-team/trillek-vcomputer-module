@@ -16,6 +16,7 @@
 #include "Timer.hpp"
 #include "RNG.hpp"
 #include "RTC.hpp"
+#include "Beeper.hpp"
 
 #include <map>
 #include <set>
@@ -296,6 +297,13 @@ namespace vm {
             return ram;
         }
 
+        /*!
+         * /brief Assing a function to be called when Beeper freq is changed
+         * /param f_changed function to be called
+         */
+        void SetFreqChangedCB (std::function<void(dword_t freq)> f_changed) {
+            beeper.SetFreqChangedCB(f_changed);
+        }
 
         /*!
          * Add a breakpoint at the desired address
@@ -378,6 +386,7 @@ namespace vm {
         Timer pit;              //! Programable Interval Timer
         RNG rng;                //! Random Number Generator
         RTC rtc;                //! Real Time Clock
+        Beeper beeper;          //! Real Time Clock
 
 
         std::set<dword_t> breakpoints;  //! Breakpoints list

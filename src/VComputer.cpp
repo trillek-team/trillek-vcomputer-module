@@ -31,6 +31,10 @@ namespace vm {
             Range rng_range(0x11E040, 0x11E043);
             AddAddrListener(rng_range, &rng);
 
+            // Add Beeper address
+            Range beeper_range(0x11E020, 0x11E021);
+            AddAddrListener(beeper_range, &beeper);
+
             // Add RTC address
             Range rtc_range(0x11E030, 0x11E036);
             AddAddrListener(rtc_range, &rtc);
