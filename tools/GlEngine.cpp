@@ -274,7 +274,7 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, screenTex);
 
-    if (t_acu >= 0.04) { // Updates screen texture at a rate of ~25 Hz
+    if (t_acu >= 0.04 || delta == 0) { // Updates screen texture at a rate of ~25 Hz
         t_acu -= 0.04;
 
         // Stream the texture *************************************************

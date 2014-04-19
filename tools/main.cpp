@@ -228,7 +228,9 @@ int main(int argc, char* argv[]) {
 
     // Add devices to tue Virtual Machine
     auto gcard = std::make_shared<vm::dev::tda::TDADev>();
+#ifdef GLFW3_ENABLE
     vm::dev::tda::TDAScreen gcard_screen = {0};
+#endif
     vc.AddDevice(5, gcard);
 
     auto gk = std::make_shared<vm::dev::gkeyboard::GKeyboardDev>();
@@ -263,8 +265,6 @@ int main(int argc, char* argv[]) {
     if (mode == 's' || mode == 'S') {
         debug = true;
     }
-
-
 
 #ifdef GLFW3_ENABLE
     GlEngine gl;
@@ -347,37 +347,34 @@ int main(int argc, char* argv[]) {
             ticks_count += ticks;
             ticks = vc.Update(ds);
 
+            // Speed info
+            if (ticks_count > 400000) {
+                std::printf("Running %u cycles in %f ms ", ticks, delta);
+                double ttick = delta / ticks;
+                const double tclk = 1000.0 / 1000000.0; // Base clock 1Mhz
+                std::printf("Ttick %f ms ", ttick); // Time take in one cycle
+                std::printf("Tclk %f ms ", tclk); // Time that should take one cycle
+                std::printf("Speed of %f %% \n", 100.0f * (tclk / ttick) );
+                ticks_count -= 400000;
+            }
+
         } else {
             ticks = vc.Step(delta / 1000.0 );
+
+            vc.GetState((void*) &cpu_state, sizeof(cpu_state));
+            print_regs(cpu_state);
+            //print_stack(vm.CPU(), vm.RAM());
         }
 
-        if (vc.isBreaked()) { // Here is a breakpoint !
+        if (vc.isHalted()) { // Here is a breakpoint !
             std::printf("\t\tBREAKPOINT\n\nSwithching to Step mode\n\n");
             debug = true;
-            vc.Continue();
 
             vc.GetState((void*) &cpu_state, sizeof(cpu_state));
             print_pc(cpu_state, vc);
         }
 
-        // Speed info
-        if (!debug && ticks_count > 400000) {
-            std::printf("Running %u cycles in %f ms ", ticks, delta);
-            double ttick = delta / ticks;
-            double tclk = 1000.0 / 1000000.0; // Base clock 1Mhz
-            std::printf("Ttick %f ms ", ttick);
-            std::printf("Tclk %f ms ", tclk);
-            std::printf("Speed of %f %% \n", 100.0f * (tclk / ttick) );
-            ticks_count -= 400000;
-        }
-
-
         if (debug) {
-            vc.GetState((void*) &cpu_state, sizeof(cpu_state));
-            auto cpu_cycles = ticks / 10; // TODO Cahnge this to calc it base on CPU Clock speed
-            std::printf("Takes %u cycles\n", cpu_cycles);
-            print_regs(cpu_state);
-            //print_stack(vm.CPU(), vm.RAM());
 
             while (1) { // Parse "command"
                 c = std::getchar();
@@ -388,20 +385,27 @@ int main(int argc, char* argv[]) {
                 }
 
                 if (c == 'r' || c == 'R') {
+                    clock = high_resolution_clock::now();
+                    vc.Resume();
+                    vc.Step(delta / 1000.0 );
                     debug = false;
                     break;
                 }
 
                 if (c == 's' || c == 'S' || c =='\n') {
+                    vc.Resume();
                     debug = true;
                     break;
                 }
             }
-
-        }
 #ifdef GLFW3_ENABLE
-        gl.UpdScreen (glfwos, delta / 1000.0);
+            gl.UpdScreen (glfwos, 0);
 #endif
+        } else {
+#ifdef GLFW3_ENABLE
+            gl.UpdScreen (glfwos, delta / 1000.0);
+#endif
+        }
 
     }
 

@@ -344,19 +344,20 @@ namespace vm {
          * Check if the Virtual Computer is halted by a breakpoint
          * \return True if a breakpoint happened
          */
-        bool isBreaked () {
+        bool isHalted () {
             return breaking;
         }
 
         /*!
          * Allows to continue if a Breakpoint happened
          */
-        void Continue () {
-            breaking = false;
-
-            // Temporaly, we remove the last break point
-            RmBreakPoint(last_break);
-            recover_break = true;
+        void Resume () {
+            if (breaking) {
+                breaking = false;
+                // Temporaly, we remove the last break point
+                RmBreakPoint(last_break);
+                recover_break = true;
+            }
         }
 
     private:
