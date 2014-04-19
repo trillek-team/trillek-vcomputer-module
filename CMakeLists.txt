@@ -28,7 +28,7 @@ IF (BRKPOINTS_ENABLED)
   message("Breakpoints functionality enabled")
 ENDIF (BRKPOINTS_ENABLED)
 
-# Set the directory where to find FindSLD2.cmake
+# Set the directory where to find cmake "modules"
 set(CMAKE_MODULE_PATH ${VCOMPUTER_SOURCE_DIR}/cmake)
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -118,6 +118,14 @@ else (EMSCRIPTEN)
       message("GLM not found! main executable will not display screen and virtual keyboard")
       set (GLFW3_ENABLE 0)
     endif(NOT GLM_FOUND)
+
+    find_package(OpenAL)
+    if(NOT OPENAL_FOUND)
+      message("OpenAL not found! main executable will not be hable to play the beeper")
+      set (OPENAL_ENABLE 0)
+    else (NOT OPENAL_FOUND)
+      set (OPENAL_ENABLE 1)
+    endif(NOT OPENAL_FOUND)
 
     if(BUILD_TOOLS_VCOMPUTER)
       message(STATUS "Procesing Tools")
