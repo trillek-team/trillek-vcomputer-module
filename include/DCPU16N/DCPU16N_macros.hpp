@@ -1,8 +1,8 @@
 #pragma once
 /**
-* Trillek Virtual Computer - DCPU16N_macros.hpp
-* Macros used by DCPU16N implementation
-*/
+ * Trillek Virtual Computer - DCPU16N_macros.hpp
+ * Macros used by DCPU16N implementation
+ */
 
 #ifndef __DCPU16N_MACROS_HPP__
 #define __DCPU16N_MACROS_HPP__
