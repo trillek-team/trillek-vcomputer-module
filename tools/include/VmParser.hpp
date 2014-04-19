@@ -23,9 +23,13 @@ enum class CpuToUse {
 struct VmParamaters {
 
     VmParamaters (const int argc, const char** argv) {
+        // Default values
         dsk_file = def_dsk_file;
         rom_file = nullptr;
 
+        cpu = CpuToUse::TR3200;
+
+        // Begin to parse
         for (int i = 1; i < argc; i++) {
             const char* arg = argv[i];
 
