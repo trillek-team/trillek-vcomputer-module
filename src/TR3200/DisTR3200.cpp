@@ -27,7 +27,6 @@ namespace vm {
       // Here beging the Decoding
       bool literal = HAVE_LITERAL(inst);
       opcode = GET_OP_CODE(inst);
-      std::fprintf(stderr,"OP 0x%02x\t", opcode);
 
       if (IS_P3(inst)) {
         // 3 parameter instruction ********************************************

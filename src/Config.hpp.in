@@ -1,0 +1,28 @@
+#pragma once
+/*!
+ * \brief       Virtual Computer confgiration file
+ * \file        Config.hpp.in
+ * \copyright   The MIT License (MIT)
+ *
+ * This file is procesed by CMake to setup the apropiated macros of configuration
+ */
+
+#define VCOMP_VERSION_MAJOR @VCOMP_VERSION_MAJOR@   //! Major version
+#define VCOMP_VERSION_MINOR @VCOMP_VERSION_MINOR@   //! Minor version
+#define VCOMP_BUILD @VCOMP_BUILD@                   //! Build (git rev-list HEAD --count)
+
+//! Debug build
+#ifndef DEBUG
+    #define DEBUG @DEBUG_BUILD@
+#endif
+#if DEBUG == 0
+    #undef DEBUG
+#endif
+
+
+//! Break Points functionality ?
+#define BRKPOINTS @BRKPOINTS_ENABLED@
+#if BRKPOINTS == 0
+    #undef BRKPOINTS
+#endif
+
