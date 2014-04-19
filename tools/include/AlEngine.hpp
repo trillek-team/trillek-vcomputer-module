@@ -24,6 +24,11 @@ public:
 
     bool Update();
 
+    void SineSynth (float f);
+    void SqrSynth (float f);
+
+    void Test();
+
     void MasterGain(float gain);
     float MasterGain() const;
 
@@ -32,6 +37,8 @@ private:
     float gain;
 
     bool initiated;
+    bool buff_created;
+    bool source_created;
 
     ALCdevice* device;
     ALCcontext* context;

@@ -323,6 +323,11 @@ int main(int argc, char* argv[]) {
         ;
     }
 
+    // Testing sound
+#ifdef OPENAL_ENABLE
+    al.Test();
+#endif
+
     while ( loop) {
         // Calcs delta time
 
