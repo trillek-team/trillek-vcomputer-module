@@ -70,6 +70,7 @@ ENDIF (OPENAL_ENABLE EQUAL 1)
 add_executable( vm
   ./main.cpp
   ./GlEngine.cpp
+  ./AlEngine.cpp
   )
 
 include_directories( vm
