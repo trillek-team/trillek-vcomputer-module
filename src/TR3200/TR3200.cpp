@@ -8,6 +8,7 @@
 #include "TR3200/TR3200_opcodes.hpp"
 #include "TR3200/TR3200_macros.hpp"
 #include "VSFix.hpp"
+#include "Config.hpp"
 
 #include <cstdio>
 #include <algorithm>
@@ -62,9 +63,13 @@ namespace vm {
       while (i < n) {
         if (!sleeping) {
           if (wait_cycles <= 0 ) {
-            wait_cycles = RealStep();
+            RealStep();
           }
-
+#ifdef BRKPOINTS
+          if (vcomp->isHalted()) {
+            return;
+          }
+#endif
           wait_cycles--;
         } else {
           ProcessInterrupt();
@@ -90,7 +95,13 @@ namespace vm {
      * @return Number of cycles that takes to do it
      */
     unsigned TR3200::RealStep() {
-      unsigned wait_cycles;
+      //unsigned wait_cycles;
+
+#ifdef BRKPOINTS
+      if (vcomp->isBreakPoint(pc)) { // Breakpoint !
+        return 0;
+      }
+#endif
 
       dword_t inst = vcomp->ReadDW(pc);
       pc +=4;
@@ -531,7 +542,6 @@ namespace vm {
               break;
 
             case P2_OPCODE::CALL2 : // Absolute call
-              wait_cycles++;
               // push to the stack register pc value
               vcomp->WriteB(--r[SP], pc >> 24);
               vcomp->WriteB(--r[SP], pc >> 16);
@@ -612,7 +622,6 @@ namespace vm {
               break;
 
             case P1_OPCODE::CALL :  // Absolute call
-              wait_cycles++;
               // push to the stack register pc value
               vcomp->WriteB(--r[SP], pc >> 24);
               vcomp->WriteB(--r[SP], pc >> 16);
@@ -630,7 +639,6 @@ namespace vm {
               break;
 
             case P1_OPCODE::RCALL : // Relative call
-              wait_cycles++;
               // push to the stack register pc value
               vcomp->WriteB(--r[SP], pc >> 24);
               vcomp->WriteB(--r[SP], pc >> 16);
@@ -644,7 +652,6 @@ namespace vm {
 
 
             case P1_OPCODE::INT : // Software Interrupt
-              wait_cycles += 3;
               if (!literal) {
                 rn = r[rn];
               }
@@ -671,8 +678,6 @@ namespace vm {
               break;
 
             case NP_OPCODE::RFI :
-              wait_cycles = 6;
-
               // Pop PC
               pc = vcomp->ReadDW(r[SP]);
               r[SP] += 4;
@@ -687,8 +692,7 @@ namespace vm {
               break;
 
             default:
-              // Unknow OpCode -> Acts like a NOP
-              wait_cycles = 1;
+              break; // Unknow OpCode -> Acts like a NOP (this could change)
 
           }
         }

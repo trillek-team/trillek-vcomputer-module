@@ -52,11 +52,28 @@ WHAT IT DOES ACTUALLY
 
 Is a program that uses the Trillek Virtual Computer lib to run a TR3200 emulation. Can run in step mode or in "run mode" where it executes all the program without stopping. Needs C++ 11 *std::chrono compilance* for measuring times; **GLFW3 + GLM + OpenGL 3.2** is needed if you desire to see the virtual screen.
 
-- Can load a little endian binary file with a program with a max size of 32KiB as will be upload to the computer ROM.
-- Step mode, has an on-line disassembler. Each time that you press a
-  key, one instruction is executed, and the status of registers and stack, is
-  shown. '**q**' ends the execution.
-- Run mode, It tries to enforce CPU Clock speed (100KHz) with a simple algorithm. Only stops by doing '**Ctrl+C**' or closing the virtual screen window. 
+- Can load a little endian binary file with a ROM image with a max size of 32KiB.
+- Step mode, has an on-line disassembler. Each time that you press enter or 's' or 'S'
+  keys, one instruction is executed, and the status of registers and stack, is
+  shown. '**q**' ends the execution. '**r**' switch to Run mode
+- Run mode, It tries to enforce CPU Clock speed. Only stops by doing '**Ctrl+C**' or closing the virtual screen window, or when finds a breakpoint. 
+
+It accepts this parameters:
+```
+Virtual Computer toy Emulator
+
+Usage:
+        ./vm -r romfile [other parameters]
+
+Parameters:
+        -r file or --rom file : RAW binary file for the ROM 32 KiB
+        -d file or --disk file : Disk file
+        -c val or --cpu val : Sets the CPU to use, from "tr3200" or "dcpu-16n"
+        -m val or --disk val : How many RAM have the computer in KiB. Must be > 128 and < 1024. Will be round to a multiple of 128
+        --clock val : CPU clock speed in Khz. Must be 100, 250, 500 or 1000.
+        -b val : Inserts a breakpoint at address val (could be hexadecimal or decimal).
+        -h or --help : Shows this help
+```
 
 #### pbm2font
 

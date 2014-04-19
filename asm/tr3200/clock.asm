@@ -83,7 +83,7 @@ end_search_tda:
 
 ;******************************************************************************
 loop:
-  ; Print the clok in hexadecimal
+  ; Print the clok
 
   ; *** Secs
   ; Calc offset of were we desired to rpint
@@ -165,7 +165,7 @@ tmr0_isr:
   SLEEP
   JMP crash
 
-  .include "BROM.inc"
+  .include "BROM.ainc"
 
 ;******************************************************************************
 ; Const data

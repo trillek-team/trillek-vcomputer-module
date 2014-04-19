@@ -259,7 +259,7 @@ end_search_tda:
   SLEEP
 
 
-  .include "BROM.inc"
+  .include "BROM.ainc"
 
 ;******************************************************************************
 ; Const Data

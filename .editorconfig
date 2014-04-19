@@ -8,13 +8,20 @@ insert_final_newline = true
 charset = utf-8
 
 # 4 space indentation
-[*.{cpp,hpp,c,h}]
+[*.{cpp,hpp,c,h,in,inc,asm}]
 indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
 
-# Matches the exact files either package.json or .travis.yml
-[{package.json,.travis.yml}]
+# 4 space indentation
+[*.{asm,ainc}]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+charset = ISO-8859-15
+
+# Matches .travis.yml
+[{.travis.yml}]
 indent_style = space
 indent_size = 2
 
