@@ -261,6 +261,12 @@ int main(int argc, char* argv[]) {
     } else {
         std::cerr << "Error initializasing OpenAL\n";
     }
+
+    al.Test();
+
+    vc.SetFreqChangedCB ( [&al](word_t f){
+        al.Tone(f);
+    });
 #endif
 
     vc.On();  // Powering it !
@@ -322,11 +328,6 @@ int main(int argc, char* argv[]) {
     for (long i=0; i< 600000; i++) {
         ;
     }
-
-    // Testing sound
-#ifdef OPENAL_ENABLE
-    al.Test();
-#endif
 
     while ( loop) {
         // Calcs delta time

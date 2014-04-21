@@ -13,6 +13,8 @@
 
 #ifdef OPENAL_ENABLE
 
+#include "Types.hpp"
+
 class AlEngine {
 public:
     AlEngine();
@@ -22,7 +24,7 @@ public:
     bool Init();
     void Shutdown();
 
-    bool Update();
+    void Tone(vm::word_t freq);
 
     void SineSynth (float f);
     void SqrSynth (float f);
@@ -48,6 +50,8 @@ private:
 
     // Sources are points emitting sound.
     ALuint beep_source;
+
+    vm::word_t beep_freq;
 
     // Position of the source sound.
     const static ALfloat SourcePos[];

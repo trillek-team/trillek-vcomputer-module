@@ -31,7 +31,7 @@ const ALfloat AlEngine::ListenerVel[] = { 0.0, 0.0, 0.0 };
 const ALfloat AlEngine::ListenerOri[] = { 0.0, 0.0, -1.0,  0.0, 1.0, 0.0 };
 
 AlEngine::AlEngine () :
-    gain(1.0f), initiated(false), device(nullptr), context(nullptr) {
+    gain(1.0f), initiated(false), device(nullptr), context(nullptr), beep_freq(0) {
 }
 
 AlEngine::~AlEngine () {
@@ -113,8 +113,24 @@ void AlEngine::Shutdown () {
     std::fprintf(stderr, "OpenAL closed\n");
 }
 
-bool AlEngine::Update () {
-    return true;
+void AlEngine::Tone(vm::word_t freq) {
+    if (initiated) {
+        if (freq != beep_freq) {
+            ALuint b[1];
+            b[0] = beep_buff;
+
+            alSourceStop(beep_source);
+            alSourceUnqueueBuffers(beep_source,1, b);
+
+            if (freq > 0 ) {
+                SqrSynth(freq);
+
+                alSourceQueueBuffers(beep_source, 1, b);
+                alSourcePlay(beep_source);
+            }
+            beep_freq = freq;
+        }
+    }
 }
 
 void AlEngine::SineSynth(float f) {
@@ -176,10 +192,10 @@ void AlEngine::Test() {
         ALuint b[1];
         b[0] = beep_buff;
         //SineSynth(440.0f); // DO
-        SqrSynth(440.0f); // DO
+        SqrSynth(1000.0f);
 
         alSourceQueueBuffers(beep_source, 1, b);
-        //alSourcei(beep_source, AL_LOOPING, AL_FALSE);
+        alSourcei(beep_source, AL_LOOPING, AL_FALSE);
         alSourcePlay(beep_source);
     }
 }
