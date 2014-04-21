@@ -226,7 +226,7 @@ int main(int argc, char* argv[]) {
     std::printf("CPU clock speed set to %u KHz \n", options.clock / 1000);
     vc.SetROM(rom, rom_size);
 
-    // Add devices to tue Virtual Machine
+    // Add devices to to Virtual Machine
     auto gcard = std::make_shared<vm::dev::tda::TDADev>();
 #ifdef GLFW3_ENABLE
     vm::dev::tda::TDAScreen gcard_screen = {0};
@@ -240,11 +240,29 @@ int main(int argc, char* argv[]) {
     vc.AddDevice(10, ddev);
 
     // Floppy drive
-    auto fd = std::make_shared<vm::dev::m5fdd::M35FD>();
+    auto fd = std::make_shared<vm::dev::m5fdd::M5FDD>();
     vc.AddDevice(6, fd);
-    auto floppy = std::make_shared<vm::dev::m5fdd::M35_Floppy>(options.dsk_file);
-    std::printf("Floppy image file %s \n", options.dsk_file);
-    fd->insertFloppy(floppy);
+    auto floppy = std::make_shared<vm::dev::disk::Disk>(options.dsk_file);
+
+    // load disk
+    if (floppy->isValid()) {
+        fd->insertFloppy(floppy);
+    }
+    // make a new disk
+    else {
+        vm::dev::disk::DiskDescriptor* info = new vm::dev::disk::DiskDescriptor;
+
+        info->TypeDisk        = vm::dev::disk::DiskType::FLOPPY;
+        info->writeProtect    = false;
+        info->NumSides        = 2;
+        info->TracksPerSide   = 40;
+        info->SectorsPerTrack = 8;
+        info->BytesPerSector  = 512;
+        // 2*40*8*512 = 327680/1024 = 320KiB
+
+        floppy = std::make_shared<vm::dev::disk::Disk>(options.dsk_file, info);
+        fd->insertFloppy(floppy);
+    }
 
     while (! options.breaks.empty()) {
         auto brk = options.breaks.back();
