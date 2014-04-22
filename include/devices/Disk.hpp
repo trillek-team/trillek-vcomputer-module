@@ -7,7 +7,7 @@
 #include "Types.hpp"
 #include "VComputer.hpp"
 
-#include <string>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <array>

@@ -18,7 +18,7 @@ namespace vm {
                 char temp[3];
                 datafile.read(temp, 3);
                 if (std::memcmp(temp, HEADER_MAGIC, 3) != 0) {
-                    std::cout << "[DISK] File not a disk image: " << filename << std::endl;
+                    std::cout << "[DISK] File not a disk image: " << filename.c_str() << std::endl;
                     datafile.close();
                     return;
                 }
