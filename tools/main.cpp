@@ -423,6 +423,10 @@ int main(int argc, char* argv[]) {
 #endif
         }
 
+#ifdef OPENAL_ENABLE
+        al.Update();
+#endif
+
     }
 
 #ifdef GLFW3_ENABLE

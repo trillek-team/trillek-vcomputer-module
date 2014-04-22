@@ -15,6 +15,8 @@
 
 #include "Types.hpp"
 
+const static unsigned AL_BUFFERS = 2;
+
 class AlEngine {
 public:
     AlEngine();
@@ -26,6 +28,8 @@ public:
 
     void Tone(vm::word_t freq);
 
+    void Update();
+
     void SineSynth (float f);
     void SqrSynth (float f);
 
@@ -36,22 +40,21 @@ public:
 
 private:
 
-    float gain;
+    float gain;             //! Master volumen
 
-    bool initiated;
-    bool buff_created;
-    bool source_created;
+    bool initiated;         //! Flag to know if we properly initialized all
+    bool buff_created;      //! Audio Buffers created
+    bool source_created;    //! Audio Source created
 
-    ALCdevice* device;
-    ALCcontext* context;
+    ALCdevice* device;      //! OpenAL device
+    ALCcontext* context;    //! OpenAL context
 
-    // Buffers hold sound data.
-    ALuint beep_buff;
+    ALuint beep_buff[AL_BUFFERS];   //! Buffers with sound data
+    unsigned play_buff;     //! Index to the buffer being played
 
-    // Sources are points emitting sound.
-    ALuint beep_source;
+    ALuint beep_source;     //! Source point of the sound
 
-    vm::word_t beep_freq;
+    vm::word_t beep_freq;   //! Beep freq
 
     // Position of the source sound.
     const static ALfloat SourcePos[];

@@ -58,8 +58,8 @@ bool AlEngine::Init () {
 
     alListenerf(AL_GAIN, gain);
 
-    alGenBuffers(1, &beep_buff);
-    if (alGetError() != AL_NO_ERROR || ! alIsBuffer(beep_buff)) {
+    alGenBuffers(AL_BUFFERS, beep_buff);
+    if (alGetError() != AL_NO_ERROR || ! alIsBuffer(beep_buff[0]) || ! alIsBuffer(beep_buff[1]) ) {
         Shutdown();
         return false;
     }
@@ -76,12 +76,14 @@ bool AlEngine::Init () {
     alSourcef (beep_source, AL_GAIN,     1.0f     );
     alSourcefv(beep_source, AL_POSITION, SourcePos);
     alSourcefv(beep_source, AL_VELOCITY, SourceVel);
-    alSourcei (beep_source, AL_LOOPING,  true     );
+    alSourcei (beep_source, AL_LOOPING,  false    );
 
     //// Set listener parameters
     alListenerfv(AL_POSITION,    ListenerPos);
     alListenerfv(AL_VELOCITY,    ListenerVel);
     alListenerfv(AL_ORIENTATION, ListenerOri);
+
+    play_buff = 0; //We use initially buffer 0
 
     initiated = true;
     return true;
@@ -94,7 +96,7 @@ void AlEngine::Shutdown () {
     }
 
     if (buff_created) {
-        alDeleteBuffers(1, &beep_buff);
+        alDeleteBuffers(AL_BUFFERS, beep_buff);
         buff_created = false;
     }
 
@@ -115,20 +117,72 @@ void AlEngine::Shutdown () {
 
 void AlEngine::Tone(vm::word_t freq) {
     if (initiated) {
-        if (freq != beep_freq) {
-            ALuint b[1];
-            b[0] = beep_buff;
+        ALint availBuffers = 0; // Gets number of buffers played
+        alGetSourcei(beep_source, AL_BUFFERS_PROCESSED, &availBuffers);
 
+        if (freq == beep_freq && freq > 0) {
+            // Keeps the tone
+            if (availBuffers > 0) {
+                // We only swaps buffers when one is procesed
+                alSourceUnqueueBuffers(beep_source, availBuffers, beep_buff);
+
+                play_buff = (play_buff + 1) % AL_BUFFERS;
+                //SqrSynth(freq);
+                SineSynth(freq);
+                alSourceQueueBuffers(beep_source, 1, beep_buff + play_buff);
+
+                // Restart the source if needed
+                ALint sState=0;
+                alGetSourcei(beep_source, AL_SOURCE_STATE, &sState);
+                if (sState!=AL_PLAYING) {
+                    alSourcePlay(beep_source);
+                }
+            }
+        } else if (freq != beep_freq && freq > 0) {
+            // Change of tone, we must stop and unqueue all the buffers now!
             alSourceStop(beep_source);
-            alSourceUnqueueBuffers(beep_source,1, b);
+            alGetSourcei(beep_source, AL_BUFFERS_PROCESSED, &availBuffers);
+            alSourceUnqueueBuffers(beep_source, availBuffers, beep_buff);
 
-            if (freq > 0 ) {
-                SqrSynth(freq);
+            play_buff = (play_buff + 1) % AL_BUFFERS;
+            //SqrSynth(freq);
+            SineSynth(freq);
+            alSourceQueueBuffers(beep_source, 1, beep_buff + play_buff);
 
-                alSourceQueueBuffers(beep_source, 1, b);
+            alSourcePlay(beep_source);
+        } else {
+            // Freq 0, so we stops
+            alSourceStop(beep_source);
+            alGetSourcei(beep_source, AL_BUFFERS_PROCESSED, &availBuffers);
+            alSourceUnqueueBuffers(beep_source, availBuffers, beep_buff);
+        }
+
+        beep_freq = freq;
+    }
+
+}
+
+void AlEngine::Update () {
+    if (initiated && beep_freq > 0) {
+        ALint availBuffers = 0; // Gets number of buffers played
+        alGetSourcei(beep_source, AL_BUFFERS_PROCESSED, &availBuffers);
+
+        // Keeps the tone
+        if (availBuffers > 0) {
+            // We only swaps buffers when one is procesed
+            alSourceUnqueueBuffers(beep_source, availBuffers, beep_buff);
+
+            play_buff = (play_buff + 1) % AL_BUFFERS;
+            //SqrSynth(beep_freq);
+            SineSynth(beep_freq);
+            alSourceQueueBuffers(beep_source, 1, beep_buff + play_buff);
+
+            // Restart the source if needed
+            ALint sState=0;
+            alGetSourcei(beep_source, AL_SOURCE_STATE, &sState);
+            if (sState!=AL_PLAYING) {
                 alSourcePlay(beep_source);
             }
-            beep_freq = freq;
         }
     }
 }
@@ -141,11 +195,11 @@ void AlEngine::SineSynth(float f) {
         double x;
         unsigned char buf[11025]; // 11025 samples @ 44100 Hz of sampling rate -> 250 ms of audio
         for(i = 0; i < 11025; i++) {
-            x = (i*dt) * w; // x = t * w
+            x = w*(i*dt); // x = wt
             buf[i] = (unsigned char)(128.0f + 128.f * std::sin(x) );
         }
 
-        alBufferData(beep_buff, AL_FORMAT_MONO8, buf, 11025, 44100);
+        alBufferData(beep_buff[play_buff], AL_FORMAT_MONO8, buf, 11025, 44100);
     }
 }
 
@@ -157,7 +211,7 @@ void AlEngine::SqrSynth (float f) {
         int i;
         unsigned char buf[11025]; // 11025 samples @ 44100 Hz of sampling rate -> 250 ms of audio
         for(i = 0; i < 11025; i++) {
-            double out =  std::sin( i*dt * w); // Base signal
+            double out =  std::sin( w * (i*dt)); // Base signal
             // We must avoid add harmonics over Nyquist limit or will be alised and
             // will sound like strange noise mixed with the signal
             if (f*3 < sr_2) { // Third armonic
@@ -183,19 +237,16 @@ void AlEngine::SqrSynth (float f) {
 
             buf[i] = (unsigned char)(128.0f + 128.f * out);
         }
-        alBufferData(beep_buff, AL_FORMAT_MONO8, buf, 11025, 44100);
+        alBufferData(beep_buff[play_buff], AL_FORMAT_MONO8, buf, 11025, 44100);
     }
 }
 
 void AlEngine::Test() {
     if (initiated) {
-        ALuint b[1];
-        b[0] = beep_buff;
-        //SineSynth(440.0f); // DO
+        play_buff = (play_buff + 1) % 2;
         SqrSynth(1000.0f);
 
-        alSourceQueueBuffers(beep_source, 1, b);
-        alSourcei(beep_source, AL_LOOPING, AL_FALSE);
+        alSourceQueueBuffers(beep_source, 1, beep_buff + play_buff);
         alSourcePlay(beep_source);
     }
 }
