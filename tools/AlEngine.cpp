@@ -189,55 +189,44 @@ void AlEngine::Update () {
 
 void AlEngine::SineSynth(float f) {
     if (initiated) {
-        double w = f * 2.0f * 3.14159679f; // Convert to angular freq.
-        const double dt = 1.0f / 44100;
-        int i;
+        const double w = f * PI2; // Convert to angular freq.
+        const double dt = 1.0f / SR; // Time in seconds of a single sample
+
+        unsigned char buf[22050]; // 22050 samples @ 44100 Hz of sampling rate -> 500 ms of audio
         double x;
-        unsigned char buf[11025]; // 11025 samples @ 44100 Hz of sampling rate -> 250 ms of audio
-        for(i = 0; i < 11025; i++) {
-            x = w*(i*dt); // x = wt
+        for(int i = 0; i < 22050; i++) {
+            x = w*(i*dt) + phase; // x = wt
             buf[i] = (unsigned char)(128.0f + 128.f * std::sin(x) );
         }
+        phase = x;
+        if (phase > PI2 ) {
+            phase -= PI2;
+        }
 
-        alBufferData(beep_buff[play_buff], AL_FORMAT_MONO8, buf, 11025, 44100);
+        alBufferData(beep_buff[play_buff], AL_FORMAT_MONO8, buf, 22050, SR);
     }
 }
 
 void AlEngine::SqrSynth (float f) {
-    const uint32_t sr_2 = 44100 /2; // Nyquist limmit
-    const double dt = 1.0f / 44100;
     if (initiated) {
-        double w = f * 2.0f * 3.14159679f; // Convert to angular freq.
-        int i;
-        unsigned char buf[11025]; // 11025 samples @ 44100 Hz of sampling rate -> 250 ms of audio
-        for(i = 0; i < 11025; i++) {
-            double out =  std::sin( w * (i*dt)); // Base signal
+        const double w = f * 2.0f * 3.14159679f; // Convert to angular freq.
+        const double dt = 1.0f / SR;
+        unsigned char buf[22050]; // 22050 samples @ 44100 Hz of sampling rate -> 500 ms of audio
+        for(int i = 0; i < 22050; i++) {
+            double base = w * (i*dt);
+            double out =  std::sin(base); // Base signal
+
             // We must avoid add harmonics over Nyquist limit or will be alised and
             // will sound like strange noise mixed with the signal
-            if (f*3 < sr_2) { // Third armonic
-                out += std::sin(i*dt * w*3) / 3.0;
+            for (unsigned arm=3; arm < 17 && f*arm < NF; arm += 2) {
+                out += std::sin(arm * base) / arm;
             }
-            else if (f*5 < sr_2) { // Fith armonic
-                out += std::sin(i*dt * w*5) / 5.0;
-            }
-            else if (f*7 < sr_2) { // Seventh armonic
-                out += std::sin(i*dt * w*7) / 7.0;
-            }
-            else if (f*9 < sr_2) { // Ninth armonic
-                out += std::sin(i*dt * w*9) / 9.0;
-            }
-            else if (f*11 < sr_2) { // Eleventh armonic
-                out += std::sin(i*dt * w*11) / 11.0;
-            }
-            else if (f*13 < sr_2) { // Thirteenth armonic
-                out += std::sin(i*dt * w*13) / 13.0;
-            }
-            // Note, for a perfect aquare wave, should be to 49º armonic for a 440Hz note !!
+
             // This shuld e repalced by a BLIP/BLEP synth or WaveTable Synth
 
             buf[i] = (unsigned char)(128.0f + 128.f * out);
         }
-        alBufferData(beep_buff[play_buff], AL_FORMAT_MONO8, buf, 11025, 44100);
+        alBufferData(beep_buff[play_buff], AL_FORMAT_MONO8, buf, 22050, SR);
     }
 }
 

@@ -16,6 +16,9 @@
 #include "Types.hpp"
 
 const static unsigned AL_BUFFERS = 2;
+const static unsigned SR = 44100;               //! Sampling rate
+const static unsigned NF = SR/2;                //! Nyquist frequency
+const static unsigned PI2 = 2.0f * 3.14159679f; //! 2 * PI
 
 class AlEngine {
 public:
@@ -55,6 +58,7 @@ private:
     ALuint beep_source;     //! Source point of the sound
 
     vm::word_t beep_freq;   //! Beep freq
+    double phase;           //! Signal phase
 
     // Position of the source sound.
     const static ALfloat SourcePos[];
