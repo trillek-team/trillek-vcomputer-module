@@ -127,8 +127,8 @@ void AlEngine::Tone(vm::word_t freq) {
                 alSourceUnqueueBuffers(beep_source, availBuffers, beep_buff);
 
                 play_buff = (play_buff + 1) % AL_BUFFERS;
-                //SqrSynth(freq);
-                SineSynth(freq);
+                SqrSynth(freq);
+                //SineSynth(freq);
                 alSourceQueueBuffers(beep_source, 1, beep_buff + play_buff);
 
                 // Restart the source if needed
@@ -145,8 +145,8 @@ void AlEngine::Tone(vm::word_t freq) {
             alSourceUnqueueBuffers(beep_source, availBuffers, beep_buff);
 
             play_buff = (play_buff + 1) % AL_BUFFERS;
-            //SqrSynth(freq);
-            SineSynth(freq);
+            SqrSynth(freq);
+            //SineSynth(freq);
             alSourceQueueBuffers(beep_source, 1, beep_buff + play_buff);
 
             alSourcePlay(beep_source);
@@ -173,8 +173,8 @@ void AlEngine::Update () {
             alSourceUnqueueBuffers(beep_source, availBuffers, beep_buff);
 
             play_buff = (play_buff + 1) % AL_BUFFERS;
-            //SqrSynth(beep_freq);
-            SineSynth(beep_freq);
+            SqrSynth(beep_freq);
+            //SineSynth(beep_freq);
             alSourceQueueBuffers(beep_source, 1, beep_buff + play_buff);
 
             // Restart the source if needed
