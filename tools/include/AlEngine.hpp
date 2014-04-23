@@ -17,7 +17,7 @@
 
 #include "Blip_Buffer.h"
 
-const static unsigned AL_BUFFERS = 2;
+const static unsigned AL_BUFFERS = 16;
 const static unsigned SR = 44100;               //! Sampling rate
 const static unsigned NF = SR/2;                //! Nyquist frequency
 const static unsigned PI2 = 2.0f * 3.14159679f; //! 2 * PI
