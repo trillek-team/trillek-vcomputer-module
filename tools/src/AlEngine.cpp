@@ -97,7 +97,7 @@ bool AlEngine::Init () {
     }
     blipbuf.clock_rate( blipbuf.sample_rate() );
 
-    blipbuf.bass_freq(180); // Equalization like a TV speaker
+    blipbuf.bass_freq(300); // Equalization like a TV speaker
     time = 0;
 
     initiated = true;
