@@ -32,6 +32,11 @@ const ALfloat AlEngine::ListenerOri[] = { 0.0, 0.0, -1.0,  0.0, 1.0, 0.0 };
 
 AlEngine::AlEngine () :
     gain(1.0f), initiated(false), device(nullptr), context(nullptr), beep_freq(0) {
+
+    synth.treble_eq( -8.0f ); // Synthetize Equalization
+
+    synth.volume (0.80);
+    synth.output (&blipbuf);
 }
 
 AlEngine::~AlEngine () {
@@ -85,6 +90,16 @@ bool AlEngine::Init () {
 
     play_buff = 0; //We use initially buffer 0
 
+    // Init Blip Buffer with a buffer of 500ms
+    if ( blipbuf.set_sample_rate( SR, 1000 / 2 ) ) {
+        Shutdown();
+        return false;
+    }
+    blipbuf.clock_rate( blipbuf.sample_rate() );
+
+    blipbuf.bass_freq(180); // Equalization like a TV speaker
+    time = 0;
+
     initiated = true;
     return true;
 }
@@ -120,29 +135,12 @@ void AlEngine::Tone(vm::word_t freq) {
         ALint availBuffers = 0; // Gets number of buffers played
         alGetSourcei(beep_source, AL_BUFFERS_PROCESSED, &availBuffers);
 
-        if (freq == beep_freq && freq > 0) {
-            // Keeps the tone
-            if (availBuffers > 0) {
-                // We only swaps buffers when one is procesed
-                alSourceUnqueueBuffers(beep_source, availBuffers, beep_buff);
-
-                play_buff = (play_buff + 1) % AL_BUFFERS;
-                SqrSynth(freq);
-                //SineSynth(freq);
-                alSourceQueueBuffers(beep_source, 1, beep_buff + play_buff);
-
-                // Restart the source if needed
-                ALint sState=0;
-                alGetSourcei(beep_source, AL_SOURCE_STATE, &sState);
-                if (sState!=AL_PLAYING) {
-                    alSourcePlay(beep_source);
-                }
-            }
-        } else if (freq != beep_freq && freq > 0) {
+        if (freq != beep_freq && freq > 0) {
             // Change of tone, we must stop and unqueue all the buffers now!
             alSourceStop(beep_source);
             alGetSourcei(beep_source, AL_BUFFERS_PROCESSED, &availBuffers);
             alSourceUnqueueBuffers(beep_source, availBuffers, beep_buff);
+            // TODO I think that the "click" comes that here we are cutting the sound
 
             play_buff = (play_buff + 1) % AL_BUFFERS;
             SqrSynth(freq);
@@ -209,6 +207,27 @@ void AlEngine::SineSynth(float f) {
 
 void AlEngine::SqrSynth (float f) {
     if (initiated) {
+        //const double    dt = 1.0f / SR;
+        const unsigned  period = SR / (2*f);    // How many samples need to do a half cycle.
+        const unsigned  lenght = 10000; // 10000 time units of samples
+
+        unsigned amplitude = 10;
+        while (time < lenght) {
+            amplitude = -amplitude;
+            synth.update(time, amplitude);
+            time += period;
+        }
+        blipbuf.end_frame(lenght);
+        time -= lenght; // adjust time to new frame
+
+        blip_sample_t* samples = new blip_sample_t[lenght + 100];
+
+        int count = blipbuf.read_samples( samples, lenght + 100);
+        alBufferData (beep_buff[play_buff], AL_FORMAT_MONO16, samples, count, SR);
+
+        delete[] samples;
+
+        /*
         const double w = f * 2.0f * 3.14159679f; // Convert to angular freq.
         const double dt = 1.0f / SR;
         unsigned char buf[22050]; // 22050 samples @ 44100 Hz of sampling rate -> 500 ms of audio
@@ -227,13 +246,15 @@ void AlEngine::SqrSynth (float f) {
             buf[i] = (unsigned char)(128.0f + 128.f * out);
         }
         alBufferData(beep_buff[play_buff], AL_FORMAT_MONO8, buf, 22050, SR);
+        */
     }
 }
 
 void AlEngine::Test() {
     if (initiated) {
         play_buff = (play_buff + 1) % 2;
-        SqrSynth(1000.0f);
+        //SineSynth(440.0f); // LA
+        SqrSynth(932.0f); // BIOS beep
 
         alSourceQueueBuffers(beep_source, 1, beep_buff + play_buff);
         alSourcePlay(beep_source);

@@ -15,6 +15,8 @@
 
 #include "Types.hpp"
 
+#include "Blip_Buffer.h"
+
 const static unsigned AL_BUFFERS = 2;
 const static unsigned SR = 44100;               //! Sampling rate
 const static unsigned NF = SR/2;                //! Nyquist frequency
@@ -74,6 +76,13 @@ private:
 
     // Orientation of the listener. (first 3 elements are "at", second 3 are "up")
     const static ALfloat ListenerOri[];
+
+    // Blip Buffer stuff
+    Blip_Buffer blipbuf;                        //! Blip Buffer
+    Blip_Synth<blip_good_quality,20> synth;    //! Synthetizer of Blip Buffer
+    // to generate a signal, use  synth.update (time in blip_buffer clock rate cycles, amplitude) with amplite <= 20/2
+    unsigned time;  //! Used by Blip Buffer as time
+
 
 };
 
