@@ -8,6 +8,7 @@
 #ifndef ___CONFIG_MAIN_HPP__
 #define ___CONFIG_MAIN_HPP__ 1
 
+// OpenGL stuff
 #define   GLFW3_ENABLE @GLFW3_ENABLE@
 #if GLFW3_ENABLE == 0
     #undef GLFW3_ENABLE
@@ -38,6 +39,20 @@
 
 #endif
 
+// OpenAL stuff
+
+#define   OPENAL_ENABLE @OPENAL_ENABLE@
+#if OPENAL_ENABLE == 0
+    #undef OPENAL_ENABLE
+#else
+    #ifdef __APPLE__
+        #include <OpenAL/al.h>
+        #include <OpenAL/alc.h>
+    #else
+        #include <AL/al.h>
+        #include <AL/alc.h>
+#endif
+#endif
 
 
 #endif // ___CONFIG_MAIN_HPP__

@@ -8,6 +8,7 @@
 
 #include "OS.hpp"
 #include "GlEngine.hpp"
+#include "AlEngine.hpp"
 #include "VmParser.hpp"
 
 #include "VC.hpp"
@@ -226,7 +227,7 @@ int main(int argc, char* argv[]) {
     std::printf("CPU clock speed set to %u KHz \n", options.clock / 1000);
     vc.SetROM(rom, rom_size);
 
-    // Add devices to to Virtual Machine
+    // Add devices to the Virtual Machine
     auto gcard = std::make_shared<vm::dev::tda::TDADev>();
 #ifdef GLFW3_ENABLE
     vm::dev::tda::TDAScreen gcard_screen = {0};
@@ -270,6 +271,21 @@ int main(int argc, char* argv[]) {
         vc.SetBreakPoint(brk);
         std::printf("Inserting break point at 0x%06X\n", brk);
     }
+
+#ifdef OPENAL_ENABLE
+    AlEngine al;
+    if (al.Init() ) {
+        std::cout << "OpenAL Initiated\n";
+    } else {
+        std::cerr << "Error initializasing OpenAL\n";
+    }
+
+    al.Test();
+
+    vc.SetFreqChangedCB ( [&al](word_t f){
+        al.Tone(f);
+    });
+#endif
 
     vc.On();  // Powering it !
 
@@ -424,6 +440,10 @@ int main(int argc, char* argv[]) {
             gl.UpdScreen (glfwos, delta / 1000.0);
 #endif
         }
+
+#ifdef OPENAL_ENABLE
+        al.Update();
+#endif
 
     }
 
