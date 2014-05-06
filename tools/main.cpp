@@ -273,7 +273,7 @@ int main(int argc, char* argv[]) {
     }
 
 #ifdef OPENAL_ENABLE
-    AlEngine al;
+    AlEngine::AlEngine al;
     if (al.Init() ) {
         std::cout << "OpenAL Initiated\n";
     } else {
@@ -346,6 +346,9 @@ int main(int argc, char* argv[]) {
     for (long i=0; i< 600000; i++) {
         ;
     }
+#ifdef OPENAL_ENABLE
+    al.Play();
+#endif
 
     while ( loop) {
         // Calcs delta time
@@ -445,7 +448,12 @@ int main(int argc, char* argv[]) {
         al.Update();
 #endif
 
-    }
+    } // End of loop
+
+
+#ifdef OPENAL_ENABLE
+    al.Stop();
+#endif
 
 #ifdef GLFW3_ENABLE
     glfwos.Terminate();

@@ -13,69 +13,78 @@
 
 #ifdef OPENAL_ENABLE
 
+#ifdef __APPLE__
+    #include <OpenAL/al.h>
+    #include <OpenAL/alc.h>
+#else
+    #include <AL/al.h>
+    #include <AL/alc.h>
+#endif
+#include <AL/alure.h> // Check if in MacOS or Win needs other stuff here
+
+
 #include "Types.hpp"
 
-const static unsigned AL_BUFFERS = 2;
-const static unsigned SR = 44100;               //! Sampling rate
-const static unsigned NF = SR/2;                //! Nyquist frequency
-const static unsigned PI2 = 2.0f * 3.14159679f; //! 2 * PI
+#include "Blip_Buffer.h"
 
-class AlEngine {
-public:
-    AlEngine();
+namespace AlEngine {
 
-    ~AlEngine();
+    const static unsigned AL_BUFFERS = 4;
+    const static unsigned SR = 44100;               //! Sampling rate
 
-    bool Init();
-    void Shutdown();
+    class AlEngine {
+    public:
+        AlEngine();
 
-    void Tone(vm::word_t freq);
+        ~AlEngine();
 
-    void Update();
+        bool Init();
+        void Shutdown();
 
-    void SineSynth (float f);
-    void SqrSynth (float f);
+        void Tone(vm::word_t freq);
 
-    void Test();
+        void Update();
 
-    void MasterGain(float gain);
-    float MasterGain() const;
+        void Play();
+        void Pause();
+        void Stop();
 
-private:
+        void Test();
 
-    float gain;             //! Master volumen
+        void MasterGain(float gain);
+        float MasterGain() const;
 
-    bool initiated;         //! Flag to know if we properly initialized all
-    bool buff_created;      //! Audio Buffers created
-    bool source_created;    //! Audio Source created
+    private:
 
-    ALCdevice* device;      //! OpenAL device
-    ALCcontext* context;    //! OpenAL context
 
-    ALuint beep_buff[AL_BUFFERS];   //! Buffers with sound data
-    unsigned play_buff;     //! Index to the buffer being played
+        float gain;             /// Master volumen
 
-    ALuint beep_source;     //! Source point of the sound
+        bool initiated;         /// Flag to know if we properly initialized all
+        bool source_created;    /// Flag to know if we create sound source
 
-    vm::word_t beep_freq;   //! Beep freq
-    double phase;           //! Signal phase
+        ALuint beep_source;     /// Source point of the sound
 
-    // Position of the source sound.
-    const static ALfloat SourcePos[];
+        alureStream* stream;    /// Alure Sound stream
 
-    // Velocity of the source sound.
-    const static ALfloat SourceVel[];
+        // Position of the source sound.
+        const static ALfloat SourcePos[];
 
-    // Position of the listener.
-    const static ALfloat ListenerPos[];
+        // Velocity of the source sound.
+        const static ALfloat SourceVel[];
 
-    // Velocity of the listener.
-    const static ALfloat ListenerVel[];
+        // Position of the listener.
+        const static ALfloat ListenerPos[];
 
-    // Orientation of the listener. (first 3 elements are "at", second 3 are "up")
-    const static ALfloat ListenerOri[];
+        // Velocity of the listener.
+        const static ALfloat ListenerVel[];
 
-};
+        // Orientation of the listener. (first 3 elements are "at", second 3 are "up")
+        const static ALfloat ListenerOri[];
+
+
+    };
+
+} // End of Namespace AlEngine
 
 #endif
 

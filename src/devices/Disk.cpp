@@ -5,7 +5,7 @@ namespace vm {
     namespace dev {
         namespace disk {
 
-            Disk::Disk(const std::string filename) {
+            Disk::Disk(const std::string filename) : HEADER_VERSION(1) {
 
                 // Check if file exists
                 datafile.open(filename, std::ios::in | std::ios::out | std::ios::binary);
@@ -51,7 +51,7 @@ namespace vm {
                 std::cout << "[DISK] File loaded: " << filename.c_str() << std::endl;
             }
 
-            Disk::Disk(const std::string filename, DiskDescriptor* info) {
+            Disk::Disk(const std::string filename, DiskDescriptor* info)  : HEADER_VERSION(1) {
 
                 Info.reset(info);
 

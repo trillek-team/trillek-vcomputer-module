@@ -24,8 +24,7 @@ if(DEFINED ENV{GTEST_ROOT})  # Note we omit the $ here!
     )
 
 ELSE()
-  message("GTEST_ROOT is not defined. You must tell CMake where
-  to find the gtest source. For example :
+  message(STATUS "GTEST_ROOT is not defined. You must tell CMake where to find the gtest source. For example :
   GTEST_ROOT=path/gtest-1.6.0 ;
   export GTEST_ROOT ")
 endif()
