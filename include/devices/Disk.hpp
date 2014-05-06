@@ -13,6 +13,11 @@
 #include <array>
 #include <cmath>
 
+#if defined(_MSC_VER)
+	// VC++ C compiler support : C89 thanks microsoft !
+	#define log2(x) (std::log(x) / std::log(2))
+#endif
+
 namespace vm {
     namespace dev {
         namespace disk {
@@ -151,7 +156,7 @@ namespace vm {
                 }
 
             private:
-                const char HEADER_VERSION = 1;
+                char HEADER_VERSION;
 
                 std::string filename;   /// file name of disk file
                 std::fstream datafile;  /// disk file on host

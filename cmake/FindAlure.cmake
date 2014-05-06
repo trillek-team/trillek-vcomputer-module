@@ -14,7 +14,7 @@ if (NOT ALURE_INCLUDE_DIR)
 endif (NOT ALURE_INCLUDE_DIR)
 
 FIND_LIBRARY(ALURE_LIBRARY
-    NAMES Alure alure libalure libalure.so
+    NAMES ALURE ALURE32 Alure alure libalure libalure.so
     PATH_SUFFIXES x86 lib64 x64
     )
 

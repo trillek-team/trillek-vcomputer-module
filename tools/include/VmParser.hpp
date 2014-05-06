@@ -22,7 +22,7 @@ enum class CpuToUse {
 
 struct VmParamaters {
 
-    VmParamaters (const int argc, const char** argv) {
+	VmParamaters (const int argc, const char** argv) : def_dsk_file("disk.dsk"), ram_size(128*1024), clock(100000), valid_params(true), ask_help(false)   {
         // Default values
         dsk_file = def_dsk_file;
         rom_file = nullptr;
@@ -154,20 +154,20 @@ struct VmParamaters {
         }
     }
 
-    const char* def_dsk_file = "disk.dsk";
+    const char* def_dsk_file;
 
     const char* rom_file;           //! Path to ROM file
     const char* dsk_file;           //! Path to Floppy disk file
 
-    unsigned ram_size = 128*1024;   //! Ram size in Bytes
+    unsigned ram_size;              //! Ram size in Bytes
 
     CpuToUse cpu;                   //! CPU to use (default TR3200)
-    unsigned clock = 100000;        //! CPU clock speed (default 100Khz)
+    unsigned clock;                 //! CPU clock speed (default 100Khz)
 
     std::vector<vm::dword_t> breaks;//" List of breakpoints
 
-    bool valid_params = true;       //! Parsed correctly all parameters
-    bool ask_help = false;          //! User asked by help
+    bool valid_params;              //! Parsed correctly all parameters
+    bool ask_help;                  //! User asked by help
 };
 
 
