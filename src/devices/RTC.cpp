@@ -1,9 +1,13 @@
 /**
- * Trillek Virtual Computer - RTC.cpp
+ * \brief       Virtual Computer Real Time Clock
+ * \file        RTC.cpp
+ * \copyright   The MIT License (MIT)
+ *
  * Implementation of embedded RTC device
  */
 
 #include "RTC.hpp"
+#include "VSFix.hpp"
 
 namespace vm {
 

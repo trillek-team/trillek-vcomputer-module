@@ -1,5 +1,8 @@
 /**
- * Trillek Virtual Computer - EnumAndCtrlBlk.cpp
+ * \brief       Enumeration and Control/status address Block
+ * \file        EnumAndCtrlBlk.cpp
+ * \copyright   The MIT License (MIT)
+ *
  * An specialized Address Listener used by VComputer to implement
  * Enumeration and Control registers in a slot
  */

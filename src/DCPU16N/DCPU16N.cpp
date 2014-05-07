@@ -1,6 +1,8 @@
 /**
- * Trillek Virtual Computer - DCPU16N.cpp
- * Implementation of the DCPU-16N CPU
+ * \brief       Class definitions for the DCPU-16N CPU
+ * \file        DCPU16N.cpp
+ * \copyright   The MIT License (MIT)
+ *
  */
 
 #include "DCPU16N.hpp"

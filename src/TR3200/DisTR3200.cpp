@@ -1,6 +1,8 @@
 /**
- * Trillek Virtual Computer - DisTR3200.cpp
- * OnLine dis-assembler of TR3200 machine code
+ * \brief       TR3200 CPU online dis-assembler
+ * \file        DisTR3200.cpp
+ * \copyright   The MIT License (MIT)
+ *
  */
 
 #include "VComputer.hpp"

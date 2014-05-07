@@ -1,9 +1,13 @@
 /**
- * Trillek Virtual Computer - RNG.cpp
- * Implementation of embedded PRNG device
+ * \brief       Virtual Computer Random Number Generator
+ * \file        RNG.cpp
+ * \copyright   The MIT License (MIT)
+ *
+ * Implementation of embedded RNG device
  */
 
 #include "RNG.hpp"
+#include "VSFix.hpp"
 
 namespace vm {
 

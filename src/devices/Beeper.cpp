@@ -6,6 +6,7 @@
  */
 
 #include "Beeper.hpp"
+#include "VSFix.hpp"
 
 namespace vm {
 

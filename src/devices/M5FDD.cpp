@@ -1,9 +1,13 @@
 /**
- * Trillek Virtual Computer - M5FDD.cpp
+ * \brief       Mackapar 5.25" Floppy Drive
+ * \file        M5FDD.cpp
+ * \copyright   The MIT License (MIT)
+ *
  * Mackapar 5.25" Floppy Drive
  */
 
 #include "M5FDD.hpp"
+#include "VSFix.hpp"
 
 namespace vm {
 namespace dev {
@@ -158,7 +162,7 @@ void M5FDD::IACK() {
 }
 
 void M5FDD::Tick(unsigned n, const double delta) {
-    for (int i = 0; i < n; i++) {
+    for (unsigned i = 0; i < n; i++) {
         if (busyCycles > 0 && state == STATE_CODES::BUSY) {
 
             //TODO: integrate with DMA system

@@ -1,5 +1,8 @@
 /**
- * Trillek Virtual Computer - Auxiliar.cpp
+ * \brief       Virtual Computer Auxiliar functions
+ * \file        Auxiliar.cpp
+ * \copyright   The MIT License (MIT)
+ *
  * Some auciliar functions and methods
  */
 

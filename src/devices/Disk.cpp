@@ -1,5 +1,13 @@
-
+/**
+ * \brief       Virtual Computer Generic Media image class
+ * \file        Disk.cpp
+ * \copyright   The MIT License (MIT)
+ *
+ */
 #include "Disk.hpp"
+#include "VSFix.hpp"
+
+#include <cmath>
 
 namespace vm {
 namespace dev {
@@ -73,7 +81,7 @@ Disk::Disk(const std::string filename, DiskDescriptor* info)  : HEADER_VERSION(1
     char* sector = new char[Info->BytesPerSector];
     std::memset(sector, 0, Info->BytesPerSector);
     datafile.seekg(HEADER_SIZE, std::fstream::beg);
-    for (int i = 0; i < getTotalSectors(); i++) {
+    for (uint16_t i = 0; i < getTotalSectors(); i++) {
         datafile.write(sector, Info->BytesPerSector);
     }
     delete[] sector;
@@ -97,6 +105,11 @@ Disk::~Disk() {
         std::cout << "[DISK] Datafile closed" << std::endl;
     }
 }
+
+uint8_t Disk::getBytesExponent() const {
+    return log2(Info->BytesPerSector);
+}
+
 
 bool Disk::isSectorBad(uint16_t sector) const {
     if ( !datafile.good() || sector >= getTotalSectors() ) {

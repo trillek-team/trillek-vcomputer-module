@@ -1,5 +1,8 @@
 /**
- * Trillek Virtual Computer - TR3200.cpp
+ * \brief       TR3200 CPU
+ * \file        TR3200.cpp
+ * \copyright   The MIT License (MIT)
+ *
  * Implementation of the TR3200 CPU v0.10
  * @see https://github.com/trillek-team/trillek-computer/blob/master/TR3200.md
  */

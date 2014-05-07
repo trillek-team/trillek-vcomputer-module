@@ -1,9 +1,13 @@
 /**
- * Trillek Virtual Computer - Timer.cpp
+ * \brief       Virtual Computer Timer
+ * \file        Timer.cpp
+ * \copyright   The MIT License (MIT)
+ *
  * Implementation of Timer embed device
  */
 
 #include "Timer.hpp"
+#include "VSFix.hpp"
 
 namespace vm {
 

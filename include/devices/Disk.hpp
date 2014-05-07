@@ -14,12 +14,6 @@
 #include <iostream>
 #include <fstream>
 #include <array>
-#include <cmath>
-
-#if defined(_MSC_VER)
-// VC++ C compiler support : C89 thanks microsoft !
-        #define log2(x) ( std::log(x) / std::log(2) )
-#endif
 
 namespace vm {
 namespace dev {
@@ -116,9 +110,7 @@ public:
      * 512 = 2^9, return 9
      * to reverse this: 1 << 9 = 2^9 = 512
      */
-    uint8_t getBytesExponent() const {
-        return log2(Info->BytesPerSector);
-    }
+    uint8_t getBytesExponent() const;
 
     /**
      * Return if is write protected

@@ -1,5 +1,8 @@
 /**
- * Trillek Virtual Computer - TDA.cpp
+ * \brief       Virtual Computer Text Display Adapter
+ * \file        TDA.cpp
+ * \copyright   The MIT License (MIT)
+ *
  * Nya Elektriska Text Display Adapter
  * @see https://github.com/trillek-team/trillek-computer/blob/master/TDA.md
  */

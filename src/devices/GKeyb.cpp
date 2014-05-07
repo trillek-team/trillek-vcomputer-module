@@ -5,6 +5,7 @@
  */
 
 #include "devices/GKeyb.hpp"
+#include "VSFix.hpp"
 
 namespace vm {
 namespace dev {
