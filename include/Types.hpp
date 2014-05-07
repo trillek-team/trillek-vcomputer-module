@@ -1,5 +1,5 @@
 /**
- * \brief       Base types fo Virtual Computer
+ * \brief       Base types of Virtual Computer
  * \file        Types.hpp
  * \copyright   The MIT License (MIT)
  */

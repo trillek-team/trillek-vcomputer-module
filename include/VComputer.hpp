@@ -27,22 +27,22 @@
 namespace vm {
 using namespace vm::cpu;
 
-const unsigned MAX_N_DEVICES = 32;          //! Max number of devices
+const unsigned MAX_N_DEVICES = 32;          /// Max number of devices
                                             // attached
-const std::size_t MAX_ROM_SIZE = 32*1024;   //! Max ROM size
-const std::size_t MAX_RAM_SIZE = 1024*1024; //! Max RAM size
+const std::size_t MAX_ROM_SIZE = 32*1024;   /// Max ROM size
+const std::size_t MAX_RAM_SIZE = 1024*1024; /// Max RAM size
 
-const unsigned EnumCtrlBlkSize = 20; //! Enumeration and Control registers
+const unsigned EnumCtrlBlkSize = 20; /// Enumeration and Control registers
                                      // blk size
 
-const unsigned BaseClock = 1000000; //! Computer Base Clock rate
+const unsigned BaseClock = 1000000; /// Computer Base Clock rate
 
 class EnumAndCtrlBlk;
 
 class VComputer {
 public:
 
-    /*!
+    /**
      * Creates a Virtual Computer
      * \param ram_size RAM size in BYTES
      */
@@ -50,19 +50,19 @@ public:
 
     ~VComputer ();
 
-    /*!
+    /**
      * Sets the CPU of the computer
      * \param cpu New CPU in the computer
      */
     void SetCPU (std::unique_ptr<ICPU> cpu);
 
-    /*!
+    /**
      * Removes the CPU of the computer
      * \return Returns the ICPU
      */
     std::unique_ptr<ICPU> RmCPU ();
 
-    /*!
+    /**
      * Adds a Device to a slot
      * \param slot Were plug the device
      * \param dev The device to be pluged in the slot
@@ -70,23 +70,23 @@ public:
      */
     bool AddDevice (unsigned slot, std::shared_ptr<IDevice> dev);
 
-    /*!
+    /**
      * Gets the Device plugged in the slot
      */
     std::shared_ptr<IDevice> GetDevice (unsigned slot);
 
-    /*!
+    /**
      * Remove a device from a slot
      * \param slot Slot were unplug the device
      */
     void RmDevice (unsigned slot);
 
-    /*!
+    /**
      * CPU clock speed in Hz
      */
     unsigned CPUClock () const;
 
-    /*!
+    /**
      * Writes a copy of CPU state in a chunk of memory pointer by ptr.
      * \param ptr Pointer were to write
      * \param size Size of the chunk of memory were can write. If is
@@ -94,30 +94,30 @@ public:
      */
     void GetState (void* ptr, std::size_t size) const;
 
-    /*!
+    /**
      * Gets a pointer were is stored the ROM data
      * \param *rom Ptr to the ROM data
      * \param rom_size Size of the ROM data that must be less or equal to 32KiB.
-     *****Big sizes will be ignored
+     *******Big sizes will be ignored
      */
     void SetROM (const byte_t* rom, std::size_t rom_size);
 
-    /*!
+    /**
      * Resets the virtual machine (but not clears RAM!)
      */
     void Reset ();
 
-    /*!
+    /**
      * Power On the computer
      */
     void On ();
 
-    /*!
+    /**
      * Power Off the computer
      */
     void Off ();
 
-    /*!
+    /**
      * Executes the apropaited number of Virtual Computer base clock cycles
      * in function of the elapsed time since the last call (delta time)
      *
@@ -126,14 +126,14 @@ public:
      */
     unsigned Update ( const double delta);
 
-    /*!
+    /**
      * Executes one instruction
      * \param delta Number of seconds since the last call
      * \return number of base clock ticks needed
      */
     unsigned Step ( const double delta = 0);
 
-    /*!
+    /**
      * Executes N clock ticks
      * \param n nubmer of base clock ticks, by default 1
      * \param delta Number of seconds since the last call
@@ -271,7 +271,7 @@ public:
         }
     } // WriteDW
 
-    /*!
+    /**
      * Adds an AddrListener to the computer
      * \param range Range of addresses that the listerner listens
      * \param listener AddrListener using these range
@@ -279,21 +279,21 @@ public:
      */
     int32_t AddAddrListener (const Range& range, AddrListener* listener);
 
-    /*!
+    /**
      * Removes an AddrListener from the computer
      * \param id ID of the address listener to remove (ID from AddAddrListener)
      * \return True if can find these listener and remove it.
      */
     bool RmAddrListener (int32_t id);
 
-    /*!
+    /**
      * Sizeo of the RAM in bytes
      */
     std::size_t RamSize () const {
         return ram_size;
     }
 
-    /*!
+    /**
      * Returns a pointer to the RAM for reading raw values from it
      * Use only for GetState methods or dump a snapshot of the computer state
      */
@@ -301,7 +301,7 @@ public:
         return ram;
     }
 
-    /*!
+    /**
      * Returns a pointer to the RAM for writing raw values to it
      * Use only for SetState methods or load a snapshot of the computer state
      */
@@ -309,7 +309,7 @@ public:
         return ram;
     }
 
-    /*!
+    /**
      * /brief Assing a function to be called when Beeper freq is changed
      * /param f_changed function to be called
      */
@@ -317,7 +317,7 @@ public:
         beeper.SetFreqChangedCB(f_changed);
     }
 
-    /*!
+    /**
      * Add a breakpoint at the desired address
      * \param addr Address were will be the breakpoint
      */
@@ -325,7 +325,7 @@ public:
         breakpoints.insert(addr);
     }
 
-    /*!
+    /**
      * Erase a breakpoint at the desired address
      * \param addr Address were will be the breakpoint
      */
@@ -333,14 +333,14 @@ public:
         breakpoints.erase(addr);
     }
 
-    /*!
+    /**
      * Remove all breakpoints
      */
     void ClearBreakPoints () {
         breakpoints.clear();
     }
 
-    /*!
+    /**
      * Check if there isa breakpoint at an particular address
      * \param addr Address to verify
      * \return True if there is a breakpoint in these address
@@ -361,7 +361,7 @@ public:
         return false;
     } // isBreakPoint
 
-    /*!
+    /**
      * Check if the Virtual Computer is halted by a breakpoint
      * \return True if a breakpoint happened
      */
@@ -369,7 +369,7 @@ public:
         return breaking;
     }
 
-    /*!
+    /**
      * Allows to continue if a Breakpoint happened
      */
     void Resume () {
