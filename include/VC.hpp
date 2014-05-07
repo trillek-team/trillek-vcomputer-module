@@ -27,6 +27,7 @@
 #include "devices/DebugSerialConsole.hpp"
 
 // Embed devices
+#include "devices/Timer.hpp"
 #include "devices/Beeper.hpp"
 #include "devices/RNG.hpp"
 #include "devices/RTC.hpp"
