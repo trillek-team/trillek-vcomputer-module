@@ -1,4 +1,6 @@
-  // Little Endian -> RGBA in little endian
+  // Default palette for TDA
+
+  // Little Endian -> RGBA in little endian is 0xAABBGGRR
   //AABBGGRR
   0xFF000000, // Black
   0xFFEFDCB2, // Light Blue

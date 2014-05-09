@@ -1,5 +1,8 @@
 /**
- * Trillek Virtual Computer - Auxiliar.cpp
+ * \brief       Virtual Computer Auxiliar functions
+ * \file        Auxiliar.cpp
+ * \copyright   The MIT License (MIT)
+ *
  * Some auciliar functions and methods
  */
 
@@ -13,16 +16,17 @@
 #include <cassert>
 
 namespace vm {
-  namespace aux {
+namespace aux {
 
-    int LoadROM (const std::string& filename, byte_t* rom) {
-      assert(rom != nullptr);
+int LoadROM (const std::string& filename, byte_t* rom) {
+    assert(rom != nullptr);
 
-      int count;
-      try {
+    int count;
+    try {
         std::fstream f(filename, std::ios::in | std::ios::binary);
-        if (!f.is_open())
-          return -1;
+        if ( !f.is_open() ) {
+            return -1;
+        }
 
         size_t size;
 
@@ -36,13 +40,12 @@ namespace vm {
 
         f.read(reinterpret_cast<char*>(rom), size);
         count = size;
-      } catch (...) {
+    }
+    catch (...) {
         count = -1;
-      }
-
-      return count;
     }
 
-  } // end of namespace aux
+    return count;
+} // LoadROM
+} // end of namespace aux
 } // end of namespace vm
-

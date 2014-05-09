@@ -348,6 +348,7 @@ int main(int argc, char* argv[]) {
     }
 #ifdef OPENAL_ENABLE
     al.Play();
+    al.Tone(0);
 #endif
 
     while ( loop) {
