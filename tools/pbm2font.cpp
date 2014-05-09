@@ -16,7 +16,7 @@
 #include <cstdlib>
 #include <cstdint>
 
-#include "Types.hpp"
+#include "types.hpp"
 
 using namespace vm;
 

@@ -4,7 +4,11 @@ project(VCOMPUTER)
 
 # Project generic variables
 set(VCOMP_VERSION_MAJOR 0)
-set(VCOMP_VERSION_MINOR 2)
+set(VCOMP_VERSION_MINOR 3)
+set(VCOMP_BUILD 0) # TODO Try to use git rev list HEAD --count to generate this value
+
+MESSAGE(STATUS "Trillek Virtual Computer version " 
+    ${VCOMP_VERSION_MAJOR} "." ${VCOMP_VERSION_MINOR} " Build " ${VCOMP_BUILD})
 
 # Debug build ?
 IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -37,38 +41,32 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(VCOMPUTER_INCLUDE_DIRS
     ${PROJECT_BINARY_DIR}
     ${VCOMPUTER_SOURCE_DIR}/include
-    ${VCOMPUTER_SOURCE_DIR}/include/TR3200
-    ${VCOMPUTER_SOURCE_DIR}/include/DCPU16N
-    ${VCOMPUTER_SOURCE_DIR}/include/devices
     ${VCOMPUTER_SOURCE_DIR}/src
-    ${VCOMPUTER_SOURCE_DIR}/src/TR3200
-    ${VCOMPUTER_SOURCE_DIR}/src/DCPU16N
-    ${VCOMPUTER_SOURCE_DIR}/src/devices
     )
 
 # Source dirs
 file(GLOB VCOMPUTER_SRC
     "src/*.cpp"
-    "src/TR3200/*.cpp"
-    "src/DCPU16N/*.cpp"
+    "src/tr3200/*.cpp"
+    "src/dcpu16n/*.cpp"
     "src/devices/*.cpp"
     "src/*.hpp"
-    "src/TR3200/*.hpp"
-    "src/DCPU16N/*.hpp"
+    "src/tr3200/*.hpp"
+    "src/dcpu16n/*.hpp"
     "src/devices/*.hpp"
     "src/*.inc"
-    "src/TR3200/*.inc"
-    "src/DCPU16N/*.inc"
+    "src/tr3200/*.inc"
+    "src/dcpu16n/*.inc"
     "src/devices/*.inc"
     "include/*.hpp"
-    "include/TR3200/*.hpp"
-    "include/DCPU16N/*.hpp"
+    "include/tr3200/*.hpp"
+    "include/dcpu16n/*.hpp"
     "include/devices/*.hpp"
     )
 
-# Apply all configuration stuff to Config.hpp.in
-configure_file (src/Config.hpp.in
-    "${PROJECT_BINARY_DIR}/Config.hpp" )
+# Apply all configuration stuff to config.hpp.in
+configure_file (src/config.hpp.in
+    "${PROJECT_BINARY_DIR}/config.hpp" )
 
 if (EMSCRIPTEN)
     # We are compiling with emscripten

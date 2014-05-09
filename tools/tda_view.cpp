@@ -2,8 +2,8 @@
  * Trillek Virtual Computer - tda_view.cpp
  * Tool that visualizes a image of a TDA screen using a stored TDA state 
  */
-#include "OS.hpp"
-#include "devices/TDA.hpp"
+#include "os.hpp"
+#include "devices/tda.hpp"
 
 #include <iostream>
 #include <vector>

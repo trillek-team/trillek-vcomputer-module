@@ -6,16 +6,15 @@
  * Test/Toy executable that uses the Virtual Computer lib to run a emulation
  */
 
-#include "OS.hpp"
-#include "GlEngine.hpp"
-#include "AlEngine.hpp"
-#include "VmParser.hpp"
+#include "os.hpp"
+#include "gl_engine.hpp"
+#include "al_engine.hpp"
+#include "vm_parser.hpp"
 
-#include "VC.hpp"
-#include "devices/DummyDevice.hpp"
-#include "TR3200/DisTR3200.hpp"
-#include "DCPU16N/DisDCPU16N.hpp"
-#include "devices/M5FDD.hpp"
+#include "vc.hpp"
+#include "tr3200/dis_tr3200.hpp"
+#include "devices/dummy_device.hpp"
+#include "dcpu16n/dis_dcpu16n.hpp"
 
 #include <iostream>
 #include <vector>

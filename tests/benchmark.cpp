@@ -3,8 +3,8 @@
  * Basic benchmark for Virtual Computer lib
  * Allow to see how many virtual computer can run in a single thread
  */
-#include <VC.hpp>
-#include "devices/DummyDevice.hpp"
+#include "vc.hpp"
+#include "devices/dummy_device.hpp"
 
 #include <iostream>
 #include <fstream>
