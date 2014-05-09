@@ -14,10 +14,10 @@
 #include "IDevice.hpp"
 #include "AddrListener.hpp"
 #include "EnumAndCtrlBlk.hpp"
-#include "Timer.hpp"
-#include "RNG.hpp"
-#include "RTC.hpp"
-#include "Beeper.hpp"
+#include "devices/Timer.hpp"
+#include "devices/RNG.hpp"
+#include "devices/RTC.hpp"
+#include "devices/Beeper.hpp"
 
 #include <map>
 #include <set>

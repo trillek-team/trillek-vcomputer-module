@@ -40,6 +40,10 @@ set(VCOMPUTER_INCLUDE_DIRS
     ${VCOMPUTER_SOURCE_DIR}/include/TR3200
     ${VCOMPUTER_SOURCE_DIR}/include/DCPU16N
     ${VCOMPUTER_SOURCE_DIR}/include/devices
+    ${VCOMPUTER_SOURCE_DIR}/src
+    ${VCOMPUTER_SOURCE_DIR}/src/TR3200
+    ${VCOMPUTER_SOURCE_DIR}/src/DCPU16N
+    ${VCOMPUTER_SOURCE_DIR}/src/devices
     )
 
 # Source dirs
@@ -48,6 +52,14 @@ file(GLOB VCOMPUTER_SRC
     "src/TR3200/*.cpp"
     "src/DCPU16N/*.cpp"
     "src/devices/*.cpp"
+    "src/*.hpp"
+    "src/TR3200/*.hpp"
+    "src/DCPU16N/*.hpp"
+    "src/devices/*.hpp"
+    "src/*.inc"
+    "src/TR3200/*.inc"
+    "src/DCPU16N/*.inc"
+    "src/devices/*.inc"
     "include/*.hpp"
     "include/TR3200/*.hpp"
     "include/DCPU16N/*.hpp"
