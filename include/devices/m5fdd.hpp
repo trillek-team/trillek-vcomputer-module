@@ -76,65 +76,65 @@ public:
      * Sends (writes to CMD register) a command to the device
      * @param cmd Command value to send
      */
-    virtual void SendCMD (word_t cmd);
+    virtual void SendCMD (Word cmd);
 
-    virtual void A(word_t val) {
+    virtual void A(Word val) {
         a = val;
     }
 
-    virtual void B(word_t val) {
+    virtual void B(Word val) {
         b = val;
     }
 
-    virtual void C(word_t val) {
+    virtual void C(Word val) {
         c = val;
     }
 
-    virtual word_t A() {
+    virtual Word A() {
         return a;
     }
 
-    virtual word_t B() {
+    virtual Word B() {
         return b;
     }
 
-    virtual word_t C() {
+    virtual Word C() {
         return c;
     }
 
-    virtual word_t D() {
-        return static_cast<word_t>(state);
+    virtual Word D() {
+        return static_cast<Word>(state);
     }
 
-    virtual word_t E() {
-        return static_cast<word_t>(error);
+    virtual Word E() {
+        return static_cast<Word>(error);
     }
 
     /**
      * Device Type
      */
-    virtual byte_t DevType() const {
+    virtual Byte DevType() const {
         return 0x08; // Mass Storage Device
     }
 
     /**
      * Device SubType
      */
-    virtual byte_t DevSubType() const {
+    virtual Byte DevSubType() const {
         return 0x01; // Floppy Drive
     }
 
     /**
      * Device ID
      */
-    virtual byte_t DevID() const {
+    virtual Byte DevID() const {
         return 0x01; // Mackapar 5.25" Floppy Drive
     }
 
     /**
      * Device Vendor ID
      */
-    virtual dword_t DevVendorID() const {
+    virtual DWord DevVendorID() const {
         return 0x1EB37E91; // Mackapar Media
     }
 
@@ -164,7 +164,7 @@ public:
      * \param[out] msg The interrupt message will be written here
      * \return True if is generating a new interrupt
      */
-    virtual bool DoesInterrupt (word_t& msg);
+    virtual bool DoesInterrupt (Word& msg);
 
     /*!
      * Informs to the device that his generated interrupt was accepted by the
@@ -215,7 +215,7 @@ private:
     void setSector (uint16_t sector);
 
     std::shared_ptr<vm::dev::disk::Disk> floppy; /// Floppy inserted
-    std::vector<byte_t> sectorBuffer;            // buffer of sector being
+    std::vector<Byte> sectorBuffer;            // buffer of sector being
                                                  // accessed
     STATE_CODES state;                           /// Floppy drive actual status
     ERROR_CODES error;                           /// Floppy drive actual error
@@ -225,11 +225,11 @@ private:
     unsigned curSector;   /// current absolute sector the head is at
     unsigned curPosition; /// current DMA position inside of the sector
     unsigned busyCycles;  /// Device Cycles that the device will be busy
-    dword_t dmaLocation;  /// RAM Location for the DMA transfer
+    DWord dmaLocation;  /// RAM Location for the DMA transfer
 
     uint16_t msg;          /// Msg to send if need to trigger a interrupt
     bool pendingInterrupt; /// Must launch a interrupt from device to CPU ?
-    dword_t a, b, c, d;    /// Data registers
+    DWord a, b, c, d;    /// Data registers
 };
 } // End of namespace m5ffd
 } // End of namespace dev

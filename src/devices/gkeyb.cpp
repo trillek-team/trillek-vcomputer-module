@@ -32,7 +32,7 @@ void GKeyboardDev::Reset () {
     do_int  = false;
 }
 
-bool GKeyboardDev::DoesInterrupt(word_t& msg) {
+bool GKeyboardDev::DoesInterrupt(Word& msg) {
     if (do_int && int_msg != 0x0000) {
         msg = int_msg;
         return true;
@@ -44,7 +44,7 @@ bool GKeyboardDev::DoesInterrupt(word_t& msg) {
  * Sends (writes to CMD register) a command to the device
  * @param cmd Command value to send
  */
-void GKeyboardDev::SendCMD (word_t cmd) {
+void GKeyboardDev::SendCMD (Word cmd) {
     switch (cmd) {
     case 0x0000: // CLR_BUFFER
         keybuffer.clear();
@@ -66,7 +66,7 @@ void GKeyboardDev::SendCMD (word_t cmd) {
 
     case 0x0002: // PUSH_KEY
         if (keybuffer.size() < BSIZE) {
-            dword_t keyevent = ( (c & 7) << 24 ) | ( (a & 0xFF) << 16 ) | b;
+            DWord keyevent = ( (c & 7) << 24 ) | ( (a & 0xFF) << 16 ) | b;
             keybuffer.push_front(keyevent);
         }
         break;
@@ -92,7 +92,7 @@ void GKeyboardDev::GetState (void* ptr, std::size_t& size) const {
         state->b = this->b;
         state->c = this->c;
 
-        const std::deque<dword_t>& tmp = this->keybuffer;
+        const std::deque<DWord>& tmp = this->keybuffer;
         state->keybuffer = tmp; // Copy
 
         state->int_msg = this->int_msg;
@@ -109,7 +109,7 @@ bool GKeyboardDev::SetState (const void* ptr, std::size_t size) {
         this->b = state->b;
         this->c = state->c;
 
-        const std::deque<dword_t>& tmp = state->keybuffer;
+        const std::deque<DWord>& tmp = state->keybuffer;
         this->keybuffer = tmp; // Copy
 
         this->int_msg = state->int_msg;

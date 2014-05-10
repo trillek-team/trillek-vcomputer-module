@@ -18,7 +18,7 @@
 namespace vm {
 namespace aux {
 
-int LoadROM (const std::string& filename, byte_t* rom) {
+int LoadROM (const std::string& filename, Byte* rom) {
     assert(rom != nullptr);
 
     int count;

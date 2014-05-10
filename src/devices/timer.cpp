@@ -31,7 +31,7 @@ void Timer::Reset() {
 } // Reset
 
 void Timer::Tick (unsigned n, const double delta) {
-    dword_t tmp;
+    DWord tmp;
 
     if ( (cfg & 1) != 0 ) {
         tmp   = tmr0;
@@ -54,7 +54,7 @@ void Timer::Tick (unsigned n, const double delta) {
     }
 } // Tick
 
-bool Timer::DoesInterrupt(word_t& msg) {
+bool Timer::DoesInterrupt(Word& msg) {
     if ( ( (cfg & 2) != 0 ) && do_int_tmr0 ) {
         // TMR0 does an interrupt
         msg = 0x0001;
@@ -78,7 +78,7 @@ void Timer::IACK () {
     }
 }
 
-byte_t Timer::ReadB (dword_t addr) {
+Byte Timer::ReadB (DWord addr) {
     switch (addr) {
     case 0x11E000:
         return tmr0;
@@ -156,7 +156,7 @@ byte_t Timer::ReadB (dword_t addr) {
     } // switch
 }     // ReadB
 
-word_t Timer::ReadW (dword_t addr) {
+Word Timer::ReadW (DWord addr) {
     switch (addr) {
     case 0x11E000:
         return tmr0;
@@ -199,7 +199,7 @@ word_t Timer::ReadW (dword_t addr) {
     } // switch
 }     // ReadW
 
-dword_t Timer::ReadDW (dword_t addr) {
+DWord Timer::ReadDW (DWord addr) {
     switch (addr) {
     case 0x11E000:
         return tmr0;
@@ -226,7 +226,7 @@ dword_t Timer::ReadDW (dword_t addr) {
     } // switch
 }     // ReadDW
 
-void Timer::WriteB (dword_t addr, byte_t val) {
+void Timer::WriteB (DWord addr, Byte val) {
     switch (addr) {
     case 0x11E000:
         tmr0 = (tmr0 & 0xFFFFFF00) | val;
@@ -304,7 +304,7 @@ void Timer::WriteB (dword_t addr, byte_t val) {
     } // switch
 }     // WriteB
 
-void Timer::WriteW (dword_t addr, word_t val) {
+void Timer::WriteW (DWord addr, Word val) {
     switch (addr) {
     case 0x11E000:
         tmr0 = (tmr0 & 0xFFFF0000) | val;
@@ -348,7 +348,7 @@ void Timer::WriteW (dword_t addr, word_t val) {
     } // switch
 }     // WriteW
 
-void Timer::WriteDW (dword_t addr, dword_t val) {
+void Timer::WriteDW (DWord addr, DWord val) {
     switch (addr) {
     case 0x11E000:
         tmr0 = val;

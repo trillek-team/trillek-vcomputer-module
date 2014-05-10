@@ -22,13 +22,13 @@ EnumAndCtrlBlk::EnumAndCtrlBlk (unsigned slot, IDevice* dev) :
 }
 
 Range EnumAndCtrlBlk::GetRange () const {
-    dword_t start = 0x110000 | (slot<<8);
-    dword_t end   = start + EnumCtrlBlkSize;
+    DWord start = 0x110000 | (slot<<8);
+    DWord end   = start + EnumCtrlBlkSize;
 
     return Range(start, end);
 }
 
-byte_t EnumAndCtrlBlk::ReadB (dword_t addr) {
+Byte EnumAndCtrlBlk::ReadB (DWord addr) {
     addr -= 0x110000 | (slot<<8);
     switch (addr) {
     // Enumeration stuff
@@ -118,16 +118,16 @@ byte_t EnumAndCtrlBlk::ReadB (dword_t addr) {
     } // switch
 }     // ReadB
 
-word_t EnumAndCtrlBlk::ReadW (dword_t addr) {
+Word EnumAndCtrlBlk::ReadW (DWord addr) {
     return this->ReadB(addr) | (this->ReadB(addr+1) << 8);
     // TODO Improve this in the aligned cases
 }
 
-dword_t EnumAndCtrlBlk::ReadDW (dword_t addr) {
+DWord EnumAndCtrlBlk::ReadDW (DWord addr) {
     return this->ReadW(addr) | (this->ReadW(addr+2) << 16);
 }
 
-void EnumAndCtrlBlk::WriteB (dword_t addr, byte_t val) {
+void EnumAndCtrlBlk::WriteB (DWord addr, Byte val) {
     addr -= 0x110000 | (slot<<8);
     switch (addr) {
     // Control and status stuff
@@ -198,7 +198,7 @@ void EnumAndCtrlBlk::WriteB (dword_t addr, byte_t val) {
     } // switch
 }     // WriteB
 
-void EnumAndCtrlBlk::WriteW (dword_t addr, word_t val) {
+void EnumAndCtrlBlk::WriteW (DWord addr, Word val) {
     switch (addr) {
     // Control and status stuff
     case 8: // Cmd
@@ -237,7 +237,7 @@ void EnumAndCtrlBlk::WriteW (dword_t addr, word_t val) {
     } // switch
 }     // WriteW
 
-void EnumAndCtrlBlk::WriteDW (dword_t addr, dword_t val) {
+void EnumAndCtrlBlk::WriteDW (DWord addr, DWord val) {
     this->WriteW(addr, val);
     this->WriteW(addr+2, val >> 16);
 }

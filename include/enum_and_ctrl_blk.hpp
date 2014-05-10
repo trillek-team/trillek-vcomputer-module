@@ -38,25 +38,25 @@ public:
      */
     Range GetRange () const;
 
-    byte_t ReadB (dword_t addr);
-    word_t ReadW (dword_t addr);
-    dword_t ReadDW (dword_t addr);
+    Byte ReadB (DWord addr);
+    Word ReadW (DWord addr);
+    DWord ReadDW (DWord addr);
 
-    void WriteB (dword_t addr, byte_t val);
-    void WriteW (dword_t addr, word_t val);
-    void WriteDW (dword_t addr, dword_t val);
+    void WriteB (DWord addr, Byte val);
+    void WriteW (DWord addr, Word val);
+    void WriteDW (DWord addr, DWord val);
 
 private:
 
     unsigned slot; /// Slot number
     IDevice* dev;  /// Ptr to the device
 
-    dword_t cmd; /// Buffer used when a byte write hapens in CMD
-    dword_t a;   /// Buffer used when a byte write hapens in A
-    dword_t b;   /// Buffer used when a byte write hapens in B
-    dword_t c;   /// Buffer used when a byte write hapens in C
-    dword_t d;   /// Buffer used when a byte write hapens in D
-    dword_t e;   /// Buffer used when a byte write hapens in E
+    DWord cmd; /// Buffer used when a byte write hapens in CMD
+    DWord a;   /// Buffer used when a byte write hapens in A
+    DWord b;   /// Buffer used when a byte write hapens in B
+    DWord c;   /// Buffer used when a byte write hapens in C
+    DWord d;   /// Buffer used when a byte write hapens in D
+    DWord e;   /// Buffer used when a byte write hapens in E
 };
 
 typedef std::tuple<std::shared_ptr<IDevice>, EnumAndCtrlBlk*, int32_t> device_t; ///

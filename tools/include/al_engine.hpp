@@ -41,7 +41,7 @@ namespace AlEngine {
         bool Init();
         void Shutdown();
 
-        void Tone(vm::word_t freq);
+        void Tone(vm::Word freq);
 
         void Update();
 

@@ -111,8 +111,8 @@ int main (int argc, char* argv[]) {
   screen.txt_buffer[11] = 0xBF00 | '!'; 
 
   for (unsigned i= 40; i < WIDTH_CHARS*HEIGHT_CHARS; i++ ) {
-    byte_t fg = i % 16;
-    byte_t bg = (15 - i) % 16;
+    Byte fg = i % 16;
+    Byte bg = (15 - i) % 16;
     screen.txt_buffer[i] = (bg << 12) | (fg << 8) | ((i-40) % 256); 
   }
 
@@ -161,7 +161,7 @@ int main (int argc, char* argv[]) {
       glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 320, 240, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
       // Updates the PBO with the new texture
-      auto tdata = (dword_t*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+      auto tdata = (DWord*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
       if (tdata != nullptr) {
         TDAtoRGBATexture(screen, tdata); // Write the texture to the PBO buffer
 

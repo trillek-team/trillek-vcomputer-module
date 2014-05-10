@@ -1,5 +1,5 @@
 /**
- * \brief       Base types of Virtual Computer
+ * \brief       Basic types used by the Virtual Computer
  * \file        types.hpp
  * \copyright   The MIT License (MIT)
  */
@@ -11,16 +11,17 @@
 
 namespace vm {
 
-typedef uint64_t qword_t; /// Quad WORD
-typedef uint32_t dword_t; /// Double WORD
-typedef uint16_t word_t;  /// WORD
-typedef uint8_t byte_t;   /// BYTE
+typedef uint64_t QWord;   /// unsigned Quad Word data
+typedef uint32_t DWord;   /// unsigned Double Word data
+typedef uint16_t Word;    /// unsigned Word data
+typedef uint8_t  Byte;    /// unsigned Byte data
 
-typedef int64_t sqword_t; /// Signed Quad WORD
-typedef int32_t sdword_t; /// Signed Double WORD
-typedef int16_t sword_t;  /// Signed WORD
-typedef int8_t sbyte_t;   /// Signed BYTE
+typedef int64_t  SQWord;  /// signed Quad Word
+typedef int32_t  SDWord;  /// signed Double Word
+typedef int16_t  SWord;   /// signed Word
+typedef int8_t   SByte;   /// signed Byte
 
 } // End of namespace vm
 
 #endif // __TYPES_HPP_
+

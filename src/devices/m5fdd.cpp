@@ -55,7 +55,7 @@ bool M5FDD::DoesInterrupt(uint16_t& msg) {
     return false;
 }
 
-void M5FDD::SendCMD(word_t cmd) {
+void M5FDD::SendCMD(Word cmd) {
     if (vcomp == NULL) {
         return;
     }

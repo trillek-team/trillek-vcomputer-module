@@ -28,7 +28,7 @@ static const char HEADER_MAGIC[3] = {
 /**
  * Media image file class
  */
-enum class DiskType : byte_t
+enum class DiskType : Byte
 {
     FLOPPY = 'F'
 };
@@ -46,7 +46,7 @@ struct DiskDescriptor
     uint16_t BytesPerSector; /// number of bytes per sector
 };
 
-enum class ERRORS : byte_t
+enum class ERRORS : Byte
 {
     NONE       = 0, // No error
     NO_MEDIA   = 2, // Disk file is not open

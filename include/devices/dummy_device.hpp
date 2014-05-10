@@ -32,75 +32,75 @@ public:
      * Sends (writes to CMD register) a command to the device
      * @param cmd Command value to send
      */
-    virtual void SendCMD (word_t cmd) {
+    virtual void SendCMD (Word cmd) {
         a = cmd;
     }
 
-    virtual void A (word_t cmd) {
+    virtual void A (Word cmd) {
         a = cmd;
     }
 
-    virtual void B (word_t cmd) {
+    virtual void B (Word cmd) {
         b = cmd;
     }
 
-    virtual void C (word_t cmd) {
+    virtual void C (Word cmd) {
         c = cmd;
     }
 
-    virtual void D (word_t cmd) {
+    virtual void D (Word cmd) {
         d = cmd;
     }
 
-    virtual void E (word_t cmd) {
+    virtual void E (Word cmd) {
         e = cmd;
     }
 
-    virtual word_t A () {
+    virtual Word A () {
         return a;
     }
 
-    virtual word_t B () {
+    virtual Word B () {
         return b;
     }
 
-    virtual word_t C () {
+    virtual Word C () {
         return c;
     }
 
-    virtual word_t D () {
+    virtual Word D () {
         return d;
     }
 
-    virtual word_t E () {
+    virtual Word E () {
         return e;
     }
 
     /**
      * Device Type
      */
-    virtual byte_t DevType() const {
+    virtual Byte DevType() const {
         return 0;
     }
 
     /**
      * Device SubType
      */
-    virtual byte_t DevSubType() const {
+    virtual Byte DevSubType() const {
         return 1;
     }
 
     /**
      * Device ID
      */
-    virtual byte_t DevID() const {
+    virtual Byte DevID() const {
         return 0x5A;
     }
 
     /**
      * Device Vendor ID
      */
-    virtual dword_t DevVendorID() const {
+    virtual DWord DevVendorID() const {
         return 0xBEEF55AA;
     }
 
@@ -111,7 +111,7 @@ public:
         return true;
     }
 
-    word_t a, b, c, d, e;
+    Word a, b, c, d, e;
 };
 } // End of namespace vm
 

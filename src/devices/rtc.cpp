@@ -11,7 +11,7 @@
 
 namespace vm {
 
-byte_t RTC::ReadB(dword_t addr) {
+Byte RTC::ReadB(DWord addr) {
 
     std::time_t t    = std::time(NULL);
     struct tm* clock = std::gmtime(&t);
@@ -44,7 +44,7 @@ byte_t RTC::ReadB(dword_t addr) {
     } // switch
 }     // ReadB
 
-word_t RTC::ReadW(dword_t addr) {
+Word RTC::ReadW(DWord addr) {
 
     std::time_t t    = std::time(NULL);
     struct tm* clock = std::gmtime(&t);
@@ -58,17 +58,17 @@ word_t RTC::ReadW(dword_t addr) {
         return (clock->tm_hour << 8) + clock->tm_mday;
 
     case 0x11E034:
-        return (clock->tm_mon << 8) + (byte_t)(clock->tm_year + EPOCH_YEAR_OFFSET);
+        return (clock->tm_mon << 8) + (Byte)(clock->tm_year + EPOCH_YEAR_OFFSET);
 
     case 0x11E036:
-        return (byte_t)( (clock->tm_year + EPOCH_YEAR_OFFSET) >> 8 );
+        return (Byte)( (clock->tm_year + EPOCH_YEAR_OFFSET) >> 8 );
 
     default:
         return this->ReadB(addr) | (this->ReadB(addr + 1) << 8);
     } // switch
 }     // ReadW
 
-dword_t RTC::ReadDW(dword_t addr) {
+DWord RTC::ReadDW(DWord addr) {
 
     std::time_t t    = std::time(NULL);
     struct tm* clock = std::gmtime(&t);
@@ -86,12 +86,12 @@ dword_t RTC::ReadDW(dword_t addr) {
     }
 } // ReadDW
 
-void RTC::WriteB(dword_t addr, byte_t val) {
+void RTC::WriteB(DWord addr, Byte val) {
 }
 
-void RTC::WriteW(dword_t addr, word_t val) {
+void RTC::WriteW(DWord addr, Word val) {
 }
 
-void RTC::WriteDW(dword_t addr, dword_t val) {
+void RTC::WriteDW(DWord addr, DWord val) {
 }
 }

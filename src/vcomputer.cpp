@@ -154,7 +154,7 @@ void VComputer::GetState (void* ptr, std::size_t size) const {
     }
 }
 
-void VComputer::SetROM (const byte_t* rom, std::size_t rom_size) {
+void VComputer::SetROM (const Byte* rom, std::size_t rom_size) {
     assert (rom != nullptr);
     assert (rom_size > 0);
 
@@ -228,7 +228,7 @@ unsigned VComputer::Step( const double delta) {
                                                  // 100 KHz
         pit.Tick(dev_ticks, delta);
 
-        word_t msg;
+        Word msg;
         bool interrupted = pit.DoesInterrupt(msg); // Highest priority
                                                    // interrupt
         if (interrupted) {
@@ -279,7 +279,7 @@ void VComputer::Tick( unsigned n, const double delta) {
         // cycles if a breakpoint happens
         pit.Tick(dev_ticks, delta);
 
-        word_t msg;
+        Word msg;
         bool interrupted = pit.DoesInterrupt(msg); // Highest priority
                                                    // interrupt
         if (interrupted) {

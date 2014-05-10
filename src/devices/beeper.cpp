@@ -16,7 +16,7 @@ Beeper::Beeper () : freq(0), f_changed(nullptr) {
 Beeper::~Beeper () {
 }
 
-byte_t Beeper::ReadB (dword_t addr) {
+Byte Beeper::ReadB (DWord addr) {
     if (addr == 0x11E020) {
         // LSB
         return freq;
@@ -27,7 +27,7 @@ byte_t Beeper::ReadB (dword_t addr) {
     }
 }
 
-word_t Beeper::ReadW (dword_t addr) {
+Word Beeper::ReadW (DWord addr) {
     if (addr == 0x11E020) {
         return freq;
     }
@@ -37,7 +37,7 @@ word_t Beeper::ReadW (dword_t addr) {
     }
 }
 
-dword_t Beeper::ReadDW (dword_t addr) {
+DWord Beeper::ReadDW (DWord addr) {
     if (addr == 0x11E020) {
         return freq;
     }
@@ -47,7 +47,7 @@ dword_t Beeper::ReadDW (dword_t addr) {
     }
 }
 
-void Beeper::WriteB (dword_t addr, byte_t val) {
+void Beeper::WriteB (DWord addr, Byte val) {
     if (addr == 0x11E020) {
         // LSB
         freq &= 0xFF00;
@@ -64,7 +64,7 @@ void Beeper::WriteB (dword_t addr, byte_t val) {
     }
 } // WriteB
 
-void Beeper::WriteW (dword_t addr, word_t val) {
+void Beeper::WriteW (DWord addr, Word val) {
     if (addr == 0x11E020) {
         freq = val;
     }
@@ -79,7 +79,7 @@ void Beeper::WriteW (dword_t addr, word_t val) {
     }
 } // WriteW
 
-void Beeper::WriteDW (dword_t addr, dword_t val) {
+void Beeper::WriteDW (DWord addr, DWord val) {
     if (addr == 0x11E020) {
         freq = val;
     }
@@ -101,7 +101,7 @@ void Beeper::Reset () {
     }
 }
 
-void Beeper::SetFreqChangedCB (std::function<void(dword_t freq)> f_changed) {
+void Beeper::SetFreqChangedCB (std::function<void(DWord freq)> f_changed) {
     this->f_changed = f_changed;
 }
 } // End of namespace vm

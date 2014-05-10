@@ -100,7 +100,7 @@ public:
      * \param rom_size Size of the ROM data that must be less or equal to 32KiB.
      *******Big sizes will be ignored
      */
-    void SetROM (const byte_t* rom, std::size_t rom_size);
+    void SetROM (const Byte* rom, std::size_t rom_size);
 
     /**
      * Resets the virtual machine (but not clears RAM!)
@@ -140,7 +140,7 @@ public:
      */
     void Tick ( unsigned n = 1, const double delta = 0);
 
-    byte_t ReadB (dword_t addr) const {
+    Byte ReadB (DWord addr) const {
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 
         if ( addr < ram_size ) {
@@ -162,21 +162,21 @@ public:
         return 0;
     } // ReadB
 
-    word_t ReadW (dword_t addr) const {
+    Word ReadW (DWord addr) const {
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
         size_t tmp;
 
         if ( addr < ram_size-1 ) {
             // RAM address
             tmp = ( (size_t)ram ) + addr;
-            return ( (word_t*)tmp )[0];
+            return ( (Word*)tmp )[0];
         }
 
         if ( (addr & 0xFF0000) == 0x100000 ) {
             // ROM (0x100000-0x10FFFF)
             addr &= 0x00FFFF; // Dirty tricks with pointers
             tmp   = ( (size_t)rom ) + addr;
-            return ( (word_t*)tmp )[0];
+            return ( (Word*)tmp )[0];
         }
 
         Range r(addr);
@@ -188,21 +188,21 @@ public:
         return 0;
     } // ReadW
 
-    dword_t ReadDW (dword_t addr) const {
+    DWord ReadDW (DWord addr) const {
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
         size_t tmp;
 
         if ( addr < ram_size-3 ) {
             // RAM address
             tmp = ( (size_t)ram ) + addr;
-            return ( (dword_t*)tmp )[0];
+            return ( (DWord*)tmp )[0];
         }
 
         if ( (addr & 0xFF0000) == 0x100000 ) {
             // ROM (0x100000-0x10FFFF)
             addr &= 0x00FFFF; // Dirty tricks with pointers
             tmp   = ( (size_t)rom ) + addr;
-            return ( (dword_t*)tmp )[0];
+            return ( (DWord*)tmp )[0];
         }
 
         Range r(addr);
@@ -214,7 +214,7 @@ public:
         return 0;
     } // ReadDW
 
-    void WriteB (dword_t addr, byte_t val) {
+    void WriteB (DWord addr, Byte val) {
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 
         if (addr < ram_size) {
@@ -229,7 +229,7 @@ public:
         }
     } // WriteB
 
-    void WriteW (dword_t addr, word_t val) {
+    void WriteW (DWord addr, Word val) {
         size_t tmp;
 
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
@@ -237,7 +237,7 @@ public:
         if (addr < ram_size-1 ) {
             // RAM address
             tmp                 = ( (size_t)ram ) + addr;
-            ( (word_t*)tmp )[0] = val;
+            ( (Word*)tmp )[0] = val;
         }
         // TODO What hapens when there is a write that falls half in RAM and
         // half outside ?
@@ -251,7 +251,7 @@ public:
         }
     } // WriteW
 
-    void WriteDW (dword_t addr, dword_t val) {
+    void WriteDW (DWord addr, DWord val) {
         size_t tmp;
 
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
@@ -259,7 +259,7 @@ public:
         if (addr < ram_size-3 ) {
             // RAM address
             tmp                  = ( (size_t)ram ) + addr;
-            ( (dword_t*)tmp )[0] = val;
+            ( (DWord*)tmp )[0] = val;
         }
         // TODO What hapens when there is a write that falls half in RAM and
         // half outside ?
@@ -297,7 +297,7 @@ public:
      * Returns a pointer to the RAM for reading raw values from it
      * Use only for GetState methods or dump a snapshot of the computer state
      */
-    const byte_t* Ram () const {
+    const Byte* Ram () const {
         return ram;
     }
 
@@ -305,7 +305,7 @@ public:
      * Returns a pointer to the RAM for writing raw values to it
      * Use only for SetState methods or load a snapshot of the computer state
      */
-    byte_t* Ram() {
+    Byte* Ram() {
         return ram;
     }
 
@@ -313,7 +313,7 @@ public:
      * /brief Assing a function to be called when Beeper freq is changed
      * /param f_changed function to be called
      */
-    void SetFreqChangedCB (std::function<void(dword_t freq)> f_changed) {
+    void SetFreqChangedCB (std::function<void(DWord freq)> f_changed) {
         beeper.SetFreqChangedCB(f_changed);
     }
 
@@ -321,7 +321,7 @@ public:
      * Add a breakpoint at the desired address
      * \param addr Address were will be the breakpoint
      */
-    void SetBreakPoint (dword_t addr) {
+    void SetBreakPoint (DWord addr) {
         breakpoints.insert(addr);
     }
 
@@ -329,7 +329,7 @@ public:
      * Erase a breakpoint at the desired address
      * \param addr Address were will be the breakpoint
      */
-    void RmBreakPoint (dword_t addr) {
+    void RmBreakPoint (DWord addr) {
         breakpoints.erase(addr);
     }
 
@@ -345,7 +345,7 @@ public:
      * \param addr Address to verify
      * \return True if there is a breakpoint in these address
      */
-    bool isBreakPoint (dword_t addr) {
+    bool isBreakPoint (DWord addr) {
         if ( breakpoints.find(addr) != breakpoints.end() ) {
             last_break = addr;
             breaking   = true;
@@ -384,8 +384,8 @@ public:
 private:
 
     bool is_on;                               /// Is PowerOn the computer ?
-    byte_t* ram;                              /// Computer RAM
-    const byte_t* rom;                        /// Computer ROM chip (could be
+    Byte* ram;                              /// Computer RAM
+    const Byte* rom;                        /// Computer ROM chip (could be
                                               // shared between some
                                               // VComputers)
     std::size_t ram_size;                     /// Computer RAM size
@@ -400,14 +400,15 @@ private:
     RTC rtc;       /// Real Time Clock
     Beeper beeper; /// Real Time Clock
 
-    std::set<dword_t> breakpoints; /// Breakpoints list
+    std::set<DWord> breakpoints; /// Breakpoints list
     bool breaking;                 /// The Virtual Computer is halted in a
                                    // BreakPoint ?
 
-    dword_t last_break; /// Address tof the last breakpoint finded
+    DWord last_break; /// Address tof the last breakpoint finded
     bool recover_break; /// Flag to know if a recovered the temporaly erases
                         // break
 };
 } // End of namespace vm
 
 #endif // __VCOMPUTER_HPP_
+

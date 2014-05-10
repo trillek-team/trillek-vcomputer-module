@@ -49,7 +49,7 @@ public:
      * \param msg Interrupt message
      * \return True if the CPU accepts the interrupt
      */
-    bool SendInterrupt (word_t msg);
+    bool SendInterrupt (Word msg);
 
     /**
      * Writes a copy of CPU state in a chunk of memory pointer by ptr.
@@ -70,26 +70,26 @@ public:
 protected:
 
     // I/O Interface for opcodes
-    word_t IORead(word_t);
-    void IOWrite(word_t, word_t);
+    Word IORead(Word);
+    void IOWrite(Word, Word);
 
     unsigned int cpu_clock; // CPU clock speed
 
     // CPU Core
-    word_t r[8];
-    word_t pc;
-    word_t sp;
-    word_t ex;
-    word_t ia;
+    Word r[8];
+    Word pc;
+    Word sp;
+    Word ex;
+    Word ia;
 
     // EMU
-    dword_t emu[16];
+    DWord emu[16];
 
     // Interrupt
-    word_t iqp;
-    word_t iqe;
-    word_t iqc;
-    word_t intq[256];
+    Word iqp;
+    Word iqe;
+    Word iqc;
+    Word intq[256];
 
     // hardware status
     unsigned phase;
@@ -99,13 +99,13 @@ protected:
     unsigned last_cycles;
 
     // Internal use registers
-    word_t acu;
-    dword_t aca;
-    word_t bcu;
-    dword_t bca;
-    word_t opcl;
-    word_t wrt;
-    word_t fetchh;
+    Word acu;
+    DWord aca;
+    Word bcu;
+    DWord bca;
+    Word opcl;
+    Word wrt;
+    Word fetchh;
 
     // Status flags
     bool addradd;
@@ -120,11 +120,11 @@ protected:
 
 struct DCPU16NState {
     // CPU Core
-    word_t r[8];
-    word_t pc;
-    word_t sp;
-    word_t ex;
-    word_t ia;
+    Word r[8];
+    Word pc;
+    Word sp;
+    Word ex;
+    Word ia;
     // status flags
     bool addradd;
     bool addrdec;
@@ -140,20 +140,20 @@ struct DCPU16NState {
     unsigned wait_cycles;
     unsigned last_cycles;
     // EMU
-    dword_t emu[16];
+    DWord emu[16];
     // Interrupt
-    word_t iqp;
-    word_t iqe;
-    word_t iqc;
-    word_t intq[256];
+    Word iqp;
+    Word iqe;
+    Word iqc;
+    Word intq[256];
     // Internal use registers
-    word_t acu;
-    dword_t aca;
-    word_t bcu;
-    dword_t bca;
-    word_t opcl;
-    word_t wrt;
-    word_t fetchh;
+    Word acu;
+    DWord aca;
+    Word bcu;
+    DWord bca;
+    Word opcl;
+    Word wrt;
+    Word fetchh;
 };
 
 } // cpu

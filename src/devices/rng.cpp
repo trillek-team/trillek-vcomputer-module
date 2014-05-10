@@ -27,7 +27,7 @@ void RNG::Reset() {
     engine.seed(engine.default_seed);
 }
 
-byte_t RNG::ReadB(dword_t addr) {
+Byte RNG::ReadB(DWord addr) {
 
     if (!blockGenerate) {
         number = distribution(engine);
@@ -36,23 +36,23 @@ byte_t RNG::ReadB(dword_t addr) {
     switch (addr)
     {
     case 0x11E040:
-        return (byte_t)(number);
+        return (Byte)(number);
 
     case 0x11E041:
-        return (byte_t)(number >> 8);
+        return (Byte)(number >> 8);
 
     case 0x11E042:
-        return (byte_t)(number >> 16);
+        return (Byte)(number >> 16);
 
     case 0x11E043:
-        return (byte_t)(number >> 24);
+        return (Byte)(number >> 24);
 
     default:
         return 0;
     } // switch
 }     // ReadB
 
-word_t RNG::ReadW(dword_t addr) {
+Word RNG::ReadW(DWord addr) {
 
     if (!blockGenerate) {
         number = distribution(engine);
@@ -61,20 +61,20 @@ word_t RNG::ReadW(dword_t addr) {
     switch (addr)
     {
     case 0x11E040:
-        return (word_t)(number);
+        return (Word)(number);
 
     case 0x11E042:
-        return (word_t)(number >> 16);
+        return (Word)(number >> 16);
 
     default:
         blockGenerate = true;
-        word_t value = this->ReadB(addr) | (this->ReadB(addr + 1) << 8);
+        Word value = this->ReadB(addr) | (this->ReadB(addr + 1) << 8);
         blockGenerate = false;
         return value;
     } // switch
 }     // ReadW
 
-dword_t RNG::ReadDW(dword_t addr) {
+DWord RNG::ReadDW(DWord addr) {
 
     number = distribution(engine);
 
@@ -85,13 +85,13 @@ dword_t RNG::ReadDW(dword_t addr) {
 
     default:
         blockGenerate = true;
-        dword_t value = this->ReadW(addr) | (this->ReadW(addr + 2) << 16);
+        DWord value = this->ReadW(addr) | (this->ReadW(addr + 2) << 16);
         blockGenerate = false;
         return value;
     } // switch
 }     // ReadDW
 
-void RNG::WriteB(dword_t addr, byte_t val) {
+void RNG::WriteB(DWord addr, Byte val) {
 
     switch (addr)
     {
@@ -118,7 +118,7 @@ void RNG::WriteB(dword_t addr, byte_t val) {
     engine.seed(seed);
 } // WriteB
 
-void RNG::WriteW(dword_t addr, word_t val) {
+void RNG::WriteW(DWord addr, Word val) {
     switch (addr) {
     case 0x11E040:
         seed = (seed & 0xFFFFFF00) | val << 0;
@@ -136,7 +136,7 @@ void RNG::WriteW(dword_t addr, word_t val) {
     engine.seed(seed);
 } // WriteW
 
-void RNG::WriteDW(dword_t addr, dword_t val) {
+void RNG::WriteDW(DWord addr, DWord val) {
     switch (addr) {
     case 0x11E040:
         seed = (seed & 0xFFFFFF00) | val << 0;

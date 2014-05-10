@@ -51,11 +51,11 @@ int main(int argc, char* argv[]) {
   std::srand(seed);
 
   unsigned troms = argc -1;
-  byte_t **rom = new byte_t*[troms];
+  Byte **rom = new Byte*[troms];
   size_t *rom_size = new size_t[troms];
 
   for (unsigned i=0; i< troms; i++) {
-    rom[i] = new byte_t[32*1024];
+    rom[i] = new Byte[32*1024];
 
     std::printf("Opening file %s\n", argv[1 + i]);
     int size = vm::aux::LoadROM(argv[1+ i], rom[i]);

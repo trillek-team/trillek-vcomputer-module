@@ -21,7 +21,7 @@
 namespace vm {
 namespace cpu {
 
-static const byte_t cycle_table[] = { /// Lookup table for cycle count
+static const Byte cycle_table[] = { /// Lookup table for cycle count
 #include "tr3200/tr3200_cycles.inc"
 };
 
@@ -84,7 +84,7 @@ void TR3200::Tick(unsigned n) {
     }
 } // Tick
 
-bool TR3200::SendInterrupt (word_t msg) {
+bool TR3200::SendInterrupt (Word msg) {
     if ( GET_EI(REG_FLAGS) ) {
         // The CPU accepts a new interrupt
         interrupt = true;
@@ -109,13 +109,13 @@ unsigned TR3200::RealStep() {
     }
 #endif
 
-    dword_t inst = vcomp->ReadDW(pc);
+    DWord inst = vcomp->ReadDW(pc);
     pc += 4;
 
-    dword_t opcode, rd, rs, rn;
+    DWord opcode, rd, rs, rn;
     bool literal = HAVE_LITERAL(inst);
 
-    qword_t ltmp;
+    QWord ltmp;
 
     rd          = GRD(inst);
     rs          = GRS(inst);
@@ -172,7 +172,7 @@ unsigned TR3200::RealStep() {
 
 
             case P3_OPCODE::ADD:
-                ltmp = ( (qword_t)rs ) + rn;
+                ltmp = ( (QWord)rs ) + rn;
                 if ( CARRY_BIT(ltmp) ) {
                     // We grab carry bit
                     SET_ON_CF(REG_FLAGS);
@@ -191,11 +191,11 @@ unsigned TR3200::RealStep() {
                         SET_OFF_OF(REG_FLAGS);
                     }
                 }
-                r[rd] = (dword_t)ltmp;
+                r[rd] = (DWord)ltmp;
                 break;
 
             case P3_OPCODE::ADDC:
-                ltmp = ( (qword_t)rs ) + rn + GET_CF(REG_FLAGS);
+                ltmp = ( (QWord)rs ) + rn + GET_CF(REG_FLAGS);
                 if ( CARRY_BIT(ltmp) ) {
                     // We grab carry bit
                     SET_ON_CF(REG_FLAGS);
@@ -214,11 +214,11 @@ unsigned TR3200::RealStep() {
                         SET_OFF_OF(REG_FLAGS);
                     }
                 }
-                r[rd] = (dword_t)ltmp;
+                r[rd] = (DWord)ltmp;
                 break;
 
             case P3_OPCODE::SUB:
-                ltmp = ( (qword_t)rs ) - rn;
+                ltmp = ( (QWord)rs ) - rn;
                 if (rs < rn) {
                     // We grab carry bit
                     SET_ON_CF(REG_FLAGS);
@@ -237,11 +237,11 @@ unsigned TR3200::RealStep() {
                         SET_OFF_OF(REG_FLAGS);
                     }
                 }
-                r[rd] = (dword_t)ltmp;
+                r[rd] = (DWord)ltmp;
                 break;
 
             case P3_OPCODE::SUBB:
-                ltmp = ( (qword_t)rs ) - ( rn + GET_CF(REG_FLAGS) );
+                ltmp = ( (QWord)rs ) - ( rn + GET_CF(REG_FLAGS) );
                 if ( rs < ( rn + GET_CF(REG_FLAGS) ) ) {
                     // We grab carry bit
                     SET_ON_CF(REG_FLAGS);
@@ -260,11 +260,11 @@ unsigned TR3200::RealStep() {
                         SET_OFF_OF(REG_FLAGS);
                     }
                 }
-                r[rd] = (dword_t)ltmp;
+                r[rd] = (DWord)ltmp;
                 break;
 
             case P3_OPCODE::RSB:
-                ltmp = ( (qword_t)rn ) - rs;
+                ltmp = ( (QWord)rn ) - rs;
                 if (rn < rs) {
                     // We grab carry bit
                     SET_ON_CF(REG_FLAGS);
@@ -283,11 +283,11 @@ unsigned TR3200::RealStep() {
                         SET_OFF_OF(REG_FLAGS);
                     }
                 }
-                r[rd] = (dword_t)ltmp;
+                r[rd] = (DWord)ltmp;
                 break;
 
             case P3_OPCODE::RSBB:
-                ltmp = ( (qword_t)rn ) - ( rs + GET_CF(REG_FLAGS) );
+                ltmp = ( (QWord)rn ) - ( rs + GET_CF(REG_FLAGS) );
                 if ( rn < ( rs + GET_CF(REG_FLAGS) ) ) {
                     // We grab carry bit
                     SET_ON_CF(REG_FLAGS);
@@ -306,11 +306,11 @@ unsigned TR3200::RealStep() {
                         SET_OFF_OF(REG_FLAGS);
                     }
                 }
-                r[rd] = (dword_t)ltmp;
+                r[rd] = (DWord)ltmp;
                 break;
 
             case P3_OPCODE::LLS:
-                ltmp = ( (qword_t)rs ) << rn;
+                ltmp = ( (QWord)rs ) << rn;
                 if ( CARRY_BIT(ltmp) ) {
                     // We grab output bit
                     SET_ON_CF(REG_FLAGS);
@@ -319,11 +319,11 @@ unsigned TR3200::RealStep() {
                     SET_OFF_CF(REG_FLAGS);
                 }
                 SET_OFF_OF(REG_FLAGS);
-                r[rd] = (dword_t)ltmp;
+                r[rd] = (DWord)ltmp;
                 break;
 
             case P3_OPCODE::RLS:
-                ltmp = ( (qword_t)rs << 1 ) >> rn;
+                ltmp = ( (QWord)rs << 1 ) >> rn;
                 if (ltmp & 1) {
                     // We grab output bit
                     SET_ON_CF(REG_FLAGS);
@@ -332,15 +332,15 @@ unsigned TR3200::RealStep() {
                     SET_OFF_CF(REG_FLAGS);
                 }
                 SET_OFF_OF(REG_FLAGS);
-                r[rd] = (dword_t)(ltmp >> 1);
+                r[rd] = (DWord)(ltmp >> 1);
                 break;
 
             case P3_OPCODE::ARS:
             {
-                sdword_t srs = rs;
-                sdword_t srn = rn;
+                SDWord srs = rs;
+                SDWord srn = rn;
 
-                sqword_t result = ( ( (sqword_t)srs ) << 1 ) >> srn; // Enforce
+                SQWord result = ( ( (SQWord)srs ) << 1 ) >> srn; // Enforce
                                                                      // to do
                                                                      //
                                                                      // arithmetic
@@ -354,7 +354,7 @@ unsigned TR3200::RealStep() {
                     SET_OFF_CF(REG_FLAGS);
                 }
                 SET_OFF_OF(REG_FLAGS);
-                r[rd] = (dword_t)(result >> 1);
+                r[rd] = (DWord)(result >> 1);
                 break;
             }
 
@@ -373,20 +373,20 @@ unsigned TR3200::RealStep() {
                 break;
 
             case P3_OPCODE::MUL:
-                ltmp  = ( (qword_t)rs ) * rn;
-                REG_Y = (dword_t)(ltmp >> 32); // 32bit MSB of the 64 bit result
-                r[rd] = (dword_t)ltmp;         // 32bit LSB of the 64 bit result
+                ltmp  = ( (QWord)rs ) * rn;
+                REG_Y = (DWord)(ltmp >> 32); // 32bit MSB of the 64 bit result
+                r[rd] = (DWord)ltmp;         // 32bit LSB of the 64 bit result
                 SET_OFF_OF(REG_FLAGS);
                 SET_OFF_CF(REG_FLAGS);
                 break;
 
             case P3_OPCODE::SMUL:
             {
-                sqword_t lword = (sqword_t)rs;
+                SQWord lword = (SQWord)rs;
                 lword *= rn;
-                REG_Y  = (dword_t)(lword >> 32); // 32bit MSB of the 64 bit
+                REG_Y  = (DWord)(lword >> 32); // 32bit MSB of the 64 bit
                                                  // result
-                r[rd] = (dword_t)lword;          // 32bit LSB of the 64 bit
+                r[rd] = (DWord)lword;          // 32bit LSB of the 64 bit
                                                  // result
                 SET_OFF_OF(REG_FLAGS);
                 SET_OFF_CF(REG_FLAGS);
@@ -411,9 +411,9 @@ unsigned TR3200::RealStep() {
             case P3_OPCODE::SDIV:
             {
                 if (rn != 0) {
-                    sdword_t srs    = rs;
-                    sdword_t srn    = rn;
-                    sdword_t result = srs / srn;
+                    SDWord srs    = rs;
+                    SDWord srn    = rn;
+                    SDWord result = srs / srn;
                     r[rd]  = result;
                     result = srs % srn;
                     REG_Y  = result;
@@ -486,7 +486,7 @@ unsigned TR3200::RealStep() {
 
             case P2_OPCODE::SWP:
                 if (!literal) {
-                    dword_t tmp = r[rd];
+                    DWord tmp = r[rd];
                     r[rd]        = rn;
                     r[GRS(inst)] = tmp;
                 } // If M != acts like a NOP
@@ -562,8 +562,8 @@ unsigned TR3200::RealStep() {
 
             case P2_OPCODE::IFSL:
             {
-                sdword_t srd = r[rd];
-                sdword_t srn = rn;
+                SDWord srd = r[rd];
+                SDWord srn = rn;
                 if ( !(srd < srn) ) {
                     skiping = true;
                     wait_cycles++;
@@ -580,8 +580,8 @@ unsigned TR3200::RealStep() {
 
             case P2_OPCODE::IFSLE:
             {
-                sdword_t srd = r[rd];
-                sdword_t srn = rn;
+                SDWord srd = r[rd];
+                SDWord srn = rn;
                 if ( !(srd <= srn) ) {
                     skiping = true;
                     wait_cycles++;
@@ -646,16 +646,16 @@ unsigned TR3200::RealStep() {
             switch (opcode) {
             case P1_OPCODE::XCHGB:
                 if (!literal) {
-                    word_t lob = (r[rn]  & 0xFF) << 8;
-                    word_t hib = (r[rn]  >> 8) & 0xFF;
+                    Word lob = (r[rn]  & 0xFF) << 8;
+                    Word hib = (r[rn]  >> 8) & 0xFF;
                     r[rn] = (r[rn]  & 0xFFFF0000) | lob | hib;
                 }
                 break;
 
             case P1_OPCODE::XCHGW:
                 if (!literal) {
-                    dword_t low = r[rn] << 16;
-                    dword_t hiw = r[rn]  >> 16;
+                    DWord low = r[rn] << 16;
+                    DWord hiw = r[rn]  >> 16;
                     r[rn] = low | hiw;
                 }
                 break;
@@ -826,8 +826,8 @@ unsigned TR3200::RealStep() {
  */
 void TR3200::ProcessInterrupt() {
     if (GET_EI(REG_FLAGS) && interrupt) {
-        byte_t index = int_msg;
-        dword_t addr = vcomp->ReadDW( REG_IA + (index << 2) ); // Get the
+        Byte index = int_msg;
+        DWord addr = vcomp->ReadDW( REG_IA + (index << 2) ); // Get the
                                                                // address to
                                                                // jump from the
                                                                // Vector Table

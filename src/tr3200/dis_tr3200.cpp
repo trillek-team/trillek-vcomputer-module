@@ -16,16 +16,16 @@
 namespace vm {
 namespace cpu {
 
-std::string DisassemblyTR3200 (const VComputer& vc, dword_t pc) {
+std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
 #define BUF_SIZE (32)
     char buf[BUF_SIZE] = {
         0
     };
 
-    dword_t inst = vc.ReadDW(pc); // Fetch
+    DWord inst = vc.ReadDW(pc); // Fetch
     pc = pc +4;
 
-    dword_t opcode, rd, rn, rs;
+    DWord opcode, rd, rn, rs;
     rd = GRD(inst);
     rs = GRS(inst);
     // Here beging the Decoding

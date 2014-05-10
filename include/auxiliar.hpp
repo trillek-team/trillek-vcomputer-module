@@ -20,7 +20,7 @@ namespace aux {
  * \param[out] rom buffer were to write it
  * \return Read size or negative value if fails
  */
-int LoadROM (const std::string& filename, byte_t* rom);
+int LoadROM (const std::string& filename, Byte* rom);
 
 } // end of namespace aux
 } // end of namespace vm

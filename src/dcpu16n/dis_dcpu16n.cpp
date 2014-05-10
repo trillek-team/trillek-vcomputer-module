@@ -54,11 +54,11 @@ const DCPU16N_DisInfo DCPU16N_Operand[] = {
     { "[", "]", true }, { "", "", true }
 };
 
-std::string DisassemblyDCPU16N(const VComputer& vc, dword_t pc) {
-    word_t opc = ( ((word_t)vc.ReadB(pc + 1)) << 8 )
-                 |  (word_t)vc.ReadB(pc);
-    word_t opta, optb;
-    word_t opa, opb;
+std::string DisassemblyDCPU16N(const VComputer& vc, DWord pc) {
+    Word opc = ( ((Word)vc.ReadB(pc + 1)) << 8 )
+                 |  (Word)vc.ReadB(pc);
+    Word opta, optb;
+    Word opa, opb;
 #define BUF_SIZE (32)
     char buf[BUF_SIZE] = { 0, };
     std::string obja, objb;
@@ -75,8 +75,8 @@ std::string DisassemblyDCPU16N(const VComputer& vc, dword_t pc) {
             obja.assign(DCPU16N_Operand[opta & 0x1f].pre);
             if(DCPU16N_Operand[opta & 0x1f].fetch) {
                 pc += 2;
-                opa = ( ((word_t)vc.ReadB(pc + 1)) << 8 )
-                      |  (word_t)vc.ReadB(pc);
+                opa = ( ((Word)vc.ReadB(pc + 1)) << 8 )
+                      |  (Word)vc.ReadB(pc);
                 snprintf(buf, BUF_SIZE, "0x%04X", opa);
                 obja.append(buf);
             }
@@ -92,8 +92,8 @@ std::string DisassemblyDCPU16N(const VComputer& vc, dword_t pc) {
             objb.assign(DCPU16N_Operand[optb & 0x1f].pre);
             if(DCPU16N_Operand[optb & 0x1f].fetch) {
                 pc += 2;
-                opb = ( ((word_t)vc.ReadB(pc + 1)) << 8 )
-                      |  (word_t)vc.ReadB(pc);
+                opb = ( ((Word)vc.ReadB(pc + 1)) << 8 )
+                      |  (Word)vc.ReadB(pc);
                 snprintf(buf, BUF_SIZE, "0x%04X", opb);
                 objb.append(buf);
             }

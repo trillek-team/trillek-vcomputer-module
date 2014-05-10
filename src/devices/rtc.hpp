@@ -18,13 +18,13 @@ namespace vm {
 class RTC : public AddrListener {
 public:
 
-    virtual byte_t ReadB (dword_t addr);
-    virtual word_t ReadW (dword_t addr);
-    virtual dword_t ReadDW (dword_t addr);
+    virtual Byte ReadB (DWord addr);
+    virtual Word ReadW (DWord addr);
+    virtual DWord ReadDW (DWord addr);
 
-    virtual void WriteB (dword_t addr, byte_t val);
-    virtual void WriteW (dword_t addr, word_t val);
-    virtual void WriteDW (dword_t addr, dword_t val);
+    virtual void WriteB (DWord addr, Byte val);
+    virtual void WriteW (DWord addr, Word val);
+    virtual void WriteDW (DWord addr, DWord val);
 
 private:
 

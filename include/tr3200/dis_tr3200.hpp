@@ -18,7 +18,7 @@ namespace cpu {
  * Disassembly one instruction of TR3200 code to a humman redable text
  * \param data Ptr. to TR3200 machine code
  */
-std::string DisassemblyTR3200 (const VComputer& vc, dword_t pc);
+std::string DisassemblyTR3200 (const VComputer& vc, DWord pc);
 
 } // End of namespace cpu
 } // End of namespace vm

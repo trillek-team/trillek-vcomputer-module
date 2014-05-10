@@ -47,62 +47,62 @@ public:
      * Sends (writes to CMD register) a command to the device
      * \param cmd Command value to send
      */
-    virtual void SendCMD (word_t cmd) = 0;
+    virtual void SendCMD (Word cmd) = 0;
 
-    virtual void A (word_t cmd) {
+    virtual void A (Word cmd) {
     } /// Set A register value
 
-    virtual void B (word_t cmd) {
+    virtual void B (Word cmd) {
     } /// Set B register value
 
-    virtual void C (word_t cmd) {
+    virtual void C (Word cmd) {
     } /// Set C register value
 
-    virtual void D (word_t cmd) {
+    virtual void D (Word cmd) {
     } /// Set D register value
 
-    virtual void E (word_t cmd) {
+    virtual void E (Word cmd) {
     } /// Set E register value
 
-    virtual word_t A () {
+    virtual Word A () {
         return 0;
     } /// Return A register value
 
-    virtual word_t B () {
+    virtual Word B () {
         return 0;
     } /// Return B register value
 
-    virtual word_t C () {
+    virtual Word C () {
         return 0;
     } /// Return C register value
 
-    virtual word_t D () {
+    virtual Word D () {
         return 0;
     } /// Return D register value
 
-    virtual word_t E () {
+    virtual Word E () {
         return 0;
     } /// Return E register value
 
     /**
      * Device Type
      */
-    virtual byte_t DevType () const = 0;
+    virtual Byte DevType () const = 0;
 
     /**
      * Device SubType
      */
-    virtual byte_t DevSubType () const = 0;
+    virtual Byte DevSubType () const = 0;
 
     /**
      * Device ID
      */
-    virtual byte_t DevID () const = 0;
+    virtual Byte DevID () const = 0;
 
     /**
      * Device Vendor ID
      */
-    virtual dword_t DevVendorID () const = 0;
+    virtual DWord DevVendorID () const = 0;
 
     /**
      * Return if the device does something each Device Clock cycle.
@@ -131,7 +131,7 @@ public:
      * \param[out] msg The interrupt message will be writen here
      * \return True if is generating a new interrupt
      */
-    virtual bool DoesInterrupt(word_t& msg) {
+    virtual bool DoesInterrupt(Word& msg) {
         return false;
     }
 

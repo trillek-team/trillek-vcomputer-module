@@ -25,11 +25,11 @@ namespace gkeyboard {
 struct GKeyboardState {
 public:
 
-    word_t a, b, c;
+    Word a, b, c;
 
-    std::deque<dword_t> keybuffer; /// Stores the key events
+    std::deque<DWord> keybuffer; /// Stores the key events
 
-    word_t int_msg;
+    Word int_msg;
     bool do_int;
 };
 
@@ -141,11 +141,11 @@ static const size_t BSIZE = 64; /// Internal buffer size
 class GKeyboardDev : public IDevice {
 protected:
 
-    word_t a, b, c;
+    Word a, b, c;
 
-    std::deque<dword_t> keybuffer; /// Stores the key events
+    std::deque<DWord> keybuffer; /// Stores the key events
 
-    word_t int_msg;
+    Word int_msg;
     bool do_int;
 
 public:
@@ -160,65 +160,65 @@ public:
      * Sends (writes to CMD register) a command to the device
      * @param cmd Command value to send
      */
-    virtual void SendCMD (word_t cmd);
+    virtual void SendCMD (Word cmd);
 
-    virtual void A (word_t val) {
+    virtual void A (Word val) {
         a = val;
     }
 
-    virtual void B (word_t val) {
+    virtual void B (Word val) {
         b = val;
     }
 
-    virtual void C (word_t val) {
+    virtual void C (Word val) {
         a = val;
     }
 
-    virtual word_t A () {
+    virtual Word A () {
         return a;
     }
 
-    virtual word_t B () {
+    virtual Word B () {
         return b;
     }
 
-    virtual word_t C () {
+    virtual Word C () {
         return c;
     }
 
-    virtual word_t E () {
+    virtual Word E () {
         return keybuffer.size();
     }
 
     /**
      * Device Type
      */
-    virtual byte_t DevType() const {
+    virtual Byte DevType() const {
         return 0x03; // HID
     }
 
     /**
      * Device SubType
      */
-    virtual byte_t DevSubType() const {
+    virtual Byte DevSubType() const {
         return 0x01; // Western / Latin Keyboard
     }
 
     /**
      * Device ID
      */
-    virtual byte_t DevID() const {
+    virtual Byte DevID() const {
         return 0x01; //
     }
 
     /**
      * Device Vendor ID
      */
-    virtual dword_t DevVendorID() const {
+    virtual DWord DevVendorID() const {
         return 0x00000000; // Generic
     }
 
-    virtual bool DoesInterrupt (word_t& msg);
+    virtual bool DoesInterrupt (Word& msg);
 
     virtual void IACK ();
 
@@ -236,12 +236,12 @@ public:
      * @param status Status bits
      * @return False if the buffer is full
      */
-    bool SendKeyEvent (word_t scancode, unsigned char keycode, byte_t status) {
+    bool SendKeyEvent (Word scancode, unsigned char keycode, Byte status) {
         if (keybuffer.size() >= BSIZE) {
             return false;
         }
 
-        dword_t keyevent = ( (status & 7) << 24 ) | (keycode << 16) | scancode;
+        DWord keyevent = ( (status & 7) << 24 ) | (keycode << 16) | scancode;
         keybuffer.push_back(keyevent);
 
         return true;
@@ -254,12 +254,12 @@ public:
      * @param keycode
      * @param status Status bits
      */
-    void EnforceSendKeyEvent (word_t scancode, unsigned char keycode, byte_t status) {
+    void EnforceSendKeyEvent (Word scancode, unsigned char keycode, Byte status) {
         if (keybuffer.size() >= BSIZE) {
             keybuffer.pop_front();
         }
 
-        dword_t keyevent = ( (status & 7) << 24 ) | (keycode << 16) | scancode;
+        DWord keyevent = ( (status & 7) << 24 ) | (keycode << 16) | scancode;
         keybuffer.push_back(keyevent);
     }
 };

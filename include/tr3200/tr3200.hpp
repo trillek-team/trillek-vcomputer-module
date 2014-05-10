@@ -57,7 +57,7 @@ public:
      * @param msg Interrupt message
      * @return True if the CPU accepts the interrupt
      */
-    bool SendInterrupt (word_t msg);
+    bool SendInterrupt (Word msg);
 
     /**
      * Writes a copy of CPU state in a chunk of memory pointer by ptr.
@@ -79,13 +79,13 @@ protected:
 
     unsigned cpu_clock; /// CPU clock speed
 
-    dword_t r[TR3200_NGPRS]; /// Registers
-    dword_t pc;              /// Program Counter
+    DWord r[TR3200_NGPRS]; /// Registers
+    DWord pc;              /// Program Counter
 
     unsigned wait_cycles; /// Nº of cycles that need to finish the actual
                           // instruction
 
-    word_t int_msg; /// Interrupt message
+    Word int_msg; /// Interrupt message
 
     bool interrupt; /// Is atending an interrupt ?
     bool step_mode; /// Is in step mode execution ?
@@ -108,13 +108,13 @@ protected:
  * Structure that stores the TR3200 CPU state in any moment
  */
 struct TR3200State {
-    dword_t r[TR3200_NGPRS]; /// Registers
-    dword_t pc;              /// Program Counter
+    DWord r[TR3200_NGPRS]; /// Registers
+    DWord pc;              /// Program Counter
 
     unsigned wait_cycles; /// Nº of cycles that need to finish the actual
                           // instruction
 
-    word_t int_msg; /// Interrupt message
+    Word int_msg; /// Interrupt message
 
     bool interrupt; /// Is atending an interrupt ?
     bool step_mode; /// Is in step mode execution ?

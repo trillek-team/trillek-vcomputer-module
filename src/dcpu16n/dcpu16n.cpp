@@ -14,7 +14,7 @@
 namespace vm {
 namespace cpu {
 
-static const word_t DCPU16N_skipadd[64] = {
+static const Word DCPU16N_skipadd[64] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 0, 0, 0, 2, 2,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -117,17 +117,17 @@ unsigned DCPU16N::Step()
 
 void DCPU16N::Tick(unsigned n)
 {
-    dword_t cfa;
+    DWord cfa;
     register int32_t s32;
-    word_t opca;
+    Word opca;
     register unsigned csc;
 
     while(n--) {
         switch(phase) {
         case DCPU16N_PHASE_NWAFETCH:
             cfa    = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
-            fetchh = ( ((word_t)vcomp->ReadB(cfa + 1)) << 8 )
-                     |  (word_t)vcomp->ReadB(cfa);
+            fetchh = ( ((Word)vcomp->ReadB(cfa + 1)) << 8 )
+                     |  (Word)vcomp->ReadB(cfa);
             pc    += 2;
             if(addradd) {
                 fetchh += acu;
@@ -144,8 +144,8 @@ void DCPU16N::Tick(unsigned n)
 
         case DCPU16N_PHASE_NWBFETCH:
             cfa    = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
-            fetchh = ( ((word_t)vcomp->ReadB(cfa + 1)) << 8 )
-                     |  (word_t)vcomp->ReadB(cfa);
+            fetchh = ( ((Word)vcomp->ReadB(cfa + 1)) << 8 )
+                     |  (Word)vcomp->ReadB(cfa);
             pc    += 2;
             if(addradd) {
                 fetchh += bcu;
@@ -172,8 +172,8 @@ void DCPU16N::Tick(unsigned n)
                 }
             }
             cfa  = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
-            opcl = ( ((word_t)vcomp->ReadB(cfa + 1)) << 8 )
-                   |  (word_t)vcomp->ReadB(cfa);
+            opcl = ( ((Word)vcomp->ReadB(cfa + 1)) << 8 )
+                   |  (Word)vcomp->ReadB(cfa);
             pc  += 2;
             if(skip) {
                 phase = DCPU16N_PHASE_EXECSKIP;
@@ -186,7 +186,7 @@ void DCPU16N::Tick(unsigned n)
             if((opcl & 0x001f) != 0 || (opcl & 0x03e0) != 0) {
                 opca = opcl >> 10;
                 if(opca & 0x0020) {
-                    acu = (word_t)(0xffffu + (opca & 0x1f));
+                    acu = (Word)(0xffffu + (opca & 0x1f));
                 }
                 else {
                     if(opca & 0x010) {
@@ -264,8 +264,8 @@ void DCPU16N::Tick(unsigned n)
             if(addrdec) {
                 addrdec = false;
                 aca     = emu[(acu >> 12) & 0xf] | (acu & 0x0fff);
-                acu     = ( ((word_t)vcomp->ReadB(aca + 1)) << 8)
-                          |  (word_t)vcomp->ReadB(aca);
+                acu     = ( ((Word)vcomp->ReadB(aca + 1)) << 8)
+                          |  (Word)vcomp->ReadB(aca);
             }
 
         case DCPU16N_PHASE_UBREAD:
@@ -344,8 +344,8 @@ void DCPU16N::Tick(unsigned n)
             if(addrdec) {
                 addrdec = false;
                 bca     = emu[(bcu >> 12) & 0xf] | (bcu & 0x0fff);
-                bcu     = ( ((word_t)vcomp->ReadB(bca + 1)) << 8 )
-                          |  (word_t)vcomp->ReadB(bca);
+                bcu     = ( ((Word)vcomp->ReadB(bca + 1)) << 8 )
+                          |  (Word)vcomp->ReadB(bca);
             }
 
         case DCPU16N_PHASE_EXEC:
@@ -361,40 +361,40 @@ void DCPU16N::Tick(unsigned n)
                 case 0x02: // ADD (rwb ra)
                     cfa  = bcu;
                     cfa += acu;
-                    bcu  = (word_t)cfa;
-                    ex   = (word_t)(cfa >> 16);
+                    bcu  = (Word)cfa;
+                    ex   = (Word)(cfa >> 16);
                     wrt |= 0x100;
                     break;
 
                 case 0x03: // SUB (rwb ra)
                     s32  = (int16_t)bcu;
                     s32 -= (int16_t)acu;
-                    bcu  = (word_t)s32;
-                    ex   = (word_t)(s32 >> 16);
+                    bcu  = (Word)s32;
+                    ex   = (Word)(s32 >> 16);
                     wrt |= 0x100;
                     break;
 
                 case 0x04: // MUL (rwb ra)
                     cfa  = bcu;
                     cfa *= acu;
-                    bcu  = (word_t)cfa;
-                    ex   = (word_t)(cfa >> 16);
+                    bcu  = (Word)cfa;
+                    ex   = (Word)(cfa >> 16);
                     wrt |= 0x100;
                     break;
 
                 case 0x05: // MLI (rwb ra)
                     s32  = (int16_t)bcu;
                     s32 *= (int16_t)acu;
-                    bcu  = (word_t)s32;
-                    ex   = (word_t)(s32 >> 16);
+                    bcu  = (Word)s32;
+                    ex   = (Word)(s32 >> 16);
                     wrt |= 0x100;
                     break;
 
                 case 0x06: // DIV (rwb ra)
                     if(acu) {
-                        cfa = ( ( (dword_t)bcu ) << 16 ) / acu;
-                        ex  = (word_t)cfa;
-                        bcu = (word_t)(cfa >> 16);
+                        cfa = ( ( (DWord)bcu ) << 16 ) / acu;
+                        ex  = (Word)cfa;
+                        bcu = (Word)(cfa >> 16);
                     }
                     else {
                         bcu = 0;
@@ -411,7 +411,7 @@ void DCPU16N::Tick(unsigned n)
                         else {
                             ex = 0;
                         }
-                        bcu = (word_t)( ( (int16_t)bcu ) / ( (int16_t)acu ) );
+                        bcu = (Word)( ( (int16_t)bcu ) / ( (int16_t)acu ) );
                     }
                     else {
                         bcu = 0;
@@ -432,7 +432,7 @@ void DCPU16N::Tick(unsigned n)
 
                 case 0x09: // MDI (rwb ra)
                     if(acu) {
-                        bcu = (word_t)( ( (int16_t)bcu ) % ( (int16_t)acu ) );
+                        bcu = (Word)( ( (int16_t)bcu ) % ( (int16_t)acu ) );
                     }
                     else {
                         bcu = 0;
@@ -458,23 +458,23 @@ void DCPU16N::Tick(unsigned n)
                 case 0x0d: // SHR (rwb ra)
                     cfa   = bcu << 16;
                     cfa >>= acu;
-                    ex    = (word_t)cfa;
-                    bcu   = (word_t)(cfa >> 16);
+                    ex    = (Word)cfa;
+                    bcu   = (Word)(cfa >> 16);
                     wrt  |= 0x100;
                     break;
 
                 case 0x0e: // ASR (rwb ra)
                     s32  = (int16_t)bcu;
-                    ex   = (word_t)( bcu << (16 - acu) );
-                    bcu  = (word_t)(s32 >> acu);
+                    ex   = (Word)( bcu << (16 - acu) );
+                    bcu  = (Word)(s32 >> acu);
                     wrt |= 0x100;
                     break;
 
                 case 0x0f: // SHL (rwb ra)
                     cfa   = bcu;
                     cfa <<= acu;
-                    ex    = (word_t)(cfa >> 16);
-                    bcu   = (word_t)cfa;
+                    ex    = (Word)(cfa >> 16);
+                    bcu   = (Word)cfa;
                     wrt  |= 0x100;
                     break;
 
@@ -534,16 +534,16 @@ void DCPU16N::Tick(unsigned n)
                 case 0x1a: // ADX (rwb ra)
                     cfa  = bcu;
                     cfa += acu + ex;
-                    ex   = (word_t)(cfa >> 16);
-                    bcu  = (word_t)cfa;
+                    ex   = (Word)(cfa >> 16);
+                    bcu  = (Word)cfa;
                     wrt |= 0x100;
                     break;
 
                 case 0x1b: // SBX (rwb ra)
                     cfa  = bcu;
                     cfa  = cfa - acu + ex;
-                    ex   = (word_t)(cfa >> 16);
-                    bcu  = (word_t)cfa;
+                    ex   = (Word)(cfa >> 16);
+                    bcu  = (Word)cfa;
                     wrt |= 0x100;
                     break;
 
@@ -604,14 +604,14 @@ void DCPU16N::Tick(unsigned n)
                 case 0x05: // NEG (rwa)
                     wrt  |= 0x0100;
                     phase = DCPU16N_PHASE_UBWRITE;
-                    bcu   = (word_t)(-((int16_t)acu));
+                    bcu   = (Word)(-((int16_t)acu));
                     break;
 
                 //case 0x06:
                 //  break;
 
                 case 0x07: // HCF (^w^OMGFTWBBQa)
-                    bcu  = (word_t)pwrdraw;
+                    bcu  = (Word)pwrdraw;
                     fire = true;
                     break;
 
@@ -645,7 +645,7 @@ void DCPU16N::Tick(unsigned n)
                 //  break;
 
                 case 0x10: // MMW (ra)
-                    emu[acu & 0x0f] = ((dword_t)acu & 0xfff0) << 8;
+                    emu[acu & 0x0f] = ((DWord)acu & 0xfff0) << 8;
                     break;
 
                 case 0x11: // MMR (rwa)
@@ -838,10 +838,10 @@ void DCPU16N::Tick(unsigned n)
             if(addrdec) {
                 addrdec = false;
                 if(bytehigh || !bytemode) {
-                    vcomp->WriteB(bca, (byte_t)(bcu & 0x0ff));
+                    vcomp->WriteB(bca, (Byte)(bcu & 0x0ff));
                 }
                 if(!bytehigh || !bytemode) {
-                    vcomp->WriteB(bca + 1, (byte_t)(bcu >> 8));
+                    vcomp->WriteB(bca + 1, (Byte)(bcu >> 8));
                 }
             }
             if(wrt & 0x0100)
@@ -898,8 +898,8 @@ void DCPU16N::Tick(unsigned n)
         case DCPU16N_PHASE_EXECJMP:
             sp -= 2;
             bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
-            vcomp->WriteB(bca, (byte_t)(bcu & 0x0ff));
-            vcomp->WriteB(bca + 1, (byte_t)(bcu >> 8));
+            vcomp->WriteB(bca, (Byte)(bcu & 0x0ff));
+            vcomp->WriteB(bca + 1, (Byte)(bcu >> 8));
             pc = acu;
             phase = DCPU16N_PHASE_OPFETCH;
             break;
@@ -911,14 +911,14 @@ void DCPU16N::Tick(unsigned n)
             // pop A
             bca   = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
             sp   += 2;
-            r[0]  = ( ( (word_t)vcomp->ReadB(bca + 1) ) << 8 )
-                      | (word_t)vcomp->ReadB(bca);
+            r[0]  = ( ( (Word)vcomp->ReadB(bca + 1) ) << 8 )
+                      | (Word)vcomp->ReadB(bca);
 
             // pop PC
             bca   = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
             sp   += 2;
-            pc    = ( ( (word_t)vcomp->ReadB(bca + 1) ) << 8 )
-                      | (word_t)vcomp->ReadB(bca);
+            pc    = ( ( (Word)vcomp->ReadB(bca + 1) ) << 8 )
+                      | (Word)vcomp->ReadB(bca);
             break;
 
         case DCPU16N_PHASE_MARKSKIP:
@@ -933,14 +933,14 @@ void DCPU16N::Tick(unsigned n)
             // push PC
             sp   -= 2;
             bca   = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
-            vcomp->WriteB(bca, (byte_t)(pc & 0x0ff));
-            vcomp->WriteB(bca + 1, (byte_t)(pc >> 8));
+            vcomp->WriteB(bca, (Byte)(pc & 0x0ff));
+            vcomp->WriteB(bca + 1, (Byte)(pc >> 8));
 
             // push A
             sp -= 2;
             bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
-            vcomp->WriteB(bca, (byte_t)(r[0] & 0x0ff));
-            vcomp->WriteB(bca + 1, (byte_t)(r[0] >> 8));
+            vcomp->WriteB(bca, (Byte)(r[0] & 0x0ff));
+            vcomp->WriteB(bca + 1, (Byte)(r[0] >> 8));
 
             // set interrupt address and message
             pc = ia;
@@ -959,7 +959,7 @@ void DCPU16N::Tick(unsigned n)
     }
 }
 
-bool DCPU16N::SendInterrupt(word_t msg)
+bool DCPU16N::SendInterrupt(Word msg)
 {
     if(ia == 0)
         return true;
@@ -976,12 +976,12 @@ bool DCPU16N::SendInterrupt(word_t msg)
     return true;
 }
 
-word_t DCPU16N::IORead(word_t addr)
+Word DCPU16N::IORead(Word addr)
 {
     return vcomp->ReadW(0x00110000 | addr);
 }
 
-void DCPU16N::IOWrite(word_t addr, word_t v)
+void DCPU16N::IOWrite(Word addr, Word v)
 {
     vcomp->WriteW(0x00110000 | addr, v);
 }

@@ -27,12 +27,12 @@ static const unsigned FONT_BUFFER_SIZE = 256*8;
 /// Texture size in total pixels!
 static const unsigned TEXTURE_SIZE     = WIDTH_CHARS*HEIGHT_CHARS*8*8; 
 
-static const dword_t PALETTE[] = {
+static const DWord PALETTE[] = {
     /// Default color palette
         #include "devices/rom_palette.inc"
 };
 
-static const byte_t ROM_FONT[256*8] = { /// Default font
+static const Byte ROM_FONT[256*8] = { /// Default font
         #include "devices/tda_font.inc"
 };
 
@@ -42,13 +42,13 @@ static const byte_t ROM_FONT[256*8] = { /// Default font
 struct TDAState {
 public:
 
-    word_t txt_buffer[WIDTH_CHARS*HEIGHT_CHARS];
-    byte_t font_buffer[FONT_BUFFER_SIZE];
+    Word txt_buffer[WIDTH_CHARS*HEIGHT_CHARS];
+    Byte font_buffer[FONT_BUFFER_SIZE];
 
-    dword_t buffer_ptr;
-    dword_t font_ptr;
-    word_t vsync_msg;
-    word_t a, b;
+    DWord buffer_ptr;
+    DWord font_ptr;
+    Word vsync_msg;
+    Word a, b;
 
     bool do_vsync;
 };
@@ -59,8 +59,8 @@ public:
 struct TDAScreen {
 public:
 
-    word_t txt_buffer[WIDTH_CHARS*HEIGHT_CHARS];
-    byte_t font_buffer[FONT_BUFFER_SIZE];
+    Word txt_buffer[WIDTH_CHARS*HEIGHT_CHARS];
+    Byte font_buffer[FONT_BUFFER_SIZE];
     bool user_font;
 };
 
@@ -70,7 +70,7 @@ public:
  * @param texture Ptr. to the texture. Must have a size enought to containt a
  **320x240 RGBA8 texture.
  */
-void TDAtoRGBATexture (const TDAScreen& screen, dword_t* texture);
+void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture);
 
 /**
  * Text Generator Adapter
@@ -89,53 +89,53 @@ public:
      * Sends (writes to CMD register) a command to the device
      * @param cmd Command value to send
      */
-    virtual void SendCMD (word_t cmd);
+    virtual void SendCMD (Word cmd);
 
-    virtual void A (word_t val) {
+    virtual void A (Word val) {
         a = val;
     }
 
-    virtual void B (word_t val) {
+    virtual void B (Word val) {
         b = val;
     }
 
-    virtual word_t A () {
+    virtual Word A () {
         return a;
     }
 
-    virtual word_t B () {
+    virtual Word B () {
         return b;
     }
 
     /**
      * Device Type
      */
-    virtual byte_t DevType() const {
+    virtual Byte DevType() const {
         return 0x0E; // Graphics device
     }
 
     /**
      * Device SubType
      */
-    virtual byte_t DevSubType() const {
+    virtual Byte DevSubType() const {
         return 0x01; // TDA compatible
     }
 
     /**
      * Device ID
      */
-    virtual byte_t DevID() const {
+    virtual Byte DevID() const {
         return 0x01; // Nya Elesktriska TDA
     }
 
     /**
      * Device Vendor ID
      */
-    virtual dword_t DevVendorID() const {
+    virtual DWord DevVendorID() const {
         return 0x1C6C8B36; // Nya Elekstrika
     }
 
-    virtual bool DoesInterrupt (word_t& msg);
+    virtual bool DoesInterrupt (Word& msg);
 
     virtual void IACK ();
 
@@ -155,7 +155,7 @@ public:
         if ( this->buffer_ptr != 0 &&
              this->buffer_ptr + TXT_BUFFER_SIZE < vcomp->RamSize() ) {
             auto orig = &(vcomp->Ram()[this->buffer_ptr]);
-            std::copy_n(orig, TXT_BUFFER_SIZE, (byte_t*)screen.txt_buffer);
+            std::copy_n(orig, TXT_BUFFER_SIZE, (Byte*)screen.txt_buffer);
         }
 
         screen.user_font = false;
@@ -163,7 +163,7 @@ public:
         if ( this->font_ptr != 0 &&
              this->font_ptr + FONT_BUFFER_SIZE < vcomp->RamSize() ) {
             auto orig = &(vcomp->Ram()[this->font_ptr]);
-            std::copy_n(orig, FONT_BUFFER_SIZE, (byte_t*)screen.font_buffer);
+            std::copy_n(orig, FONT_BUFFER_SIZE, (Byte*)screen.font_buffer);
             screen.user_font = true;
         }
     } // DumpScreen
@@ -177,10 +177,10 @@ public:
 
 protected:
 
-    dword_t buffer_ptr;
-    dword_t font_ptr;
-    word_t vsync_msg;
-    word_t a, b;
+    DWord buffer_ptr;
+    DWord font_ptr;
+    Word vsync_msg;
+    Word a, b;
 
     bool do_vsync;
 };

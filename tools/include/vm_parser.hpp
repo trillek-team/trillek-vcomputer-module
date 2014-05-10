@@ -127,7 +127,7 @@ struct VmParamaters {
                         std::fprintf(stderr, "Missing or invalid value for parameter %s\n", argv[i-1]);
                         break;
                     }
-                    vm::dword_t addr = std::strtol(arg, nullptr, 0);
+                    vm::DWord addr = std::strtol(arg, nullptr, 0);
                     breaks.push_back(addr);
 
                 } else if (strncmp(arg, "h", 1) == 0 || strncmp(arg, "-help", 5) == 0) {
@@ -165,7 +165,7 @@ struct VmParamaters {
     CpuToUse cpu;                   //! CPU to use (default TR3200)
     unsigned clock;                 //! CPU clock speed (default 100Khz)
 
-    std::vector<vm::dword_t> breaks;//" List of breakpoints
+    std::vector<vm::DWord> breaks;//" List of breakpoints
 
     bool valid_params;              //! Parsed correctly all parameters
     bool ask_help;                  //! User asked by help

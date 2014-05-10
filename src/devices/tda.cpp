@@ -17,12 +17,12 @@ namespace vm {
 namespace dev {
 namespace tda {
 
-void TDAtoRGBATexture (const TDAScreen& screen, dword_t* texture) {
+void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture) {
     assert(texture != nullptr);
 
-    const byte_t* font = ROM_FONT;
+    const Byte* font = ROM_FONT;
     if (screen.user_font) {
-        font = (byte_t*) screen.font_buffer;
+        font = (Byte*) screen.font_buffer;
     }
 
     // TODO Rewrite this to be more efficient and cache friendly, as now
@@ -33,14 +33,14 @@ void TDAtoRGBATexture (const TDAScreen& screen, dword_t* texture) {
         for (unsigned col = 0; col < WIDTH_CHARS; col++) {
 
             std::size_t addr = col + (WIDTH_CHARS * row);
-            byte_t c         = screen.txt_buffer[addr]; // character
+            Byte c         = screen.txt_buffer[addr]; // character
 
             // Get Ink (fg) and Paper (bg) colors
-            dword_t fg = (screen.txt_buffer[addr] >> 8) & 0x0F; // Bits 8-11
-            dword_t bg = (screen.txt_buffer[addr] >> 12)& 0x0F; // bits 12-15
+            DWord fg = (screen.txt_buffer[addr] >> 8) & 0x0F; // Bits 8-11
+            DWord bg = (screen.txt_buffer[addr] >> 12)& 0x0F; // bits 12-15
 
             // Paint the texture
-            byte_t pixels;
+            Byte pixels;
             for (unsigned y = 0; y < 8; y++) {
                 pixels = font[c*8 + y];
                 for (unsigned x = 0; x < 8; x++) {
@@ -76,8 +76,8 @@ void TDADev::Reset () {
     this->do_vsync   = false;
 }
 
-void TDADev::SendCMD (word_t cmd) {
-    dword_t tmp;
+void TDADev::SendCMD (Word cmd) {
+    DWord tmp;
 
     switch (cmd) {
     case 0x0000: // Map Buffer
@@ -103,7 +103,7 @@ void TDADev::SendCMD (word_t cmd) {
     } // switch
 }     // SendCMD
 
-bool TDADev::DoesInterrupt(word_t& msg) {
+bool TDADev::DoesInterrupt(Word& msg) {
     if (do_vsync && vsync_msg != 0x0000) {
         msg = vsync_msg;
         return true;

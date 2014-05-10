@@ -66,7 +66,7 @@ public:
      * @param msg Interrupt message
      * @return True if the CPU accepts the interrupt
      */
-    virtual bool SendInterrupt (word_t msg) = 0;
+    virtual bool SendInterrupt (Word msg) = 0;
 
     /**
      * Writes a copy of CPU state in a chunk of memory pointer by ptr.

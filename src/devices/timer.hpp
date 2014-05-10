@@ -20,13 +20,13 @@ public:
     Timer ();
     virtual ~Timer();
 
-    virtual byte_t ReadB (dword_t addr);
-    virtual word_t ReadW (dword_t addr);
-    virtual dword_t ReadDW (dword_t addr);
+    virtual Byte ReadB (DWord addr);
+    virtual Word ReadW (DWord addr);
+    virtual DWord ReadDW (DWord addr);
 
-    virtual void WriteB (dword_t addr, byte_t val);
-    virtual void WriteW (dword_t addr, word_t val);
-    virtual void WriteDW (dword_t addr, dword_t val);
+    virtual void WriteB (DWord addr, Byte val);
+    virtual void WriteW (DWord addr, Word val);
+    virtual void WriteDW (DWord addr, DWord val);
 
     void Reset ();
 
@@ -43,7 +43,7 @@ public:
      * @param msg The interrupt message will be writen here
      * @return True if is generating a new interrupt
      */
-    bool DoesInterrupt (word_t& msg);
+    bool DoesInterrupt (Word& msg);
 
     /**
      * Informs to the device that his generated interrupt was accepted by the
@@ -51,13 +51,13 @@ public:
      */
     void IACK ();
 
-    dword_t tmr0; /// Timer 0
-    dword_t tmr1; /// Timer 1
+    DWord tmr0; /// Timer 0
+    DWord tmr1; /// Timer 1
 
-    dword_t re0; /// Reload value of Timer 0
-    dword_t re1; /// Reload value of Timer 1
+    DWord re0; /// Reload value of Timer 0
+    DWord re1; /// Reload value of Timer 1
 
-    byte_t cfg; /// Config byte of PIT
+    Byte cfg; /// Config byte of PIT
 
     bool do_int_tmr0; /// Try to thorow interrupt of TMR0 ?
     bool do_int_tmr1; /// Try to thorow interrupt of TMR1 ?

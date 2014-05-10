@@ -16,7 +16,7 @@ namespace cpu {
  * @param vc VComputer to read from
  * @param pc 24 bit address to read instruction from
  */
-std::string DisassemblyDCPU16N(const VComputer& vc, dword_t pc);
+std::string DisassemblyDCPU16N(const VComputer& vc, DWord pc);
 
 } // cpu
 } // vm

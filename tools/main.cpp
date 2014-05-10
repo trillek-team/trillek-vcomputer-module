@@ -166,7 +166,7 @@ class KeyEventHandler : public OS::event::IKeyboardEventHandler {
                 }
 
                 //std::printf("Character %u='%c' mod=%u -> nº events stored : ", chr, chr, mod);
-                vm::dword_t scancode = prev_key & 0xFFFF;
+                vm::DWord scancode = prev_key & 0xFFFF;
                 gk->EnforceSendKeyEvent(scancode, c & 0xFF, mod);
                 //std::printf("%u \n", gk->E());
             }
@@ -174,7 +174,7 @@ class KeyEventHandler : public OS::event::IKeyboardEventHandler {
 
         std::shared_ptr<vm::dev::gkeyboard::GKeyboardDev> gk;
         unsigned int prev_key;
-        vm::word_t mod;
+        vm::Word mod;
 };
 
 #endif
@@ -189,7 +189,7 @@ int main(int argc, char* argv[]) {
     using namespace vm;
     using namespace vm::cpu;
 
-    byte_t* rom = nullptr;
+    Byte* rom = nullptr;
     size_t rom_size = 0;
 
     VmParamaters options(argc, (const char**)argv); // Parse parameters
@@ -200,7 +200,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    rom = new byte_t[32*1024];
+    rom = new Byte[32*1024];
 
     std::printf("Opening ROM image %s\n", options.rom_file);
 
@@ -284,7 +284,7 @@ int main(int argc, char* argv[]) {
 
     al.Test();
 
-    vc.SetFreqChangedCB ( [&al](word_t f){
+    vc.SetFreqChangedCB ( [&al](Word f){
         al.Tone(f);
     });
 #endif
@@ -326,7 +326,7 @@ int main(int argc, char* argv[]) {
         gcard->DumpScreen (gcard_screen);
         gcard->DoVSync();
 
-        vm::dword_t* tex = (vm::dword_t*)tdata;
+        vm::DWord* tex = (vm::DWord*)tdata;
         TDAtoRGBATexture(gcard_screen, tex); // Write the texture to the PBO buffer
     });
 
@@ -569,15 +569,15 @@ void print_regs(const vm::cpu::TR3200State& state) {
 }
 
 void print_pc(const vm::cpu::DCPU16NState& state, const vm::VComputer& vc) {
-    vm::dword_t addr = state.emu[(state.pc >> 12) & 0xf] | (state.pc & 0x0fff);
-    vm::word_t val = vc.ReadW(addr);
+    vm::DWord addr = state.emu[(state.pc >> 12) & 0xf] | (state.pc & 0x0fff);
+    vm::Word val = vc.ReadW(addr);
 
     std::printf(" PC : 0x%04X > 0x%08X: 0x%04X ", state.pc, addr, val);
     std::cout << vm::cpu::DisassemblyDCPU16N(vc, addr) << std::endl;
 }
 
 void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc) {
-    vm::dword_t val = vc.ReadDW(state.pc);
+    vm::DWord val = vc.ReadDW(state.pc);
 
     std::printf("\tPC : 0x%08X > 0x%08X ", state.pc, val);
     std::cout << vm::cpu::DisassemblyTR3200(vc,  state.pc) << std::endl;

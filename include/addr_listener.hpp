@@ -22,13 +22,13 @@ public:
     virtual ~AddrListener() {
     }
 
-    virtual byte_t ReadB (dword_t addr)   = 0;
-    virtual word_t ReadW (dword_t addr)   = 0;
-    virtual dword_t ReadDW (dword_t addr) = 0;
+    virtual Byte ReadB (DWord addr)   = 0;
+    virtual Word ReadW (DWord addr)   = 0;
+    virtual DWord ReadDW (DWord addr) = 0;
 
-    virtual void WriteB (dword_t addr, byte_t val)   = 0;
-    virtual void WriteW (dword_t addr, word_t val)   = 0;
-    virtual void WriteDW (dword_t addr, dword_t val) = 0;
+    virtual void WriteB (DWord addr, Byte val)   = 0;
+    virtual void WriteW (DWord addr, Word val)   = 0;
+    virtual void WriteDW (DWord addr, DWord val) = 0;
 };
 
 /**
@@ -36,15 +36,15 @@ public:
  * Used to store/search an AddrListener stored in a tree
  */
 struct Range {
-    dword_t start;
-    dword_t end;
+    DWord start;
+    DWord end;
 
     /**
      * Build a Range for listening/search a single address
      * Must be a 24 bit address
      * @param addr Address
      */
-    Range (dword_t addr) : start(addr), end(addr) {
+    Range (DWord addr) : start(addr), end(addr) {
         assert(addr <= 0xFFFFFF);
     }
 
@@ -54,7 +54,7 @@ struct Range {
      * @param start Begin address
      * @param end End address
      */
-    Range (dword_t start, dword_t end) : start(start & 0xFFFFFF), end(end & 0xFFFFFF) {
+    Range (DWord start, DWord end) : start(start & 0xFFFFFF), end(end & 0xFFFFFF) {
         assert (start <= end);
         assert (end <= 0xFFFFFF);
     }

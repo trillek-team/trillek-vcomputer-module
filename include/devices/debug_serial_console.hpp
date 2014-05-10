@@ -34,7 +34,7 @@ public:
         do_int  = false;
     }
 
-    bool DoesInterrupt (word_t& msg) {
+    bool DoesInterrupt (Word& msg) {
         if (do_int && int_msg != 0x0000) {
             msg = int_msg;
             return true;
@@ -50,7 +50,7 @@ public:
      * Sends (writes to CMD register) a command to the device
      * @param cmd Command value to send
      */
-    virtual void SendCMD (word_t cmd) {
+    virtual void SendCMD (Word cmd) {
         switch (cmd) {
         case 0x0000: // READ_WORD
             if (onRead != nullptr) {
@@ -76,39 +76,39 @@ public:
         } // switch
     }     // SendCMD
 
-    virtual void A (word_t val) {
+    virtual void A (Word val) {
         a = val;
     }
 
-    virtual word_t A () {
+    virtual Word A () {
         return a;
     }
 
     /**
      * Device Type
      */
-    virtual byte_t DevType() const {
+    virtual Byte DevType() const {
         return 0x02;
     }
 
     /**
      * Device SubType
      */
-    virtual byte_t DevSubType() const {
+    virtual Byte DevSubType() const {
         return 0xFF;
     }
 
     /**
      * Device ID
      */
-    virtual byte_t DevID() const {
+    virtual Byte DevID() const {
         return 0x01;
     }
 
     /**
      * Device Vendor ID
      */
-    virtual dword_t DevVendorID() const {
+    virtual DWord DevVendorID() const {
         return 0x00000000;
     }
 
@@ -124,18 +124,18 @@ public:
     /**
      * Asigns a Callback callable element executed when software ask to the
      * device for a new wordt to read
-     * @param cb callable element that returns a word_t
+     * @param cb callable element that returns a Word
      */
-    void OnRead (std::function<word_t()> cb) {
+    void OnRead (std::function<Word()> cb) {
         this->onRead = cb;
     }
 
     /**
      * Asigns a Callback callable element executed when software sends to the
      * device a new wordt
-     * @param cb callable element that gets a word_t
+     * @param cb callable element that gets a Word
      */
-    void OnWrite (std::function<void(word_t)> cb) {
+    void OnWrite (std::function<void(Word)> cb) {
         this->onWrite = cb;
     }
 
@@ -149,14 +149,14 @@ public:
 
 protected:
 
-    word_t a;
+    Word a;
 
-    word_t int_msg;
+    Word int_msg;
     bool do_int;
 
-    std::function<word_t()> onRead;      /// Callback when the computer try to
+    std::function<Word()> onRead;      /// Callback when the computer try to
                                          // read a byte from the serial console
-    std::function<void(word_t)> onWrite; /// Callback when the computer try to
+    std::function<void(Word)> onWrite; /// Callback when the computer try to
                                          // write a byte to the serial console
 };
 } // End of namespace dev

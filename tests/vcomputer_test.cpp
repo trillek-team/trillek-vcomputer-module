@@ -16,31 +16,31 @@ class TestAddrListener : public vm::AddrListener {
     unsigned readCount  = 0;
     unsigned writeCount = 0;
 
-    vm::byte_t ReadB (vm::dword_t addr) {
+    vm::Byte ReadB (vm::DWord addr) {
       readCount++;
       //std::fprintf(stderr, "\tReading Addr: 0x%06X\n", addr);
       return 0;
     }
 
-    vm::word_t ReadW (vm::dword_t addr) {
+    vm::Word ReadW (vm::DWord addr) {
       return this->ReadB(addr) | (this->ReadB(addr+1) << 8);
     }
 
-    vm::dword_t ReadDW (vm::dword_t addr) {
+    vm::DWord ReadDW (vm::DWord addr) {
       return this->ReadW(addr) | (this->ReadW(addr+2) << 16);
     }
 
-    void WriteB (vm::dword_t addr, vm::byte_t val) {
+    void WriteB (vm::DWord addr, vm::Byte val) {
       writeCount++;
       //std::fprintf(stderr, "\tWriting Addr: 0x%06X <- 0x%02X\n", addr, val);
     }
 
-    void WriteW (vm::dword_t addr, vm::word_t val) {
+    void WriteW (vm::DWord addr, vm::Word val) {
       WriteB(addr   , val);
       WriteB(addr +1, val >> 8);
     }
 
-    void WriteDW (vm::dword_t addr, vm::dword_t val) {
+    void WriteDW (vm::DWord addr, vm::DWord val) {
       WriteW(addr   , val);
       WriteW(addr +2, val >> 16);
     }
@@ -55,8 +55,8 @@ TestAddrListener g_addr;
 class VComputer_test : public ::testing::Test {
   protected:
     vm::VComputer vc;
-    vm::byte_t rom[1024] = {'H','e','l','l','o',' ','w','o','r','l','d','!'};
-    vm::dword_t addr_id[3];
+    vm::Byte rom[1024] = {'H','e','l','l','o',' ','w','o','r','l','d','!'};
+    vm::DWord addr_id[3];
 
     virtual void SetUp() {
       vc.SetROM(this->rom, 1024);
@@ -69,9 +69,9 @@ class VComputer_test : public ::testing::Test {
 };
 
 TEST_F(VComputer_test, ReadROM) {
-  vm::byte_t  byte  = vc.ReadB (0x100000);
-  vm::word_t  word  = vc.ReadW (0x100000);
-  vm::dword_t dword = vc.ReadDW(0x100000);
+  vm::Byte  byte  = vc.ReadB (0x100000);
+  vm::Word  word  = vc.ReadW (0x100000);
+  vm::DWord dword = vc.ReadDW(0x100000);
 
   ASSERT_EQ(byte,  'H');
   ASSERT_EQ(word,  'H' | ('e' << 8) );
@@ -101,29 +101,29 @@ TEST_F(VComputer_test, ReadROM) {
 TEST_F(VComputer_test, WriteROM) {
   vc.WriteB(0x100000, 'X');
 
-  vm::byte_t byte = vc.ReadB (0x100000);
+  vm::Byte byte = vc.ReadB (0x100000);
   ASSERT_EQ('H', byte);
 }
 
 TEST_F(VComputer_test, RW_RAM) {
   std::srand(std::time(0));
   for (int i=0; i< 1024 ; i++) {
-    vm::dword_t addr  = std::rand() & 0x01FFFF; // Address between 0 and 128 KiB
-    vm::byte_t  bval  = 0x55;
+    vm::DWord addr  = std::rand() & 0x01FFFF; // Address between 0 and 128 KiB
+    vm::Byte  bval  = 0x55;
     vc.WriteB(addr, bval);
-    vm::byte_t  byte  = vc.ReadB (addr);
+    vm::Byte  byte  = vc.ReadB (addr);
     ASSERT_EQ (bval, byte);
 
     addr  = std::rand() & 0x01FFF0; // Address between 0 and 128 KiB
-    vm::word_t  wval  = 0x5A5A;
+    vm::Word  wval  = 0x5A5A;
     vc.WriteW(addr, wval);
-    vm::word_t  word  = vc.ReadW (addr);
+    vm::Word  word  = vc.ReadW (addr);
     ASSERT_EQ (wval, word);
 
     addr  = std::rand() & 0x01FFF0; // Address between 0 and 128 KiB
-    vm::dword_t dwval  = 0xBEBACAFE;
+    vm::DWord dwval  = 0xBEBACAFE;
     vc.WriteDW(addr, dwval);
-    vm::dword_t dword  = vc.ReadDW (addr);
+    vm::DWord dword  = vc.ReadDW (addr);
     ASSERT_EQ (dwval, dword);
   }
 }
