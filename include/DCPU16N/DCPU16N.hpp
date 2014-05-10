@@ -34,20 +34,20 @@ public:
 
     /**
      * Executes a single CPU instruction
-     * @return Number of CPU cycles used
+     * \return Number of CPU cycles used
      */
     unsigned Step ();
 
     /**
      * Executes one or more CPU clock cycles
-     * @param n Number of cycles (default=1)
+     * \param n Number of cycles (default=1)
      */
     void Tick (unsigned n = 1);
 
     /**
      * Sends an interrupt to the CPU.
-     * @param msg Interrupt message
-     * @return True if the CPU accepts the interrupt
+     * \param msg Interrupt message
+     * \return True if the CPU accepts the interrupt
      */
     bool SendInterrupt (word_t msg);
 
@@ -81,17 +81,24 @@ protected:
     word_t sp;
     word_t ex;
     word_t ia;
+
     // EMU
     dword_t emu[16];
 
     // Interrupt
-    word_t intq[256];
     word_t iqp;
+    word_t iqe;
     word_t iqc;
+    word_t intq[256];
 
-    // Internal use
+    // hardware status
     unsigned phase;
-    unsigned madraw;
+    unsigned phasenext;
+    unsigned pwrdraw;
+    unsigned wait_cycles;
+    unsigned last_cycles;
+
+    // Internal use registers
     word_t acu;
     dword_t aca;
     word_t bcu;
@@ -99,6 +106,8 @@ protected:
     word_t opcl;
     word_t wrt;
     word_t fetchh;
+
+    // Status flags
     bool addradd;
     bool addrdec;
     bool bytemode;
@@ -106,8 +115,48 @@ protected:
     bool skip;
     bool fire;
     bool qint;
-};
-}
-}
 
-#endif // ifndef __DCPU16N_HPP__
+};
+
+struct DCPU16NState {
+    // CPU Core
+    word_t r[8];
+    word_t pc;
+    word_t sp;
+    word_t ex;
+    word_t ia;
+    // status flags
+    bool addradd;
+    bool addrdec;
+    bool bytemode;
+    bool bytehigh;
+    bool skip;
+    bool fire;
+    bool qint;
+    // hardware status
+    unsigned phase;
+    unsigned phasenext;
+    unsigned pwrdraw;
+    unsigned wait_cycles;
+    unsigned last_cycles;
+    // EMU
+    dword_t emu[16];
+    // Interrupt
+    word_t iqp;
+    word_t iqe;
+    word_t iqc;
+    word_t intq[256];
+    // Internal use registers
+    word_t acu;
+    dword_t aca;
+    word_t bcu;
+    dword_t bca;
+    word_t opcl;
+    word_t wrt;
+    word_t fetchh;
+};
+
+} // cpu
+} // vm
+
+#endif

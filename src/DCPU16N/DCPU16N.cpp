@@ -1,16 +1,56 @@
 /**
- * \brief       Class definitions for the DCPU-16N CPU
- * \file        DCPU16N.cpp
- * \copyright   The MIT License (MIT)
- *
- */
+* \brief       Class definitions for the DCPU-16N CPU
+* \file        DCPU16N.cpp
+* \copyright   The MIT License (MIT)
+*
+*/
 
 #include "DCPU16N.hpp"
 #include "DCPU16N_macros.hpp"
 #include "VSFix.hpp"
 
+#include <algorithm>
+
 namespace vm {
 namespace cpu {
+
+static const word_t DCPU16N_skipadd[64] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 0, 0, 0, 2, 2,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+static const bool DCPU16N_skipstateN[32] = {
+    false, false, false, false, false, false, false, false,
+    false, false, false, false, false, false, false, false,
+    true , true , true , true , true , true , true , true ,
+    false, false, false, false, false, false, false, false
+};
+
+static const bool DCPU16N_skipstateI[32] = {
+    false, false, false, false, false, false, false, false,
+    false, false, false, false, false, false, false, false,
+    true , false, false, false, false, false, false, false,
+    false, false, false, false, false, false, false, false,
+};
+
+// Number of execution cycles per instruction usually minus 1
+// Each instruction is at least 1 cycle, operand writes add a cycle
+// instructions that go into skip mode add a cycle.
+static const unsigned DCPU16N_cycletable[96] = {
+    // normal / 2 param opcodes
+    0, 0, 1, 1, 2, 3, 8, 9, 5, 6, 0, 0, 0, 0, 0, 0,
+    2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 1, 1,
+
+    // special / 1 param opcodes
+    0, 1, 3, 0, 0, 0, 0, 420, 4, 0, 0, 2, 1, 0, 0, 0,
+    3, 3, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0,
+
+    // implied / no param opcodes
+    4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
 
 DCPU16N::DCPU16N(unsigned clock) : ICPU(), cpu_clock(clock) {
     this->Reset();
@@ -29,20 +69,29 @@ void DCPU16N::Reset()
     sp = 0;
     ex = 0;
     ia = 0;
+
     for(i = 0; i < 16; i++) {
         emu[i] = i << 12;
     }
-    iqp      = 0;
-    iqc      = 0;
-    madraw   = 0;
-    phase    = 0;
-    acu      = 0;
-    aca      = 0;
-    bcu      = 0;
-    bca      = 0;
-    opcl     = 0;
-    wrt      = 0;
-    fetchh   = 0;
+
+    iqp = 0;
+    iqe = 0;
+    iqc = 0;
+
+    pwrdraw = 0;
+    phase   = 0;
+
+    wait_cycles = 0;
+    last_cycles = 0;
+
+    acu    = 0;
+    aca    = 0;
+    bcu    = 0;
+    bca    = 0;
+    opcl   = 0;
+    wrt    = 0;
+    fetchh = 0;
+
     addradd  = false;
     addrdec  = false;
     bytemode = false;
@@ -52,16 +101,17 @@ void DCPU16N::Reset()
     qint     = false;
     // point EMU at ROM (page 0x100)
     emu[0] = 0x00100000;
+
 } // Reset
 
 unsigned DCPU16N::Step()
 {
     unsigned x = 0;
-
     do {
         Tick(1);
         x++;
-    } while( (!fire) && (phase != 0) );
+    } while( (!fire) && (phase != 0) && (phase != DCPU16N_PHASE_SLEEP) );
+    last_cycles = x;
     return x;
 }
 
@@ -70,19 +120,14 @@ void DCPU16N::Tick(unsigned n)
     dword_t cfa;
     register int32_t s32;
     word_t opca;
+    register unsigned csc;
 
     while(n--) {
         switch(phase) {
-        case DCPU16N_PHASE_OPFETCH:
-            cfa   = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
-            opcl  = ( ( (word_t)vcomp->ReadB(cfa + 1) ) << 8 ) | (word_t)vcomp->ReadB(cfa);
-            pc   += 2;
-            phase = DCPU16N_PHASE_UAREAD;
-            break;
-
         case DCPU16N_PHASE_NWAFETCH:
             cfa    = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
-            fetchh = ( ( (word_t)vcomp->ReadB(cfa + 1) ) << 8 ) | (word_t)vcomp->ReadB(cfa);
+            fetchh = ( ((word_t)vcomp->ReadB(cfa + 1)) << 8 )
+                     |  (word_t)vcomp->ReadB(cfa);
             pc    += 2;
             if(addradd) {
                 fetchh += acu;
@@ -99,7 +144,8 @@ void DCPU16N::Tick(unsigned n)
 
         case DCPU16N_PHASE_NWBFETCH:
             cfa    = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
-            fetchh = ( ( (word_t)vcomp->ReadB(cfa + 1) ) << 8 ) | (word_t)vcomp->ReadB(cfa);
+            fetchh = ( ((word_t)vcomp->ReadB(cfa + 1)) << 8 )
+                     |  (word_t)vcomp->ReadB(cfa);
             pc    += 2;
             if(addradd) {
                 fetchh += bcu;
@@ -114,11 +160,33 @@ void DCPU16N::Tick(unsigned n)
             }
             break;
 
+        case DCPU16N_PHASE_OPFETCH:
+            if(iqc > 0 && !qint && !(skip || bytemode)) {
+                if(ia != 0) {
+                    // interrupts are enabled
+                    phase = DCPU16N_PHASE_INTERRUPT;
+                    break;
+                }
+                else {
+                    iqc = 0;
+                }
+            }
+            cfa  = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
+            opcl = ( ((word_t)vcomp->ReadB(cfa + 1)) << 8 )
+                   |  (word_t)vcomp->ReadB(cfa);
+            pc  += 2;
+            if(skip) {
+                phase = DCPU16N_PHASE_EXECSKIP;
+                break;
+            }
+            else
+                phase = DCPU16N_PHASE_UAREAD;
+
         case DCPU16N_PHASE_UAREAD:
-            if( (opcl & 0x001f) != 0 || (opcl & 0x03e0) != 0 ) {
+            if((opcl & 0x001f) != 0 || (opcl & 0x03e0) != 0) {
                 opca = opcl >> 10;
                 if(opca & 0x0020) {
-                    acu = (word_t)( 0xffffu + (opca & 0x1f) );
+                    acu = (word_t)(0xffffu + (opca & 0x1f));
                 }
                 else {
                     if(opca & 0x010) {
@@ -164,10 +232,9 @@ void DCPU16N::Tick(unsigned n)
                             case 7: // nextword
                                 phase = DCPU16N_PHASE_NWAFETCH;
                                 break;
-                            } // switch
-                            if(addrdec || phase == DCPU16N_PHASE_NWAFETCH) {
-                                break;
                             }
+                            if(addrdec || phase == DCPU16N_PHASE_NWAFETCH)
+                                break;
                         }
                         else {
                             // [REG + nextword]
@@ -197,15 +264,15 @@ void DCPU16N::Tick(unsigned n)
             if(addrdec) {
                 addrdec = false;
                 aca     = emu[(acu >> 12) & 0xf] | (acu & 0x0fff);
-                acu     = ( ( (word_t)vcomp->ReadB(aca + 1) ) << 8 ) | (word_t)vcomp->ReadB(aca);
+                acu     = ( ((word_t)vcomp->ReadB(aca + 1)) << 8)
+                          |  (word_t)vcomp->ReadB(aca);
             }
 
         case DCPU16N_PHASE_UBREAD:
-            if( (opcl & 0x001f) != 0 ) {
+            if((opcl & 0x001f) != 0) {
                 opca = (opcl >> 5) & 0x01f;
                 if(opca & 0x010) {
-                    if(opca & 0x08) {
-                        // b table
+                    if(opca & 0x08) { // b table
                         switch(opca & 0x7) {
                         case 0: // PUSH [--SP] (READ)
                             sp     -= 2;
@@ -277,7 +344,8 @@ void DCPU16N::Tick(unsigned n)
             if(addrdec) {
                 addrdec = false;
                 bca     = emu[(bcu >> 12) & 0xf] | (bcu & 0x0fff);
-                bcu     = ( ( (word_t)vcomp->ReadB(bca + 1) ) << 8 ) | (word_t)vcomp->ReadB(bca);
+                bcu     = ( ((word_t)vcomp->ReadB(bca + 1)) << 8 )
+                          |  (word_t)vcomp->ReadB(bca);
             }
 
         case DCPU16N_PHASE_EXEC:
@@ -286,7 +354,7 @@ void DCPU16N::Tick(unsigned n)
                 wrt = (opcl >> 5) & 0x1f;
                 switch(opcl & 0x001f) {
                 case 0x01: // SET (wb ra)
-                    bcu  = acu;
+                    bcu = acu;
                     wrt |= 0x100;
                     break;
 
@@ -312,7 +380,6 @@ void DCPU16N::Tick(unsigned n)
                     bcu  = (word_t)cfa;
                     ex   = (word_t)(cfa >> 16);
                     wrt |= 0x100;
-                    // TODO waste cycles
                     break;
 
                 case 0x05: // MLI (rwb ra)
@@ -338,7 +405,7 @@ void DCPU16N::Tick(unsigned n)
 
                 case 0x07: // DVI (rwb ra)
                     if(acu) {
-                        if( ( (int16_t)bcu ) % ( (int16_t)acu ) ) {
+                        if( ( (int16_t)bcu) % ( (int16_t)acu ) ) {
                             ex = ( ( (int32_t)bcu ) << 16 ) / ( (int16_t)acu );
                         }
                         else {
@@ -413,49 +480,49 @@ void DCPU16N::Tick(unsigned n)
 
                 case 0x10: // IFB (rb ra)
                     if( (acu & bcu) ) {
-                        phase = DCPU16N_PHASE_EXECSKIP;
+                        phase = DCPU16N_PHASE_MARKSKIP;
                     }
                     break;
 
                 case 0x11: // IFC (rb ra)
                     if( !(acu & bcu) ) {
-                        phase = DCPU16N_PHASE_EXECSKIP;
+                        phase = DCPU16N_PHASE_MARKSKIP;
                     }
                     break;
 
                 case 0x12: // IFE (rb ra)
                     if( !(acu == bcu) ) {
-                        phase = DCPU16N_PHASE_EXECSKIP;
+                        phase = DCPU16N_PHASE_MARKSKIP;
                     }
                     break;
 
                 case 0x13: // IFN (rb ra)
                     if( !(acu != bcu) ) {
-                        phase = DCPU16N_PHASE_EXECSKIP;
+                        phase = DCPU16N_PHASE_MARKSKIP;
                     }
                     break;
 
                 case 0x14: // IFG (rb ra)
                     if( !(bcu > acu) ) {
-                        phase = DCPU16N_PHASE_EXECSKIP;
+                        phase = DCPU16N_PHASE_MARKSKIP;
                     }
                     break;
 
                 case 0x15: // IFA (rb ra)
                     if( !( ( (int16_t)bcu ) > ( (int16_t)acu ) ) ) {
-                        phase = DCPU16N_PHASE_EXECSKIP;
+                        phase = DCPU16N_PHASE_MARKSKIP;
                     }
                     break;
 
                 case 0x16: // IFL (rb ra)
-                    if( !(bcu < acu) ) {
-                        phase = DCPU16N_PHASE_EXECSKIP;
+                    if(!(bcu < acu)) {
+                        phase = DCPU16N_PHASE_MARKSKIP;
                     }
                     break;
 
                 case 0x17: // IFU (rb ra)
                     if( !( ( (int16_t)bcu ) < ( (int16_t)acu ) ) ) {
-                        phase = DCPU16N_PHASE_EXECSKIP;
+                        phase = DCPU16N_PHASE_MARKSKIP;
                     }
                     break;
 
@@ -463,6 +530,7 @@ void DCPU16N::Tick(unsigned n)
                 //  break;
                 //case 0x19:
                 //  break;
+
                 case 0x1a: // ADX (rwb ra)
                     cfa  = bcu;
                     cfa += acu + ex;
@@ -489,54 +557,61 @@ void DCPU16N::Tick(unsigned n)
                     break;
 
                 case 0x1e: // STI (wb ra)
-                    bcu = acu;
-                    r[6]++;
-                    r[7]++;
-                    wrt |= 0x100;
+                    bcu   = acu;
+                    r[6] += 2;
+                    r[7] += 2;
+                    wrt  |= 0x100;
                     break;
 
                 case 0x1f: // STD (wb ra)
-                    bcu = acu;
-                    r[6]--;
-                    r[7]--;
-                    wrt |= 0x100;
+                    bcu   = acu;
+                    r[6] -= 2;
+                    r[7] -= 2;
+                    wrt  |= 0x100;
                     break;
-                } // switch
+                }
+                if(wrt & 0x0100)
+                    phase = DCPU16N_PHASE_UBWRITE;
+                csc = DCPU16N_cycletable[opcl & 0x001f];
+                if(csc) {
+                    //if(csc == 1) break;
+                    phasenext   = phase;
+                    phase       = DCPU16N_PHASE_EXECW;
+                    wait_cycles = csc - 1;
+                    break;
+                }
             }
-            else if( (opcl & 0x03e0) != 0 ) {
+            else if((opcl & 0x03e0) != 0) {
                 wrt = (opcl >> 10);
                 bca = aca;
-                switch( (opcl >> 5) & 0x001f ) {
+                switch((opcl >> 5) & 0x001f) {
                 case 0x01: // JSR (ra)
                     bcu   = pc;
                     phase = DCPU16N_PHASE_EXECJMP;
-                    sp   -= 2;
-                    bca   = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
-                    wrt   = 0x0118;
                     break;
 
                 case 0x02: // BSR (ra)
                     bcu   = pc;
                     phase = DCPU16N_PHASE_EXECJMP;
-                    sp   -= 2;
                     acu  += pc;
-                    bca   = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
-                    wrt   = 0x0118;
                     break;
 
                 //case 0x03:
                 //  break;
                 //case 0x04:
                 //  break;
+
                 case 0x05: // NEG (rwa)
-                    wrt |= 0x0100;
-                    bcu  = (word_t)( -( (int16_t)acu ) );
+                    wrt  |= 0x0100;
+                    phase = DCPU16N_PHASE_UBWRITE;
+                    bcu   = (word_t)(-((int16_t)acu));
                     break;
 
                 //case 0x06:
                 //  break;
+
                 case 0x07: // HCF (^w^OMGFTWBBQa)
-                    bcu  = (word_t)madraw;
+                    bcu  = (word_t)pwrdraw;
                     fire = true;
                     break;
 
@@ -545,8 +620,9 @@ void DCPU16N::Tick(unsigned n)
                     break;
 
                 case 0x09: // IAG (wa)
-                    wrt |= 0x0100;
-                    bcu  = ia;
+                    wrt  |= 0x0100;
+                    phase = DCPU16N_PHASE_UBWRITE;
+                    bcu   = ia;
                     break;
 
                 case 0x0a: // IAS (ra)
@@ -567,53 +643,67 @@ void DCPU16N::Tick(unsigned n)
                 //  break;
                 //case 0x0f:
                 //  break;
+
                 case 0x10: // MMW (ra)
-                    emu[acu & 0x0f] = ( (dword_t)acu & 0xfff0 ) << 12;
+                    emu[acu & 0x0f] = ((dword_t)acu & 0xfff0) << 8;
                     break;
 
                 case 0x11: // MMR (rwa)
-                    wrt |= 0x0100;
-                    bcu  = (emu[acu & 0x0f] >> 12) | (acu & 0x0f);
+                    wrt  |= 0x0100;
+                    phase = DCPU16N_PHASE_UBWRITE;
+                    bcu   = (emu[acu & 0x0f] >> 8) | (acu & 0x0f);
                     break;
 
                 //case 0x12:
                 //  break;
                 //case 0x13:
                 //  break;
+
                 case 0x14: // SXB (rwa)
-                    wrt |= 0x0100;
-                    bcu  = ( -(acu & 0x80) ) | (acu & 0x00ff);
+                    wrt  |= 0x0100;
+                    phase = DCPU16N_PHASE_UBWRITE;
+                    bcu   = (-(acu & 0x80)) | (acu & 0x00ff);
                     break;
 
                 case 0x15: // SWP (rwa)
-                    wrt |= 0x0100;
-                    bcu  = ( (acu >> 8) & 0xff ) | ( (acu << 8) & 0xFF00 );
+                    wrt  |= 0x0100;
+                    phase = DCPU16N_PHASE_UBWRITE;
+                    bcu   = ((acu >> 8) & 0xff) | ((acu << 8) & 0xFF00);
                     break;
-                    //case 0x16:
-                    //  break;
-                    //case 0x17:
-                    //  break;
-                    //case 0x18:
-                    //  break;
-                    //case 0x19:
-                    //  break;
-                    //case 0x1a:
-                    //  break;
-                    //case 0x1b:
-                    //  break;
-                    //case 0x1c:
-                    //  break;
-                    //case 0x1d:
-                    //  break;
-                    //case 0x1e:
-                    //  break;
-                    //case 0x1f:
-                    //  break;
+
+                //case 0x16:
+                //  break;
+                //case 0x17:
+                //  break;
+                //case 0x18:
+                //  break;
+                //case 0x19:
+                //  break;
+                //case 0x1a:
+                //  break;
+                //case 0x1b:
+                //  break;
+                //case 0x1c:
+                //  break;
+                //case 0x1d:
+                //  break;
+                //case 0x1e:
+                //  break;
+                //case 0x1f:
+                //  break;
                 } // switch
+                csc = DCPU16N_cycletable[32 + ( (opcl >> 5) & 0x001f )];
+                if(csc) {
+                    //if(csc == 1) break;
+                    phasenext   = phase;
+                    phase       = DCPU16N_PHASE_EXECW;
+                    wait_cycles = csc - 1;
+                    break;
+                }
             }
             else {
                 wrt = 0x003f;
-                switch( (opcl >> 10) & 0x001f ) {
+                switch((opcl >> 10) & 0x001f) {
                 case 0x00: // HLT
                     bytemode = false;
                     if(ia && !qint) {
@@ -631,19 +721,29 @@ void DCPU16N::Tick(unsigned n)
                 //  break;
                 //case 0x03:
                 //  break;
+
                 case 0x04: // BYT (rv)
                     bytemode = !bytemode;
                     bytehigh = opcl & 0x8000 ? true : false;
                     break;
 
                 case 0x10: // SKP
-                    phase = DCPU16N_PHASE_EXECSKIP;
+                    phase = DCPU16N_PHASE_MARKSKIP;
                     break;
-                } // switch
+                }
+                csc = DCPU16N_cycletable[64 + ((opcl >> 10) & 0x001f)];
+                if(csc) {
+                    //if(csc == 1) break;
+                    phasenext   = phase;
+                    phase       = DCPU16N_PHASE_EXECW;
+                    wait_cycles = csc - 1;
+                    break;
+                }
             }
 
         case DCPU16N_PHASE_UBWRITE:
             if(wrt & 0x0100) {
+                phase = DCPU16N_PHASE_OPFETCH;
                 if(wrt & 0x0020) {
                     // nothing
                 }
@@ -664,15 +764,38 @@ void DCPU16N::Tick(unsigned n)
                                 break;
 
                             case 3: // SP
-                                sp = bcu;
+                                if(bytemode) {
+                                    if(bytehigh)
+                                        sp = (bcu & 0x00ff) | (sp & 0xff00);
+                                    else
+                                        sp = (bcu & 0xff00) | (sp & 0x00ff);
+                                } else {
+                                    sp = bcu;
+                                }
                                 break;
 
                             case 4: // PC
-                                pc = bcu;
+                                if(bytemode) {
+                                    if(bytehigh)
+                                        pc = (bcu & 0x00ff) | (pc & 0xff00);
+                                    else
+                                        pc = (bcu & 0xff00) | (pc & 0x00ff);
+                                }
+                                else {
+                                    pc = bcu;
+                                }
                                 break;
 
                             case 5: // EX
-                                ex = bcu;
+                                if(bytemode) {
+                                    if(bytehigh)
+                                        ex = (bcu & 0x00ff) | (ex & 0xff00);
+                                    else
+                                        ex = (bcu & 0xff00) | (ex & 0x00ff);
+                                }
+                                else {
+                                    ex = bcu;
+                                }
                                 break;
 
                             case 6: // [nextword]
@@ -695,7 +818,17 @@ void DCPU16N::Tick(unsigned n)
                         }
                         else {
                             // REG
-                            r[wrt & 0x7] = bcu;
+                            if(bytemode) {
+                                if(bytehigh)
+                                    r[wrt & 0x7] = (r[wrt & 0x7] & 0xff00)
+                                                   | (bcu & 0x00ff);
+                                else
+                                    r[wrt & 0x7] = (r[wrt & 0x7] & 0x00ff)
+                                                   | (bcu & 0xff00);
+                            }
+                            else {
+                                r[wrt & 0x7] = bcu;
+                            }
                         }
                     }
                 }
@@ -704,48 +837,142 @@ void DCPU16N::Tick(unsigned n)
         case DCPU16N_PHASE_BCUWRITE:
             if(addrdec) {
                 addrdec = false;
-                vcomp->WriteB( bca + 1, (byte_t)(bcu >> 8) );
-                vcomp->WriteB( bca, (byte_t)(bcu & 0x0ff) );
+                if(bytehigh || !bytemode) {
+                    vcomp->WriteB(bca, (byte_t)(bcu & 0x0ff));
+                }
+                if(!bytehigh || !bytemode) {
+                    vcomp->WriteB(bca + 1, (byte_t)(bcu >> 8));
+                }
             }
+            if(wrt & 0x0100)
+                bytemode = false;
             break;
 
         case DCPU16N_PHASE_EXECW:
-            // TODO
+            if(wait_cycles > 0) {
+                wait_cycles--;
+                if(n >= wait_cycles) {
+                    n    -= wait_cycles;
+                    phase = phasenext;
+                }
+            }
+            else {
+                phase = phasenext;
+            }
             break;
 
         case DCPU16N_PHASE_SLEEP:
-            // TODO
             // Check Interrupts here
+            if(iqc > 0 && !qint) {
+                if(ia != 0) { // interrupts are enabled
+                    skip     = false;
+                    bytemode = false;
+                    phase    = DCPU16N_PHASE_INTERRUPT;
+                    break;
+                }
+                else {
+                    iqc = 0;
+                }
+            }
+            else {
+                n = 0;
+            }
             break;
 
         case DCPU16N_PHASE_EXECSKIP:
+            if( (opcl & 0x001f) != 0 ) {
+                skip = DCPU16N_skipstateN[ opcl & 0x001f];
+                pc  += DCPU16N_skipadd[ (opcl >> 10) & 0x3f ];
+                pc  += DCPU16N_skipadd[ (opcl >>  5) & 0x1f ];
+            }
+            else if((opcl & 0x03e0) != 0) {
+                skip = false;
+                pc  += DCPU16N_skipadd[ (opcl >> 10) & 0x3f ];
+            }
+            else {
+                skip = DCPU16N_skipstateI[ (opcl >> 10) & 0x001f ];
+            }
+            phase = DCPU16N_PHASE_OPFETCH;
             break;
 
         case DCPU16N_PHASE_EXECJMP:
-            pc    = acu;
+            sp -= 2;
+            bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
+            vcomp->WriteB(bca, (byte_t)(bcu & 0x0ff));
+            vcomp->WriteB(bca + 1, (byte_t)(bcu >> 8));
+            pc = acu;
             phase = DCPU16N_PHASE_OPFETCH;
             break;
 
         case DCPU16N_PHASE_EXECRFI:
             phase = DCPU16N_PHASE_OPFETCH;
             qint  = false;
+
+            // pop A
             bca   = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
             sp   += 2;
-            r[0]  = ( ( (word_t)vcomp->ReadB(bca + 1) ) << 8 ) | (word_t)vcomp->ReadB(bca);
+            r[0]  = ( ( (word_t)vcomp->ReadB(bca + 1) ) << 8 )
+                      | (word_t)vcomp->ReadB(bca);
+
+            // pop PC
             bca   = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
             sp   += 2;
-            pc    = ( ( (word_t)vcomp->ReadB(bca + 1) ) << 8 ) | (word_t)vcomp->ReadB(bca);
+            pc    = ( ( (word_t)vcomp->ReadB(bca + 1) ) << 8 )
+                      | (word_t)vcomp->ReadB(bca);
+            break;
+
+        case DCPU16N_PHASE_MARKSKIP:
+            skip = true;
+            phase = DCPU16N_PHASE_OPFETCH;
+            break;
+
+        case DCPU16N_PHASE_INTERRUPT:
+            phase = DCPU16N_PHASE_OPFETCH;
+            qint  = true; // Queue interrupts
+
+            // push PC
+            sp   -= 2;
+            bca   = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
+            vcomp->WriteB(bca, (byte_t)(pc & 0x0ff));
+            vcomp->WriteB(bca + 1, (byte_t)(pc >> 8));
+
+            // push A
+            sp -= 2;
+            bca = emu[(sp >> 12) & 0xf] | (sp & 0x0fff);
+            vcomp->WriteB(bca, (byte_t)(r[0] & 0x0ff));
+            vcomp->WriteB(bca + 1, (byte_t)(r[0] >> 8));
+
+            // set interrupt address and message
+            pc = ia;
+            r[0] = intq[iqe]; // remove one from queue
+            iqe++;
+            iqc--;
+            if(iqe > 255)
+                iqe = 0;
             break;
 
         default:
             phase = 0;
             break;
-        } // switch
+        }
+        pwrdraw += 5;
     }
-} // Tick
+}
 
 bool DCPU16N::SendInterrupt(word_t msg)
 {
+    if(ia == 0)
+        return true;
+
+    if(iqc > 256) {
+        fire = true;
+        return false;
+    }
+    iqc++;
+    intq[iqp] = msg;
+    iqp++;
+    if(iqp > 255)
+        iqp = 0;
     return true;
 }
 
@@ -761,12 +988,56 @@ void DCPU16N::IOWrite(word_t addr, word_t v)
 
 void DCPU16N::GetState(void* ptr, std::size_t& size) const
 {
-    size = 0;
+    if(ptr != nullptr && size >= sizeof(DCPU16NState)) {
+        DCPU16NState *sptr = (DCPU16NState*)ptr;
+
+        std::copy_n(this->r, 8, sptr->r);
+
+        sptr->pc = this->pc;
+        sptr->sp = this->sp;
+        sptr->ex = this->ex;
+        sptr->ia = this->ia;
+
+        sptr->addradd  = this->addradd;
+        sptr->addrdec  = this->addrdec;
+        sptr->bytemode = this->bytemode;
+        sptr->bytehigh = this->bytehigh;
+        sptr->skip     = this->skip;
+        sptr->fire     = this->fire;
+        sptr->qint     = this->qint;
+
+        sptr->phase       = this->phase;
+        sptr->phasenext   = this->phasenext;
+        sptr->pwrdraw     = this->pwrdraw;
+        sptr->wait_cycles = this->wait_cycles;
+        sptr->last_cycles = this->last_cycles;
+
+        std::copy_n(this->emu, 16, sptr->emu);
+
+        sptr->iqp = this->iqp;
+        sptr->iqc = this->iqc;
+
+        std::copy_n(this->intq, 256, sptr->intq);
+
+        sptr->acu    = this->acu;
+        sptr->aca    = this->aca;
+        sptr->bcu    = this->bcu;
+        sptr->bca    = this->bca;
+        sptr->opcl   = this->opcl;
+        sptr->wrt    = this->wrt;
+        sptr->fetchh = this->fetchh;
+
+        size = sizeof(DCPU16NState);
+    }
+    else {
+        size = 0;
+    }
 }
 
 bool DCPU16N::SetState(const void* ptr, std::size_t size)
 {
     return false;
 }
-}
-}
+
+} // cpu
+} // vm

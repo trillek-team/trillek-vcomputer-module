@@ -22,11 +22,32 @@ if(DEFINED ENV{GTEST_ROOT})  # Note we omit the $ here!
     gtest_main
     pthread
     )
+ELSEIF(GTEST_ROOT)
+  message(" ... using gtest in ${GTEST_ROOT}")
 
+  set(test_EXECUTABLE unit_test)
+  
+  include_directories( unit_test
+    ${VCOMPUTER_INCLUDE_DIRS}
+    ${GTEST_ROOT}/include
+    ${GTEST_ROOT}
+    )
+
+  add_executable( unit_test
+    VComputer_test.cpp
+    GKeyb_test.cpp
+    )
+
+  target_link_libraries( unit_test
+    VCOMPUTER
+    gtest
+    gtest_main
+    )
 ELSE()
   message(STATUS "GTEST_ROOT is not defined. You must tell CMake where to find the gtest source. For example :
   GTEST_ROOT=path/gtest-1.6.0 ;
   export GTEST_ROOT ")
+  set(GTEST_ROOT "" CACHE PATH "GTest root path")
 endif()
 
 # Benchmark executable

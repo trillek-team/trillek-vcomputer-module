@@ -1,0 +1,121 @@
+2	00000000  	.org	0000	
+5	00000000 devtablelen	.equ	2000	
+6	00000000 devtabledat	.equ	2002	
+7	00000000 timehs	.equ	2400	
+8	00000000 timem	.equ	2402	
+10	00000000  	set	i,0	C184
+11	00000002  	set	j,0	E184
+12	00000004  	set	[devtablelen],j	C11F0020
+13	00000008  	set	j,devtabledat	E17C0220
+14	0000000c scanloop		
+15	0000000c  	hwr	i,a	DD00
+16	0000000e  	and	a,ff	0A7CFF00
+17	00000012  	ife	a,ff	127CFF00
+18	00000016  	jsr	checkdev	207C2A00
+19	0000001a  	swp	i	A01A
+20	0000001c  	add	i,1	C288
+21	0000001e  	ifg	i,31	D47C1F00
+22	00000022  	set	pc,endscan	817F7C00
+23	00000026  	swp	i	A01A
+24	00000028  	set	pc,scanloop	81B7
+26	0000002a checkdev		
+27	0000002a  	set	[j],i	E119
+28	0000002c  	add	j,2	E28C
+29	0000002e  	add	[devtablelen],1	C28B0020
+30	00000032  	set	c,i	4118
+31	00000034  	add	c,2	428C
+32	00000036  	hwr	c,x	5D0C
+33	00000038  	add	c,2	428C
+34	0000003a  	hwr	c,y	5D10
+35	0000003c  	add	c,2	428C
+36	0000003e  	hwr	c,z	5D14
+37	00000040  	and	x,ff00	6A7C00FF
+38	00000044  	ife	x,0100	727C0001
+39	00000048  	ife	y,8B36	927C368B
+40	0000004c  	ife	z,1c6c	B27C6C1C
+41	00000050  	set	pc,monitor	817F5600
+42	00000054  	set	pc,pop	8163
+44	00000056 monitor		
+45	00000056  	swp	c	A00A
+46	00000058  	and	c,f0	4A7CF000
+47	0000005c  	bor	c,1106	4B7C0611
+48	00000060  	mmw	c	000A
+49	00000062  	set	c,i	4118
+50	00000064  	and	c,0f00	4A7C000F
+51	00000068  	bor	c,6000	4B7C0060
+55	0000006c  	set	[c+A],A000	417E00A00A00
+56	00000072  	set	[c+C],0	41860C00
+57	00000076  	set	[c+8],0	41860800
+58	0000007a  	set	pc,pop	8163
+60	0000007c endscan		
+61	0000007c  	set	a,7D00	017C007D
+62	00000080  	set	i,0	C184
+63	00000082  	set	j,A000	E17C00A0
+64	00000086 clearloop		
+65	00000086  	sti	[j],a	FE01
+66	00000088  	ifl	i,2400	D67C6009
+67	0000008c  	set	pc,clearloop	817F8600
+68	00000090  	set	i,histring	C17C1201
+69	00000094  	set	j,A000	E17C00A0
+70	00000098  	add	j,1226	E27CCA04
+71	0000009c  	set	a,4E4E	017C4E4E
+72	000000a0 disploop		
+73	000000a0  	set	b,[i]	2138
+74	000000a2  	ife	b,0	3284
+75	000000a4  	set	pc,timerstart	817FB200
+76	000000a8  	byt.l		0010
+77	000000aa  	bor	b,a	2B00
+78	000000ac  	sti	[j],b	FE05
+79	000000ae  	set	pc,disploop	817FA000
+81	000000b2 timerstart		
+82	000000b2  	mmw	11EE	007EEE11
+83	000000b6  	set	[E004],C350	C17F50C304E0
+84	000000bc  	byt.h		0090
+85	000000be  	set	[E010],3	C19310E0
+86	000000c2  	ias	timerisr	407DCC00
+87	000000c6 timerloop		
+88	000000c6  	slp		0004
+89	000000c8  	set	pc,timerloop	817FC600
+91	000000cc timerisr		
+92	000000cc  	add	[timehs],1	C28B0024
+93	000000d0  	ifg	[timehs],18	D4CF0024
+94	000000d4  	add	[timem],1	C28B0224
+95	000000d8  	set	c,3E00	417C003E
+96	000000dc  	set	i,A25A	C17C5AA2
+97	000000e0  	set	a,[timehs]	01780024
+98	000000e4  	shr	a,1	0D88
+99	000000e6  	ifn	ex,0	B387
+100	000000e8  	set	[i+2],.+3E00	C17E2E3E0200
+101	000000ee  	ife	ex,0	B287
+102	000000f0  	set	[i+2], +3E00	C17E203E0200
+103	000000f6  	set	x,0	617C3000
+104	000000fa cout		
+105	000000fa  	set	b,a	2100
+106	000000fc  	mod	b,10	28AC
+107	000000fe  	set	y,x	810C
+108	00000100  	add	y,b	8204
+109	00000102  	bor	y,c	8B08
+110	00000104  	set	[i],y	C111
+111	00000106  	sub	i,2	C38C
+112	00000108  	dvi	a,10	07AC
+113	0000010a  	ifn	a,0	1384
+114	0000010c  	set	pc,cout	817FFA00
+115	00000110  	rfi		6085
+117	00000112 histring		
+118	00000112  	.dw	H,e,l,l,o, ,W,o,r,l,d,!,0	4800 6500 6C00 6C00 6F00 2000 5700 6F00 7200 6C00 6400 2100 0000
+Symbols:
+0000002a  checkdev
+00002402  timem
+0000007c  endscan
+000000cc  timerisr
+00002400  timehs
+00000056  monitor
+0000000c  scanloop
+00000086  clearloop
+00002000  devtablelen
+000000fa  cout
+000000c6  timerloop
+000000b2  timerstart
+00002002  devtabledat
+000000a0  disploop
+00000112  histring

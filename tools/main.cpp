@@ -14,6 +14,7 @@
 #include "VC.hpp"
 #include "devices/DummyDevice.hpp"
 #include "TR3200/DisTR3200.hpp"
+#include "DCPU16N/DisDCPU16N.hpp"
 #include "devices/M5FDD.hpp"
 
 #include <iostream>
@@ -180,7 +181,9 @@ class KeyEventHandler : public OS::event::IKeyboardEventHandler {
 #endif
 
 void print_regs(const vm::cpu::TR3200State& state);
+void print_regs(const vm::cpu::DCPU16NState& state);
 void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc);
+void print_pc(const vm::cpu::DCPU16NState& state, const vm::VComputer& vc);
 //void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram);
 
 int main(int argc, char* argv[]) {
@@ -340,7 +343,8 @@ int main(int argc, char* argv[]) {
 
     int c = ' ';
     bool loop = true;
-    vm::cpu::TR3200State cpu_state;
+    vm::cpu::DCPU16NState cpu_state_dn;
+    vm::cpu::TR3200State cpu_state_tr;
 
     // Delay here to enforce initial delta != 0
     for (long i=0; i< 600000; i++) {
@@ -362,8 +366,6 @@ int main(int argc, char* argv[]) {
             delta = 0.04;
         }
 
-
-
 #ifdef GLFW3_ENABLE
         if (glfwos.Closing()) {
             loop = false;
@@ -372,8 +374,13 @@ int main(int argc, char* argv[]) {
 #endif
 
         if (debug) { // Print PC and instruction BEFORE executing it
-            vc.GetState((void*) &cpu_state, sizeof(cpu_state));
-            print_pc(cpu_state, vc);
+            if (options.cpu == CpuToUse::DCPU16N) {
+                vc.GetState((void*)&cpu_state_dn, sizeof(cpu_state_dn));
+                print_pc(cpu_state_dn, vc);
+            } else {
+                vc.GetState((void*)&cpu_state_tr, sizeof(cpu_state_tr));
+                print_pc(cpu_state_tr, vc);
+            }
         }
 
         if (!debug) {
@@ -399,17 +406,27 @@ int main(int argc, char* argv[]) {
         } else {
             ticks = vc.Step(delta / 1000.0 );
 
-            vc.GetState((void*) &cpu_state, sizeof(cpu_state));
-            print_regs(cpu_state);
-            //print_stack(vm.CPU(), vm.RAM());
+            if(options.cpu == CpuToUse::DCPU16N) {
+                vc.GetState((void*)&cpu_state_dn, sizeof(cpu_state_dn));
+                print_regs(cpu_state_dn);
+            } else {
+                vc.GetState((void*)&cpu_state_tr, sizeof(cpu_state_tr));
+                print_regs(cpu_state_tr);
+                //print_stack(vm.CPU(), vm.RAM());
+            }
         }
 
         if (vc.isHalted()) { // Here is a breakpoint !
-            std::printf("\t\tBREAKPOINT\n\nSwithching to Step mode\n\n");
+            std::printf("\t\tBREAKPOINT\n\nSwitching to Step mode\n\n");
             debug = true;
 
-            vc.GetState((void*) &cpu_state, sizeof(cpu_state));
-            print_pc(cpu_state, vc);
+            if(options.cpu == CpuToUse::DCPU16N) {
+                vc.GetState((void*)&cpu_state_dn, sizeof(cpu_state_dn));
+                print_pc(cpu_state_dn, vc);
+            } else {
+                vc.GetState((void*)&cpu_state_tr, sizeof(cpu_state_tr));
+                print_pc(cpu_state_tr, vc);
+            }
         }
 
         if (debug) {
@@ -504,6 +521,31 @@ int main(int argc, char* argv[]) {
 #define IA      r[REG_IA]
 #define FLAGS   r[REG_FLAGS]
 
+void print_regs(const vm::cpu::DCPU16NState& state) {
+    // Print registers
+
+    std::printf(
+        "A= 0x%04X B= 0x%04X C= 0x%04X X= 0x%04X \n"
+        "Y= 0x%04X Z= 0x%04X I= 0x%04X J= 0x%04X \n"
+        , state.r[0], state.r[1], state.r[2], state.r[3]
+        , state.r[4], state.r[5], state.r[6], state.r[7]);
+
+    std::printf("EX= 0x%04X ", state.ex);
+    std::printf("IA= 0x%04X\n", state.ia);
+    std::printf("SP= 0x%04X\n", state.sp);
+    std::printf("PC= 0x%04X  ", state.pc);
+
+    char sysstat[9] = "Z--BHS!Q";
+    if(state.phase != 13) sysstat[0] = '-';
+    if(!state.bytemode) sysstat[3] = '-';
+    if(!state.bytehigh) sysstat[4] = '-';
+    if(!state.skip) sysstat[5] = '-';
+    if(!state.fire) sysstat[6] = '-';
+    if(!state.qint) sysstat[7] = '-';
+    std::printf("Status= %s\n\n", sysstat);
+
+}
+
 void print_regs(const vm::cpu::TR3200State& state) {
     // Print registers
 
@@ -525,6 +567,14 @@ void print_regs(const vm::cpu::TR3200State& state) {
             GET_ESS(flags), GET_EI(flags), GET_IF(flags) , GET_DE(flags) , GET_OF(flags) , GET_CF(flags));
     std::printf("\n");
 
+}
+
+void print_pc(const vm::cpu::DCPU16NState& state, const vm::VComputer& vc) {
+    vm::dword_t addr = state.emu[(state.pc >> 12) & 0xf] | (state.pc & 0x0fff);
+    vm::word_t val = vc.ReadW(addr);
+
+    std::printf(" PC : 0x%04X > 0x%08X: 0x%04X ", state.pc, addr, val);
+    std::cout << vm::cpu::DisassemblyDCPU16N(vc, addr) << std::endl;
 }
 
 void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc) {
