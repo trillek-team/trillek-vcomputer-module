@@ -14,10 +14,11 @@ IF(WIN32)
 		DOC "The directory where GLFW/glfw3.h resides")
 
 	FIND_LIBRARY( GLFW3_LIBRARY
-		NAMES glfw3 GLFW
+		NAMES glfw3 GLFW glfw3dll
 		PATHS
 		$ENV{PROGRAMFILES}/GLFW/lib
 		${GLFW_ROOT_DIR}/lib
+		PATH_SUFFIXES x86 x64 amd64
 		DOC "The GLFW library")
 ELSE(WIN32)
 	FIND_PATH( GLFW3_INCLUDE_PATH GLFW/glfw3.h

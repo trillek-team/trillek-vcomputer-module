@@ -26,9 +26,9 @@ if (MSVC)
 	message(WARNING "This version of VC does not contain all needed C++11 features")
 	endif(MSVC_VERSION GREATER 1650)
     set(PLATFORM_FLAGS)
-    set(DCPU_VM_SEARCH_PATHS
-        "C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC"
-        "C:/Program Files (x86)/Microsoft Visual Studio 12.0/VC"
+    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
+    "$ENV{PROGRAMFILES}/Microsoft Visual Studio 11.0/VC"
+    "$ENV{PROGRAMFILES}/Microsoft Visual Studio 12.0/VC"
     )
 else (MSVC)
     set(PLATFORM_FLAGS "-Wall" ) # Generic flags
