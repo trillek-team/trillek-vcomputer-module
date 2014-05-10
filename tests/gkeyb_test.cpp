@@ -11,7 +11,7 @@
 
 // Check if E register returns buffer size
 TEST(GKeyboard, E_reg) {
-  using namespace vm::dev::gkeyboard;
+  using namespace trillek::computer::gkeyboard;
 
   GKeyboardDev gk;
   gk.Reset();
@@ -28,7 +28,7 @@ TEST(GKeyboard, E_reg) {
 
 // Check if sending and pulling an event, works
 TEST(GKeyboard, SEND_PULL_event) {
-  using namespace vm::dev::gkeyboard;
+  using namespace trillek::computer::gkeyboard;
 
   GKeyboardDev gk;
   gk.Reset();
@@ -50,7 +50,7 @@ TEST(GKeyboard, SEND_PULL_event) {
 
 // Check if sending and pulling an event, works
 TEST(GKeyboard, Fill_buffer) {
-  using namespace vm::dev::gkeyboard;
+  using namespace trillek::computer::gkeyboard;
 
   GKeyboardDev gk;
   gk.Reset();

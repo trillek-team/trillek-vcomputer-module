@@ -10,11 +10,10 @@
 
 #include "types.hpp"
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 class VComputer;
-
-namespace cpu {
 
 /**
  * Interface that must be implemented by any CPU that will be used by the
@@ -35,7 +34,7 @@ public:
      * This method must be only called by VComputer itself
      * @param vcomp VComputer pointer or nullptr
      */
-    void SetVComputer (vm::VComputer* vcomp) {
+    void SetVComputer (computer::VComputer* vcomp) {
         this->vcomp = vcomp;
     }
 
@@ -86,9 +85,10 @@ public:
 
 protected:
 
-    vm::VComputer* vcomp; /// Ptr to the Virtual Computer
+    computer::VComputer* vcomp; /// Ptr to the Virtual Computer
 };
-} // End of namespace cpu
-} // End of namespace vm
+ 
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __ICPU_HPP_

@@ -9,13 +9,15 @@
 #ifndef __VCOMP_CONFIG_HPP_
 #define __VCOMP_CONFIG_HPP_ 1
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 static const unsigned MajorVersion = @VCOMP_VERSION_MAJOR@;  /// Major version
 static const unsigned MinorVersion = @VCOMP_VERSION_MINOR@;  /// Minor version
 static const unsigned Build = @VCOMP_BUILD@;                 /// Build (git rev-list HEAD --count)
 
-}
+} // namespace computer
+} // namespace trillek
 
 /// Debug build
 #ifndef DEBUG

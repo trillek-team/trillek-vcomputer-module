@@ -9,9 +9,8 @@
 
 #include <cmath>
 
-namespace vm {
-namespace dev {
-namespace disk {
+namespace trillek {
+namespace computer {
 
 Disk::Disk(const std::string filename) : HEADER_VERSION(1) {
 
@@ -179,6 +178,6 @@ ERRORS Disk::writeSector(uint16_t sector, std::vector<uint8_t>* data, bool dryRu
 
     return ERRORS::NONE;
 } // writeSector
-} // End of namespace disk
-} // End of namespace dev
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek

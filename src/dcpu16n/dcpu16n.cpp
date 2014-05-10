@@ -11,8 +11,8 @@
 
 #include <algorithm>
 
-namespace vm {
-namespace cpu {
+namespace trillek {
+namespace computer {
 
 static const Word DCPU16N_skipadd[64] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1039,5 +1039,5 @@ bool DCPU16N::SetState(const void* ptr, std::size_t size)
     return false;
 }
 
-} // cpu
-} // vm
+} // namespace computer
+} // namespace trillek

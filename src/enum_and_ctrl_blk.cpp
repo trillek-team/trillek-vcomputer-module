@@ -13,7 +13,8 @@
 
 #include <cassert>
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 EnumAndCtrlBlk::EnumAndCtrlBlk (unsigned slot, IDevice* dev) :
     slot(slot), dev(dev) {
@@ -241,4 +242,6 @@ void EnumAndCtrlBlk::WriteDW (DWord addr, DWord val) {
     this->WriteW(addr, val);
     this->WriteW(addr+2, val >> 16);
 }
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek

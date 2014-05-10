@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <cstddef> // std::size_t
 
-namespace vm {
+namespace trillek {
 
 typedef uint64_t QWord;   /// unsigned Quad Word data
 typedef uint32_t DWord;   /// unsigned Double Word data
@@ -21,7 +21,6 @@ typedef int32_t  SDWord;  /// signed Double Word
 typedef int16_t  SWord;   /// signed Word
 typedef int8_t   SByte;   /// signed Byte
 
-} // End of namespace vm
+} // End of namespace trillek
 
 #endif // __TYPES_HPP_
-

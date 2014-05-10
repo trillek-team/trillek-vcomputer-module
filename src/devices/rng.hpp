@@ -13,7 +13,8 @@
 
 #include <random>
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 class RNG : public AddrListener {
 public:
@@ -39,6 +40,8 @@ private:
     bool blockGenerate;
     DWord number;
 };
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __RNG_HPP_

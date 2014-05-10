@@ -11,36 +11,36 @@
 #include <cstdio>
 #include <ctime>
 
-class TestAddrListener : public vm::AddrListener {
+class TestAddrListener : public trillek::computer::AddrListener {
   public:
     unsigned readCount  = 0;
     unsigned writeCount = 0;
 
-    vm::Byte ReadB (vm::DWord addr) {
+    trillek::Byte ReadB (trillek::DWord addr) {
       readCount++;
       //std::fprintf(stderr, "\tReading Addr: 0x%06X\n", addr);
       return 0;
     }
 
-    vm::Word ReadW (vm::DWord addr) {
+    trillek::Word ReadW (trillek::DWord addr) {
       return this->ReadB(addr) | (this->ReadB(addr+1) << 8);
     }
 
-    vm::DWord ReadDW (vm::DWord addr) {
+    trillek::DWord ReadDW (trillek::DWord addr) {
       return this->ReadW(addr) | (this->ReadW(addr+2) << 16);
     }
 
-    void WriteB (vm::DWord addr, vm::Byte val) {
+    void WriteB (trillek::DWord addr, trillek::Byte val) {
       writeCount++;
       //std::fprintf(stderr, "\tWriting Addr: 0x%06X <- 0x%02X\n", addr, val);
     }
 
-    void WriteW (vm::DWord addr, vm::Word val) {
+    void WriteW (trillek::DWord addr, trillek::Word val) {
       WriteB(addr   , val);
       WriteB(addr +1, val >> 8);
     }
 
-    void WriteDW (vm::DWord addr, vm::DWord val) {
+    void WriteDW (trillek::DWord addr, trillek::DWord val) {
       WriteW(addr   , val);
       WriteW(addr +2, val >> 16);
     }
@@ -54,9 +54,9 @@ TestAddrListener g_addr;
  */
 class VComputer_test : public ::testing::Test {
   protected:
-    vm::VComputer vc;
-    vm::Byte rom[1024] = {'H','e','l','l','o',' ','w','o','r','l','d','!'};
-    vm::DWord addr_id[3];
+    trillek::computer::VComputer vc;
+    trillek::Byte rom[1024] = {'H','e','l','l','o',' ','w','o','r','l','d','!'};
+    trillek::DWord addr_id[3];
 
     virtual void SetUp() {
       vc.SetROM(this->rom, 1024);
@@ -69,9 +69,9 @@ class VComputer_test : public ::testing::Test {
 };
 
 TEST_F(VComputer_test, ReadROM) {
-  vm::Byte  byte  = vc.ReadB (0x100000);
-  vm::Word  word  = vc.ReadW (0x100000);
-  vm::DWord dword = vc.ReadDW(0x100000);
+  trillek::Byte  byte  = vc.ReadB (0x100000);
+  trillek::Word  word  = vc.ReadW (0x100000);
+  trillek::DWord dword = vc.ReadDW(0x100000);
 
   ASSERT_EQ(byte,  'H');
   ASSERT_EQ(word,  'H' | ('e' << 8) );
@@ -101,35 +101,35 @@ TEST_F(VComputer_test, ReadROM) {
 TEST_F(VComputer_test, WriteROM) {
   vc.WriteB(0x100000, 'X');
 
-  vm::Byte byte = vc.ReadB (0x100000);
+  trillek::Byte byte = vc.ReadB (0x100000);
   ASSERT_EQ('H', byte);
 }
 
 TEST_F(VComputer_test, RW_RAM) {
   std::srand(std::time(0));
   for (int i=0; i< 1024 ; i++) {
-    vm::DWord addr  = std::rand() & 0x01FFFF; // Address between 0 and 128 KiB
-    vm::Byte  bval  = 0x55;
+    trillek::DWord addr  = std::rand() & 0x01FFFF; // Address between 0 and 128 KiB
+    trillek::Byte  bval  = 0x55;
     vc.WriteB(addr, bval);
-    vm::Byte  byte  = vc.ReadB (addr);
+    trillek::Byte  byte  = vc.ReadB (addr);
     ASSERT_EQ (bval, byte);
 
     addr  = std::rand() & 0x01FFF0; // Address between 0 and 128 KiB
-    vm::Word  wval  = 0x5A5A;
+    trillek::Word  wval  = 0x5A5A;
     vc.WriteW(addr, wval);
-    vm::Word  word  = vc.ReadW (addr);
+    trillek::Word  word  = vc.ReadW (addr);
     ASSERT_EQ (wval, word);
 
     addr  = std::rand() & 0x01FFF0; // Address between 0 and 128 KiB
-    vm::DWord dwval  = 0xBEBACAFE;
+    trillek::DWord dwval  = 0xBEBACAFE;
     vc.WriteDW(addr, dwval);
-    vm::DWord dword  = vc.ReadDW (addr);
+    trillek::DWord dword  = vc.ReadDW (addr);
     ASSERT_EQ (dwval, dword);
   }
 }
 
 TEST_F(VComputer_test, AddrListener_Test) {
-  vm::Range r(0x110000, 0x1100FF);
+  trillek::computer::Range r(0x110000, 0x1100FF);
   // Addition
   addr_id[0] = vc.AddAddrListener(r, &g_addr);
   ASSERT_NE(-1, addr_id[0]);
@@ -167,15 +167,15 @@ TEST_F(VComputer_test, AddrListener_Test) {
   TestAddrListener t_addr2;
   TestAddrListener t_addr3;
 
-  vm::Range r_fail(0x1100F0, 0x110100); // This must fails
+  trillek::computer::Range r_fail(0x1100F0, 0x110100); // This must fails
   addr_id[1] = vc.AddAddrListener(r_fail, &t_addr2);
   ASSERT_EQ(-1, addr_id[1]);
 
-  vm::Range r2(0x111000); // Only a byte
+  trillek::computer::Range r2(0x111000); // Only a byte
   addr_id[1] = vc.AddAddrListener(r2, &t_addr2);
   ASSERT_NE(-1, addr_id[1]);
 
-  vm::Range r3(0x110200, 0x1102FF);
+  trillek::computer::Range r3(0x110200, 0x1102FF);
   addr_id[2] = vc.AddAddrListener(r3, &t_addr3);
   ASSERT_NE(-1, addr_id[2]);
 
@@ -228,8 +228,8 @@ TEST_F(VComputer_test, AddrListener_Test) {
 }
 
 TEST_F(VComputer_test, AddGetRmDevice) {
-  auto ddev = std::make_shared<vm::DummyDevice>();
-  auto ddev2 = std::make_shared<vm::DummyDevice>();
+  auto ddev = std::make_shared<trillek::computer::DummyDevice>();
+  auto ddev2 = std::make_shared<trillek::computer::DummyDevice>();
 
   ASSERT_TRUE(vc.AddDevice(0, ddev)) << "AddDevice failed to add a device";
   ASSERT_EQ(ddev.use_count(), 2) << "Device not being stored in VComputer class";
@@ -249,7 +249,7 @@ TEST_F(VComputer_test, AddGetRmDevice) {
 }
 
 TEST_F(VComputer_test, DummyDevice_EnumAndCtrl) {
-  auto ddev = std::make_shared<vm::DummyDevice>();
+  auto ddev = std::make_shared<trillek::computer::DummyDevice>();
   ASSERT_TRUE(vc.AddDevice(0, ddev)) << "AddDevice failed to add a device";
 
   // Enumeration stuff

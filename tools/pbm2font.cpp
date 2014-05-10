@@ -18,7 +18,7 @@
 
 #include "types.hpp"
 
-using namespace vm;
+using namespace trillek;
 
 enum OUTPUT_FORMAT {
     DAT,

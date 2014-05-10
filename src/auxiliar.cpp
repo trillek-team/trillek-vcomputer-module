@@ -15,8 +15,8 @@
 #include <ios>
 #include <cassert>
 
-namespace vm {
-namespace aux {
+namespace trillek {
+namespace computer {
 
 int LoadROM (const std::string& filename, Byte* rom) {
     assert(rom != nullptr);
@@ -47,5 +47,6 @@ int LoadROM (const std::string& filename, Byte* rom) {
 
     return count;
 } // LoadROM
-} // end of namespace aux
-} // end of namespace vm
+
+} // end of namespace computer
+} // end of namespace trillek

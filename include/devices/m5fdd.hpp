@@ -11,14 +11,14 @@
 #include "types.hpp"
 #include "vcomputer.hpp"
 
-#include "disk.hpp"
+#include "devices/disk.hpp"
 
 #include <string>
 #include <iostream>
 #include <fstream>
 
-namespace vm {
-namespace dev {
+namespace trillek {
+namespace computer {
 namespace m5fdd {
 
 /**
@@ -200,7 +200,7 @@ public:
      * If there is a floppy disk previously inserted, this is ejected
      * @param floppy Floppy disk
      */
-    void insertFloppy (std::shared_ptr<vm::dev::disk::Disk> floppy);
+    void insertFloppy (std::shared_ptr<Disk> floppy);
 
     /**
      * @brief Ejects the floppy actually inserted if is there one
@@ -214,7 +214,7 @@ private:
      */
     void setSector (uint16_t sector);
 
-    std::shared_ptr<vm::dev::disk::Disk> floppy; /// Floppy inserted
+    std::shared_ptr<Disk> floppy; /// Floppy inserted
     std::vector<Byte> sectorBuffer;            // buffer of sector being
                                                  // accessed
     STATE_CODES state;                           /// Floppy drive actual status
@@ -231,8 +231,9 @@ private:
     bool pendingInterrupt; /// Must launch a interrupt from device to CPU ?
     DWord a, b, c, d;    /// Data registers
 };
+    
 } // End of namespace m5ffd
-} // End of namespace dev
-} // End of namespace vm
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __M5FDD_HPP_

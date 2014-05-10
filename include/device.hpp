@@ -11,7 +11,8 @@
 #include "types.hpp"
 #include "vcomputer.hpp"
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 class VComputer;
 
@@ -164,6 +165,8 @@ protected:
 
     VComputer* vcomp; /// Ptr to the Virtual Computer
 };
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __IDEVICE_HPP_

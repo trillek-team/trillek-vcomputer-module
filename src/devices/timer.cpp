@@ -9,7 +9,8 @@
 #include "devices/timer.hpp"
 #include "vs_fix.hpp"
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 Timer::Timer () {
 }
@@ -375,4 +376,6 @@ void Timer::WriteDW (DWord addr, DWord val) {
         this->WriteW(addr+2, val >> 16);
     } // switch
 }     // WriteDW
-}     // End of namespace vm
+
+}     // End of namespace computer
+}     // End of namespace trillek

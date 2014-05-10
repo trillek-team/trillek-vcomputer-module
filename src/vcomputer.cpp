@@ -14,8 +14,8 @@
 #include <cstdio>
 #include <cassert>
 
-namespace vm {
-using namespace vm::cpu;
+namespace trillek {
+namespace computer {
 
 /* A function for aligned malloc that is portable */
 static uint8_t *my_malloc(size_t size) {
@@ -199,7 +199,7 @@ void VComputer::Off() {
 unsigned VComputer::Update( const double delta) {
     assert (delta > 0);
 
-    unsigned cycles = (vm::BaseClock * delta ) +0.5f;
+    unsigned cycles = (computer::BaseClock * delta ) +0.5f;
     // +0.5 for rounding bug in VS
 
     if (cycles <= 1) {
@@ -330,4 +330,5 @@ bool VComputer::RmAddrListener (int32_t id) {
 
 }
 
-} // End of namespace vm
+} // End of namespace computer
+} // End of namespace trillek

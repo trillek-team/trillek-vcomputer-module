@@ -15,9 +15,8 @@
 #include <fstream>
 #include <array>
 
-namespace vm {
-namespace dev {
-namespace disk {
+namespace trillek {
+namespace computer {
 
 static const int HEADER_SIZE      = 11; /// Size on bytes of the file header
 static const char HEADER_MAGIC[3] = {
@@ -173,8 +172,8 @@ private:
     std::vector<uint8_t> badSectors;      /// Bitmap of bad sectors
     std::unique_ptr<DiskDescriptor> Info; /// disk metrics
 };
-} // End of namespace disk
-} // End of namespace dev
-} // End of namespace vm
+    
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __DISK_HPP_

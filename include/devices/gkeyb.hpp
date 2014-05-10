@@ -15,8 +15,8 @@
 #include <deque>
 #include <cstdio>
 
-namespace vm {
-namespace dev {
+namespace trillek {
+namespace computer {
 namespace gkeyboard {
 
 /**
@@ -263,8 +263,10 @@ public:
         keybuffer.push_back(keyevent);
     }
 };
-} // End of namespace tda
-} // End of namespace dev
-} // End of namespace vm
+
+    
+} // End of namespace gkeyboard
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __GKEYB_HPP_

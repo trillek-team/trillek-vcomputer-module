@@ -8,8 +8,8 @@
 
 #include <string>
 
-namespace vm {
-namespace cpu {
+namespace trillek {
+namespace computer {
 
 /**
  * Disassemble one instruction of DCPU-16N code to a humman readable string
@@ -18,6 +18,5 @@ namespace cpu {
  */
 std::string DisassemblyDCPU16N(const VComputer& vc, DWord pc);
 
-} // cpu
-} // vm
-
+} // computer
+} // trillek

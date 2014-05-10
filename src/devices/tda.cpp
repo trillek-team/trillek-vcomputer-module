@@ -13,8 +13,8 @@
 #include <algorithm>
 #include <cassert>
 
-namespace vm {
-namespace dev {
+namespace trillek {
+namespace computer {
 namespace tda {
 
 void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture) {
@@ -145,6 +145,7 @@ bool TDADev::SetState (const void* ptr, std::size_t size) {
 
     return false;
 } // SetState
+
 } // End of namespace tda
-} // End of namespace dev
-} // End of namespace vm
+} // End of namespace computer
+} // End of namespace trillek

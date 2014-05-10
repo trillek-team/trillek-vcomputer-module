@@ -9,8 +9,8 @@
 #include "devices/m5fdd.hpp"
 #include "vs_fix.hpp"
 
-namespace vm {
-namespace dev {
+namespace trillek {
+namespace computer {
 namespace m5fdd {
 
 M5FDD::M5FDD() : state(STATE_CODES::NO_MEDIA), error(ERROR_CODES::NONE),
@@ -78,7 +78,7 @@ void M5FDD::SendCMD(Word cmd) {
                 break;
             }
             // read the sector
-            vm::dev::disk::ERRORS diskError = floppy->readSector(c, &sectorBuffer);
+            ERRORS diskError = floppy->readSector(c, &sectorBuffer);
             error = static_cast<ERROR_CODES> (diskError);
             if (error == ERROR_CODES::NONE) {
                 state = STATE_CODES::BUSY;
@@ -112,7 +112,7 @@ void M5FDD::SendCMD(Word cmd) {
                 std::cout << "[M5FDD] COMMANDS::WRITE_SECTOR, STATE_CODES::READY, but no floppy class!" << std::endl;
                 break;
             }
-            vm::dev::disk::ERRORS diskError = floppy->writeSector(c, &sectorBuffer, true);
+            ERRORS diskError = floppy->writeSector(c, &sectorBuffer, true);
             error = static_cast<ERROR_CODES> (diskError);
             if (error == ERROR_CODES::NONE) {
                 state = STATE_CODES::BUSY;
@@ -191,7 +191,7 @@ void M5FDD::Tick(unsigned n, const double delta) {
     }
 } // Tick
 
-void M5FDD::insertFloppy(std::shared_ptr<vm::dev::disk::Disk> floppy) {
+void M5FDD::insertFloppy(std::shared_ptr<Disk> floppy) {
     if (this->floppy) {
         ejectFloppy();
     }
@@ -231,6 +231,7 @@ void M5FDD::setSector(uint16_t sector) {
 
     curSector = sector;
 }
+
 } // End of namespace m5fdd
-} // End of namespace dev
-} // End of namespace vm
+} // End of namespace computer
+} // End of namespace trillek

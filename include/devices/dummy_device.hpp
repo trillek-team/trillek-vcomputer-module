@@ -10,7 +10,8 @@
 #include "types.hpp"
 #include "vcomputer.hpp"
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 /**
  * DummyDevice for testing
@@ -113,6 +114,8 @@ public:
 
     Word a, b, c, d, e;
 };
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __DUMMYDEVICE_HPP_

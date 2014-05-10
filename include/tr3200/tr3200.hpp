@@ -11,12 +11,12 @@
 #include "cpu.hpp"
 #include "vcomputer.hpp"
 
-namespace vm {
-namespace cpu {
+namespace trillek {
+namespace computer {
 
-static unsigned const TR3200_NGPRS = 16;
-
-
+/**
+ * Implementation of TR3200 CPU for Trillek's virtual computer
+ */
 class TR3200 : public ICPU {
 public:
 
@@ -75,6 +75,8 @@ public:
      */
     virtual bool SetState (const void* ptr, std::size_t size);
 
+    static unsigned const TR3200_NGPRS = 16; /// Total number of CPU registers
+    
 protected:
 
     unsigned cpu_clock; /// CPU clock speed
@@ -108,7 +110,7 @@ protected:
  * Structure that stores the TR3200 CPU state in any moment
  */
 struct TR3200State {
-    DWord r[TR3200_NGPRS]; /// Registers
+    DWord r[TR3200::TR3200_NGPRS]; /// Registers
     DWord pc;              /// Program Counter
 
     unsigned wait_cycles; /// Nº of cycles that need to finish the actual
@@ -122,7 +124,7 @@ struct TR3200State {
     bool sleeping;  /// Is sleping the CPU ?
 };
 
-} // End of namespace cpu
-} // End of namespace vm
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __TR3200_HPP_

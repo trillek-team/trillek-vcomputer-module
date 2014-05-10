@@ -8,8 +8,8 @@
 
 #include <cstdio>
 
-namespace vm {
-namespace cpu {
+namespace trillek {
+namespace computer {
 
 static const char *DCPU16N_OPCN[] = {
     "---", "SET", "ADD", "SUB", "MUL", "MLI", "DIV", "DVI",
@@ -125,6 +125,6 @@ std::string DisassemblyDCPU16N(const VComputer& vc, DWord pc) {
     return opname;
 }
 
-} // cpu
-} // vm
+} // namespace computer
+} // namespace trillek
 

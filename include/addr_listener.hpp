@@ -11,7 +11,8 @@
 
 #include <cassert>
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 /**
  * Interface for a Address Listener
@@ -68,6 +69,8 @@ struct Range {
         return (end < other.start);
     }
 };
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __ADDRLISTENER_HPP_

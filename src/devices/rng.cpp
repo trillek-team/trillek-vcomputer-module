@@ -9,7 +9,8 @@
 #include "devices/rng.hpp"
 #include "vs_fix.hpp"
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 RNG::RNG() {
     distribution = std::uniform_int_distribution<int>(0);
@@ -149,4 +150,6 @@ void RNG::WriteDW(DWord addr, DWord val) {
 
     engine.seed(seed);
 } // WriteDW
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek

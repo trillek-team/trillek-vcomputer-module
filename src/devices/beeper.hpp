@@ -12,7 +12,8 @@
 
 #include <functional>
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 /**
  * Implements a embed beeper on the Virtual Computer
@@ -45,6 +46,8 @@ private:
 
     std::function<void(DWord freq)> f_changed;
 };
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __BEEPER_HPP_

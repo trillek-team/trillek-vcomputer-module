@@ -11,8 +11,8 @@
 #include "cpu.hpp"
 #include "vcomputer.hpp"
 
-namespace vm {
-namespace cpu {
+namespace trillek {
+namespace computer {
 
 class DCPU16N : public ICPU {
 public:
@@ -156,7 +156,7 @@ struct DCPU16NState {
     Word fetchh;
 };
 
-} // cpu
-} // vm
+} // computer
+} // trillek
 
 #endif

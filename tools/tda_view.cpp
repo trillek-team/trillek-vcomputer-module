@@ -76,8 +76,8 @@ float zoom = 6.0;
 void initGL(OS::OS& os);
 
 int main (int argc, char* argv[]) {
-  using namespace vm;
-  using namespace vm::dev::tda;
+  using namespace trillek;
+  using namespace trillek::computer::tda;
 
   // TODO load screen from a file
 

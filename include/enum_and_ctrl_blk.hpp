@@ -15,7 +15,8 @@
 #include <tuple>
 #include <memory>
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 /**
  * An specialized Address Listener used by VComputer to implement
@@ -59,15 +60,9 @@ private:
     DWord e;   /// Buffer used when a byte write hapens in E
 };
 
-typedef std::tuple<std::shared_ptr<IDevice>, EnumAndCtrlBlk*, int32_t> device_t; ///
-                                                                                 //
-                                                                                 // Storage
-                                                                                 //
-                                                                                 // of
-                                                                                 //
-                                                                                 // a
-                                                                                 //
-                                                                                 // device
-} // End of namespace vm
+typedef std::tuple<std::shared_ptr<IDevice>, EnumAndCtrlBlk*, int32_t> device_t; /// Storage of a device
+
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __ENUMANDCTROLBLK_HPP_

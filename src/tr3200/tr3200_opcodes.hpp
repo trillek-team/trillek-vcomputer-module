@@ -9,8 +9,8 @@
 #ifndef __TR3200_OPCODES_HPP_
 #define __TR3200_OPCODES_HPP_ 1
 
-namespace vm {
-namespace cpu {
+namespace trillek {
+namespace computer {
 
 // 3 Parameters OpCodes *******************************************************
 
@@ -122,7 +122,8 @@ enum NP_OPCODE {
     RET = 0x01,
     RFI = 0x02,
 };
-} // End of namespace cpu
-} // End of namespace vm
+    
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __TR3200_OPCODES_HPP_

@@ -9,7 +9,8 @@
 #include "devices/rtc.hpp"
 #include "vs_fix.hpp"
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 Byte RTC::ReadB(DWord addr) {
 
@@ -94,4 +95,6 @@ void RTC::WriteW(DWord addr, Word val) {
 
 void RTC::WriteDW(DWord addr, DWord val) {
 }
-}
+
+} // namespace computer
+} // namespace trillek

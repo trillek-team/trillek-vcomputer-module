@@ -13,8 +13,8 @@
 
 #include <functional>
 
-namespace vm {
-namespace dev {
+namespace trillek {
+namespace computer {
 
 /**
  * Serial Console for debuing
@@ -159,7 +159,8 @@ protected:
     std::function<void(Word)> onWrite; /// Callback when the computer try to
                                          // write a byte to the serial console
 };
-} // End of namespace dev
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __DEBUGSERIALCONSOLE_HPP_

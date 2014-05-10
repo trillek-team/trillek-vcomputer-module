@@ -18,8 +18,8 @@
 
 #include <cassert>
 
-namespace vm {
-namespace cpu {
+namespace trillek {
+namespace computer {
 
 static const Byte cycle_table[] = { /// Lookup table for cycle count
 #include "tr3200/tr3200_cycles.inc"
@@ -898,5 +898,6 @@ bool TR3200::SetState (const void* ptr, std::size_t size) {
 
     return false;
 } // SetState
-} // End of namespace cpu
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek

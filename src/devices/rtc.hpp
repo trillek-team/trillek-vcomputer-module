@@ -13,7 +13,8 @@
 
 #include <ctime>
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 class RTC : public AddrListener {
 public:
@@ -32,6 +33,8 @@ private:
                                                    // of the game
                                                    // history/background
 };
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __RTC_HPP_

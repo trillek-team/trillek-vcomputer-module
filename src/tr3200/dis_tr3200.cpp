@@ -13,8 +13,8 @@
 
 #include <cstdio>
 
-namespace vm {
-namespace cpu {
+namespace trillek {
+namespace computer {
 
 std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
 #define BUF_SIZE (32)
@@ -660,5 +660,6 @@ std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
 
     #undef BUF_SIZE
 } // DisassemblyTR3200
-} // End of namespace cpu
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek

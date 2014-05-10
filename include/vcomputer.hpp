@@ -24,8 +24,8 @@
 #include <memory>
 #include <cassert>
 
-namespace vm {
-using namespace vm::cpu;
+namespace trillek {
+namespace computer {
 
 const unsigned MAX_N_DEVICES = 32;          /// Max number of devices
                                             // attached
@@ -408,7 +408,9 @@ private:
     bool recover_break; /// Flag to know if a recovered the temporaly erases
                         // break
 };
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __VCOMPUTER_HPP_
 

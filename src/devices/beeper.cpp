@@ -8,7 +8,8 @@
 #include "devices/beeper.hpp"
 #include "vs_fix.hpp"
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 Beeper::Beeper () : freq(0), f_changed(nullptr) {
 }
@@ -104,4 +105,6 @@ void Beeper::Reset () {
 void Beeper::SetFreqChangedCB (std::function<void(DWord freq)> f_changed) {
     this->f_changed = f_changed;
 }
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek

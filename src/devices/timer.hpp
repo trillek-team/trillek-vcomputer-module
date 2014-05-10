@@ -11,7 +11,8 @@
 #include "types.hpp"
 #include "addr_listener.hpp"
 
-namespace vm {
+namespace trillek {
+namespace computer {
 
 class Timer : public AddrListener {
 
@@ -62,6 +63,8 @@ public:
     bool do_int_tmr0; /// Try to thorow interrupt of TMR0 ?
     bool do_int_tmr1; /// Try to thorow interrupt of TMR1 ?
 };
-} // End of namespace vm
+
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __TIMER_HPP_

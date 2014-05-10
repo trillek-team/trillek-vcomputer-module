@@ -11,8 +11,8 @@
 #include "types.hpp"
 #include <string>
 
-namespace vm {
-namespace aux {
+namespace trillek {
+namespace computer {
 
 /**
  * Load a raw binary file as ROM
@@ -22,7 +22,7 @@ namespace aux {
  */
 int LoadROM (const std::string& filename, Byte* rom);
 
-} // end of namespace aux
-} // end of namespace vm
+} // end of namespace computer
+} // end of namespace trillek
 
 #endif // __AUXILIAR_HPP_

@@ -75,16 +75,16 @@ IF (OPENAL_ENABLE EQUAL 1)
 ENDIF (OPENAL_ENABLE EQUAL 1)
 
 # Main executable
-add_executable( vm
+add_executable( vc
   ./main.cpp
   ${TOOL_OTHER_SRC}
   )
 
-include_directories( vm
+include_directories( vc
   ${VM_INCLUDE_DIRS}
   )
 
-target_link_libraries( vm
+target_link_libraries( vc
   ${VM_LINK_LIBS}
   )
 

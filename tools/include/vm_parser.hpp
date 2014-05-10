@@ -127,7 +127,7 @@ struct VmParamaters {
                         std::fprintf(stderr, "Missing or invalid value for parameter %s\n", argv[i-1]);
                         break;
                     }
-                    vm::DWord addr = std::strtol(arg, nullptr, 0);
+                    trillek::DWord addr = std::strtol(arg, nullptr, 0);
                     breaks.push_back(addr);
 
                 } else if (strncmp(arg, "h", 1) == 0 || strncmp(arg, "-help", 5) == 0) {
@@ -157,18 +157,16 @@ struct VmParamaters {
 
     const char* def_dsk_file;
 
-    const char* rom_file;           //! Path to ROM file
-    const char* dsk_file;           //! Path to Floppy disk file
+    const char* rom_file;           /// Path to ROM file
+    const char* dsk_file;           /// Path to Floppy disk file
+    unsigned ram_size;              /// Ram size in Bytes
+    CpuToUse cpu;                   /// CPU to use (default TR3200)
+    unsigned clock;                 /// CPU clock speed (default 100Khz)
 
-    unsigned ram_size;              //! Ram size in Bytes
+    std::vector<trillek::DWord> breaks; /// List of breakpoints
 
-    CpuToUse cpu;                   //! CPU to use (default TR3200)
-    unsigned clock;                 //! CPU clock speed (default 100Khz)
-
-    std::vector<vm::DWord> breaks;//" List of breakpoints
-
-    bool valid_params;              //! Parsed correctly all parameters
-    bool ask_help;                  //! User asked by help
+    bool valid_params;              /// Parsed correctly all parameters
+    bool ask_help;                  /// User asked by help
 };
 
 #endif // __VM_PARSER_HPP_

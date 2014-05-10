@@ -35,8 +35,8 @@
 class KeyEventHandler : public OS::event::IKeyboardEventHandler {
     public:
         KeyEventHandler () : OS::event::IKeyboardEventHandler(),
-        prev_key(vm::dev::gkeyboard::SCANCODES::SCAN_NULL),
-        mod (vm::dev::gkeyboard::KEY_MODS::MOD_NONE) {
+        prev_key(trillek::computer::gkeyboard::SCANCODES::SCAN_NULL),
+        mod (trillek::computer::gkeyboard::KEY_MODS::MOD_NONE) {
             // Register listened characters
             for (unsigned c = 0x20; c <= 0x7E; c++){
                 this->chars.push_back(c);
@@ -65,7 +65,7 @@ class KeyEventHandler : public OS::event::IKeyboardEventHandler {
 
         // Called when on the keys reported during register has a state change.
         void KeyStateChange(const unsigned int key, const OS::event::KEY_STATE state) {
-            using namespace vm::dev::gkeyboard;
+            using namespace trillek::computer::gkeyboard;
             if (state == OS::event::KEY_STATE::KS_DOWN) {
                 prev_key = key & 0xFFFF; // Stores the "scancode"
 
@@ -162,32 +162,32 @@ class KeyEventHandler : public OS::event::IKeyboardEventHandler {
             unsigned chr = c;
             if (gk) {
                 if (chr == 0x7F) {
-                    chr = vm::dev::gkeyboard::KEY_DELETE;
+                    chr = trillek::computer::gkeyboard::KEY_DELETE;
                 }
 
                 //std::printf("Character %u='%c' mod=%u -> nº events stored : ", chr, chr, mod);
-                vm::DWord scancode = prev_key & 0xFFFF;
+                trillek::DWord scancode = prev_key & 0xFFFF;
                 gk->EnforceSendKeyEvent(scancode, c & 0xFF, mod);
                 //std::printf("%u \n", gk->E());
             }
         }
 
-        std::shared_ptr<vm::dev::gkeyboard::GKeyboardDev> gk;
+        std::shared_ptr<trillek::computer::gkeyboard::GKeyboardDev> gk;
         unsigned int prev_key;
-        vm::Word mod;
+        trillek::Word mod;
 };
 
 #endif
 
-void print_regs(const vm::cpu::TR3200State& state);
-void print_regs(const vm::cpu::DCPU16NState& state);
-void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc);
-void print_pc(const vm::cpu::DCPU16NState& state, const vm::VComputer& vc);
+void print_regs(const trillek::computer::TR3200State& state);
+void print_regs(const trillek::computer::DCPU16NState& state);
+void print_pc(const trillek::computer::TR3200State& state, const trillek::computer::VComputer& vc);
+void print_pc(const trillek::computer::DCPU16NState& state, const trillek::computer::VComputer& vc);
 //void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram);
 
 int main(int argc, char* argv[]) {
-    using namespace vm;
-    using namespace vm::cpu;
+    using namespace trillek;
+    using namespace trillek::computer;
 
     Byte* rom = nullptr;
     size_t rom_size = 0;
@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
 
     std::printf("Opening ROM image %s\n", options.rom_file);
 
-    int size = vm::aux::LoadROM(options.rom_file, rom);
+    int size = computer::LoadROM(options.rom_file, rom);
     if (size < 0) {
         std::fprintf(stderr, "An error occurred while reading file %s\n", argv[1]);
         return -1;
@@ -219,33 +219,33 @@ int main(int argc, char* argv[]) {
 
     if (options.cpu == CpuToUse::DCPU16N) {
         std::printf("Using CPU DCPU-16N\n");
-        std::unique_ptr<vm::ICPU> cpu(new DCPU16N(options.clock) );
+        std::unique_ptr<computer::ICPU> cpu(new DCPU16N(options.clock) );
         vc.SetCPU(std::move(cpu));
     } else {
         std::printf("Using CPU TR3200\n");
-        std::unique_ptr<vm::ICPU> cpu(new TR3200(options.clock) );
+        std::unique_ptr<computer::ICPU> cpu(new TR3200(options.clock) );
         vc.SetCPU(std::move(cpu));
     }
     std::printf("CPU clock speed set to %u KHz \n", options.clock / 1000);
     vc.SetROM(rom, rom_size);
 
     // Add devices to the Virtual Machine
-    auto gcard = std::make_shared<vm::dev::tda::TDADev>();
+    auto gcard = std::make_shared<computer::tda::TDADev>();
 #ifdef GLFW3_ENABLE
-    vm::dev::tda::TDAScreen gcard_screen = {0};
+    computer::tda::TDAScreen gcard_screen = {0};
 #endif
     vc.AddDevice(5, gcard);
 
-    auto gk = std::make_shared<vm::dev::gkeyboard::GKeyboardDev>();
+    auto gk = std::make_shared<computer::gkeyboard::GKeyboardDev>();
     vc.AddDevice(4, gk);
 
-    auto ddev = std::make_shared<vm::DummyDevice>();
+    auto ddev = std::make_shared<computer::DummyDevice>();
     vc.AddDevice(10, ddev);
 
     // Floppy drive
-    auto fd = std::make_shared<vm::dev::m5fdd::M5FDD>();
+    auto fd = std::make_shared<computer::m5fdd::M5FDD>();
     vc.AddDevice(6, fd);
-    auto floppy = std::make_shared<vm::dev::disk::Disk>(options.dsk_file);
+    auto floppy = std::make_shared<computer::Disk>(options.dsk_file);
 
     // load disk
     if (floppy->isValid()) {
@@ -253,9 +253,9 @@ int main(int argc, char* argv[]) {
     }
     // make a new disk
     else {
-        vm::dev::disk::DiskDescriptor* info = new vm::dev::disk::DiskDescriptor;
+        computer::DiskDescriptor* info = new computer::DiskDescriptor;
 
-        info->TypeDisk        = vm::dev::disk::DiskType::FLOPPY;
+        info->TypeDisk        = computer::DiskType::FLOPPY;
         info->writeProtect    = false;
         info->NumSides        = 2;
         info->TracksPerSide   = 40;
@@ -263,7 +263,7 @@ int main(int argc, char* argv[]) {
         info->BytesPerSector  = 512;
         // 2*40*8*512 = 327680/1024 = 320KiB
 
-        floppy = std::make_shared<vm::dev::disk::Disk>(options.dsk_file, info);
+        floppy = std::make_shared<computer::Disk>(options.dsk_file, info);
         fd->insertFloppy(floppy);
     }
 
@@ -326,7 +326,7 @@ int main(int argc, char* argv[]) {
         gcard->DumpScreen (gcard_screen);
         gcard->DoVSync();
 
-        vm::DWord* tex = (vm::DWord*)tdata;
+        DWord* tex = (DWord*)tdata;
         TDAtoRGBATexture(gcard_screen, tex); // Write the texture to the PBO buffer
     });
 
@@ -342,8 +342,8 @@ int main(int argc, char* argv[]) {
 
     int c = ' ';
     bool loop = true;
-    vm::cpu::DCPU16NState cpu_state_dn;
-    vm::cpu::TR3200State cpu_state_tr;
+    computer::DCPU16NState cpu_state_dn;
+    computer::TR3200State cpu_state_tr;
 
     // Delay here to enforce initial delta != 0
     for (long i=0; i< 600000; i++) {
@@ -520,7 +520,7 @@ int main(int argc, char* argv[]) {
 #define IA      r[REG_IA]
 #define FLAGS   r[REG_FLAGS]
 
-void print_regs(const vm::cpu::DCPU16NState& state) {
+void print_regs(const trillek::computer::DCPU16NState& state) {
     // Print registers
 
     std::printf(
@@ -545,7 +545,7 @@ void print_regs(const vm::cpu::DCPU16NState& state) {
 
 }
 
-void print_regs(const vm::cpu::TR3200State& state) {
+void print_regs(const trillek::computer::TR3200State& state) {
     // Print registers
 
     for (int i=0; i < 11; i++) {
@@ -568,19 +568,19 @@ void print_regs(const vm::cpu::TR3200State& state) {
 
 }
 
-void print_pc(const vm::cpu::DCPU16NState& state, const vm::VComputer& vc) {
-    vm::DWord addr = state.emu[(state.pc >> 12) & 0xf] | (state.pc & 0x0fff);
-    vm::Word val = vc.ReadW(addr);
+void print_pc(const trillek::computer::DCPU16NState& state, const trillek::computer::VComputer& vc) {
+    trillek::DWord addr = state.emu[(state.pc >> 12) & 0xf] | (state.pc & 0x0fff);
+    trillek::Word val = vc.ReadW(addr);
 
     std::printf(" PC : 0x%04X > 0x%08X: 0x%04X ", state.pc, addr, val);
-    std::cout << vm::cpu::DisassemblyDCPU16N(vc, addr) << std::endl;
+    std::cout << trillek::computer::DisassemblyDCPU16N(vc, addr) << std::endl;
 }
 
-void print_pc(const vm::cpu::TR3200State& state, const vm::VComputer& vc) {
-    vm::DWord val = vc.ReadDW(state.pc);
+void print_pc(const trillek::computer::TR3200State& state, const trillek::computer::VComputer& vc) {
+    trillek::DWord val = vc.ReadDW(state.pc);
 
     std::printf("\tPC : 0x%08X > 0x%08X ", state.pc, val);
-    std::cout << vm::cpu::DisassemblyTR3200(vc,  state.pc) << std::endl;
+    std::cout << trillek::computer::DisassemblyTR3200(vc,  state.pc) << std::endl;
 }
 
 /*

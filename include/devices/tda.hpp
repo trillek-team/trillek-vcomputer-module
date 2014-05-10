@@ -15,8 +15,8 @@
 #include <algorithm>
 #include <cstdio>
 
-namespace vm {
-namespace dev {
+namespace trillek {
+namespace computer {
 namespace tda {
 
 static const unsigned WIDTH_CHARS  = 40; /// Width of the screen in Characters
@@ -184,8 +184,10 @@ protected:
 
     bool do_vsync;
 };
+
+    
 } // End of namespace tda
-} // End of namespace dev
-} // End of namespace vm
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __TDA_HPP_

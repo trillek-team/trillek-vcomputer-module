@@ -16,7 +16,7 @@
 #ifdef OPENAL_ENABLE
 namespace AlEngine {
 
-    volatile vm::Word beep_freq;   /// Beep freq
+    volatile trillek::Word beep_freq;   /// Beep freq
     double offset;      /// Signal phase
     double sign;        /// Square wave sign
 
@@ -122,7 +122,7 @@ namespace AlEngine {
         std::fprintf(stderr, "OpenAL closed\n");
     }
 
-    void AlEngine::Tone(vm::Word freq) {
+    void AlEngine::Tone(trillek::Word freq) {
         if (initiated) {
             beep_freq = freq;
         }

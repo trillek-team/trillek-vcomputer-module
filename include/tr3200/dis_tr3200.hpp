@@ -11,8 +11,8 @@
 
 #include <string>
 
-namespace vm {
-namespace cpu {
+namespace trillek {
+namespace computer {
 
 /**
  * Disassembly one instruction of TR3200 code to a humman redable text
@@ -20,7 +20,7 @@ namespace cpu {
  */
 std::string DisassemblyTR3200 (const VComputer& vc, DWord pc);
 
-} // End of namespace cpu
-} // End of namespace vm
+} // End of namespace computer
+} // End of namespace trillek
 
 #endif // __DISTR3200_HPP_

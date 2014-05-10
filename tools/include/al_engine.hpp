@@ -41,7 +41,7 @@ namespace AlEngine {
         bool Init();
         void Shutdown();
 
-        void Tone(vm::Word freq);
+        void Tone(trillek::Word freq);
 
         void Update();
 
