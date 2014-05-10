@@ -1,7 +1,8 @@
-#pragma once
 /**
- * Trillek Virtual Computer - DCPU16N_macros.hpp
- * Macros used by DCPU16N implementation
+ * \brief       Macros used by DCPU16N implementation
+ * \file        DCPU16N_macros.hpp
+ * \copyright   The MIT License (MIT)
+ *
  */
 
 #ifndef __DCPU16N_MACROS_HPP__
@@ -27,4 +28,4 @@
 #define DCPU16N_PHASE_MARKSKIP 17
 #define DCPU16N_PHASE_INTERRUPT 18
 
-#endif
+#endif // ifndef __DCPU16N_MACROS_HPP__

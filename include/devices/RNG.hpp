@@ -1,8 +1,12 @@
-#pragma once
 /**
- * Trillek Virtual Computer - RNG.hpp
- * Implementation of embedded PRNG device
+ * \brief       Virtual Computer Random Number Generator
+ * \file        RNG.hpp
+ * \copyright   The MIT License (MIT)
+ *
+ * Implementation of embedded RNG device
  */
+#ifndef __RNG_HPP_
+#define __RNG_HPP_ 1
 
 #include "Types.hpp"
 #include "AddrListener.hpp"
@@ -11,27 +15,30 @@
 
 namespace vm {
 
-  class RNG : public AddrListener{
-  public:
+class RNG : public AddrListener {
+public:
+
     RNG();
     virtual ~RNG();
 
-    virtual byte_t ReadB(dword_t addr);
-    virtual word_t ReadW(dword_t addr);
-    virtual dword_t ReadDW(dword_t addr);
+    virtual byte_t ReadB (dword_t addr);
+    virtual word_t ReadW (dword_t addr);
+    virtual dword_t ReadDW (dword_t addr);
 
-    virtual void WriteB(dword_t addr, byte_t val);
-    virtual void WriteW(dword_t addr, word_t val);
-    virtual void WriteDW(dword_t addr, dword_t val);
+    virtual void WriteB (dword_t addr, byte_t val);
+    virtual void WriteW (dword_t addr, word_t val);
+    virtual void WriteDW (dword_t addr, dword_t val);
 
-    void Reset();
+    void Reset ();
 
-  private:
+private:
+
     std::uniform_int_distribution<int> distribution;
     std::mt19937 engine;
     dword_t seed;
     bool blockGenerate;
     dword_t number;
-  };
-
+};
 } // End of namespace vm
+
+#endif // __RNG_HPP_

@@ -59,8 +59,14 @@ JMP crash
 MOV %R10, 7
 MOV %R1, 0x0003
 STOREW %R5, 0x8, %R1
-LOADW %R0, %R5, 0x0A
-IFNEQ %R0, 0x50
+LOADW %R0, %R5, 0x0A ;reg A
+IFNEQ %R0, 0x280
+JMP crash
+LOADW %R0, %R5, 0x0C ;reg B
+IFNEQ %R0, 0x0228
+JMP crash
+LOADW %R0, %R5, 0x0E ;reg C
+IFNEQ %R0, 0x0809
 JMP crash
 
 ; set up interrupts
@@ -81,11 +87,12 @@ genLoop:
 ; store data in first sector
 MOV %R10, 8
 MOV %R1, 0x1000
-STOREW %R5, 0x0A, %R1
+STOREW %R5, 0x0A, %R1 ;A = 0x1000
 MOV %R1, 0x00
-STOREW %R5, 0x0E, %R1
+STOREW %R5, 0x0C, %R1 ;B = 0x0
+STOREW %R5, 0x0E, %R1 ;C = 0x0
 MOV %R1, 0x0002
-STOREW %R5, 0x08, %R1
+STOREW %R5, 0x08, %R1 ;CMD = 0x2
 
 _sleep1:
 SLEEP
@@ -114,8 +121,6 @@ MOV %R1, 0x01
 STOREW %R5, 0x0E, %R1
 MOV %R1, 0x0002
 STOREW %R5, 0x08, %R1
-SLEEP
-
 
 crash:
   SLEEP

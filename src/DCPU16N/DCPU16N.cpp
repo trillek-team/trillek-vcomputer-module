@@ -1,10 +1,12 @@
 /**
- * Trillek Virtual Computer - DCPU16N.cpp
- * Implementation of the DCPU-16N CPU
- */
+* \brief       Class definitions for the DCPU-16N CPU
+* \file        DCPU16N.cpp
+* \copyright   The MIT License (MIT)
+*
+*/
 
-#include "DCPU16N/DCPU16N.hpp"
-#include "DCPU16N/DCPU16N_macros.hpp"
+#include "DCPU16N.hpp"
+#include "DCPU16N_macros.hpp"
 #include "VSFix.hpp"
 
 #include <algorithm>
@@ -100,7 +102,7 @@ void DCPU16N::Reset()
     // point EMU at ROM (page 0x100)
     emu[0] = 0x00100000;
 
-}
+} // Reset
 
 unsigned DCPU16N::Step()
 {
@@ -123,10 +125,10 @@ void DCPU16N::Tick(unsigned n)
     while(n--) {
         switch(phase) {
         case DCPU16N_PHASE_NWAFETCH:
-            cfa = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
+            cfa    = emu[(pc >> 12) & 0xf] | (pc & 0x0fff);
             fetchh = ( ((word_t)vcomp->ReadB(cfa + 1)) << 8 )
                      |  (word_t)vcomp->ReadB(cfa);
-            pc += 2;
+            pc    += 2;
             if(addradd) {
                 fetchh += acu;
                 addradd = false;
@@ -234,7 +236,8 @@ void DCPU16N::Tick(unsigned n)
                             if(addrdec || phase == DCPU16N_PHASE_NWAFETCH)
                                 break;
                         }
-                        else { // [REG + nextword]
+                        else {
+                            // [REG + nextword]
                             acu = r[opca & 0x7];
                             if(opca & 0x08) {
                                 phase   = DCPU16N_PHASE_NWAFETCH;
@@ -244,9 +247,11 @@ void DCPU16N::Tick(unsigned n)
                             }
                         }
                     }
-                    else { // REG
+                    else {
+                        // REG
                         acu = r[opca & 0x7];
-                        if(opca & 0x08) { // [REG]
+                        if(opca & 0x08) {
+                            // [REG]
                             phase   = DCPU16N_PHASE_ACUFETCH;
                             addrdec = true;
                             break;
@@ -309,11 +314,13 @@ void DCPU16N::Tick(unsigned n)
                         case 7: // nextword (READ)
                             phase = DCPU16N_PHASE_NWBFETCH;
                             break;
-                        }
-                        if(addrdec || phase == DCPU16N_PHASE_NWBFETCH)
+                        } // switch
+                        if(addrdec || phase == DCPU16N_PHASE_NWBFETCH) {
                             break;
+                        }
                     }
-                    else { // [REG + nextword]
+                    else {
+                        // [REG + nextword]
                         bcu     = r[opca & 0x7];
                         phase   = DCPU16N_PHASE_NWBFETCH;
                         addrdec = true;
@@ -321,9 +328,11 @@ void DCPU16N::Tick(unsigned n)
                         break;
                     }
                 }
-                else { // REG
+                else {
+                    // REG
                     bcu = r[opca & 0x7];
-                    if(opca & 0x08) { // [REG]
+                    if(opca & 0x08) {
+                        // [REG]
                         phase   = DCPU16N_PHASE_BCUFETCH;
                         addrdec = true;
                         break;
@@ -341,7 +350,7 @@ void DCPU16N::Tick(unsigned n)
 
         case DCPU16N_PHASE_EXEC:
             phase = DCPU16N_PHASE_OPFETCH;
-            if((opcl & 0x001f) != 0) {
+            if( (opcl & 0x001f) != 0 ) {
                 wrt = (opcl >> 5) & 0x1f;
                 switch(opcl & 0x001f) {
                 case 0x01: // SET (wb ra)
@@ -383,7 +392,7 @@ void DCPU16N::Tick(unsigned n)
 
                 case 0x06: // DIV (rwb ra)
                     if(acu) {
-                        cfa = (((dword_t)bcu) << 16) / acu;
+                        cfa = ( ( (dword_t)bcu ) << 16 ) / acu;
                         ex  = (word_t)cfa;
                         bcu = (word_t)(cfa >> 16);
                     }
@@ -396,13 +405,13 @@ void DCPU16N::Tick(unsigned n)
 
                 case 0x07: // DVI (rwb ra)
                     if(acu) {
-                        if(((int16_t)bcu) % ((int16_t)acu)) {
-                            ex = ( ((int32_t)bcu) << 16 ) / ((int16_t)acu);
+                        if( ( (int16_t)bcu) % ( (int16_t)acu ) ) {
+                            ex = ( ( (int32_t)bcu ) << 16 ) / ( (int16_t)acu );
                         }
                         else {
                             ex = 0;
                         }
-                        bcu = (word_t)( ((int16_t)bcu) / ((int16_t)acu) );
+                        bcu = (word_t)( ( (int16_t)bcu ) / ( (int16_t)acu ) );
                     }
                     else {
                         bcu = 0;
@@ -423,7 +432,7 @@ void DCPU16N::Tick(unsigned n)
 
                 case 0x09: // MDI (rwb ra)
                     if(acu) {
-                        bcu = (word_t)( ((int16_t)bcu) % ((int16_t)acu) );
+                        bcu = (word_t)( ( (int16_t)bcu ) % ( (int16_t)acu ) );
                     }
                     else {
                         bcu = 0;
@@ -456,7 +465,7 @@ void DCPU16N::Tick(unsigned n)
 
                 case 0x0e: // ASR (rwb ra)
                     s32  = (int16_t)bcu;
-                    ex   = (word_t)(bcu << (16 - acu));
+                    ex   = (word_t)( bcu << (16 - acu) );
                     bcu  = (word_t)(s32 >> acu);
                     wrt |= 0x100;
                     break;
@@ -500,7 +509,7 @@ void DCPU16N::Tick(unsigned n)
                     break;
 
                 case 0x15: // IFA (rb ra)
-                    if(! ( ((int16_t)bcu) > ((int16_t)acu) ) ) {
+                    if( !( ( (int16_t)bcu ) > ( (int16_t)acu ) ) ) {
                         phase = DCPU16N_PHASE_MARKSKIP;
                     }
                     break;
@@ -512,7 +521,7 @@ void DCPU16N::Tick(unsigned n)
                     break;
 
                 case 0x17: // IFU (rb ra)
-                    if(! ( ((int16_t)bcu) < ((int16_t)acu) ) ) {
+                    if( !( ( (int16_t)bcu ) < ( (int16_t)acu ) ) ) {
                         phase = DCPU16N_PHASE_MARKSKIP;
                     }
                     break;

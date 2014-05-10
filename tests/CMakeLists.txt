@@ -44,8 +44,7 @@ ELSEIF(GTEST_ROOT)
     gtest_main
     )
 ELSE()
-  message("GTEST_ROOT is not defined. You must tell CMake where
-  to find the gtest source. For example :
+  message(STATUS "GTEST_ROOT is not defined. You must tell CMake where to find the gtest source. For example :
   GTEST_ROOT=path/gtest-1.6.0 ;
   export GTEST_ROOT ")
   set(GTEST_ROOT "" CACHE PATH "GTest root path")

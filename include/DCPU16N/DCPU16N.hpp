@@ -1,7 +1,8 @@
-#pragma once
 /**
- * Trillek Virtual Computer - DCPU16N.hpp
- * Class definitions for the DCPU-16N CPU
+ * \brief       Class definitions for the DCPU-16N CPU
+ * \file        DCPU16N.hpp
+ * \copyright   The MIT License (MIT)
+ *
  */
 
 #ifndef __DCPU16N_HPP__
@@ -15,6 +16,7 @@ namespace cpu {
 
 class DCPU16N : public ICPU {
 public:
+
     DCPU16N(unsigned clock = 100000);
     virtual ~DCPU16N();
 
@@ -28,26 +30,26 @@ public:
     /**
      * Resets the CPU state
      */
-    virtual void Reset();
+    virtual void Reset ();
 
     /**
      * Executes a single CPU instruction
-     * @return Number of CPU cycles used
+     * \return Number of CPU cycles used
      */
-    unsigned Step();
+    unsigned Step ();
 
     /**
      * Executes one or more CPU clock cycles
-     * @param n Number of cycles (default=1)
+     * \param n Number of cycles (default=1)
      */
-    void Tick(unsigned n = 1);
+    void Tick (unsigned n = 1);
 
     /**
-        * Sends an interrupt to the CPU.
-        * @param msg Interrupt message
-        * @return True if the CPU accepts the interrupt
-        */
-    bool SendInterrupt(word_t msg);
+     * Sends an interrupt to the CPU.
+     * \param msg Interrupt message
+     * \return True if the CPU accepts the interrupt
+     */
+    bool SendInterrupt (word_t msg);
 
     /**
      * Writes a copy of CPU state in a chunk of memory pointer by ptr.
@@ -55,7 +57,7 @@ public:
      * @param size Size of the chunk of memory where we can write. If
      * successful, it will be set to the size of the written data.
      */
-    virtual void GetState(void* ptr, std::size_t& size) const;
+    virtual void GetState (void* ptr, std::size_t& size) const;
 
     /**
      * Sets the CPU state.
@@ -63,7 +65,7 @@ public:
      * @param size Size of the chunk of memory were will read.
      * @return True if can read the State data from the pointer.
      */
-    virtual bool SetState(const void* ptr, std::size_t size);
+    virtual bool SetState (const void* ptr, std::size_t size);
 
 protected:
 
@@ -71,7 +73,7 @@ protected:
     word_t IORead(word_t);
     void IOWrite(word_t, word_t);
 
-    unsigned int cpu_clock;   // CPU clock speed
+    unsigned int cpu_clock; // CPU clock speed
 
     // CPU Core
     word_t r[8];

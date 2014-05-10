@@ -121,6 +121,7 @@ There are some TR3200 ASM programs, source code and binary files, in /asm direct
 - type1.asm : Basic typing program
 - hwn.asm : List how many devices are pluged and what are.
 - clock.asm : Basic example of system clock using Timer0
+- beeper.asm : Generates some sound with the beeper.
 
 
 IMPLEMENTED DEVICES
@@ -128,13 +129,15 @@ IMPLEMENTED DEVICES
 
 - TDA graphics card
 - Generic Wester/Latin keyboard
+- Beeper, RTC, RNG and Timer embed devices
+- Floppy drive
 - Dummy device (Used only to test stuff)
+- Debug Serial Console (only to be used in develop of the virtual computer and Trillek itself)
 
 TODO
 ----
 
-- Integrated stuff of the mother board (RTC, RNG, NVRAM)
+- Integrated stuff of the mother board (NVRAM)
 - Check interrupts
-- Implement Floppy drive
 - DCPU-16N cpu (Actually being implemented)
 
