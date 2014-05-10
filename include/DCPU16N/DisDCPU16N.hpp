@@ -9,15 +9,15 @@
 #include <string>
 
 namespace vm {
-    namespace cpu {
+namespace cpu {
 
-        /**
-         * Disassemble one instruction of DCPU-16N code to a humman readable string
-         * @param vc VComputer to read from
-         * @param pc 24 bit address to read instruction from
-         */
-        std::string DisassemblyDCPU16N(const VComputer& vc, dword_t pc);
+/**
+ * Disassemble one instruction of DCPU-16N code to a humman readable string
+ * @param vc VComputer to read from
+ * @param pc 24 bit address to read instruction from
+ */
+std::string DisassemblyDCPU16N(const VComputer& vc, dword_t pc);
 
-    } // End of namespace cpu
-} // End of namespace vm
+} // cpu
+} // vm
 
