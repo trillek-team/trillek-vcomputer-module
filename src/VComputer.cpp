@@ -17,8 +17,10 @@
 namespace vm {
     using namespace vm::cpu;
 
-    VComputer::VComputer (std::size_t ram_size ) :
-        is_on(false), ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0), breaking(false), recover_break(false) {
+    VComputer::VComputer (std::size_t ram_size ) : is_on(false),
+        ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0),
+        dmaDevice(nullptr), dmaCallback(nullptr), dmaData(nullptr), dmaAddress(0), dmaCurrentPos(0), dmaTransferRate(0),
+        breaking(false), recover_break(false) {
 
             ram = new byte_t[ram_size];
             std::fill_n(ram, ram_size, 0);
@@ -254,7 +256,38 @@ namespace vm {
                     }
                 }
             }
-
+			
+			// DMA
+			if (dmaDevice && dmaDataSize != 0) {
+                std::size_t bytesToTransfer= cpu_ticks * dmaTransferRate;
+                
+                // Ensures we're not outside the buffer or ram
+                if (dmaCurrentPos + bytesToTransfer > dmaDataSize) {
+                    bytesToTransfer = dmaDataSize;
+                }
+                if (dmaAddress + dmaCurrentPos + bytesToTransfer > ram_size) {
+                    bytesToTransfer = ram_size - 1 - dmaCurrentPos;
+                }
+                
+                if(dmaRead) { // Read operation
+                    memcpy(dmaData + dmaCurrentPos, &ram[dmaAddress + dmaCurrentPos], bytesToTransfer);
+                }
+                else { // Write operation
+                    memcpy(&ram[dmaAddress + dmaCurrentPos], dmaData + dmaCurrentPos, bytesToTransfer);
+                }
+                
+                dmaCurrentPos += bytesToTransfer;
+                
+                if (dmaCurrentPos == dmaDataSize) { // Are we finished?
+                    dmaCallback();
+                    
+                    dmaCallback = nullptr;
+                    dmaData = nullptr;   
+                    dmaDataSize = 0;
+                    dmaAddress = 0;
+                    dmaCurrentPos = 0;
+                }
+			}
         }
     }
 
@@ -269,6 +302,52 @@ namespace vm {
     bool VComputer::RmAddrListener (int32_t id) {
         Range r(id);
         return listeners.erase(r) >= 1;
+    }
+    
+    bool VComputer::RequestDMA (IDevice* device) {
+        if (dmaDevice) {
+            return false; //already a registered device, deny
+        }
+        
+        dmaDevice = device;
+        return true;
+    }
+
+    void VComputer::ReleaseDMA (IDevice* device) {
+        assert(dmaDevice == device);
+
+        dmaDevice = nullptr;
+
+        dmaData = nullptr;
+        dmaCallback = nullptr;
+        dmaData = nullptr;   
+        dmaDataSize = 0;
+        dmaAddress = 0;
+        dmaCurrentPos = 0;
+    }
+
+    void VComputer::DMARead (dword_t addr, byte_t* data, size_t size, dword_t transferRate, std::function<void()> callback, IDevice* device) {
+        assert(dmaDevice == device); // Only one device at the same time
+        assert(dmaData == nullptr); // Only one read/write at the same time
+        
+        dmaRead = true;
+        
+        dmaData = data;
+        dmaDataSize = size;
+        dmaTransferRate = transferRate;
+        dmaCallback = callback;
+    }
+
+    void VComputer::DMAWrite (dword_t addr, byte_t* data, size_t size, dword_t transferRate, std::function<void()> callback, IDevice* device) {
+        assert(dmaDevice == device); // Only one device at the same time
+        assert(dmaData == nullptr); // Only one read/write at the same time
+
+        dmaRead = false;
+        
+        dmaData = data;
+        dmaDataSize = size;
+        dmaTransferRate = transferRate;
+        dmaCallback = callback;
     }
 
 } // End of namespace vm

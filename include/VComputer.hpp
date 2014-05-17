@@ -22,6 +22,7 @@
 #include <set>
 #include <memory>
 #include <cassert>
+#include <cstring>
 
 namespace vm {
     using namespace vm::cpu;
@@ -275,6 +276,41 @@ namespace vm {
         bool RmAddrListener (int32_t id);
 
         /*!
+         * Requests access to the memory bus for DMA operations
+         * \param device The requesting device
+         * \return If the request was succesful, if false the device will have to wait
+         */
+        bool RequestDMA (IDevice* device);
+        
+        /*!
+         * Releases access to the memory bus
+         * \param device The releasing device
+         */
+        void ReleaseDMA (IDevice* device);
+        
+        /*!
+         * Performs a DMA read
+         * \param addr Address to read from
+         * \param data Pointer to an array of byte_t, large enough to store size bytes
+         * \param size How many bytes to be read
+         * \param transferRate The transfer speed from ram to device, cannot be larger than 4
+         * \param callback The void() function to be called when reading is finished
+         * \param device The requesting device
+         */
+        void DMARead (dword_t addr, byte_t* data, size_t size, dword_t transferRate, std::function<void()> callback, IDevice* device);
+
+        /*!
+         * Performs a DMA write
+         * \param addr Address to write to
+         * \param data Pointer to an array of byte_t to copy data from
+         * \param size How many bytes to be written
+         * \param transferRate The transfer speed from device to ram, cannot be larger than 4
+         * \param callback The void() function to be called when reading is finished
+         * \param device The requesting device
+         */
+        void DMAWrite (dword_t addr, byte_t* data, size_t size, dword_t transferRate, std::function<void()> callback, IDevice* device);
+    
+        /*!
          * Sizeo of the RAM in bytes
          */
         std::size_t RamSize () const {
@@ -382,6 +418,15 @@ namespace vm {
         device_t devices[MAX_N_DEVICES];          //! Devices atached to the virtual computer
 
         std::map<Range, AddrListener*> listeners; //! Container of AddrListeners
+        
+        IDevice* dmaDevice;                 //! The device currently performing a DMA operation
+        std::function<void()> dmaCallback;  //! The function to call when the DMA operation is complete
+        bool dmaRead;                       //! If true a device wants to read data, if false write
+        byte_t* dmaData;                    //! Either where the data is being read from or written to
+        std::size_t dmaDataSize;            //! Size of dmaData
+        dword_t dmaAddress;                 //! The address in RAM to start writing DMA data to
+        dword_t dmaCurrentPos;              //! Current DMA write/read position relative to dmaAddress
+        dword_t dmaTransferRate;            //! Transfer rate for DMAs, in bytes/clock cycle
 
         Timer pit;              //! Programable Interval Timer
         RNG rng;                //! Random Number Generator

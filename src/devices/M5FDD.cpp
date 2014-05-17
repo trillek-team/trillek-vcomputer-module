@@ -10,13 +10,15 @@ namespace vm {
         namespace m5fdd {
 
             M5FDD::M5FDD() : state(STATE_CODES::NO_MEDIA), error(ERROR_CODES::NONE),
-                busyCycles(0), pendingInterrupt(false) {
+                busy(false), dmaAccess(false), performingDMA(false), pendingInterrupt(false) {
                 a = b = c = d = 0;
             }
 
             M5FDD::~M5FDD() {
                 if (floppy)
                     ejectFloppy();
+                if (dmaAccess)
+                    vcomp->ReleaseDMA(this);
             }
 
             void M5FDD::Reset() {
@@ -29,10 +31,17 @@ namespace vm {
                 if (floppy)
                     ejectFloppy();
 */
-                busyCycles = a = b = c = d = 0;
+                a = b = c = d = 0;
+
                 pendingInterrupt = false;
                 state = floppy == NULL ? STATE_CODES::NO_MEDIA : floppy->isProtected() ? STATE_CODES::READY_WP : STATE_CODES::READY;
                 error = floppy == NULL ? ERROR_CODES::NO_MEDIA : ERROR_CODES::NONE;
+                
+                if (dmaAccess) {
+                    vcomp->ReleaseDMA(this);
+                    dmaAccess = false;
+                    performingDMA = false;
+                }
             }
 
             bool M5FDD::DoesInterrupt(uint16_t& msg) {
@@ -72,7 +81,6 @@ namespace vm {
                         if (error == ERROR_CODES::NONE){
                             state = STATE_CODES::BUSY;
                             setSector(c);
-                            curPosition = 0;
                             dmaLocation = (b << 16) + a;
                             writing = false;
                         }
@@ -105,7 +113,6 @@ namespace vm {
                         if (error == ERROR_CODES::NONE) {
                             state = STATE_CODES::BUSY;
                             setSector(c);
-                            curPosition = 0;
                             dmaLocation = (b << 16) + a;
                             writing = true;
                         }
@@ -151,30 +158,43 @@ namespace vm {
             }
 
             void M5FDD::Tick(unsigned n, const double delta) {
-                for (int i = 0; i<n; i++) {
-                    if (busyCycles > 0 && state == STATE_CODES::BUSY) {
-
-                        //TODO: integrate with DMA system
-                        busyCycles--;
-
-                        // continue DMAing RAM <-> BUFFER
-                        if (curPosition < floppy->getDescriptor()->BytesPerSector) {
-                            if (writing)
-                                sectorBuffer[curPosition] = vcomp->ReadB(dmaLocation + curPosition);
-                            else
-                                vcomp->WriteB(dmaLocation + curPosition, sectorBuffer[curPosition]);
-                            curPosition++;
-                        }
-
-                        // just finished DMAing to the buffer, write it
-                        if (writing && curPosition == floppy->getDescriptor()->BytesPerSector) {
-                            floppy->writeSector(curSector, &sectorBuffer);
+                if (busy && state == STATE_CODES::BUSY) {
+                    if (dmaAccess) {
+                        if (!performingDMA) { //make sure we're reading/writing again before the first DMA finishes
+                            if (writing) {
+                                //will be called when DMA is complete
+                                auto callback = [&] {
+                                    busy = false;
+                                    performingDMA = false;
+                                    floppy->writeSector(curSector, &sectorBuffer); // Finished DMAing to the buffer, time to actually write it to the disk
+                                    dmaAccess = false;
+                                    vcomp->ReleaseDMA(this); //must be the last line, vcomp destructs the lambda...
+                                };
+                                
+                                vcomp->DMARead(dmaLocation, &sectorBuffer[0], sectorBuffer.size(), 1, callback, this);
+                                performingDMA = true;
+                            }
+                            else {
+                                //will be called when DMA is complete
+                                auto callback = [&] {
+                                    busy = false;
+                                    performingDMA = false;
+                                    dmaAccess = false;
+                                    vcomp->ReleaseDMA(this); //must be the last line, vcomp destructs the lambda...
+                                };
+                                
+                                vcomp->DMAWrite(dmaLocation, &sectorBuffer[0], sectorBuffer.size(), 1, callback, this);
+                                performingDMA = true;
+                            }
                         }
                     }
-                    else if (floppy && state == STATE_CODES::BUSY) {
-                        state = floppy->isProtected() ? STATE_CODES::READY_WP : STATE_CODES::READY;
-                        pendingInterrupt = true; // State changes
+                    else {
+                        dmaAccess = vcomp->RequestDMA(this);
                     }
+                }
+                else if (floppy && state == STATE_CODES::BUSY) {
+                    state = floppy->isProtected() ? STATE_CODES::READY_WP : STATE_CODES::READY;
+                    pendingInterrupt = true; // State changes
                 }
             }
 
@@ -211,7 +231,7 @@ namespace vm {
                 //TODO: seek timing calculations
 
                 //TODO: disk read timing calculations
-                busyCycles += 512;
+                busy = true;
 
                 curSector = sector;
             }

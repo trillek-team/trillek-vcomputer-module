@@ -188,11 +188,12 @@ namespace vm {
                 STATE_CODES state;    /// Floppy drive actual status
                 ERROR_CODES error;    /// Floppy drive actual error state
 
-                bool writing;         /// is the drive reading or writing?
+                bool busy;            /// Is true while the drive is reading/writing to a sector
+                bool writing;         /// is the drive reading or writing from disk?
                 unsigned curSector;   /// current absolute sector the head is at
-                unsigned curPosition; /// current DMA position inside of the sector
-                unsigned busyCycles;  /// Device Cycles that the device will be busy
                 dword_t dmaLocation;  /// RAM Location for the DMA transfer
+                bool dmaAccess;       /// Does the device have access?
+                bool performingDMA;   /// Are we waiting for a DMA to complete?
 
                 uint16_t msg;         /// Msg to send if need to trigger a interrupt
                 bool pendingInterrupt;/// Must launch a interrupt from device to CPU ?
