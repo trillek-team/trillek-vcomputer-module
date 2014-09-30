@@ -53,8 +53,14 @@ namespace OS {
                 this->window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
 
                 if (!this->window) {
-                    glfwTerminate();
-                    return false;
+                    // Try with core profile
+                    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+                    this->window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+
+                    if (!this->window) {
+                        glfwTerminate();
+                        return false;
+                    }
                 }
 
                 this->width = width;
