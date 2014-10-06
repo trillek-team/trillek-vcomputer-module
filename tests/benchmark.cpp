@@ -31,16 +31,24 @@ int main(int argc, char* argv[]) {
 
 
   if (argc < 2) {
-    std::printf("Usage: %s binary_files [number of cpus]\n", argv[0]);
+    std::printf("Usage: %s binary_files [number of cpus] [seed]\n", argv[0]);
     return -1;
 
   }
-  std::srand(std::time(0));
 
-  if (std::atoi(argv[argc-1]) > 0) { // Is a number
+
+  unsigned seed = std::time(0);
+  if (std::atoi(argv[argc-1]) > 0 && std::atoi(argv[argc-2]) > 0) { // cpus + seed
+    n_cpus = std::atoi(argv[argc-2]);
+    seed = (unsigned) std::atoi(argv[argc-1]);
+    argc--; argc--;
+
+  } else if (std::atoi(argv[argc-1]) > 0 ) { // Only number of cpus
     n_cpus = std::atoi(argv[argc-1]);
     argc--;
   }
+
+  std::srand(seed);
 
   unsigned troms = argc -1;
   byte_t **rom = new byte_t*[troms];
@@ -60,6 +68,7 @@ int main(int argc, char* argv[]) {
     rom_size[i] = size;
   }
 
+  std::printf("Seed : %d\n", seed);
   std::printf("Runing :\n~1%% @ 1MHz\n~10%% @ 0.5MHz\n~20%% @ 0.2MHz\n~59%% @ 0.1MHz\n~10%% @ 0.01MHz\n");
   VComputer *vc = new VComputer[n_cpus];
   for (auto i=0; i< n_cpus; i++) {
