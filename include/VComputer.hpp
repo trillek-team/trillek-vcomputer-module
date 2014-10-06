@@ -143,7 +143,7 @@ public:
     byte_t ReadB (dword_t addr) const {
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 
-        if ( !(addr & 0xF00000 ) ) {
+        if ( addr < ram_size ) {
             // RAM address (0x000000-0x0FFFFF)
             return ram[addr];
         }
@@ -166,7 +166,7 @@ public:
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
         size_t tmp;
 
-        if ( !(addr & 0xF00000 ) ) {
+        if ( addr < ram_size-1 ) {
             // RAM address
             tmp = ( (size_t)ram ) + addr;
             return ( (word_t*)tmp )[0];
@@ -192,7 +192,7 @@ public:
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
         size_t tmp;
 
-        if ( !(addr & 0xF00000 ) ) {
+        if ( addr < ram_size-3 ) {
             // RAM address
             tmp = ( (size_t)ram ) + addr;
             return ( (dword_t*)tmp )[0];
