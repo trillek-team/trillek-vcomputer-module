@@ -17,10 +17,49 @@
 namespace vm {
 using namespace vm::cpu;
 
+/* A function for aligned malloc that is portable */
+static uint8_t *my_malloc(size_t size) {
+    void *block = nullptr;
+    int res = 0;
+
+#if defined(_WIN32)
+    /* A (void *) cast needed for avoiding a warning with MINGW :-/ */
+    block = (void *)_aligned_malloc(size, 16);
+#elif defined __APPLE__
+    /* Mac OS X guarantees 16-byte alignment in small allocs */
+    block = malloc(size);
+#elif _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600
+    /* Platform does have an implementation of posix_memalign */
+    res = posix_memalign(&block, 16, size);
+#else
+    block = malloc(size);
+#endif  /* _WIN32 */
+
+    if (res != 0) {
+        return nullptr;
+    }
+
+    return (uint8_t *)block;
+}
+
+
+/* Release memory booked by my_malloc */
+static void my_free(void *block) {
+    assert(block != nullptr);
+#if defined(_WIN32)
+    _aligned_free(block);
+#else
+    free(block);
+#endif  /* _WIN32 */
+}
+
+
+
 VComputer::VComputer (std::size_t ram_size ) :
     is_on(false), ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0), breaking(false), recover_break(false) {
 
-    ram = new byte_t[ram_size];
+    ram = my_malloc(ram_size);  //new byte_t[ram_size];
+    assert(ram != nullptr);
     std::fill_n(ram, ram_size, 0);
 
     // Add timers addresses
@@ -42,7 +81,8 @@ VComputer::VComputer (std::size_t ram_size ) :
 
 VComputer::~VComputer () {
     if (ram != nullptr) {
-        delete[] ram;
+        my_free((void*)ram);
+        //delete[] ram;
     }
 
     // Drops plugged devices
@@ -287,5 +327,7 @@ bool VComputer::RmAddrListener (int32_t id) {
     Range r(id);
 
     return listeners.erase(r) >= 1;
+
 }
+
 } // End of namespace vm
