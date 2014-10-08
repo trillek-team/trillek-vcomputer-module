@@ -167,10 +167,10 @@ else (EMSCRIPTEN)
         enable_testing()
 
         find_package(GTest)
-        if(NOT $GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
+        if(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
             # findGTEST could fail if gtest is not compiled
             add_subdirectory($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest)
-        endif(NOT $GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
+        endif(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
 
     add_subdirectory(tests)
 
