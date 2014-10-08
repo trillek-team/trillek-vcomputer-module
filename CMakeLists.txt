@@ -164,12 +164,16 @@ else (EMSCRIPTEN)
 
     if(BUILD_TESTS_VCOMPUTER)
         message(STATUS "Procesing Tests")
+        enable_testing()
 
-        if(DEFINED ENV{GTEST_ROOT})  # Note we omit the $ here!
+        find_package(GTest)
+        if(NOT $GTEST_FUND AND DEFINED ENV{GTEST_ROOT})
+            # findGTEST could fail if gtest is not compiled
             add_subdirectory($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest)
-        endif()
+        endif(NOT $GTEST_FUND AND DEFINED ENV{GTEST_ROOT})
 
-        add_subdirectory(tests)
+    add_subdirectory(tests)
+
     endif(BUILD_TESTS_VCOMPUTER)
 
 endif (EMSCRIPTEN)
