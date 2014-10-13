@@ -1,6 +1,6 @@
 /**
  * \brief       Virtual Computer Auxiliar functions
- * \file        suxiliar.hpp
+ * \file        auxiliar.hpp
  * \copyright   The MIT License (MIT)
  *
  * Some auxiliar functions and methods
