@@ -127,10 +127,10 @@ enum KEYCODES {
 
 enum KEY_MODS {
     /// Key modifier
-    MOD_NONE  = 0x0,
-    MOD_SHIFT = 0x1,
-    MOD_CTRL  = 0x2,
-    MOD_ALTGR = 0x4
+    KEY_MOD_NONE  = 0x0,
+    KEY_MOD_SHIFT = 0x1,
+    KEY_MOD_CTRL  = 0x2,
+    KEY_MOD_ALTGR = 0x4
 };
 
 static const size_t BSIZE = 64; /// Internal buffer size

@@ -36,7 +36,7 @@ class KeyEventHandler : public OS::event::IKeyboardEventHandler {
     public:
         KeyEventHandler () : OS::event::IKeyboardEventHandler(),
         prev_key(trillek::computer::gkeyboard::SCANCODES::SCAN_NULL),
-        mod (trillek::computer::gkeyboard::KEY_MODS::MOD_NONE) {
+        mod (trillek::computer::gkeyboard::KEY_MODS::KEY_MOD_NONE) {
             // Register listened characters
             for (unsigned c = 0x20; c <= 0x7E; c++){
                 this->chars.push_back(c);
@@ -116,19 +116,19 @@ class KeyEventHandler : public OS::event::IKeyboardEventHandler {
                     case GLFW_KEY_LEFT_SHIFT:
                     case GLFW_KEY_RIGHT_SHIFT:
                         gk->EnforceSendKeyEvent(prev_key, KEY_SHIFT, mod);
-                        mod |= KEY_MODS::MOD_SHIFT;
+                        mod |= KEY_MODS::KEY_MOD_SHIFT;
                         break;
 
                     case GLFW_KEY_LEFT_CONTROL:
                     case GLFW_KEY_RIGHT_CONTROL:
                         gk->EnforceSendKeyEvent(prev_key, KEY_CONTROL, mod);
-                        mod |= KEY_MODS::MOD_CTRL;
+                        mod |= KEY_MODS::KEY_MOD_CTRL;
                         break;
 
                     case GLFW_KEY_LEFT_ALT:
                     case GLFW_KEY_RIGHT_ALT:
                         gk->EnforceSendKeyEvent(prev_key, KEY_ALT, mod);
-                        mod |= KEY_MODS::MOD_ALTGR;
+                        mod |= KEY_MODS::KEY_MOD_ALTGR;
                         break;
 
                     default:
@@ -139,17 +139,17 @@ class KeyEventHandler : public OS::event::IKeyboardEventHandler {
                 switch (key) {
                     case GLFW_KEY_LEFT_SHIFT:
                     case GLFW_KEY_RIGHT_SHIFT:
-                        mod &= (KEY_MODS::MOD_SHIFT ^ 0xFFFF);
+                        mod &= (KEY_MODS::KEY_MOD_SHIFT ^ 0xFFFF);
                         break;
 
                     case GLFW_KEY_LEFT_CONTROL:
                     case GLFW_KEY_RIGHT_CONTROL:
-                        mod &= (KEY_MODS::MOD_CTRL ^ 0xFFFF);
+                        mod &= (KEY_MODS::KEY_MOD_CTRL ^ 0xFFFF);
                         break;
 
                     case GLFW_KEY_LEFT_ALT:
                     case GLFW_KEY_RIGHT_ALT:
-                        mod &= (KEY_MODS::MOD_ALTGR ^ 0xFFFF);
+                        mod &= (KEY_MODS::KEY_MOD_ALTGR ^ 0xFFFF);
                         break;
 
                     default:
