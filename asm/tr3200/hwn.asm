@@ -15,11 +15,13 @@ begin_search_tda:
   IFNEQ %r0, 0xFF   ; Device Present ?
     JMP begin_search_tda
 
+  ; Read device type, offset 1 byte
   ADD %r1, %r10, 1
   LOADB %r0, %r1
   IFNEQ %r0, 0x0E   ; Is a Graphics device ?
     JMP begin_search_tda
 
+  ; Read device subtype, offset 2 bytes
   ADD %r1, %r10, 2
   LOADB %r0, %r1
   IFNEQ %r0, 0x01   ; Is TDA compatible ?
@@ -28,7 +30,7 @@ begin_search_tda:
 end_search_tda:
   IFEQ %r10, 0x112100
     JMP crash       ; Not found, so type on what ?
-  STORE TDA_base_dev, %r10 ; We put in the var that we don't found anything
+  STORE TDA_base_dev, %r10 ; We put in the var that we found a TDA compatible display
 
   IFEQ %r10, 0xFFFFFFFF
     JMP crash ; We skips  print code
@@ -111,10 +113,11 @@ end_search_tda:
 
   ADD %r6, %r5, dev_table
   MOV %r0, 0
-  LOADB %r0, %r6         ; Read slot number (%r0 = dev_table[%r5])
-  CALL print_uint        ; And print it
+  LOADB %r0, %r6          ; Read slot number (%r0 = dev_table[%r5])
+  CALL print_uint         ; And print it
 
-  LLS %r7, %r0, 8         ; 0xXX00
+  LOADB %r0, %r6          ; Read slot number (%r0 = dev_table[%r5])
+  LLS %r7, %r0, 8         ; 0x00XX00
   ADD %r7, %r7, 0x110000  ; 0x11XX00
 
   ; *** Print Dev Type
@@ -124,7 +127,7 @@ end_search_tda:
   CALL get_offset_from_row_col
   ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
   MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
-  LOADB %r0, %r6         ; Read slot number
+  LOADB %r0, %r6          ; Read slot number
   CALL print_hex_b        ; And print it
 
   ; *** Print Dev SubType
@@ -134,7 +137,7 @@ end_search_tda:
   CALL get_offset_from_row_col
   ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
   MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
-  LOADB %r0, %r6         ; Read slot number
+  LOADB %r0, %r6          ; Read slot number
   CALL print_hex_b        ; And print it
 
   ; *** Print Dev ID
@@ -144,7 +147,7 @@ end_search_tda:
   CALL get_offset_from_row_col
   ADD %r1, %r0, 0x001000  ; %r1 points were we like to print
   MOV %r2, 0x48           ; Dark blue paper, Yellow Ink
-  LOADB %r0, %r6         ; Read slot number
+  LOADB %r0, %r6          ; Read slot number
   CALL print_hex_b        ; And print it
 
   ; *** Print Dev ID

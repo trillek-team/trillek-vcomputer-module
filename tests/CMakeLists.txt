@@ -1,6 +1,10 @@
 # Unit Tests
 # idea take from : http://mifrosu.blogspot.com.es/2013/02/cmake-and-google-test-framework.html
 
+FILE(GLOB unit_test_files_src
+    "*_test.cpp"
+    )
+
 IF(GTEST_FOUND)
     message(" ... using gtest found by findGTest")
 
@@ -12,8 +16,7 @@ IF(GTEST_FOUND)
         )
 
     add_executable( unit_test
-        VComputer_test.cpp
-        GKeyb_test.cpp
+        ${unit_test_files_src}
         )
 
     target_link_libraries( unit_test
@@ -36,9 +39,9 @@ ELSEIF(DEFINED ENV{GTEST_ROOT})  # Note we omit the $ here!
         )
 
     add_executable( unit_test
-        VComputer_test.cpp
-        GKeyb_test.cpp
+        ${unit_test_files_src}
         )
+
 
     target_link_libraries( unit_test
         VCOMPUTER
@@ -61,9 +64,9 @@ ELSEIF(GTEST_ROOT)
         )
 
     add_executable( unit_test
-        VComputer_test.cpp
-        GKeyb_test.cpp
+        ${unit_test_files_src}
         )
+
 
     target_link_libraries( unit_test
         VCOMPUTER

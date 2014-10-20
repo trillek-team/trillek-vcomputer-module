@@ -3,8 +3,8 @@
  * Basic benchmark for Virtual Computer lib
  * Allow to see how many virtual computer can run in a single thread
  */
-#include <VC.hpp>
-#include "devices/DummyDevice.hpp"
+#include "vc.hpp"
+#include "devices/dummy_device.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -26,8 +26,8 @@
 int n_cpus = NCPUS;
 
 int main(int argc, char* argv[]) {
-  using namespace vm;
-  using namespace vm::cpu;
+  using namespace trillek;
+  using namespace trillek::computer;
 
 
   if (argc < 2) {
@@ -51,14 +51,14 @@ int main(int argc, char* argv[]) {
   std::srand(seed);
 
   unsigned troms = argc -1;
-  byte_t **rom = new byte_t*[troms];
+  Byte **rom = new Byte*[troms];
   size_t *rom_size = new size_t[troms];
 
   for (unsigned i=0; i< troms; i++) {
-    rom[i] = new byte_t[32*1024];
+    rom[i] = new Byte[32*1024];
 
     std::printf("Opening file %s\n", argv[1 + i]);
-    int size = vm::aux::LoadROM(argv[1+ i], rom[i]);
+    int size = LoadROM(argv[1+ i], rom[i]);
     if (size < 0) {
       std::fprintf(stderr, "An error hapen when was reading the file %s\n", argv[1]);
       return -1;
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
     } else {                      // ~59% -> 100 KHz
       cpu_clk = 100000;
     }
-    std::unique_ptr<vm::cpu::TR3200> cpu(new TR3200(cpu_clk));
+    std::unique_ptr<TR3200> cpu(new TR3200(cpu_clk));
     vc[i].SetCPU(std::move(cpu));
 
     // Add ROM
@@ -94,13 +94,13 @@ int main(int argc, char* argv[]) {
     vc[i].SetROM(rom_ptr, rom_s);
 
     // Add devices
-    auto gcard = std::make_shared<vm::dev::tda::TDADev>();
+    auto gcard = std::make_shared<trillek::computer::tda::TDADev>();
     vc[i].AddDevice(5, gcard);
 
-    auto gk = std::make_shared<vm::dev::gkeyboard::GKeyboardDev>();
+    auto gk = std::make_shared<trillek::computer::gkeyboard::GKeyboardDev>();
     vc[i].AddDevice(4, gcard);
 
-    auto ddev = std::make_shared<vm::DummyDevice>();
+    auto ddev = std::make_shared<DummyDevice>();
     vc[i].AddDevice(10, ddev);
 
     // Powering itt

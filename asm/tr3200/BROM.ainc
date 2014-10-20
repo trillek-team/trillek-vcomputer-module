@@ -318,7 +318,6 @@ clr_screen_loop:
 ; return Number of devices
 hwn:
     PUSH %r4
-    PUSH %r5
     MOV %r3, %r0            ; Ptr to %r3
     MOV %r0, 0              ; %r0 is number of devices found
     MOV %r1, 0              ; %r1 is for loop counter
@@ -326,15 +325,14 @@ hwn:
 hwn_for_loop:
 
     LLS %r4, %r1, 8         ; 0xXX00
-    ADD %r4, %r4, 0x110000  ; %r2 points to the base address of device X
+    ADD %r4, %r4, 0x110000  ; %r4 = 0x11XX00, so points to the base address of device X
 
     ; Check if there is a device present
     LOADB %r2, %r4
     IFNEQ %r2, 0xFF
-      JMP hwn_check_cond_for_loop ; continue;
+      JMP hwn_check_cond_for_loop ; skips to the next iteration
 
-    ADD %r5, %r3, %r0
-    STOREB %r5, %r1        ; Write Slot number (%r3[%r0] = slot)
+    STOREB %r3, %r0, %r1    ; Write Slot number (%r3[%r0] = slot)
     ADD %r0, %r0, 1         ; Count device %r0++
 
 hwn_check_cond_for_loop:
@@ -344,7 +342,6 @@ hwn_check_cond_for_loop:
         JMP hwn_for_loop
 
 end_hwn:
-    POP %r5
     POP %r4
     RET
 
