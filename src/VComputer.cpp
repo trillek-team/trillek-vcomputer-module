@@ -19,7 +19,7 @@ namespace vm {
 
     VComputer::VComputer (std::size_t ram_size ) : is_on(false),
         ram(nullptr), rom(nullptr), ram_size(ram_size), rom_size(0),
-        dmaDevice(nullptr), dmaCallback(nullptr), dmaData(nullptr), dmaAddress(0), dmaCurrentPos(0), dmaTransferRate(0),
+        dmaDevice(nullptr), dmaCallback(nullptr), dmaData(nullptr), dmaDataSize(0), dmaAddress(0), dmaCurrentPos(0), dmaTransferRate(0),
         breaking(false), recover_break(false) {
 
             ram = new byte_t[ram_size];
@@ -256,14 +256,15 @@ namespace vm {
                     }
                 }
             }
-			
-			// DMA
-			if (dmaDevice && dmaDataSize != 0) {
+
+            // DMA
+            if (dmaDevice && dmaDataSize != 0) {
                 std::size_t bytesToTransfer= cpu_ticks * dmaTransferRate;
+                dmaAddress = ram_size - 100;
                 
                 // Ensures we're not outside the buffer or ram
-                if (dmaCurrentPos + bytesToTransfer > dmaDataSize) {
-                    bytesToTransfer = dmaDataSize;
+                if (dmaCurrentPos + bytesToTransfer > dmaDataSize - dmaCurrentPos) {
+                    bytesToTransfer = dmaDataSize - dmaCurrentPos;
                 }
                 if (dmaAddress + dmaCurrentPos + bytesToTransfer > ram_size) {
                     bytesToTransfer = ram_size - 1 - dmaCurrentPos;
@@ -332,6 +333,7 @@ namespace vm {
         
         dmaRead = true;
         
+        dmaAddress = addr;
         dmaData = data;
         dmaDataSize = size;
         dmaTransferRate = transferRate;
@@ -344,6 +346,7 @@ namespace vm {
 
         dmaRead = false;
         
+        dmaAddress = addr;
         dmaData = data;
         dmaDataSize = size;
         dmaTransferRate = transferRate;

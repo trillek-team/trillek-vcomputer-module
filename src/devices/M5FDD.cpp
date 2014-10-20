@@ -168,7 +168,7 @@ namespace vm {
                                     performingDMA = false;
                                     floppy->writeSector(curSector, &sectorBuffer); // Finished DMAing to the buffer, time to actually write it to the disk
                                     dmaAccess = false;
-                                    vcomp->ReleaseDMA(this); //must be the last line, vcomp destructs the lambda...
+                                    vcomp->ReleaseDMA(this); //must be the last line, vcomp destructs this lambda...
                                 };
                                 
                                 vcomp->DMARead(dmaLocation, &sectorBuffer[0], sectorBuffer.size(), 1, callback, this);
@@ -180,7 +180,7 @@ namespace vm {
                                     busy = false;
                                     performingDMA = false;
                                     dmaAccess = false;
-                                    vcomp->ReleaseDMA(this); //must be the last line, vcomp destructs the lambda...
+                                    vcomp->ReleaseDMA(this); //must be the last line, vcomp destructs this lambda...
                                 };
                                 
                                 vcomp->DMAWrite(dmaLocation, &sectorBuffer[0], sectorBuffer.size(), 1, callback, this);
