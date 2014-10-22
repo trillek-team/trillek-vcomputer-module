@@ -260,26 +260,52 @@ namespace vm {
             // DMA
             if (dmaDevice && dmaDataSize != 0) {
                 std::size_t bytesToTransfer= cpu_ticks * dmaTransferRate;
-                dmaAddress = ram_size - 100;
-                
-                // Ensures we're not outside the buffer or ram
+
+                // We can't transfer more bytes than is left in the buffer
                 if (dmaCurrentPos + bytesToTransfer > dmaDataSize - dmaCurrentPos) {
                     bytesToTransfer = dmaDataSize - dmaCurrentPos;
                 }
-                if (dmaAddress + dmaCurrentPos + bytesToTransfer > ram_size) {
-                    bytesToTransfer = ram_size - 1 - dmaCurrentPos;
+
+                while (bytesToTransfer > 0) {
+                    if (dmaAddress + dmaCurrentPos < ram_size) { // Are we writing to main ram?
+                        std::size_t bytesToTransferRam = bytesToTransfer;
+
+                        // Makes sure where staying inside ram
+                        if (dmaAddress + dmaCurrentPos + bytesToTransferRam > ram_size) {
+                            bytesToTransferRam = ram_size - (dmaAddress + dmaCurrentPos);
+                        }
+
+                        if (dmaRead) { // Read operation
+                            memcpy(dmaData + dmaCurrentPos, &ram[dmaAddress + dmaCurrentPos], bytesToTransferRam);
+                        } else { // Write operation
+                            memcpy(&ram[dmaAddress + dmaCurrentPos], dmaData + dmaCurrentPos, bytesToTransferRam);
+                        }
+
+                        dmaCurrentPos += bytesToTransferRam;
+                        bytesToTransfer -= bytesToTransferRam;
+                    }
+                    else { // We're not writing to main ram, check if it's mapped to devices
+                        Range r(dmaAddress + dmaCurrentPos, dmaAddress + dmaCurrentPos + bytesToTransfer);
+                        auto search = listeners.find(r);
+                        if (search != listeners.end()) {
+                            for (dmaCurrentPos = search->first.start - dmaAddress; dmaCurrentPos < search->first.end + 1 - dmaAddress && dmaCurrentPos < dmaDataSize; dmaCurrentPos++) {
+                                if (dmaRead) {
+                                    dmaData[dmaCurrentPos] = search->second->ReadB(dmaAddress + dmaCurrentPos);
+                                } else {
+                                    search->second->WriteB(dmaAddress + dmaCurrentPos, dmaData[dmaCurrentPos]);
+                                }
+                                
+                                bytesToTransfer--;
+                            }
+                        } else {
+                            // We're finished
+                            dmaCurrentPos = dmaDataSize;
+                            bytesToTransfer = 0;
+                        }
+                    }
                 }
                 
-                if(dmaRead) { // Read operation
-                    memcpy(dmaData + dmaCurrentPos, &ram[dmaAddress + dmaCurrentPos], bytesToTransfer);
-                }
-                else { // Write operation
-                    memcpy(&ram[dmaAddress + dmaCurrentPos], dmaData + dmaCurrentPos, bytesToTransfer);
-                }
-                
-                dmaCurrentPos += bytesToTransfer;
-                
-                if (dmaCurrentPos == dmaDataSize) { // Are we finished?
+                if (dmaCurrentPos >= dmaDataSize) { // Are we finished?
                     dmaCallback();
                     
                     dmaCallback = nullptr;
@@ -307,7 +333,7 @@ namespace vm {
     
     bool VComputer::RequestDMA (IDevice* device) {
         if (dmaDevice) {
-            return false; //already a registered device, deny
+            return false; //there is already a registered device, deny
         }
         
         dmaDevice = device;
@@ -330,7 +356,7 @@ namespace vm {
     void VComputer::DMARead (dword_t addr, byte_t* data, size_t size, dword_t transferRate, std::function<void()> callback, IDevice* device) {
         assert(dmaDevice == device); // Only one device at the same time
         assert(dmaData == nullptr); // Only one read/write at the same time
-        
+
         dmaRead = true;
         
         dmaAddress = addr;
