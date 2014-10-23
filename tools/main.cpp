@@ -14,7 +14,6 @@
 #include "vc.hpp"
 #include "tr3200/dis_tr3200.hpp"
 #include "devices/dummy_device.hpp"
-#include "dcpu16n/dis_dcpu16n.hpp"
 
 #include <iostream>
 #include <vector>
@@ -180,9 +179,8 @@ class KeyEventHandler : public OS::event::IKeyboardEventHandler {
 #endif
 
 void print_regs(const trillek::computer::TR3200State& state);
-void print_regs(const trillek::computer::DCPU16NState& state);
+//void print_regs(const trillek::computer::DCPU16NState& state);
 void print_pc(const trillek::computer::TR3200State& state, const trillek::computer::VComputer& vc);
-void print_pc(const trillek::computer::DCPU16NState& state, const trillek::computer::VComputer& vc);
 //void print_stack(const vm::cpu::TR3200& cpu, const vm::ram::Mem& ram);
 
 int main(int argc, char* argv[]) {
@@ -217,15 +215,15 @@ int main(int argc, char* argv[]) {
     VComputer vc(options.ram_size);
     std::printf("Creating Virtual Computer with %d KiB of RAM\n", options.ram_size / 1024);
 
-    if (options.cpu == CpuToUse::DCPU16N) {
+    /*if (options.cpu == CpuToUse::DCPU16N) {
         std::printf("Using CPU DCPU-16N\n");
         std::unique_ptr<computer::ICPU> cpu(new DCPU16N(options.clock) );
         vc.SetCPU(std::move(cpu));
-    } else {
+    } else {*/
         std::printf("Using CPU TR3200\n");
         std::unique_ptr<computer::ICPU> cpu(new TR3200(options.clock) );
         vc.SetCPU(std::move(cpu));
-    }
+    //}
     std::printf("CPU clock speed set to %u KHz \n", options.clock / 1000);
     vc.SetROM(rom, rom_size);
 
@@ -346,7 +344,7 @@ int main(int argc, char* argv[]) {
 
     int c = ' ';
     bool loop = true;
-    computer::DCPU16NState cpu_state_dn;
+    //computer::DCPU16NState cpu_state_dn;
     computer::TR3200State cpu_state_tr;
 
     // Delay here to enforce initial delta != 0
@@ -379,13 +377,13 @@ int main(int argc, char* argv[]) {
 #endif
 
         if (debug) { // Print PC and instruction BEFORE executing it
-            if (options.cpu == CpuToUse::DCPU16N) {
+            /*if (options.cpu == CpuToUse::DCPU16N) {
                 vc.GetState((void*)&cpu_state_dn, sizeof(cpu_state_dn));
                 print_pc(cpu_state_dn, vc);
-            } else {
+            } else { */
                 vc.GetState((void*)&cpu_state_tr, sizeof(cpu_state_tr));
                 print_pc(cpu_state_tr, vc);
-            }
+            //}
         }
 
         if (!debug) {
@@ -411,27 +409,27 @@ int main(int argc, char* argv[]) {
         } else {
             ticks = vc.Step(delta / 1000.0 );
 
-            if(options.cpu == CpuToUse::DCPU16N) {
+            /*if(options.cpu == CpuToUse::DCPU16N) {
                 vc.GetState((void*)&cpu_state_dn, sizeof(cpu_state_dn));
                 print_regs(cpu_state_dn);
-            } else {
+            } else { */
                 vc.GetState((void*)&cpu_state_tr, sizeof(cpu_state_tr));
                 print_regs(cpu_state_tr);
                 //print_stack(vm.CPU(), vm.RAM());
-            }
+            //}
         }
 
         if (vc.isHalted()) { // Here is a breakpoint !
             std::printf("\t\tBREAKPOINT\n\nSwitching to Step mode\n\n");
             debug = true;
 
-            if(options.cpu == CpuToUse::DCPU16N) {
+            /*if(options.cpu == CpuToUse::DCPU16N) {
                 vc.GetState((void*)&cpu_state_dn, sizeof(cpu_state_dn));
                 print_pc(cpu_state_dn, vc);
-            } else {
+            } else {*/
                 vc.GetState((void*)&cpu_state_tr, sizeof(cpu_state_tr));
                 print_pc(cpu_state_tr, vc);
-            }
+            //}
         }
 
         if (debug) {
@@ -532,6 +530,7 @@ int main(int argc, char* argv[]) {
 #define IA      r[REG_IA]
 #define FLAGS   r[REG_FLAGS]
 
+/*
 void print_regs(const trillek::computer::DCPU16NState& state) {
     // Print registers
 
@@ -556,7 +555,7 @@ void print_regs(const trillek::computer::DCPU16NState& state) {
     std::printf("Status= %s\n\n", sysstat);
 
 }
-
+*/
 void print_regs(const trillek::computer::TR3200State& state) {
     // Print registers
 
@@ -580,6 +579,7 @@ void print_regs(const trillek::computer::TR3200State& state) {
 
 }
 
+/*
 void print_pc(const trillek::computer::DCPU16NState& state, const trillek::computer::VComputer& vc) {
     trillek::DWord addr = state.emu[(state.pc >> 12) & 0xf] | (state.pc & 0x0fff);
     trillek::Word val = vc.ReadW(addr);
@@ -587,6 +587,7 @@ void print_pc(const trillek::computer::DCPU16NState& state, const trillek::compu
     std::printf(" PC : 0x%04X > 0x%08X: 0x%04X ", state.pc, addr, val);
     std::cout << trillek::computer::DisassemblyDCPU16N(vc, addr) << std::endl;
 }
+*/
 
 void print_pc(const trillek::computer::TR3200State& state, const trillek::computer::VComputer& vc) {
     trillek::DWord val = vc.ReadDW(state.pc);
