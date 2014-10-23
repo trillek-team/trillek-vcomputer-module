@@ -303,33 +303,37 @@ int main(int argc, char* argv[]) {
     }
 
 #ifdef GLFW3_ENABLE
+    bool useOpenGL = true;
     GlEngine gl;
     OS::OS glfwos;
     if (!glfwos.InitializeWindow(1024, 768, "Trillek Virtual Computer demo emulator")) {
-        std::clog << "Failed creating the window or context.";
-        return -1;
-    }
-
-    if (gl.initGL(glfwos) != 0) {
+        std::clog << "Failed creating the window or context.\n";
+        useOpenGL = false;
+        //return -1;
+    } else if (gl.initGL(glfwos) != 0) {
         std::cerr << "Error initiating OpenGL\n";
-        return -1;
+        useOpenGL = false;
+        //return -1;
     }
 
-    std::printf("Initiated OpenGL\n");
+    if (useOpenGL) {
+        std::printf("Initiated OpenGL\n");
 
-    KeyEventHandler keyhandler;
-    keyhandler.gk = gk;
-    glfwos.RegisterKeyboardEventHandler(&keyhandler);
+        KeyEventHandler keyhandler;
+        keyhandler.gk = gk;
+        glfwos.RegisterKeyboardEventHandler(&keyhandler);
 
-    gl.SetTextureCB ([&gcard, &gcard_screen] (void* tdata) {
-        // Update Texture callback
-        gcard->DumpScreen (gcard_screen);
-        gcard->DoVSync();
+        gl.SetTextureCB ([&gcard, &gcard_screen] (void* tdata) {
+            // Update Texture callback
+            gcard->DumpScreen (gcard_screen);
+            gcard->DoVSync();
 
-        DWord* tex = (DWord*)tdata;
-        TDAtoRGBATexture(gcard_screen, tex); // Write the texture to the PBO buffer
-    });
-
+            DWord* tex = (DWord*)tdata;
+            TDAtoRGBATexture(gcard_screen, tex); // Write the texture to the PBO buffer
+        });
+    } else {
+        std::printf("Couldn't init OpenGL. Running without visualizing the screen.\n");
+    }
 #endif
 
     std::cout << "Running!\n";
@@ -366,9 +370,11 @@ int main(int argc, char* argv[]) {
         }
 
 #ifdef GLFW3_ENABLE
-        if (glfwos.Closing()) {
-            loop = false;
-            continue;
+        if (useOpenGL) {
+            if (glfwos.Closing()) {
+                loop = false;
+                continue;
+            }
         }
 #endif
 
@@ -453,11 +459,15 @@ int main(int argc, char* argv[]) {
                 }
             }
 #ifdef GLFW3_ENABLE
-            gl.UpdScreen (glfwos, 0);
+            if (useOpenGL) {
+                gl.UpdScreen (glfwos, 0);
+            }
 #endif
         } else {
 #ifdef GLFW3_ENABLE
-            gl.UpdScreen (glfwos, delta / 1000.0);
+            if (useOpenGL) {
+                gl.UpdScreen (glfwos, delta / 1000.0);
+            }
 #endif
         }
 
@@ -473,7 +483,9 @@ int main(int argc, char* argv[]) {
 #endif
 
 #ifdef GLFW3_ENABLE
-    glfwos.Terminate();
+    if (useOpenGL) {
+        glfwos.Terminate();
+    }
 #endif
 
     if (rom != nullptr) {
