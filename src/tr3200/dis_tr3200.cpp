@@ -482,19 +482,19 @@ std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
 
         case P2_OPCODE::JMP2:
             if (literal) {
-                snprintf(buf, BUF_SIZE, "JMP %%r%u + 0x%08X",  rd, rn);
+                snprintf(buf, BUF_SIZE, "JMP %%r%u + 0x%08X",  rd, (rn<< 2) & 0xFFFFFFFF);
             }
             else {
-                snprintf(buf, BUF_SIZE, "JMP %%r%u + %%r%u", rd, rn);
+                snprintf(buf, BUF_SIZE, "JMP %%r%u + %%r%u", rd, rn & 0xFFFFFFFC );
             }
             break;
 
         case P2_OPCODE::CALL2:
             if (literal) {
-                snprintf(buf, BUF_SIZE, "CALL %%r%u + 0x%08X",  rd, rn);
+                snprintf(buf, BUF_SIZE, "CALL %%r%u + 0x%08X",  rd, (rn<< 2) & 0xFFFFFFFF);
             }
             else {
-                snprintf(buf, BUF_SIZE, "CALL %%r%u + %%r%u", rd, rn);
+                snprintf(buf, BUF_SIZE, "CALL %%r%u + %%r%u", rd, rn & 0xFFFFFFFC );
             }
             break;
 
@@ -577,19 +577,19 @@ std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
 
         case P1_OPCODE::JMP:
             if (literal) {
-                snprintf(buf, BUF_SIZE, "JMP 0x%08X",  rn);
+                snprintf(buf, BUF_SIZE, "JMP 0x%08X",  (rn<< 2) & 0xFFFFFFFF );
             }
             else {
-                snprintf(buf, BUF_SIZE, "JMP %%r%u", rn);
+                snprintf(buf, BUF_SIZE, "JMP %%r%u", rn & 0xFFFFFFFC );
             }
             break;
 
         case P1_OPCODE::CALL:
             if (literal) {
-                snprintf(buf, BUF_SIZE, "CALL 0x%08X",  rn);
+                snprintf(buf, BUF_SIZE, "CALL 0x%08X",  (rn<< 2) & 0xFFFFFFFF );
             }
             else {
-                snprintf(buf, BUF_SIZE, "CALL %%r%u", rn);
+                snprintf(buf, BUF_SIZE, "CALL %%r%u", rn & 0xFFFFFFFC );
             }
             break;
 

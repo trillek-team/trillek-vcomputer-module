@@ -603,10 +603,16 @@ unsigned TR3200::RealStep() {
                 break;
 
             case P2_OPCODE::JMP2: // Absolute jump
+                if (literal) {
+                    rn = rn << 2;
+                }
                 pc = (r[rd] + rn) & 0xFFFFFFFC;
                 break;
 
             case P2_OPCODE::CALL2: // Absolute call
+                if (literal) {
+                    rn = rn << 2;
+                }
                 // push to the stack register pc value
                 vcomp->WriteB(--r[SP], pc >> 24);
                 vcomp->WriteB(--r[SP], pc >> 16);
@@ -688,6 +694,8 @@ unsigned TR3200::RealStep() {
             case P1_OPCODE::JMP: // Absolute jump
                 if (!literal) {
                     rn = r[rn];
+                } else {
+                    rn = rn << 2;
                 }
                 pc = rn & 0xFFFFFFFC;
                 break;
@@ -700,6 +708,8 @@ unsigned TR3200::RealStep() {
                 vcomp->WriteB(--r[SP], pc); // Little Endian
                 if (!literal) {
                     rn = r[rn];
+                } else {
+                    rn = rn << 2;
                 }
                 pc = rn & 0xFFFFFFFC;
                 break;
