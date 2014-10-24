@@ -25,25 +25,25 @@ std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
     DWord inst = vc.ReadDW(pc); // Fetch
     pc = pc +4;
 
+    // Here beging the Decoding
     DWord opcode, rd, rn, rs;
     rd = GRD(inst);
     rs = GRS(inst);
-    // Here beging the Decoding
-    bool literal = HAVE_LITERAL(inst);
+    bool literal = HAVE_IMMEDIATE(inst);
+    bool big_literal = IS_BIG_LITERAL(inst);
     opcode = GET_OP_CODE(inst);
 
     if ( IS_P3(inst) ) {
         // 3 parameter instruction ********************************************
-        if (literal) {
-            rn = LIT15(inst);
-            if ( IS_BIG_LITERAL_L15(rn) ) {
-                // Next dword is literal value
+        // Get rn value
+        if (big_literal) { // Next dword is literal value
                 rn  = vc.ReadDW(pc);
                 pc += 4;
-            }
-            else if ( RN_SIGN_BIT(inst) ) {
-                // Negative Literal -> Extend sign
-                rn |= 0xFFFF8000;
+        }
+        else if (literal) {
+            rn = LIT14(inst);
+            if (SIGN_LIT14(rn)) { // Negative Literal -> Extend sign
+                rn = NEG_LIT14(rn);
             }
         }
         else {
@@ -291,20 +291,19 @@ std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
     }
     else if ( IS_P2(inst) ) {
         // Fetch Rn operand
-        if (literal) {
-            rn = LIT19(inst);
-            if ( IS_BIG_LITERAL_L19(rn) ) {
-                // Next dword is literal value
+        // Get rn value
+        if (big_literal) { // Next dword is literal value
                 rn  = vc.ReadDW(pc);
                 pc += 4;
-            }
-            else if ( RN_SIGN_BIT(inst) ) {
-                // Negative Literal -> Extend sign
-                rn |= 0xFFF80000;
+        }
+        else if (literal) {
+            rn = LIT18(inst);
+            if (SIGN_LIT18(rn)) { // Negative Literal -> Extend sign
+                rn = NEG_LIT18(rn);
             }
         }
         else {
-            rn = GRS(inst);
+            rn = GRN(inst);
         }
 
         switch (opcode) {
@@ -513,20 +512,19 @@ std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
     else if ( IS_P1(inst) ) {
         // 1 parameter instrucction *******************************************
         // Fetch Rn operand
-        if (literal) {
-            rn = LIT23(inst);
-            if ( IS_BIG_LITERAL_L23(rn) ) {
-                // Next dword is literal value
+        // Get rn value
+        if (big_literal) { // Next dword is literal value
                 rn  = vc.ReadDW(pc);
                 pc += 4;
-            }
-            else if ( RN_SIGN_BIT(inst) ) {
-                // Negative Literal -> Extend sign
-                rn |= 0xFF800000;
+        }
+        else if (literal) {
+            rn = LIT22(inst);
+            if (SIGN_LIT22(rn)) { // Negative Literal -> Extend sign
+                rn = NEG_LIT22(rn);
             }
         }
         else {
-            rn = GRD(inst);
+            rn = GRN(inst);
         }
 
         switch (opcode) {

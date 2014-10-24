@@ -3,7 +3,7 @@
  * \file        tr3200.cpp
  * \copyright   The MIT License (MIT)
  *
- * Implementation of the TR3200 CPU v0.10
+ * Implementation of the TR3200 CPU v0.3.0
  * @see https://github.com/trillek-team/trillek-computer/blob/master/TR3200.md
  */
 
@@ -113,7 +113,8 @@ unsigned TR3200::RealStep() {
     pc += 4;
 
     DWord opcode, rd, rs, rn;
-    bool literal = HAVE_LITERAL(inst);
+    bool literal = HAVE_IMMEDIATE(inst);
+    bool big_literal = IS_BIG_LITERAL(inst);
 
     QWord ltmp;
 
@@ -126,17 +127,16 @@ unsigned TR3200::RealStep() {
     if (!skiping) {
         if ( IS_P3(inst) ) {
             // Processing of operands
-            if (literal) {
-                rn = LIT15(inst);
-                if ( IS_BIG_LITERAL_L15(rn) ) {
-                    // Next dword is literal value
-                    rn  = vcomp->ReadDW(pc);
-                    pc += 4;
-                    wait_cycles++;
-                }
-                else if ( RN_SIGN_BIT(inst) ) {
-                    // Negative Literal -> Extend sign
-                    rn |= 0xFFFF8000;
+            // Get rn value
+            if (big_literal) { // Next dword is literal value
+                rn  = vcomp->ReadDW(pc);
+                pc += 4;
+                wait_cycles++;
+            }
+            else if (literal) {
+                rn = LIT14(inst);
+                if (SIGN_LIT14(rn)) { // Negative Literal -> Extend sign
+                    rn = NEG_LIT14(rn);
                 }
             }
             else {
@@ -462,21 +462,20 @@ unsigned TR3200::RealStep() {
             // *******************************************
 
             // Fetch Rn operand
-            if (literal) {
-                rn = LIT19(inst);
-                if ( IS_BIG_LITERAL_L19(rn) ) {
-                    // Next dword is literal value
-                    rn  = vcomp->ReadDW(pc);
-                    pc += 4;
-                    wait_cycles++;
-                }
-                else if ( RN_SIGN_BIT(inst) ) {
-                    // Negative Literal -> Extend sign
-                    rn |= 0xFFF80000;
+            // Get rn value
+            if (big_literal) { // Next dword is literal value
+                rn  = vcomp->ReadDW(pc);
+                pc += 4;
+                wait_cycles++;
+            }
+            else if (literal) {
+                rn = LIT18(inst);
+                if (SIGN_LIT18(rn)) { // Negative Literal -> Extend sign
+                    rn = NEG_LIT18(rn);
                 }
             }
             else {
-                rn = r[GRS(inst)];
+                rn = r[GRN(inst)];
             }
 
             switch (opcode) {
@@ -626,21 +625,20 @@ unsigned TR3200::RealStep() {
             // *******************************************
 
             // Fetch Rn operand
-            if (literal) {
-                rn = LIT23(inst);
-                if ( IS_BIG_LITERAL_L23(rn) ) {
-                    // Next dword is literal value
-                    rn  = vcomp->ReadDW(pc);
-                    pc += 4;
-                    wait_cycles++;
-                }
-                else if ( RN_SIGN_BIT(inst) ) {
-                    // Negative Literal -> Extend sign
-                    rn |= 0xFF800000;
+            // Get rn value
+            if (big_literal) { // Next dword is literal value
+                rn  = vcomp->ReadDW(pc);
+                pc += 4;
+                wait_cycles++;
+            }
+            else if (literal) {
+                rn = LIT22(inst);
+                if (SIGN_LIT22(rn)) { // Negative Literal -> Extend sign
+                    rn = NEG_LIT22(rn);
                 }
             }
             else {
-                rn = GRD(inst);
+                rn = GRN(inst);
             }
 
             switch (opcode) {
@@ -787,33 +785,13 @@ unsigned TR3200::RealStep() {
         wait_cycles = 1;
         skiping     = false;
 
-        // See what kind of instruction is to know how many should
-        // increment PC, and remove skiping flag if is not an IFxxx instruction
-        if (literal) {
-            if ( IS_P3(inst) ) {
-                // 3 parameter instruction
-                rn = LIT15(inst);
-                if ( IS_BIG_LITERAL_L15(rn) ) {
-                    pc += 4;
-                }
-            }
-            else if ( IS_P2(inst) ) {
-                // 2 parameter instruction
-                skiping = IS_BRANCH(opcode); // Chain IFxx
-                rn      = LIT19(inst);
-                if ( literal && IS_BIG_LITERAL_L19(rn) ) {
-                    pc += 4;
-                }
-            }
-            else if ( IS_P1(inst) ) {
-                // 1 parameter instruction
-                rn = LIT23(inst);
-                if ( literal && IS_BIG_LITERAL_L23(rn) ) {
-                    pc += 4;
-                }
-            }
+        // if haves 32 bit immediate, then we need to increment PC
+        if ( (! IS_NP(inst)) && big_literal) {
+            // Big literal
+            pc += 4;
         }
-        else if ( IS_P2(inst) && IS_BRANCH(opcode) ) {
+        // Remove skiping flag if is not an IFxxx instruction
+        if ( IS_P2(inst) && IS_BRANCH(opcode) ) {
             skiping = true; // Chain IFxx
         }
 
