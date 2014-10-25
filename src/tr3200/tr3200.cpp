@@ -717,6 +717,8 @@ unsigned TR3200::RealStep() {
             case P1_OPCODE::RJMP: // Relative jump
                 if (!literal) {
                     rn = r[rn];
+                } else {
+                    rn = rn << 2;
                 }
                 pc = (pc + rn) & 0xFFFFFFFC;
                 break;
@@ -729,6 +731,8 @@ unsigned TR3200::RealStep() {
                 vcomp->WriteB(--r[SP], pc); // Little Endian
                 if (!literal) {
                     rn = r[rn];
+                } else {
+                    rn = rn << 2;
                 }
                 pc = (pc + rn) & 0xFFFFFFFC;
                 break;
