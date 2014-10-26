@@ -49,12 +49,12 @@
 #define B_SIGN_BIT(x)       ( ( (x) >> 7 )  & 0x1 )
 
 // Extend sign of an short immediate value
-#define NEG_LIT14(x)        ( (x) | 0xFFFF8000)
-#define NEG_LIT18(x)        ( (x) | 0xFFF80000)
-#define NEG_LIT22(x)        ( (x) | 0xFF800000)
-#define SIGN_LIT14(x)       ( ( (x) >> 14 ) & 0x1 )
-#define SIGN_LIT18(x)       ( ( (x) >> 18 ) & 0x1 )
-#define SIGN_LIT22(x)       ( ( (x) >> 22 ) & 0x1 )
+#define NEG_LIT14(x)        ( (x) | 0xFFFFC000)
+#define NEG_LIT18(x)        ( (x) | 0xFFFC0000)
+#define NEG_LIT22(x)        ( (x) | 0xFFC00000)
+#define SIGN_LIT14(x)       ( ( (x) >> 13 ) & 0x1 )
+#define SIGN_LIT18(x)       ( ( (x) >> 17 ) & 0x1 )
+#define SIGN_LIT22(x)       ( ( (x) >> 21 ) & 0x1 )
 
 // Operation in Flags bits
 #define GET_CF(x)           ( (x) & 0x1 )
