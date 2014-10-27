@@ -487,7 +487,7 @@ unsigned TR3200::RealStep() {
                 if (!literal) {
                     DWord tmp = r[rd];
                     r[rd]        = rn;
-                    r[GRS(inst)] = tmp;
+                    r[GRN(inst)] = tmp;
                 } // If M != acts like a NOP
                 break;
 
