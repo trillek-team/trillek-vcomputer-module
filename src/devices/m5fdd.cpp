@@ -16,6 +16,7 @@ namespace m5fdd {
 M5FDD::M5FDD() : state(STATE_CODES::NO_MEDIA), error(ERROR_CODES::NONE),
     busyCycles(0), pendingInterrupt(false) {
     a = b = c = d = 0;
+    msg = 0;
 }
 
 M5FDD::~M5FDD() {

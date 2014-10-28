@@ -16,6 +16,9 @@ namespace OS {
       std::vector<unsigned int> keys;
       std::vector<unsigned int> chars;
       std::map<unsigned int, KEY_STATE> keyState; // State of the keys.
+
+      virtual ~IKeyboardEventHandler () { }
+
       /**
        * \brief Called when on the keys reported during register has a state change.
        *
@@ -23,8 +26,8 @@ namespace OS {
        * \param[in] KEY_STATE state The new state the key is in
        */
       virtual void KeyStateChange(const unsigned int key, const KEY_STATE state) = 0;
-      virtual void KeyStateChange(const unsigned int key, const KEY_STATE state, const KEY_STATE laststate) { 
-        KeyStateChange(key,state); 
+      virtual void KeyStateChange(const unsigned int key, const KEY_STATE state, const KEY_STATE laststate) {
+        KeyStateChange(key,state);
       }
       virtual void CharDown(const unsigned int c) { }
       virtual void LostKeyboardFocus() { }
