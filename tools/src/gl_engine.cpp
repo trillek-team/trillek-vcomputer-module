@@ -188,23 +188,29 @@ int GlEngine::initGL(OS::OS& os) {
     // Vertex Shader compiling error messages
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &Result);
     glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &InfoLogLength);
-    GLchar* vertexshader_error_msg = new GLchar(InfoLogLength +1);
+    GLchar* vertexshader_error_msg = new GLchar[InfoLogLength +1];
     glGetShaderInfoLog(vertexShader, InfoLogLength, NULL, vertexshader_error_msg);
-    if (vertexshader_error_msg[0] != '\0') { // Error compiling vertex shader
-        std::fprintf(stderr, "> %s\n", vertexshader_error_msg);
+    if (vertexshader_error_msg != nullptr) {
+        if (vertexshader_error_msg[0] != '\0') { // Error compiling vertex shader
+            std::fprintf(stderr, "> %s\n", vertexshader_error_msg);
+            delete[] vertexshader_error_msg;
+            return -1;
+        }
         delete[] vertexshader_error_msg;
-        return -1;
     }
 
     // Fragment Shader compiling error messages
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &Result);
     glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &InfoLogLength);
-    GLchar* fragmentshader_error_msg = new GLchar(InfoLogLength);
+    GLchar* fragmentshader_error_msg = new GLchar[InfoLogLength +1];
     glGetShaderInfoLog(fragmentShader, InfoLogLength, NULL, fragmentshader_error_msg);
-    if (fragmentshader_error_msg[0] != '\0') { // Error compiling fragment shader
-        std::fprintf(stderr, "> %s\n", fragmentshader_error_msg);
+    if (fragmentshader_error_msg != nullptr) {
+        if (fragmentshader_error_msg[0] != '\0') { // Error compiling fragment shader
+            std::fprintf(stderr, "> %s\n", fragmentshader_error_msg);
+            delete[] fragmentshader_error_msg;
+            return -1;
+        }
         delete[] fragmentshader_error_msg;
-        return -1;
     }
 
     // Assign our program handle a "name"

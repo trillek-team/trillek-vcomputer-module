@@ -62,6 +62,8 @@ class KeyEventHandler : public OS::event::IKeyboardEventHandler {
             this->keys.push_back(346);
         }
 
+        ~KeyEventHandler () {}
+
         // Called when on the keys reported during register has a state change.
         void KeyStateChange(const unsigned int key, const OS::event::KEY_STATE state) {
             using namespace trillek::computer::gkeyboard;
@@ -314,12 +316,13 @@ int main(int argc, char* argv[]) {
         //return -1;
     }
 
+    KeyEventHandler* keyhandler = nullptr;
     if (useOpenGL) {
         std::printf("Initiated OpenGL\n");
 
-        KeyEventHandler keyhandler;
-        keyhandler.gk = gk;
-        glfwos.RegisterKeyboardEventHandler(&keyhandler);
+        KeyEventHandler* keyhandler = new KeyEventHandler();
+        keyhandler->gk = gk;
+        glfwos.RegisterKeyboardEventHandler(keyhandler);
 
         gl.SetTextureCB ([&gcard, &gcard_screen] (void* tdata) {
             // Update Texture callback
@@ -482,6 +485,7 @@ int main(int argc, char* argv[]) {
 
 #ifdef GLFW3_ENABLE
     if (useOpenGL) {
+        delete keyhandler;
         glfwos.Terminate();
     }
 #endif
