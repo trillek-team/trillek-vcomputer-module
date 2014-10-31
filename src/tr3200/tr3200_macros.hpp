@@ -27,22 +27,20 @@
 // Instrucction sub-type
 #define IS_BRANCH(x)        ( ( (x) >= 0x4B ) && ( (x) <= 0x52 ) )
 
-// Uses a Literal value ?
-#define HAVE_LITERAL(x)     ( ( (x) & 0x00800000 ) != 0 )
+// Uses immediate value (M bit) ?
+#define HAVE_IMMEDIATE(x)   ( ( (x) & 0x00800000) != 0 )
+// Uses next dword as literal
+#define IS_BIG_LITERAL(x)   ( ( (x) & 0x00C00000) == 0x00C00000)
 
 // Extract operands
-#define GRD(x)              ( (x)       & 0x0F )
-#define GRS(x)              ( ( (x) >> 4 ) & 0x0F )
-#define GRN(x)              ( ( (x) >> 8 ) & 0x0F )
-
-#define LIT15(x)            ( ( (x) >> 8 ) &   0x7FFF )
-#define LIT19(x)            ( ( (x) >> 4 ) &  0x7FFFF )
-#define LIT23(x)            ( (x)       & 0x7FFFFF )
-
-// Uses next dword as literal
-#define IS_BIG_LITERAL_L15(x)   ( (x) ==   0x4000 )
-#define IS_BIG_LITERAL_L19(x)   ( (x) ==  0x40000 )
-#define IS_BIG_LITERAL_L23(x)   ( (x) == 0x400000 )
+// Register
+#define GRD(x)              ( ( (x) >> 18 ) & 0x0F )
+#define GRS(x)              ( ( (x) >> 14 ) & 0x0F )
+#define GRN(x)              (   (x)         & 0x0F )
+// Short immediate valie
+#define LIT14(x)            (   (x) &   0x3FFF )
+#define LIT18(x)            (   (x) &  0x3FFFF )
+#define LIT22(x)            (   (x) & 0x3FFFFF )
 
 // Macros for ALU operations
 #define CARRY_BIT(x)        ( ( ( (x) >> 32 ) & 0x1 ) == 1 )
@@ -50,8 +48,13 @@
 #define W_SIGN_BIT(x)       ( ( (x) >> 15 ) & 0x1 )
 #define B_SIGN_BIT(x)       ( ( (x) >> 7 )  & 0x1 )
 
-// Extract sign of Literal Operator from the 32 bit instruction
-#define RN_SIGN_BIT(x)      ( ( (x) >> 22 )  & 0x1 )
+// Extend sign of an short immediate value
+#define NEG_LIT14(x)        ( (x) | 0xFFFFC000)
+#define NEG_LIT18(x)        ( (x) | 0xFFFC0000)
+#define NEG_LIT22(x)        ( (x) | 0xFFC00000)
+#define SIGN_LIT14(x)       ( ( (x) >> 13 ) & 0x1 )
+#define SIGN_LIT18(x)       ( ( (x) >> 17 ) & 0x1 )
+#define SIGN_LIT22(x)       ( ( (x) >> 21 ) & 0x1 )
 
 // Operation in Flags bits
 #define GET_CF(x)           ( (x) & 0x1 )

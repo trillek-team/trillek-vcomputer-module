@@ -1,116 +1,125 @@
-floppy.asm:1   100000	{ }                        	.ORG 0x100000
-floppy.asm:3   100000	{ 0D 00 A0 40 }            	MOV %SP, 0x020000
-floppy.asm:4   100004	{ 0E 01 80 40 }            	MOV %IA, 0x10
-floppy.asm:5   100008	{ 0F 10 80 40 }            	MOV %FLAGS, 0x100
-floppy.asm:7   10000C	{ 00 00 C0 40 68 01 10 00 }	MOV %R0, int_m5fdd
-floppy.asm:8   100014	{ 80 01 80 48 }            	STORE 0x18, %R0
-floppy.asm:11  100018	{ 05 00 C0 40 00 00 11 00 }	MOV %R5, 0x110000
-floppy.asm:12  100020	{ 55 00 86 84 }            	ADD %R5, %R5, 0x000600
-floppy.asm:15  100024	{ 0A 00 80 40 }            	MOV %R10, 0
-floppy.asm:16  100028	{ 50 00 80 95 }            	LOADB %R0, %R5, 0x0
-floppy.asm:17  10002C	{ F0 0F 80 4C }            	IFNEQ %R0, 0xFF
-floppy.asm:18  100030	{ 60 01 90 25 }            	JMP crash
-floppy.asm:21  100034	{ 1A 00 80 40 }            	MOV %R10, 1
-floppy.asm:22  100038	{ 50 01 80 95 }            	LOADB %R0, %R5, 0x01
-floppy.asm:23  10003C	{ 80 00 80 4C }            	IFNEQ %R0, 0x08
-floppy.asm:24  100040	{ 60 01 90 25 }            	JMP crash
-floppy.asm:27  100044	{ 2A 00 80 40 }            	MOV %R10, 2
-floppy.asm:28  100048	{ 50 02 80 95 }            	LOADB %R0, %R5, 0x02
-floppy.asm:29  10004C	{ 10 00 80 4C }            	IFNEQ %R0, 0x01
-floppy.asm:30  100050	{ 60 01 90 25 }            	JMP crash
-floppy.asm:33  100054	{ 3A 00 80 40 }            	MOV %R10, 3
-floppy.asm:34  100058	{ 50 03 80 95 }            	LOADB %R0, %R5, 0x03
-floppy.asm:35  10005C	{ 10 00 80 4C }            	IFNEQ %R0, 0x01
-floppy.asm:36  100060	{ 60 01 90 25 }            	JMP crash
-floppy.asm:39  100064	{ 4A 00 80 40 }            	MOV %R10, 4
-floppy.asm:40  100068	{ 50 04 80 93 }            	LOAD %R0, %R5, 0x04
-floppy.asm:41  10006C	{ 00 00 C0 4C 91 7E B3 1E }	IFNEQ %R0, 0x1EB37E91
-floppy.asm:42  100074	{ 60 01 90 25 }            	JMP crash
-floppy.asm:45  100078	{ 5A 00 80 40 }            	MOV %R10, 5
-floppy.asm:46  10007C	{ 50 10 80 94 }            	LOADW %R0, %R5, 0x10
-floppy.asm:47  100080	{ 10 00 80 4C }            	IFNEQ %R0, 0x01
-floppy.asm:48  100084	{ 60 01 90 25 }            	JMP crash
-floppy.asm:51  100088	{ 6A 00 80 40 }            	MOV %R10, 6
-floppy.asm:52  10008C	{ 50 12 80 94 }            	LOADW %R0, %R5, 0x12
-floppy.asm:53  100090	{ 00 00 80 4C }            	IFNEQ %R0, 0x00
-floppy.asm:54  100094	{ 60 01 90 25 }            	JMP crash
-floppy.asm:59  100098	{ 7A 00 80 40 }            	MOV %R10, 7
-floppy.asm:60  10009C	{ 31 00 80 40 }            	MOV %R1, 0x0003
-floppy.asm:61  1000A0	{ 51 08 80 97 }            	STOREW %R5, 0x8, %R1
-floppy.asm:62  1000A4	{ 50 0A 80 94 }            	LOADW %R0, %R5, 0x0A
-floppy.asm:63  1000A8	{ 00 28 80 4C }            	IFNEQ %R0, 0x280
-floppy.asm:64  1000AC	{ 60 01 90 25 }            	JMP crash
-floppy.asm:65  1000B0	{ 50 0C 80 94 }            	LOADW %R0, %R5, 0x0C
-floppy.asm:66  1000B4	{ 80 22 80 4C }            	IFNEQ %R0, 0x0228
-floppy.asm:67  1000B8	{ 60 01 90 25 }            	JMP crash
-floppy.asm:68  1000BC	{ 50 0E 80 94 }            	LOADW %R0, %R5, 0x0E
-floppy.asm:69  1000C0	{ 90 80 80 4C }            	IFNEQ %R0, 0x0809
-floppy.asm:70  1000C4	{ 60 01 90 25 }            	JMP crash
-floppy.asm:73  1000C8	{ 21 00 80 40 }            	MOV %R1, 0x02
-floppy.asm:74  1000CC	{ 51 0A 80 97 }            	STOREW %R5, 0x0A, %R1
-floppy.asm:75  1000D0	{ 01 00 80 40 }            	MOV %R1, 0x00
-floppy.asm:76  1000D4	{ 51 08 80 97 }            	STOREW %R5, 0x08, %R1
-floppy.asm:79  1000D8	{ 00 00 80 40 }            	MOV %R0, 0
-floppy.asm:80  1000DC	{ 01 00 81 40 }            	MOV %R1, 0x1000
-floppy.asm:81  1000E0	{ }                        	genLoop:
-floppy.asm:82  1000E0	{ 10 00 00 98 }            	STOREB %R1, %R0, %R0
-floppy.asm:83  1000E4	{ 00 01 80 84 }            	ADD %R0, %R0, 1
-floppy.asm:84  1000E8	{ F0 0F 80 4F }            	IFLE %R0, 0xFF
-floppy.asm:85  1000EC	{ E0 00 90 25 }            	JMP genLoop
-floppy.asm:88  1000F0	{ 8A 00 80 40 }            	MOV %R10, 8
-floppy.asm:89  1000F4	{ 01 00 81 40 }            	MOV %R1, 0x1000
-floppy.asm:90  1000F8	{ 51 0A 80 97 }            	STOREW %R5, 0x0A, %R1
-floppy.asm:91  1000FC	{ 01 00 80 40 }            	MOV %R1, 0x00
-floppy.asm:92  100100	{ 51 0C 80 97 }            	STOREW %R5, 0x0C, %R1
-floppy.asm:93  100104	{ 51 0E 80 97 }            	STOREW %R5, 0x0E, %R1
-floppy.asm:94  100108	{ 21 00 80 40 }            	MOV %R1, 0x0002
-floppy.asm:95  10010C	{ 51 08 80 97 }            	STOREW %R5, 0x08, %R1
-floppy.asm:97  100110	{ }                        	_sleep1:
-floppy.asm:98  100110	{ 00 00 00 00 }            	SLEEP
-floppy.asm:99  100114	{ 56 10 80 94 }            	LOADW %R6, %R5, 0x10
-floppy.asm:100 100118	{ 16 00 80 4C }            	IFNEQ %R6, 0x0001
-floppy.asm:101 10011C	{ 10 01 90 25 }            	JMP _sleep1
-floppy.asm:104 100120	{ 9A 00 80 40 }            	MOV %R10, 9
-floppy.asm:105 100124	{ 01 00 82 40 }            	MOV %R1, 0x2000
-floppy.asm:106 100128	{ 51 0A 80 97 }            	STOREW %R5, 0x0A, %R1
-floppy.asm:107 10012C	{ 11 00 80 40 }            	MOV %R1, 0x0001
-floppy.asm:108 100130	{ 51 08 80 97 }            	STOREW %R5, 0x08, %R1
-floppy.asm:110 100134	{ }                        	_sleep2:
-floppy.asm:111 100134	{ 00 00 00 00 }            	SLEEP
-floppy.asm:112 100138	{ 56 10 80 94 }            	LOADW %R6, %R5, 0x10
-floppy.asm:113 10013C	{ 16 00 80 4C }            	IFNEQ %R6, 0x0001
-floppy.asm:114 100140	{ 34 01 90 25 }            	JMP _sleep2
-floppy.asm:117 100144	{ AA 00 80 40 }            	MOV %R10, 10
-floppy.asm:118 100148	{ 01 00 82 40 }            	MOV %R1, 0x2000
-floppy.asm:119 10014C	{ 51 0A 80 97 }            	STOREW %R5, 0x0A, %R1
-floppy.asm:120 100150	{ 11 00 80 40 }            	MOV %R1, 0x01
-floppy.asm:121 100154	{ 51 0E 80 97 }            	STOREW %R5, 0x0E, %R1
-floppy.asm:122 100158	{ 21 00 80 40 }            	MOV %R1, 0x0002
-floppy.asm:123 10015C	{ 51 08 80 97 }            	STOREW %R5, 0x08, %R1
-floppy.asm:125 100160	{ }                        	crash:
-floppy.asm:126 100160	{ 00 00 00 00 }            	SLEEP
-floppy.asm:127 100164	{ 60 01 90 25 }            	JMP crash
-floppy.asm:129 100168	{ }                        	int_m5fdd:
-floppy.asm:130 100168	{ 09 00 00 40 }            	MOV %R9, %R0
-floppy.asm:131 10016C	{ 00 00 00 02 }            	RFI
-floppy.asm:134 100170	{ }                        	LIB_memcmp:
-floppy.asm:138 100170	{ 03 00 00 24 }            	PUSH %R3
-floppy.asm:139 100174	{ 04 00 00 24 }            	PUSH %R4
-floppy.asm:140 100178	{ 05 00 00 24 }            	PUSH %R5
-floppy.asm:142 10017C	{ 04 00 80 40 }            	MOV %R4, 0
-floppy.asm:143 100180	{ F3 FF FF 40 }            	MOV %R3, -1
-floppy.asm:144 100184	{ }                        	_memcmp_loop:
-floppy.asm:145 100184	{ 33 01 80 84 }            	ADD %R3, %R3, 1
-floppy.asm:146 100188	{ 32 00 00 4F }            	IFLE %R2, %R3
-floppy.asm:147 10018C	{ 14 00 80 27 }            	RJMP _memcmp_loop_end
-floppy.asm:148 100190	{ 04 03 00 95 }            	LOADB %R4, %R0, %R3
-floppy.asm:149 100194	{ 05 03 00 95 }            	LOADB %R5, %R0, %R3
-floppy.asm:150 100198	{ 44 05 00 86 }            	SUB %R4, %R4, %R5
-floppy.asm:151 10019C	{ 04 00 80 4B }            	IFEQ %R4, 0
-floppy.asm:152 1001A0	{ E0 FF FF 27 }            	RJMP _memcmp_loop
-floppy.asm:153 1001A4	{ }                        	_memcmp_loop_end:
-floppy.asm:154 1001A4	{ 40 00 00 40 }            	MOV %R0, %R4
-floppy.asm:156 1001A8	{ 05 00 00 24 }            	PUSH %R5
-floppy.asm:157 1001AC	{ 04 00 00 24 }            	PUSH %R4
-floppy.asm:158 1001B0	{ 03 00 00 24 }            	PUSH %R3
-floppy.asm:159 1001B4	{ 00 00 00 01 }            	RET
+1	00100000  	.ORG	0x100000                
+3	00100000  	MOV	%SP,0x020000            0000F44000000200
+4	00100008  	MOV	%IA,0x10                1000B840
+5	0010000c  	MOV	%FLAGS,0x100            0001BC40
+7	00100010  	MOV	%R0,int_m5fdd           0000C0406C011000
+8	00100018  	STORE	0x18,%R0                18008048
+11	0010001c  	MOV	%R5,0x110000            0000D44000001100
+12	00100024  	ADD	%R5,%R5,0x000600        00469584
+15	00100028  	MOV	%R10,0                  0000A840
+16	0010002c  	LOADB	%R0,%R5,0x0             00408195
+17	00100030  	IFNEQ	%R0,0xFF                FF00804C
+18	00100034  	JMP	crash                   59008425
+21	00100038  	MOV	%R10,1                  0100A840
+22	0010003c  	LOADB	%R0,%R5,0x01            01408195
+23	00100040  	IFNEQ	%R0,0x08                0800804C
+24	00100044  	JMP	crash                   59008425
+27	00100048  	MOV	%R10,2                  0200A840
+28	0010004c  	LOADB	%R0,%R5,0x02            02408195
+29	00100050  	IFNEQ	%R0,0x01                0100804C
+30	00100054  	JMP	crash                   59008425
+33	00100058  	MOV	%R10,3                  0300A840
+34	0010005c  	LOADB	%R0,%R5,0x03            03408195
+35	00100060  	IFNEQ	%R0,0x01                0100804C
+36	00100064  	JMP	crash                   59008425
+39	00100068  	MOV	%R10,4                  0400A840
+40	0010006c  	LOAD	%R0,%R5,0x04            04408193
+41	00100070  	IFNEQ	%R0,0x1EB37E91          0000C04C917EB31E
+42	00100078  	JMP	crash                   59008425
+45	0010007c  	MOV	%R10,5                  0500A840
+46	00100080  	LOADW	%R0,%R5,0x10            10408194
+47	00100084  	IFNEQ	%R0,0x01                0100804C
+48	00100088  	JMP	crash                   59008425
+51	0010008c  	MOV	%R10,6                  0600A840
+52	00100090  	LOADW	%R0,%R5,0x12            12408194
+53	00100094  	IFNEQ	%R0,0x00                0000804C
+54	00100098  	JMP	crash                   59008425
+59	0010009c  	MOV	%R10,7                  0700A840
+60	001000a0  	MOV	%R1,0x0003              03008440
+61	001000a4  	STOREW	%R5,0x8,%R1             08408597
+62	001000a8  	LOADW	%R0,%R5,0x0A            0A408194
+63	001000ac  	IFNEQ	%R0,0x280               8002804C
+64	001000b0  	JMP	crash                   59008425
+65	001000b4  	LOADW	%R0,%R5,0x0C            0C408194
+66	001000b8  	IFNEQ	%R0,0x0228              2802804C
+67	001000bc  	JMP	crash                   59008425
+68	001000c0  	LOADW	%R0,%R5,0x0E            0E408194
+69	001000c4  	IFNEQ	%R0,0x0809              0908804C
+70	001000c8  	JMP	crash                   59008425
+73	001000cc  	MOV	%R1,0x02                02008440
+74	001000d0  	STOREW	%R5,0x0A,%R1            0A408597
+75	001000d4  	MOV	%R1,0x00                00008440
+76	001000d8  	STOREW	%R5,0x08,%R1            08408597
+79	001000dc  	MOV	%R0,0                   00008040
+80	001000e0  	MOV	%R1,0x1000              00108440
+81	001000e4 genLoop:	                        
+82	001000e4  	STOREB	%R1,%R0,%R0             00400098
+83	001000e8  	ADD	%R0,%R0,1               01008084
+84	001000ec  	IFLE	%R0,0xFF                FF00804F
+85	001000f0  	JMP	genLoop                 39008425
+88	001000f4  	MOV	%R10,8                  0800A840
+89	001000f8  	MOV	%R1,0x1000              00108440
+90	001000fc  	STOREW	%R5,0x0A,%R1            0A408597
+91	00100100  	MOV	%R1,0x00                00008440
+92	00100104  	STOREW	%R5,0x0C,%R1            0C408597
+93	00100108  	STOREW	%R5,0x0E,%R1            0E408597
+94	0010010c  	MOV	%R1,0x0002              02008440
+95	00100110  	STOREW	%R5,0x08,%R1            08408597
+97	00100114 _sleep1:	                        
+98	00100114  	SLEEP	                        00000000
+99	00100118  	LOADW	%R6,%R5,0x10            10409994
+100	0010011c  	IFNEQ	%R6,0x0001              0100984C
+101	00100120  	JMP	_sleep1                 45008425
+104	00100124  	MOV	%R10,9                  0900A840
+105	00100128  	MOV	%R1,0x2000              00208440
+106	0010012c  	STOREW	%R5,0x0A,%R1            0A408597
+107	00100130  	MOV	%R1,0x0001              01008440
+108	00100134  	STOREW	%R5,0x08,%R1            08408597
+110	00100138 _sleep2:	                        
+111	00100138  	SLEEP	                        00000000
+112	0010013c  	LOADW	%R6,%R5,0x10            10409994
+113	00100140  	IFNEQ	%R6,0x0001              0100984C
+114	00100144  	JMP	_sleep2                 4E008425
+117	00100148  	MOV	%R10,10                 0A00A840
+118	0010014c  	MOV	%R1,0x2000              00208440
+119	00100150  	STOREW	%R5,0x0A,%R1            0A408597
+120	00100154  	MOV	%R1,0x01                01008440
+121	00100158  	STOREW	%R5,0x0E,%R1            0E408597
+122	0010015c  	MOV	%R1,0x0002              02008440
+123	00100160  	STOREW	%R5,0x08,%R1            08408597
+125	00100164 crash:	                        
+126	00100164  	SLEEP	                        00000000
+127	00100168  	JMP	crash                   59008425
+129	0010016c int_m5fdd:	                        
+130	0010016c  	MOV	%R9,%R0                 00002440
+131	00100170  	RFI	                        00000002
+134	00100174 LIB_memcmp:	                        
+138	00100174  	PUSH	%R3                     03000024
+139	00100178  	PUSH	%R4                     04000024
+140	0010017c  	PUSH	%R5                     05000024
+142	00100180  	MOV	%R4,0                   00009040
+143	00100184  	MOV	%R3,-1                  FFFF8F40
+144	00100188 _memcmp_loop:	                        
+145	00100188  	ADD	%R3,%R3,1               01C08C84
+146	0010018c  	IFLE	%R2,%R3                 0300084F
+147	00100190  	RJMP	_memcmp_loop_end        05008027
+148	00100194  	LOADB	%R4,%R0,%R3             03001095
+149	00100198  	LOADB	%R5,%R0,%R3             03001495
+150	0010019c  	SUB	%R4,%R4,%R5             05001186
+151	001001a0  	IFEQ	%R4,0                   0000904B
+152	001001a4  	RJMP	_memcmp_loop            F8FFBF27
+153	001001a8 _memcmp_loop_end:	                        
+154	001001a8  	MOV	%R0,%R4                 04000040
+156	001001ac  	PUSH	%R5                     05000024
+157	001001b0  	PUSH	%R4                     04000024
+158	001001b4  	PUSH	%R3                     03000024
+159	001001b8  	RET	                        00000001
+Symbols:
+00100114  _sleep1
+00100188  _memcmp_loop
+00100164  crash
+001000e4  genLoop
+0010016c  int_m5fdd
+001001a8  _memcmp_loop_end
+00100138  _sleep2
+00100174  LIB_memcmp
