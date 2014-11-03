@@ -541,21 +541,18 @@ unsigned TR3200::RealStep() {
             case P2_OPCODE::IFEQ:
                 if ( !(r[rd] == rn) ) {
                     skiping = true;
-                    wait_cycles++;
                 }
                 break;
 
             case P2_OPCODE::IFNEQ:
                 if ( !(r[rd] != rn) ) {
                     skiping = true;
-                    wait_cycles++;
                 }
                 break;
 
             case P2_OPCODE::IFL:
                 if ( !(r[rd] < rn) ) {
                     skiping = true;
-                    wait_cycles++;
                 }
                 break;
 
@@ -565,7 +562,6 @@ unsigned TR3200::RealStep() {
                 SDWord srn = rn;
                 if ( !(srd < srn) ) {
                     skiping = true;
-                    wait_cycles++;
                 }
                 break;
             }
@@ -573,7 +569,6 @@ unsigned TR3200::RealStep() {
             case P2_OPCODE::IFLE:
                 if ( !(r[rd] <= rn) ) {
                     skiping = true;
-                    wait_cycles++;
                 }
                 break;
 
@@ -583,7 +578,6 @@ unsigned TR3200::RealStep() {
                 SDWord srn = rn;
                 if ( !(srd <= srn) ) {
                     skiping = true;
-                    wait_cycles++;
                 }
                 break;
             }
@@ -591,14 +585,12 @@ unsigned TR3200::RealStep() {
             case P2_OPCODE::IFBITS:
                 if ( !( (r[rd] & rn) != 0 ) ) {
                     skiping = true;
-                    wait_cycles++;
                 }
                 break;
 
             case P2_OPCODE::IFCLEAR:
                 if ( !( (r[rd] & rn) == 0 ) ) {
                     skiping = true;
-                    wait_cycles++;
                 }
                 break;
 
