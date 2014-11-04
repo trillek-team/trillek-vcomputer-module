@@ -182,14 +182,12 @@ unsigned TR3200::RealStep() {
                 }
 
                 // If operands have same sign, check overflow
-                if ( DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn) ) {
-                    if ( DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) {
-                        // Overflow happens
-                        SET_ON_OF(REG_FLAGS);
-                    }
-                    else {
-                        SET_OFF_OF(REG_FLAGS);
-                    }
+                if ( DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn) && DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) {
+                    // Overflow happens
+                    SET_ON_OF(REG_FLAGS);
+                }
+                else {
+                    SET_OFF_OF(REG_FLAGS);
                 }
                 r[rd] = (DWord)ltmp;
                 break;
@@ -203,16 +201,14 @@ unsigned TR3200::RealStep() {
                 else {
                     SET_OFF_CF(REG_FLAGS);
                 }
-
                 // If operands have same sign, check overflow
-                if ( DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn) ) {
-                    if ( DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) {
-                        // Overflow happens
-                        SET_ON_OF(REG_FLAGS);
-                    }
-                    else {
-                        SET_OFF_OF(REG_FLAGS);
-                    }
+                if ( DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn) && DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) {
+                    // Overflow happens
+                    SET_ON_OF(REG_FLAGS);
+
+                }
+                else {
+                    SET_OFF_OF(REG_FLAGS);
                 }
                 r[rd] = (DWord)ltmp;
                 break;
@@ -228,14 +224,13 @@ unsigned TR3200::RealStep() {
                 }
 
                 // If operands have distint sign, check overflow
-                if ( DW_SIGN_BIT(rs) != DW_SIGN_BIT(rn) ) {
-                    if ( DW_SIGN_BIT(rn) == DW_SIGN_BIT(ltmp) ) {
-                        // Overflow happens
-                        SET_ON_OF(REG_FLAGS);
-                    }
-                    else {
-                        SET_OFF_OF(REG_FLAGS);
-                    }
+                // If operands have same sign, check overflow
+                if ( DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn) && DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) {
+                    // Overflow happens
+                    SET_ON_OF(REG_FLAGS);
+                }
+                else {
+                    SET_OFF_OF(REG_FLAGS);
                 }
                 r[rd] = (DWord)ltmp;
                 break;
@@ -251,14 +246,13 @@ unsigned TR3200::RealStep() {
                 }
 
                 // If operands have distint sign, check overflow
-                if ( DW_SIGN_BIT(rs) != DW_SIGN_BIT(rn) ) {
-                    if ( DW_SIGN_BIT(rn) == DW_SIGN_BIT(ltmp) ) {
-                        // Overflow happens
-                        SET_ON_OF(REG_FLAGS);
-                    }
-                    else {
-                        SET_OFF_OF(REG_FLAGS);
-                    }
+                // If operands have same sign, check overflow
+                if ( DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn) && DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) {
+                    // Overflow happens
+                    SET_ON_OF(REG_FLAGS);
+                }
+                else {
+                    SET_OFF_OF(REG_FLAGS);
                 }
                 r[rd] = (DWord)ltmp;
                 break;
@@ -274,14 +268,12 @@ unsigned TR3200::RealStep() {
                 }
 
                 // If operands have same sign, check overflow
-                if ( DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn) ) {
-                    if ( DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) {
-                        // Overflow happens
-                        SET_ON_OF(REG_FLAGS);
-                    }
-                    else {
-                        SET_OFF_OF(REG_FLAGS);
-                    }
+                if ( DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn) && DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) {
+                    // Overflow happens
+                    SET_ON_OF(REG_FLAGS);
+                }
+                else {
+                    SET_OFF_OF(REG_FLAGS);
                 }
                 r[rd] = (DWord)ltmp;
                 break;
@@ -297,14 +289,12 @@ unsigned TR3200::RealStep() {
                 }
 
                 // If operands have same sign, check overflow
-                if ( DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn) ) {
-                    if ( DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) {
-                        // Overflow happens
-                        SET_ON_OF(REG_FLAGS);
-                    }
-                    else {
-                        SET_OFF_OF(REG_FLAGS);
-                    }
+                if ( DW_SIGN_BIT(rs) == DW_SIGN_BIT(rn) && DW_SIGN_BIT(rn) != DW_SIGN_BIT(ltmp) ) {
+                    // Overflow happens
+                    SET_ON_OF(REG_FLAGS);
+                }
+                else {
+                    SET_OFF_OF(REG_FLAGS);
                 }
                 r[rd] = (DWord)ltmp;
                 break;
