@@ -3,7 +3,7 @@ Trillek Virtual Computer Lib
 
 Using these [specs](https://github.com/trillek-team/trillek-computer)
 
-The design of the Virtual Computer allows to plug and use different CPUs. Actually are the TR3200 and the DCPU-16N. 
+The design of the Virtual Computer allows to plug and use different CPUs. Actually is the TR3200. 
 
 This repo contains of the Trillek Virtual Computer lib and some extra tools, including a toy emulator build over the lib. 
 
