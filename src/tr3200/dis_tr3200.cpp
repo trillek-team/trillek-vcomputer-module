@@ -461,6 +461,42 @@ std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
             }
             break;
 
+        case P2_OPCODE::IFG:
+            if (literal) {
+                snprintf(buf, BUF_SIZE, "IFG %%r%u, 0x%08X",  rd, rn);
+            }
+            else {
+                snprintf(buf, BUF_SIZE, "IFG %%r%u, %%r%u", rd, rn);
+            }
+            break;
+
+        case P2_OPCODE::IFSG:
+            if (literal) {
+                snprintf(buf, BUF_SIZE, "IFSG %%r%u, 0x%08X",  rd, rn);
+            }
+            else {
+                snprintf(buf, BUF_SIZE, "IFSG %%r%u, %%r%u", rd, rn);
+            }
+            break;
+
+        case P2_OPCODE::IFGE:
+            if (literal) {
+                snprintf(buf, BUF_SIZE, "IFGE %%r%u, 0x%08X",  rd, rn);
+            }
+            else {
+                snprintf(buf, BUF_SIZE, "IFGE %%r%u, %%r%u", rd, rn);
+            }
+            break;
+
+        case P2_OPCODE::IFSGE:
+            if (literal) {
+                snprintf(buf, BUF_SIZE, "IFSGE %%r%u, 0x%08X",  rd, rn);
+            }
+            else {
+                snprintf(buf, BUF_SIZE, "IFSGE %%r%u, %%r%u", rd, rn);
+            }
+            break;
+
         case P2_OPCODE::IFBITS:
             if (literal) {
                 snprintf(buf, BUF_SIZE, "IFBITS %%r%u, 0x%08X",  rd, rn);

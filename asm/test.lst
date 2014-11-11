@@ -21,59 +21,59 @@
 26	00100050  	XCHGB	%r4                     04000020
 27	00100054  	XCHGW	%r5                     05000021
 30	00100058 test_ifx:	                        
-31	00100058  	IFEQ	%r1,0                   0000844B
+31	00100058  	IFEQ	%r1,0                   00008470
 32	0010005c  	JMP	crash                   BE008425
-33	00100060  	IFNEQ	%r1,0xBEBECAFE          0000C44CFECABEBE
+33	00100060  	IFNEQ	%r1,0xBEBECAFE          0000C471FECABEBE
 34	00100068  	JMP	crash                   BE008425
-36	0010006c  	IFL	%r6,%r2                 0200184D
+36	0010006c  	IFL	%r6,%r2                 02001872
 37	00100070  	JMP	crash                   BE008425
-38	00100074  	IFLE	%r6,%r2                 0200184F
+38	00100074  	IFLE	%r6,%r2                 02001874
 39	00100078  	JMP	crash                   BE008425
-41	0010007c  	IFSL	%r2,%r0                 0000084E
+41	0010007c  	IFSL	%r2,%r0                 00000873
 42	00100080  	JMP	crash                   BE008425
-43	00100084  	IFSLE	%r2,%r0                 00000850
+43	00100084  	IFSLE	%r2,%r0                 00000875
 44	00100088  	JMP	crash                   BE008425
-46	0010008c  	IFBITS	%r4,0x404               04049051
+46	0010008c  	IFBITS	%r4,0x404               0404907A
 47	00100090  	JMP	next                    26008425
 48	00100094  	JMP	crash                   BE008425
 50	00100098 next:	                        
-51	00100098  	IFCLEAR	%r4,0x404               04049052
+51	00100098  	IFCLEAR	%r4,0x404               0404907B
 52	0010009c  	JMP	crash                   BE008425
-54	001000a0  	IFEQ	%r1,0                   0000844B
-55	001000a4  	IFNEQ	%r1,0                   0000844C
-56	001000a8  	IFEQ	%r1,0xBEBACAFE          0000C44BFECABABE
+54	001000a0  	IFEQ	%r1,0                   00008470
+55	001000a4  	IFNEQ	%r1,0                   00008471
+56	001000a8  	IFEQ	%r1,0xBEBACAFE          0000C470FECABABE
 57	001000b0  	JMP	crash                   BE008425
 60	001000b4 test_alu:	                        
 62	001000b4  	MOV	%r7,0x5555AAAA          0000DC40AAAA5555
 63	001000bc  	MOV	%r6,0xAAFFFF55          0000D84055FFFFAA
 64	001000c4  	NOT	%r11,%r6                06002C42
-65	001000c8  	IFNEQ	%r11,0x550000AA         0000EC4CAA000055
+65	001000c8  	IFNEQ	%r11,0x550000AA         0000EC71AA000055
 66	001000d0  	JMP	crash                   BE008425
 68	001000d4  	AND	%r11,%r7,%r6            06C02D80
-69	001000d8  	IFNEQ	%r11,0x0055AA00         0000EC4C00AA5500
+69	001000d8  	IFNEQ	%r11,0x0055AA00         0000EC7100AA5500
 70	001000e0  	JMP	crash                   BE008425
 72	001000e4  	OR	%r11,%r7,%r6            06C02D81
-73	001000e8  	IFNEQ	%r11,0xFFFFFFFF         0000EC4CFFFFFFFF
+73	001000e8  	IFNEQ	%r11,0xFFFFFFFF         0000EC71FFFFFFFF
 74	001000f0  	JMP	crash                   BE008425
 76	001000f4  	XOR	%r11,%r7,%r6            06C02D82
-77	001000f8  	IFNEQ	%r11,0xFFAA55FF         0000EC4CFF55AAFF
+77	001000f8  	IFNEQ	%r11,0xFFAA55FF         0000EC71FF55AAFF
 78	00100100  	JMP	crash                   BE008425
 80	00100104  	BITC	%r11,%r7,%r6            06C02D83
-81	00100108  	IFNEQ	%r11,0x550000AA         0000EC4CAA000055
+81	00100108  	IFNEQ	%r11,0x550000AA         0000EC71AA000055
 82	00100110  	JMP	crash                   BE008425
 85	00100114  	ADD	%r11,%r8,%r4            04002E84
-86	00100118  	IFNEQ	%r11,0x408              0804AC4C
+86	00100118  	IFNEQ	%r11,0x408              0804AC71
 87	0010011c  	JMP	crash                   BE008425
 89	00100120  	ADD	%r0,%r8,1               01008284
-90	00100124  	IFNEQ	%r0,9                   0900804C
+90	00100124  	IFNEQ	%r0,9                   09008071
 91	00100128  	JMP	crash                   BE008425
 93	0010012c  	SUB	%r10,%r11,%r0           00C02A86
-94	00100130  	IFNEQ	%r10,0x3FF              FF03A84C
+94	00100130  	IFNEQ	%r10,0x3FF              FF03A871
 95	00100134  	JMP	crash                   BE008425
 110	00100138  	MOV	%r9,0x40000000          0000E44000000040
 111	00100140  	MOV	%r10,0x60000000         0000E84000000060
 112	00100148  	ADD	%r11,%r10,%r9           09802E84
-113	0010014c  	IFCLEAR	%flags,2                0200BC52
+113	0010014c  	IFCLEAR	%flags,2                0200BC7B
 114	00100150  	JMP	crash                   BE008425
 118	00100154  	MOV	%r8,0xFFFFFFFF          0000E040FFFFFFFF
 119	0010015c  	MOV	%r9,0x00000001          0100A440
@@ -81,73 +81,73 @@
 121	00100164  	MOV	%r11,0x00000100         0001AC40
 123	00100168  	ADD	%r6,%r8,%r10            0A001A84
 124	0010016c  	ADDC	%r7,%r9,%r11            0B401E85
-125	00100170  	IFNEQ	%r6,0                   0000984C
+125	00100170  	IFNEQ	%r6,0                   00009871
 126	00100174  	JMP	crash                   BE008425
-127	00100178  	IFNEQ	%r7,0x102               02019C4C
+127	00100178  	IFNEQ	%r7,0x102               02019C71
 128	0010017c  	JMP	crash                   BE008425
 141	00100180  	MOV	%r6,0xAAFFFF55          0000D84055FFFFAA
 142	00100188  	MOV	%r7,0x55FFFFAA          0000DC40AAFFFF55
 143	00100190  	LLS	%r10,%r6,8              0880A98A
-144	00100194  	IFNEQ	%r10,0xFFFF5500         0000E84C0055FFFF
+144	00100194  	IFNEQ	%r10,0xFFFF5500         0000E8710055FFFF
 145	0010019c  	JMP	crash                   BE008425
 147	001001a0  	LRS	%r10,%r6,8              0880A98B
-148	001001a4  	IFNEQ	%r10,0x00AAFFFF         0000E84CFFFFAA00
+148	001001a4  	IFNEQ	%r10,0x00AAFFFF         0000E871FFFFAA00
 149	001001ac  	JMP	crash                   BE008425
 151	001001b0  	ARS	%r10,%r6,8              0880A98C
-152	001001b4  	IFNEQ	%r10,0xFFAAFFFF         0000E84CFFFFAAFF
+152	001001b4  	IFNEQ	%r10,0xFFAAFFFF         0000E871FFFFAAFF
 153	001001bc  	JMP	crash                   BE008425
 154	001001c0  	ARS	%r10,%r7,8              08C0A98C
-155	001001c4  	IFNEQ	%r10,0x0055FFFF         0000E84CFFFF5500
+155	001001c4  	IFNEQ	%r10,0x0055FFFF         0000E871FFFF5500
 156	001001cc  	JMP	crash                   BE008425
 158	001001d0  	ROTL	%r10,%r6,8              0880A98D
-159	001001d4  	IFNEQ	%r10,0xFFFF55AA         0000E84CAA55FFFF
+159	001001d4  	IFNEQ	%r10,0xFFFF55AA         0000E871AA55FFFF
 160	001001dc  	JMP	crash                   BE008425
 162	001001e0  	ROTR	%r10,%r6,8              0880A98E
-163	001001e4  	IFNEQ	%r10,0x55AAFFFF         0000E84CFFFFAA55
+163	001001e4  	IFNEQ	%r10,0x55AAFFFF         0000E871FFFFAA55
 164	001001ec  	JMP	crash                   BE008425
 167	001001f0  	MOV	%r8,100                 6400A040
 168	001001f4  	MOV	%r9,4000000001          0000E44001286BEE
 169	001001fc  	MUL	%r10,%r9,%r8            08402A8F
-170	00100200  	IFNEQ	%r10,0x21DBA064         0000E84C64A0DB21
+170	00100200  	IFNEQ	%r10,0x21DBA064         0000E87164A0DB21
 171	00100208  	JMP	crash                   BE008425
-172	0010020c  	IFNEQ	%y,0x5D                 5D00AC4C
+172	0010020c  	IFNEQ	%y,0x5D                 5D00AC71
 173	00100210  	JMP	crash                   BE008425
 175	00100214  	DIV	%r10,%r9,%r8            08402A91
-176	00100218  	IFNEQ	%r10,0x02625A00         0000E84C005A6202
+176	00100218  	IFNEQ	%r10,0x02625A00         0000E871005A6202
 177	00100220  	JMP	crash                   BE008425
-178	00100224  	IFNEQ	%y,1                    0100AC4C
+178	00100224  	IFNEQ	%y,1                    0100AC71
 179	00100228  	JMP	crash                   BE008425
 182	0010022c  	MOV	%r0,0x001000            00108040
 183	00100230  	MOV	%r1,0                   00008440
 184	00100234  	MOV	%r3,0xBEBACAFE          0000CC40FECABABE
 187	0010023c  	STORE	%r0,%r3                 00000C48
 188	00100240  	LOAD	%r1,%r0                 00000445
-189	00100244  	IFNEQ	%r3,%r1                 01000C4C
+189	00100244  	IFNEQ	%r3,%r1                 01000C71
 190	00100248  	JMP	crash                   BE008425
 194	0010024c  	LOAD	%r0,TDA_base_dev        00018045
-195	00100250  	IFNEQ	%r0,0                   0000804C
+195	00100250  	IFNEQ	%r0,0                   00008071
 196	00100254  	JMP	begin                   00008425
 199	00100258  	MOV	%r10,0x10FF00           0000E84000FF1000
 200	00100260 begin_search_tda:	                        
 201	00100260  	ADD	%r10,%r10,0x100         0081AA84
-202	00100264  	IFEQ	%r10,0x112100           0000E84B00211100
+202	00100264  	IFEQ	%r10,0x112100           0000E87000211100
 203	0010026c  	JMP	end_search_tda          A7008425
 205	00100270  	LOADB	%r0,%r10                0A000047
-206	00100274  	IFNEQ	%r0,0xFF                FF00804C
+206	00100274  	IFNEQ	%r0,0xFF                FF008071
 207	00100278  	JMP	begin_search_tda        98008425
 209	0010027c  	ADD	%r1,%r10,1              01808684
 210	00100280  	LOADB	%r0,%r1                 01000047
-211	00100284  	IFNEQ	%r0,0x0E                0E00804C
+211	00100284  	IFNEQ	%r0,0x0E                0E008071
 212	00100288  	JMP	begin_search_tda        98008425
 214	0010028c  	ADD	%r1,%r10,2              02808684
 215	00100290  	LOADB	%r0,%r1                 01000047
-216	00100294  	IFNEQ	%r0,0x01                0100804C
+216	00100294  	IFNEQ	%r0,0x01                01008071
 217	00100298  	JMP	begin_search_tda        98008425
 219	0010029c end_search_tda:	                        
-220	0010029c  	IFEQ	%r10,0x112100           0000E84B00211100
+220	0010029c  	IFEQ	%r10,0x112100           0000E87000211100
 221	001002a4  	MOV	%r10,0xFFFFFFFF         0000E840FFFFFFFF
 223	001002ac  	STORE	TDA_base_dev,%r10       0001A848
-225	001002b0  	IFEQ	%r10,0xFFFFFFFF         0000E84BFFFFFFFF
+225	001002b0  	IFEQ	%r10,0xFFFFFFFF         0000E870FFFFFFFF
 226	001002b8  	JMP	begin                   00008425
 230	001002bc  	ADD	%r0,%r10,0x0A           0A808284
 232	001002c0  	MOV	%r1,0x002000            00208440
@@ -175,7 +175,7 @@
 28	00100310  	LLS	%r2,%r2,8               0880888A
 30	00100314 print_loop:	                        
 31	00100314  	LOADB	%r3,%r0                 00000C47
-32	00100318  	IFEQ	%r3,0                   00008C4B
+32	00100318  	IFEQ	%r3,0                   00008C70
 33	0010031c  	JMP	print_end               CD008425
 35	00100320  	OR	%r3,%r3,%r2             02C00C81
 36	00100324  	STOREW	%r1,%r3                 01000C49
@@ -190,13 +190,13 @@
 56	00100340  	LRS	%r5,%r0,4               0400948B
 57	00100344  	AND	%r0,%r0,0x0000000F      0F008080
 62	00100348  	ADD	%r5,%r5,55              37409584
-63	0010034c  	IFL	%r5,A                   4100944D
+63	0010034c  	IFL	%r5,A                   41009472
 64	00100350  	SUB	%r5,%r5,7               07409586
 66	00100354  	OR	%r5,%r5,%r2             02401581
 67	00100358  	STOREW	%r1,%r5                 01001449
 70	0010035c  	ADD	%r1,%r1,2               02408484
 71	00100360  	ADD	%r5,%r0,55              37009484
-72	00100364  	IFL	%r5,A                   4100944D
+72	00100364  	IFL	%r5,A                   41009472
 73	00100368  	SUB	%r5,%r5,7               07409586
 75	0010036c  	OR	%r5,%r5,%r2             02401581
 76	00100370  	STOREW	%r1,%r5                 01001449
@@ -207,7 +207,7 @@
 91	00100380  	LLS	%r2,%r2,8               0880888A
 93	00100384  	LRS	%r5,%r0,12              0C00948B
 96	00100388  	ADD	%r5,%r5,55              37409584
-97	0010038c  	IFL	%r5,A                   4100944D
+97	0010038c  	IFL	%r5,A                   41009472
 98	00100390  	SUB	%r5,%r5,7               07409586
 100	00100394  	OR	%r5,%r5,%r2             02401581
 101	00100398  	STOREW	%r1,%r5                 01001449
@@ -215,7 +215,7 @@
 105	001003a0  	AND	%r5,%r5,0x0F            0F409580
 107	001003a4  	ADD	%r1,%r1,2               02408484
 108	001003a8  	ADD	%r5,%r5,55              37409584
-109	001003ac  	IFL	%r5,A                   4100944D
+109	001003ac  	IFL	%r5,A                   41009472
 110	001003b0  	SUB	%r5,%r5,7               07409586
 112	001003b4  	OR	%r5,%r5,%r2             02401581
 113	001003b8  	STOREW	%r1,%r5                 01001449
@@ -223,14 +223,14 @@
 117	001003c0  	AND	%r5,%r5,0x0F            0F409580
 119	001003c4  	ADD	%r1,%r1,2               02408484
 120	001003c8  	ADD	%r5,%r5,55              37409584
-121	001003cc  	IFL	%r5,A                   4100944D
+121	001003cc  	IFL	%r5,A                   41009472
 122	001003d0  	SUB	%r5,%r5,7               07409586
 124	001003d4  	OR	%r5,%r5,%r2             02401581
 125	001003d8  	STOREW	%r1,%r5                 01001449
 128	001003dc  	AND	%r5,%r0,0x0F            0F009480
 130	001003e0  	ADD	%r1,%r1,2               02408484
 131	001003e4  	ADD	%r5,%r5,55              37409584
-132	001003e8  	IFL	%r5,A                   4100944D
+132	001003e8  	IFL	%r5,A                   41009472
 133	001003ec  	SUB	%r5,%r5,7               07409586
 135	001003f0  	OR	%r5,%r5,%r2             02401581
 136	001003f4  	STOREW	%r1,%r5                 01001449
@@ -241,7 +241,7 @@
 151	00100404  	LLS	%r2,%r2,8               0880888A
 153	00100408  	LRS	%r5,%r0,28              1C00948B
 156	0010040c  	ADD	%r5,%r5,55              37409584
-157	00100410  	IFL	%r5,A                   4100944D
+157	00100410  	IFL	%r5,A                   41009472
 158	00100414  	SUB	%r5,%r5,7               07409586
 160	00100418  	OR	%r5,%r5,%r2             02401581
 161	0010041c  	STOREW	%r1,%r5                 01001449
@@ -249,7 +249,7 @@
 165	00100424  	AND	%r5,%r5,0x0F            0F409580
 167	00100428  	ADD	%r1,%r1,2               02408484
 168	0010042c  	ADD	%r5,%r5,55              37409584
-169	00100430  	IFL	%r5,A                   4100944D
+169	00100430  	IFL	%r5,A                   41009472
 170	00100434  	SUB	%r5,%r5,7               07409586
 172	00100438  	OR	%r5,%r5,%r2             02401581
 173	0010043c  	STOREW	%r1,%r5                 01001449
@@ -257,7 +257,7 @@
 177	00100444  	AND	%r5,%r5,0x0F            0F409580
 179	00100448  	ADD	%r1,%r1,2               02408484
 180	0010044c  	ADD	%r5,%r5,55              37409584
-181	00100450  	IFL	%r5,A                   4100944D
+181	00100450  	IFL	%r5,A                   41009472
 182	00100454  	SUB	%r5,%r5,7               07409586
 184	00100458  	OR	%r5,%r5,%r2             02401581
 185	0010045c  	STOREW	%r1,%r5                 01001449
@@ -265,7 +265,7 @@
 189	00100464  	AND	%r5,%r5,0x0F            0F409580
 191	00100468  	ADD	%r1,%r1,2               02408484
 192	0010046c  	ADD	%r5,%r5,55              37409584
-193	00100470  	IFL	%r5,A                   4100944D
+193	00100470  	IFL	%r5,A                   41009472
 194	00100474  	SUB	%r5,%r5,7               07409586
 196	00100478  	OR	%r5,%r5,%r2             02401581
 197	0010047c  	STOREW	%r1,%r5                 01001449
@@ -273,7 +273,7 @@
 201	00100484  	AND	%r5,%r5,0x0F            0F409580
 203	00100488  	ADD	%r1,%r1,2               02408484
 204	0010048c  	ADD	%r5,%r5,55              37409584
-205	00100490  	IFL	%r5,A                   4100944D
+205	00100490  	IFL	%r5,A                   41009472
 206	00100494  	SUB	%r5,%r5,7               07409586
 208	00100498  	OR	%r5,%r5,%r2             02401581
 209	0010049c  	STOREW	%r1,%r5                 01001449
@@ -281,7 +281,7 @@
 213	001004a4  	AND	%r5,%r5,0x0F            0F409580
 215	001004a8  	ADD	%r1,%r1,2               02408484
 216	001004ac  	ADD	%r5,%r5,55              37409584
-217	001004b0  	IFL	%r5,A                   4100944D
+217	001004b0  	IFL	%r5,A                   41009472
 218	001004b4  	SUB	%r5,%r5,7               07409586
 220	001004b8  	OR	%r5,%r5,%r2             02401581
 221	001004bc  	STOREW	%r1,%r5                 01001449
@@ -289,14 +289,14 @@
 225	001004c4  	AND	%r5,%r5,0x0F            0F409580
 227	001004c8  	ADD	%r1,%r1,2               02408484
 228	001004cc  	ADD	%r5,%r5,55              37409584
-229	001004d0  	IFL	%r5,A                   4100944D
+229	001004d0  	IFL	%r5,A                   41009472
 230	001004d4  	SUB	%r5,%r5,7               07409586
 232	001004d8  	OR	%r5,%r5,%r2             02401581
 233	001004dc  	STOREW	%r1,%r5                 01001449
 236	001004e0  	AND	%r5,%r0,0x0F            0F009480
 238	001004e4  	ADD	%r1,%r1,2               02408484
 239	001004e8  	ADD	%r5,%r5,55              37409584
-240	001004ec  	IFL	%r5,A                   4100944D
+240	001004ec  	IFL	%r5,A                   41009472
 241	001004f0  	SUB	%r5,%r5,7               07409586
 243	001004f4  	OR	%r5,%r5,%r2             02401581
 244	001004f8  	STOREW	%r1,%r5                 01001449
@@ -311,7 +311,7 @@
 264	00100514  	DIV	%r0,%r0,10              0A008091
 265	00100518  	PUSH	%y                      0B000024
 266	0010051c  	ADD	%r5,%r5,1               01409584
-268	00100520  	IFNEQ	%r0,0                   0000804C
+268	00100520  	IFNEQ	%r0,0                   00008071
 269	00100524  	JMP	print_uint_divloop      45018425
 271	00100528 print_uint_printloop:	                        
 272	00100528  	POP	%r0                     00000023
@@ -320,7 +320,7 @@
 275	00100534  	STOREW	%r1,%r0                 01000049
 277	00100538  	SUB	%r5,%r5,1               01409586
 278	0010053c  	ADD	%r1,%r1,2               02408484
-280	00100540  	IFSLE	%r5,0                   00009450
+280	00100540  	IFSLE	%r5,0                   00009475
 281	00100544  	JMP	print_uint_end          53018425
 282	00100548  	JMP	print_uint_printloop    4A018425
 284	0010054c print_uint_end:	                        
@@ -337,7 +337,7 @@
 304	00100570 clr_screen_loop:	                        
 305	00100570  	STORE	%r0,%r1                 00000448
 306	00100574  	ADD	%r0,%r0,4               04008084
-308	00100578  	IFLE	%r0,%r3                 0300004F
+308	00100578  	IFLE	%r0,%r3                 03000074
 309	0010057c  	JMP	clr_screen_loop         5C018425
 311	00100580  	RET	                        00000001
 319	00100584 hwn:	                        
@@ -349,13 +349,13 @@
 327	00100594  	LLS	%r4,%r1,8               0840908A
 328	00100598  	ADD	%r4,%r4,0x110000        0000D18400001100
 331	001005a0  	LOADB	%r2,%r4                 04000847
-332	001005a4  	IFNEQ	%r2,0xFF                FF00884C
+332	001005a4  	IFNEQ	%r2,0xFF                FF008871
 333	001005a8  	JMP	hwn_check_cond_for_loop 6D018425
 335	001005ac  	STOREB	%r3,%r0,%r1             00C00498
 336	001005b0  	ADD	%r0,%r0,1               01008084
 338	001005b4 hwn_check_cond_for_loop:	                        
 340	001005b4  	ADD	%r1,%r1,1               01408484
-341	001005b8  	IFL	%r1,32                  2000844D
+341	001005b8  	IFL	%r1,32                  20008472
 342	001005bc  	JMP	hwn_for_loop            65018425
 344	001005c0 end_hwn:	                        
 345	001005c0  	POP	%r4                     04000023
@@ -367,30 +367,30 @@
 274	00000100  	.ORG	0x0100                  
 275	00000100 TDA_base_dev:	.dw	0                       0000
 Symbols:
-00100584  hwn
+0010054c  print_uint_end
+00000100  TDA_base_dev
+0010029c  end_search_tda
+0010037c  print_hex_w
+00100338  print_hex_b
 00100058  test_ifx
 00100260  begin_search_tda
-001002f8  crash
-00100338  print_hex_b
-001000b4  test_alu
-00100334  print_end
-00100570  clr_screen_loop
-00100514  print_uint_divloop
-001005b4  hwn_check_cond_for_loop
-0010029c  end_search_tda
-00100300  get_offset_from_row_col
-00100310  print
-00100098  next
-00100504  print_uint
-00100528  print_uint_printloop
-00100594  hwn_for_loop
-00100314  print_loop
-001005c0  end_hwn
-00100400  print_hex_dw
 00100558  clr_screen
-0010054c  print_uint_end
-00100000  begin
+00100528  print_uint_printloop
 00000000  data
+00100098  next
+00100570  clr_screen_loop
+00100400  print_hex_dw
+00100314  print_loop
+00100594  hwn_for_loop
+00100504  print_uint
+00100310  print
+001002f8  crash
+001005c0  end_hwn
+00100514  print_uint_divloop
+00100000  begin
+001005b4  hwn_check_cond_for_loop
+001000b4  test_alu
+00100300  get_offset_from_row_col
+00100584  hwn
+00100334  print_end
 001005c8  string01
-00000100  TDA_base_dev
-0010037c  print_hex_w

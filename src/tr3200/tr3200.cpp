@@ -572,6 +572,38 @@ unsigned TR3200::RealStep() {
                 break;
             }
 
+            case P2_OPCODE::IFG:
+                if ( !(r[rd] > rn) ) {
+                    skiping = true;
+                }
+                break;
+
+            case P2_OPCODE::IFSG:
+            {
+                SDWord srd = r[rd];
+                SDWord srn = rn;
+                if ( !(srd > srn) ) {
+                    skiping = true;
+                }
+                break;
+            }
+
+            case P2_OPCODE::IFGE:
+                if ( !(r[rd] >= rn) ) {
+                    skiping = true;
+                }
+                break;
+
+            case P2_OPCODE::IFSGE:
+            {
+                SDWord srd = r[rd];
+                SDWord srn = rn;
+                if ( !(srd >= srn) ) {
+                    skiping = true;
+                }
+                break;
+            }
+
             case P2_OPCODE::IFBITS:
                 if ( !( (r[rd] & rn) != 0 ) ) {
                     skiping = true;

@@ -3,7 +3,7 @@
  * \file        TR3200_opcodes.hpp
  * \copyright   The MIT License (MIT)
  *
- * OpCodes of TR3200 CPU v0.10
+ * OpCodes of TR3200 CPU v0.4.0
  * @see https://github.com/trillek-team/trillek-computer/blob/master/TR3200.md
  */
 #ifndef __TR3200_OPCODES_HPP_
@@ -72,19 +72,25 @@ enum P2_OPCODE {
     STOREW2 = 0x49,
     STOREB2 = 0x4A,
 
-    IFEQ  = 0x4B,
-    IFNEQ = 0x4C,
+    JMP2  = 0x4B,
+    CALL2 = 0x4C,
 
-    IFL   = 0x4D,
-    IFSL  = 0x4E,
-    IFLE  = 0x4F,
-    IFSLE = 0x50,
+    IFEQ  = 0x70,
+    IFNEQ = 0x71,
 
-    IFBITS  = 0x51,
-    IFCLEAR = 0x52,
+    IFL   = 0x72,
+    IFSL  = 0x73,
+    IFLE  = 0x74,
+    IFSLE = 0x75,
 
-    JMP2  = 0x53,
-    CALL2 = 0x54,
+    IFG   = 0x76,
+    IFSG  = 0x77,
+    IFGE  = 0x78,
+    IFSGE = 0x79,
+
+    IFBITS  = 0x7A,
+    IFCLEAR = 0x7B,
+
 };
 
 // 1 Parameter OpCodes ********************************************************
@@ -122,7 +128,7 @@ enum NP_OPCODE {
     RET = 0x01,
     RFI = 0x02,
 };
-    
+
 } // End of namespace computer
 } // End of namespace trillek
 
