@@ -35,12 +35,22 @@ test_ifx:                       ; PC = 0x00B0
 
   IFL %r6, %r2        ; 6 < 2 = false, so skips
       JMP crash
-  IFLE %r6, %r2       ; 6 < 2 = false, so skips
+  IFLE %r6, %r2       ; 6 <= 2 = false, so skips
       JMP crash
 
   IFSL %r2, %r0       ; 2 < -1 = false, so skips
       JMP crash
-  IFSLE %r2, %r0      ; 2 < -1 = false, so skips
+  IFSLE %r2, %r0      ; 2 <= -1 = false, so skips
+      JMP crash
+
+  IFG %r2, %r6        ; 2 > 6 = false, so skips
+      JMP crash
+  IFGE %r2, %r6       ; 2 >= 6 = false, so skips
+      JMP crash
+
+  IFSG %r0, %r2       ; -1 >= 2 = false, so skips
+      JMP crash
+  IFSGE %r0, %r2      ; -1 >= 2 = false, so skips
       JMP crash
 
   IFBITS %r4, 0x404   ; (0x400 & 0x404) != 0 so execute
