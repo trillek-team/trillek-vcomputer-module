@@ -40,6 +40,14 @@ end_search_tda:
   MOV %r1, 0xB0           ; Dark brown paper, Black Ink
   CALL clr_screen
 
+  MOV %r1, 0xF0FD
+  ADD %r0, %r10, 0x10     ; Activate cursor with blink
+  STOREW %r0, %r1
+
+  MOV %r1, 0x010A
+  ADD %r0, %r10, 0x12     ; Cursor at Col 10, Row 1
+  STOREW %r0, %r1
+
   ; Prints the string
   MOV %r1, 0x001000       ; %r1 ptr to text buffer
   MOV %r0, string         ; %r0 ptr to string

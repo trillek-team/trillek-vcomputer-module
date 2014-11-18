@@ -196,7 +196,7 @@ public:
             screen.user_font = true;
         }
 
-        screen.cursor    = this->cursor; //= this->cursor && (this->blink_state || !this->blink);
+        screen.cursor    = this->cursor && (this->blink_state || !this->blink);
         screen.cur_row   = (Byte)(this->e >> 8);
         screen.cur_col   = (Byte) this->e;
         screen.cur_start = (Byte) this->d & 0x7;
@@ -210,6 +210,16 @@ public:
      */
     void DoVSync() {
         do_vsync = (vsync_msg != 0x0000);
+
+        // 8 frames on / 8 frames off
+        if (blink_count == 7 || blink_count == 0) {
+            blink_state = !blink_state;
+        }
+
+        blink_count++;
+        if (blink_count > 16) {
+            blink_count = 0;
+        }
     }
 
 protected:
@@ -224,6 +234,7 @@ protected:
     bool cursor;        /// Cursor enabled ?
     bool blink_state;
     bool blink;         /// Blink enabled ?
+    Byte blink_count;
 };
 
 
