@@ -1,6 +1,6 @@
 /**
  * Trillek Virtual Computer - tda_view.cpp
- * Tool that visualizes a image of a TDA screen using a stored TDA state 
+ * Tool that visualizes a image of a TDA screen using a stored TDA state
  */
 #include "os.hpp"
 #include "devices/tda.hpp"
@@ -9,7 +9,7 @@
 #include <vector>
 #include <fstream>
 #include <ios>
-#include <iomanip> 
+#include <iomanip>
 #include <cstdio>
 #include <algorithm>
 #include <memory>
@@ -86,34 +86,41 @@ int main (int argc, char* argv[]) {
 		std::clog << "Failed creating the window or context.";
 		return -1;
 	}
-  
+
   initGL(glfwos);
   std::printf("Initiated OpenGL\n");
   float frame_count = 0; // Count frames
   double deltat = glfwos.GetDeltaTime();
   double t_acu = 0; // Time acumulator
 
-  // TODO Here insert a callback fro events	
+  // TODO Here insert a callback fro events
 
   // Test screen
   TDAScreen screen = {0}; // Clear it
-  screen.txt_buffer[0]  = 0x0F00 | 'H'; 
-  screen.txt_buffer[1]  = 0x1F00 | 'e'; 
-  screen.txt_buffer[2]  = 0x2F00 | 'l'; 
-  screen.txt_buffer[3]  = 0x3F00 | 'l'; 
-  screen.txt_buffer[4]  = 0x4F00 | 'o'; 
-  screen.txt_buffer[5]  = 0x5F00 | ' '; 
-  screen.txt_buffer[6]  = 0x6F00 | 'w'; 
-  screen.txt_buffer[7]  = 0x7F00 | 'o'; 
-  screen.txt_buffer[8]  = 0x8F00 | 'r'; 
-  screen.txt_buffer[9]  = 0x9F00 | 'l'; 
-  screen.txt_buffer[10] = 0xAF00 | 'd'; 
-  screen.txt_buffer[11] = 0xBF00 | '!'; 
+  screen.txt_buffer[0]  = 0x0F00 | 'H';
+  screen.txt_buffer[1]  = 0x1F00 | 'e';
+  screen.txt_buffer[2]  = 0x2F00 | 'l';
+  screen.txt_buffer[3]  = 0x3F00 | 'l';
+  screen.txt_buffer[4]  = 0x4F00 | 'o';
+  screen.txt_buffer[5]  = 0x5F00 | ' ';
+  screen.txt_buffer[6]  = 0x6F00 | 'w';
+  screen.txt_buffer[7]  = 0x7F00 | 'o';
+  screen.txt_buffer[8]  = 0x8F00 | 'r';
+  screen.txt_buffer[9]  = 0x9F00 | 'l';
+  screen.txt_buffer[10] = 0xAF00 | 'd';
+  screen.txt_buffer[11] = 0xBF00 | '!';
+
+  screen.cursor = true;
+  screen.cur_col = 20;
+  screen.cur_row = 0;
+  screen.cur_start = 5;
+  screen.cur_end = 7;
+  screen.cur_color = 15;
 
   for (unsigned i= 40; i < WIDTH_CHARS*HEIGHT_CHARS; i++ ) {
     Byte fg = i % 16;
     Byte bg = (15 - i) % 16;
-    screen.txt_buffer[i] = (bg << 12) | (fg << 8) | ((i-40) % 256); 
+    screen.txt_buffer[i] = (bg << 12) | (fg << 8) | ((i-40) % 256);
   }
 
   bool loop = true;
@@ -128,21 +135,21 @@ int main (int argc, char* argv[]) {
 
     glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+
     // Model matrix <- Identity
-    model = glm::mat4(1.0f); 
+    model = glm::mat4(1.0f);
 
     // Camera Matrix
     view = glm::lookAt(
         glm::vec3(
-          (float)(zoom * sin(yaw)*cos(pith)), 
-          (float)(zoom * sin(pith)), 
+          (float)(zoom * sin(yaw)*cos(pith)),
+          (float)(zoom * sin(pith)),
           (float)(zoom * cos(yaw))*cos(pith)), // Were is the camera
         glm::vec3(0,0,0), // and looks at the origin
         glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
         );
 
-    // Drawing ... 
+    // Drawing ...
     glUseProgram(shaderProgram);
     // Set sampler to user Texture Unit 0
     glUniform1i(glGetUniformLocation( shaderProgram, "texture0" ), 0);
@@ -176,11 +183,11 @@ int main (int argc, char* argv[]) {
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
     glVertexAttribPointer(
-        sh_in_Position, 
-        3, 
-        GL_FLOAT, 
-        GL_FALSE, 
-        0, 
+        sh_in_Position,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        0,
         0 );
 
     // Enable attribute in_Color as being used
@@ -188,11 +195,11 @@ int main (int argc, char* argv[]) {
     glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
     // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
     glVertexAttribPointer(
-        sh_in_Color, 
-        3, 
-        GL_FLOAT, 
-        GL_FALSE, 
-        0, 
+        sh_in_Color,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        0,
         0 );
 
     // Enable attribute in_UV as being used
@@ -200,11 +207,11 @@ int main (int argc, char* argv[]) {
     glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
     // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
     glVertexAttribPointer(
-        sh_in_UV, 
-        2, 
-        GL_FLOAT, 
-        GL_FALSE, 
-        0, 
+        sh_in_UV,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+        0,
         0 );
 
     // Send M, V, P matrixes to the uniform inputs,
@@ -253,7 +260,7 @@ void initGL(OS::OS& os) {
   // Projection matrix : 45° Field of View
   proj = glm::perspective(
 			45.0f,			// FOV
-			aspectRatio, 
+			aspectRatio,
 			0.1f,				// Near cliping plane
 			10000.0f);	// Far cliping plane
 
@@ -268,11 +275,11 @@ void initGL(OS::OS& os) {
 	#endif
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-	
+
 	glEnable(GL_DEPTH_TEST);
   // Accept fragment if it closer to the camera than the former one
   glDepthFunc(GL_LESS);
-	
+
 
   // Initialize VBOs ********************************************************
   glGenBuffers(1, &vertexbuffer);
@@ -364,14 +371,14 @@ void initGL(OS::OS& os) {
   // Vertex Shader compiling error messages
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &Result);
   glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &InfoLogLength);
-  std::vector<char> VertexShaderErrorMessage(InfoLogLength); 
+  std::vector<char> VertexShaderErrorMessage(InfoLogLength);
   glGetShaderInfoLog(vertexShader, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
   std::printf("%s\n", &VertexShaderErrorMessage[0]);
 
   // Fragment Shader compiling error messages
   glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &Result);
   glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &InfoLogLength);
-  std::vector<char> FragmentShaderErrorMessage(InfoLogLength); 
+  std::vector<char> FragmentShaderErrorMessage(InfoLogLength);
   glGetShaderInfoLog(fragmentShader, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
   std::printf("%s\n", &FragmentShaderErrorMessage[0]);
 
@@ -387,7 +394,7 @@ void initGL(OS::OS& os) {
   glLinkProgram(shaderProgram);
 
 
-  // Bind attributes indexes 
+  // Bind attributes indexes
   glBindAttribLocation(shaderProgram, sh_in_Position, "in_Position");
   glBindAttribLocation(shaderProgram, sh_in_Color, "in_Color");
   glBindAttribLocation(shaderProgram, sh_in_UV, "in_UV");
@@ -410,7 +417,7 @@ void initGL(OS::OS& os) {
       glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
       );
 
-	
+
 }
 
 
