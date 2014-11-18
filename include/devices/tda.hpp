@@ -207,18 +207,21 @@ public:
 
     /**
      * Generate a VSync interrupt if is enabled
+     * And handles the cursor blink state
      */
     void DoVSync() {
         do_vsync = (vsync_msg != 0x0000);
 
-        // 8 frames on / 8 frames off
-        if (blink_count == 7 || blink_count == 0) {
-            blink_state = !blink_state;
-        }
+        if (this->cursor) {
+            // 8 frames on / 8 frames off
+            if (blink_count == 7 || blink_count == 0) {
+                blink_state = !blink_state;
+            }
 
-        blink_count++;
-        if (blink_count > 16) {
-            blink_count = 0;
+            blink_count++;
+            if (blink_count > 16) {
+                blink_count = 0;
+            }
         }
     }
 
