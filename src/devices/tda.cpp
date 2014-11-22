@@ -58,10 +58,33 @@ void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture) {
                 }
             }
         }
+    } // End for
+
+    if ( screen.cursor) {
+        // Draw the cursor only when is necesary
+        if (screen.cur_start <= screen.cur_end) {
+            unsigned char col = screen.cur_col;
+            unsigned char row = screen.cur_row;
+            DWord color = PALETTE[screen.cur_color]; // Color
+            if (row < 30 && col < 40) {
+                // Paints the cursor
+                std::size_t addr = col + (WIDTH_CHARS * row);
+                for (unsigned y = screen.cur_start ; y <= screen.cur_end; y++) {
+                    for (unsigned x = 0; x < 8; x++) {
+                        addr = x + col*8 + ( 40*8 * (y + row*8) ); // Addres of the
+                                                                   // pixel in the
+                                                                   // buffer
+                        texture[addr] = color;
+                    }
+                }
+            }
+        }
     }
+
 } // TDAtoRGBATexture
 
-TDADev::TDADev () : buffer_ptr(0), font_ptr(0), vsync_msg(0), do_vsync(false) {
+TDADev::TDADev () : buffer_ptr(0), font_ptr(0), vsync_msg(0), do_vsync(false),
+                    cursor(false), blink_state(false), blink(false) {
 }
 
 TDADev::~TDADev() {
@@ -73,7 +96,12 @@ void TDADev::Reset () {
     this->vsync_msg  = 0;
     this->a          = 0;
     this->b          = 0;
+    this->d          = 0;
+    this->e          = 0;
     this->do_vsync   = false;
+    this->cursor     = false;
+    this->blink_state = false;
+    this->blink      = false;
 }
 
 void TDADev::SendCMD (Word cmd) {
@@ -115,6 +143,14 @@ void TDADev::IACK () {
     do_vsync = false; // Acepted, so we can forgot now of sending it again
 }
 
+bool TDADev::IsSyncDev() const {
+    return false; //return blink; // Only is need if is blinking :P
+}
+
+void TDADev::Tick (unsigned n, const double delta) {
+    // TODO ? Blink state should change every 8 frames....
+}
+
 void TDADev::GetState (void* ptr, std::size_t& size) const {
     if ( ptr != nullptr && size >= sizeof(TDAState) ) {
         auto state = (TDAState*) ptr;
@@ -123,6 +159,8 @@ void TDADev::GetState (void* ptr, std::size_t& size) const {
         state->vsync_msg  = this->vsync_msg;
         state->a          = this->a;
         state->b          = this->b;
+        state->d          = this->d;
+        state->e          = this->e;
 
         state->do_vsync = this->do_vsync;
     }
@@ -137,6 +175,8 @@ bool TDADev::SetState (const void* ptr, std::size_t size) {
         this->vsync_msg  = state->vsync_msg;
         this->a          = state->a;
         this->b          = state->b;
+        this->d          = state->d;
+        this->e          = state->e;
 
         this->do_vsync = state->do_vsync;
 
