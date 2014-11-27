@@ -76,7 +76,7 @@ public:
     virtual bool SetState (const void* ptr, std::size_t size);
 
     static unsigned const TR3200_NGPRS = 16; /// Total number of CPU registers
-    
+
 protected:
 
     unsigned cpu_clock; /// CPU clock speed

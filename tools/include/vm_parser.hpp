@@ -23,7 +23,7 @@ enum class CpuToUse {
 
 struct VmParamaters {
 
-	VmParamaters (const int argc, const char** argv) : def_dsk_file("disk.dsk"), ram_size(128*1024), clock(100000), valid_params(true), ask_help(false)   {
+    VmParamaters (const int argc, const char** argv) : def_dsk_file("disk.dsk"), ram_size(128*1024), clock(100000), valid_params(true), ask_help(false)   {
         // Default values
         dsk_file = def_dsk_file;
         rom_file = nullptr;
