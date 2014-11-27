@@ -21,12 +21,19 @@ enum class CpuToUse {
 //    DCPU16N
 };
 
+enum VmExtentions : unsigned {
+    EXT_FULLKEYB = 1
+};
+
 struct VmParamaters {
 
     VmParamaters (const int argc, const char** argv) : def_dsk_file("disk.dsk"), ram_size(128*1024), clock(100000), valid_params(true), ask_help(false)   {
         // Default values
         dsk_file = def_dsk_file;
         rom_file = nullptr;
+        exec_vm = false;
+        timing_debug = false;
+        extentions = 0;
 
         cpu = CpuToUse::TR3200;
 
@@ -53,6 +60,13 @@ struct VmParamaters {
                     }
 
                     rom_file = arg;
+
+                } else if(strncmp(arg, "-time", 5) == 0) {
+                    timing_debug = true;
+
+                } else if(strncmp(arg, "x", 1) == 0 || strncmp(arg, "-exec", 5) == 0) {
+                    // Run VM parameter
+                    exec_vm = true;
 
                 } else if (strncmp(arg, "d", 1) == 0 || strncmp(arg, "-disk", 5) == 0) {
                     // Disk file parameter
@@ -82,7 +96,7 @@ struct VmParamaters {
                         cpu = CpuToUse::DCPU16N;
                     }*/
 
-                } else if (strncmp(arg, "m", 1) == 0 ) {
+                } else if(strncmp(arg, "m", 1) == 0 || strncmp(arg, "-mem", 4) == 0) {
                     // Total RAM
                     i++;
                     arg = argv[i];
@@ -96,8 +110,7 @@ struct VmParamaters {
                         std::fprintf(stderr, "Invalid value for parameter %s\nUsing 128KiB\n", argv[i-1]);
                         ram = 128*1024;
                     } else {
-                        ram /= 128; // I hope the compile optimization don't trash this
-                        ram *= 128;
+                        ram ^= (ram & (128 - 1)); // bitwise round to 1<<7 (128) size blocks
                     }
 
                     ram_size = ram * 1024;
@@ -132,19 +145,26 @@ struct VmParamaters {
 
                 } else if (strncmp(arg, "h", 1) == 0 || strncmp(arg, "-help", 5) == 0) {
                     // Asked for help
-                    std::printf("Virtual Computer toy Emulator\n\n");
-                    std::printf("Usage:\n");
-                    std::printf("\t%s -r romfile [other parameters]\n\n", argv[0]);
-                    std::printf("Parameters:\n");
-                    std::printf("\t-r file or --rom file : RAW binary file for the ROM 32 KiB\n");
-                    std::printf("\t-d file or --disk file : Disk file\n");
-                    std::printf("\t-c val or --cpu val : Sets the CPU to use, from \"tr3200\" \n");
-                    std::printf("\t-m val or --disk val : How many RAM have the computer in KiB. Must be > 128 and < 1024. Will be round to a multiple of 128\n");
-                    std::printf("\t--clock val : CPU clock speed in Khz. Must be 100, 250, 500 or 1000.\n");
-                    std::printf("\t-b val : Inserts a breakpoint at address val (could be hexadecimal or decimal).\n");
-                    std::printf("\t-h or --help : Shows this help\n");
+                    std::printf("%s%s%s", // 3 parts to the help messages
+                    "Virtual Computer toy Emulator\n\n"
+                    "Usage:\n\t", argv[0], " -r romfile [other parameters]\n\n"
+                    "Parameters:\n"
+                    "\t-r file or --rom file : RAW binary file for the ROM (32 KiB Max)\n"
+                    "\t-d file or --disk file : Disk file\n"
+                    "\t-c val or --cpu val : Sets the CPU to use, from \"tr3200\" or \"dcpu-16n\"\n"
+                    "\t-x or --exec : Run the computer in normal mode without asking\n"
+                    "\t-m val or --mem val : How much RAM the computer will have, in KiB."
+                    " Must be between 128 and 1024 and will be rounded to a multiple of 128\n"
+                    "\t--time : Show timing and speed info while running.\n"
+                    "\t--clock val : CPU clock speed in Khz. Must be 100, 250, 500 or 1000.\n"
+                    "\t-b val : Inserts a breakpoint at address val (could be hexadecimal or decimal).\n"
+                    "\t--ext-keys : Allow extra (non-standard) keycodes with virtual keyboard.\n"
+                    "\t-h or --help : Shows this help\n");
 
                     ask_help = true;
+
+                } else if(strncmp(arg, "-ext-keys", 9) == 0) {
+                    extentions |= EXT_FULLKEYB;
                 }
             }
         }
@@ -167,6 +187,9 @@ struct VmParamaters {
 
     bool valid_params;              /// Parsed correctly all parameters
     bool ask_help;                  /// User asked by help
+    bool exec_vm;                   /// Run computer without asking to use debug mode
+    bool timing_debug;              /// Print timing info while running
+    unsigned extentions;            /// bit mask of extentions
 };
 
 #endif // __VM_PARSER_HPP_
