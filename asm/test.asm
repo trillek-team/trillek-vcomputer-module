@@ -66,6 +66,10 @@ next:
           IFEQ %r1, 0xBEBACAFE  ; True but is Chained and skiped
               JMP crash         ; This never should be executed
 
+  IFEQ %r1, 0         ; False, so must skip
+      IFNEQ %r1, 0              ; True but is Chained and skiped
+          JMP crash             ; This never should be executed
+
   ; Test ALU operations *************************************************
 test_alu:                       ; PC = 0x010C
   ; Testing BOOLEAN instructions
