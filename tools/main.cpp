@@ -253,6 +253,7 @@ int main(int argc, char* argv[]) {
     }
     // make a new disk
     else {
+        std::printf("Creating a floppy disk");
         computer::DiskDescriptor* info = new computer::DiskDescriptor;
 
         info->TypeDisk        = computer::DiskType::FLOPPY;
@@ -262,6 +263,9 @@ int main(int argc, char* argv[]) {
         info->SectorsPerTrack = 8;
         info->BytesPerSector  = 512;
         // 2*40*8*512 = 327680/1024 = 320KiB
+        std::printf(" of size: %u KiB\n",
+                info->NumSides * info->TracksPerSide * info->SectorsPerTrack
+                * info->BytesPerSector / 1024 );
 
         floppy = std::make_shared<computer::Disk>(options.dsk_file, info);
         fd->insertFloppy(floppy);
