@@ -189,11 +189,17 @@ public:
 
         screen.user_font = false;
         // Copy FONT_BUFFER
-        if ( this->font_ptr != 0 &&
-             this->font_ptr + FONT_BUFFER_SIZE < vcomp->RamSize() ) {
+        if ( this->font_ptr != 0 ) {
+            if ( this->font_ptr + FONT_BUFFER_SIZE <= vcomp->RamSize() ) {
             auto orig = &(vcomp->Ram()[this->font_ptr]);
             std::copy_n(orig, FONT_BUFFER_SIZE, (Byte*)screen.font_buffer);
             screen.user_font = true;
+            }
+            else if ( this->font_ptr - 0x100000 + FONT_BUFFER_SIZE <= vcomp->RomSize() ) {
+            auto orig = &(vcomp->Rom()[this->font_ptr - 0x100000]);
+            std::copy_n(orig, FONT_BUFFER_SIZE, (Byte*)screen.font_buffer);
+            screen.user_font = true;
+            }
         }
 
         screen.cursor    = this->cursor && (this->blink_state || !this->blink);

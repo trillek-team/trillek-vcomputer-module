@@ -287,10 +287,17 @@ public:
     bool RmAddrListener (int32_t id);
 
     /**
-     * Sizeo of the RAM in bytes
+     * Size of the RAM in bytes
      */
     std::size_t RamSize () const {
         return ram_size;
+    }
+
+    /**
+     * Size of the ROM in bytes
+     */
+    std::size_t RomSize () const {
+        return rom_size;
     }
 
     /**
@@ -299,6 +306,10 @@ public:
      */
     const Byte* Ram () const {
         return ram;
+    }
+
+    const Byte* Rom () const {
+        return rom;
     }
 
     /**

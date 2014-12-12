@@ -117,7 +117,10 @@ void TDADev::SendCMD (Word cmd) {
 
     case 0x0001: // Map Font
         tmp = ( (b << 16) | a );
-        if ( tmp + FONT_BUFFER_SIZE < vcomp->RamSize() ) {
+        if ( tmp + FONT_BUFFER_SIZE <= vcomp->RamSize() ) {
+            font_ptr = tmp;
+        }
+        else if ( tmp - 0x100000 + FONT_BUFFER_SIZE <= vcomp->RomSize()) {
             font_ptr = tmp;
         }
         break;
