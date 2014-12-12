@@ -25,7 +25,7 @@
 #define GET_OP_CODE(x)      ( ( (x) >> 24 ) & 0xFF )
 
 // Instrucction sub-type
-#define IS_BRANCH(x)        ( ( (x) >= 0x4B ) && ( (x) <= 0x52 ) )
+#define IS_BRANCH(x)        ( ( (x) >= 0x70 ) && ( (x) <= 0x7B ) )
 
 // Uses immediate value (M bit) ?
 #define HAVE_IMMEDIATE(x)   ( ( (x) & 0x00800000) != 0 )
