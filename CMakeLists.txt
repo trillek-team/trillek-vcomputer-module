@@ -7,7 +7,7 @@ set(VCOMP_VERSION_MAJOR 0)
 set(VCOMP_VERSION_MINOR 3)
 set(VCOMP_BUILD 0) # TODO Try to use git rev list HEAD --count to generate this value
 
-MESSAGE(STATUS "Trillek Virtual Computer version " 
+MESSAGE(STATUS "Trillek Virtual Computer version "
     ${VCOMP_VERSION_MAJOR} "." ${VCOMP_VERSION_MINOR} " Build " ${VCOMP_BUILD})
 
 # Debug build ?

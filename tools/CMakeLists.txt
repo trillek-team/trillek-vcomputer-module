@@ -1,3 +1,14 @@
+# Options
+set(BUILD_TOOLS_SCREEN TRUE CACHE BOOL "Build Trillek VCOMPUTER tools with virtual screen")
+set(BUILD_TOOLS_AUDIO  TRUE CACHE BOOL "Build Trillek VCOMPUTER tools with audio")
+
+IF (NOT BUILD_TOOLS_SCREEN)
+    SET(GLFW3_ENABLE 0)
+ENDIF (NOT BUILD_TOOLS_SCREEN)
+
+IF (NOT BUILD_TOOLS_AUDIO)
+    SET(OPENAL_ENABLE 0)
+ENDIF (NOT BUILD_TOOLS_AUDIO)
 # Main executable
 
 # Main executable config file

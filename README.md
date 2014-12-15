@@ -25,7 +25,7 @@ By default it will generate a dynamic library and compile tools and tests.
 If you wish to compile a static lib, then you should use `cmake -DBUILD_STATIC_VCOMPUTER=True ..`
 ** This is required to build in MSVC **
 
-If you not wish to compile the tools, then you should use `cmake -DBUILD_TOOLS_VCOMPUTER=False ..`
+If you not wish to compile the tools, then you should use `cmake -DBUILD_TOOLS_VCOMPUTER=False ..`. Also yo ucan control if you like to have virtual screen and audio with BUILD_TOOLS_SCREEN and BUILD_TOOLS_AUDIO (By default both are true)
 
 If you not wish to compile the tests, then you should use `cmake -DBUILD_TESTS_VCOMPUTER=False ..`
 
@@ -139,5 +139,4 @@ TODO
 
 - Integrated stuff of the mother board (NVRAM)
 - Check interrupts
-- DCPU-16N cpu (Actually being implemented)
-
+- Fix Debug mode of TR3200 cpu
