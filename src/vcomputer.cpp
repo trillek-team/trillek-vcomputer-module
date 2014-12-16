@@ -186,6 +186,7 @@ void VComputer::Reset() {
 
 void VComputer::On() {
     if (cpu && !is_on) {
+    	std::fill_n(ram, ram_size, 0);
         // Powering it wihtout cpu ?
         is_on = true;
         this->Reset(); // When we power on, we get a Reset!

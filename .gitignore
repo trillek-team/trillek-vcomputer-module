@@ -28,5 +28,5 @@ build/
 *.~
 
 # Generated config files in include
-include/config.hpp
+config.hpp
 
