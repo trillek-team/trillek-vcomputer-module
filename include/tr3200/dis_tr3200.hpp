@@ -7,7 +7,7 @@
 #ifndef __DISTR3200_HPP_
 #define __DISTR3200_HPP_ 1
 
-#include "tr3200/tr3200.hpp"
+#include "tr3200.hpp"
 
 #include <string>
 

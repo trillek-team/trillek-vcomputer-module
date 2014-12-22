@@ -9,8 +9,7 @@
 #ifndef __GKEYB_HPP_
 #define __GKEYB_HPP_ 1
 
-#include "types.hpp"
-#include "vcomputer.hpp"
+#include "../vcomputer.hpp"
 
 #include <deque>
 #include <cstdio>

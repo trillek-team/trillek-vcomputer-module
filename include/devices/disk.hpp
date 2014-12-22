@@ -7,8 +7,7 @@
 #ifndef __DISK_HPP_
 #define __DISK_HPP_ 1
 
-#include "types.hpp"
-#include "vcomputer.hpp"
+#include "../vcomputer.hpp"
 
 #include <cstring>
 #include <iostream>

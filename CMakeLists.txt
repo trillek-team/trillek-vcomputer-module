@@ -181,9 +181,8 @@ else (EMSCRIPTEN)
             INSTALL(TARGETS VCOMPUTER
                 LIBRARY DESTINATION lib
                 )
-            INSTALL(DIRECTORY include/ 
+            INSTALL(DIRECTORY include/
                 DESTINATION include/tr-vcomputer
-                FILES_MATCHING PATTERN "*.hpp"
                 )
         ENDIF (NOT WIN32)
     ELSE(NOT BUILD_STATIC_VCOMPUTER)
@@ -193,9 +192,8 @@ else (EMSCRIPTEN)
                 ARCHIVE DESTINATION lib/static
                 PUBLIC_HEADER DESTINATION include/tr-vcomputer
                 )
-            INSTALL(DIRECTORY include/ 
+            INSTALL(DIRECTORY include/
                 DESTINATION include/tr-vcomputer
-                FILES_MATCHING PATTERN "*.hpp"
                 )
         ENDIF (NOT WIN32)
     ENDIF(NOT BUILD_STATIC_VCOMPUTER)

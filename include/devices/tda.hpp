@@ -9,8 +9,7 @@
 #ifndef __TDA_HPP_
 #define __TDA_HPP_ 1
 
-#include "types.hpp"
-#include "vcomputer.hpp"
+#include "../vcomputer.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -29,11 +28,11 @@ static const unsigned TEXTURE_SIZE     = WIDTH_CHARS*HEIGHT_CHARS*8*8;
 
 static const DWord PALETTE[] = {
     /// Default color palette
-        #include "devices/rom_palette.inc"
+        #include "rom_palette.inc"
 };
 
 static const Byte ROM_FONT[256*8] = { /// Default font
-        #include "devices/tda_font.inc"
+        #include "tda_font.inc"
 };
 
 /**

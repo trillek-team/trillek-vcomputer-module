@@ -7,8 +7,7 @@
 #ifndef __DUMMYDEVICE_HPP_
 #define __DUMMYDEVICE_HPP_ 1
 
-#include "types.hpp"
-#include "vcomputer.hpp"
+#include "../vcomputer.hpp"
 
 namespace trillek {
 namespace computer {

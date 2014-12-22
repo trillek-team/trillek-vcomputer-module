@@ -8,10 +8,9 @@
 #ifndef __M5FDD_HPP_
 #define __M5FDD_HPP_ 1
 
-#include "types.hpp"
-#include "vcomputer.hpp"
+#include "../vcomputer.hpp"
 
-#include "devices/disk.hpp"
+#include "disk.hpp"
 
 #include <string>
 #include <iostream>
