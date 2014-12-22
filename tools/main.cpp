@@ -396,8 +396,13 @@ int main(int argc, char* argv[]) {
         if (!debug) {
             double ds = delta / 1000.0;
             if (ds == 0) {
-                std::fprintf(stderr, "Wops! ds is 0 seconds !!!\t delta = %f\n", delta);
-                ds = 0.0000001;
+#ifdef GLFW3_ENABLE
+                if (ticks_count > 400000) {
+                    std::fprintf(stderr, "Wops! ds is 0 seconds !!!\t delta = %f\n", delta);
+                }
+#endif
+                delta = 0.01;
+                ds = delta / 1000.0;
             }
             ticks_count += ticks;
             ticks = vc.Update(ds);
