@@ -8,6 +8,7 @@
 #define __ADDRLISTENER_HPP_ 1
 
 #include "types.hpp"
+#include "vc_dll.hpp"
 
 #include <cassert>
 
@@ -17,7 +18,7 @@ namespace computer {
 /**
  * Interface for a Address Listener
  */
-class AddrListener {
+DECLDIR class AddrListener {
 public:
 
     virtual ~AddrListener() {
@@ -36,7 +37,7 @@ public:
  * Range of 24bit addresses/address
  * Used to store/search an AddrListener stored in a tree
  */
-struct Range {
+DECLDIR struct Range {
     DWord start;
     DWord end;
 

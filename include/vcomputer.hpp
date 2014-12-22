@@ -39,7 +39,7 @@ const unsigned BaseClock = 1000000; /// Computer Base Clock rate
 
 class EnumAndCtrlBlk;
 
-class VComputer {
+DECLDIR class VComputer {
 public:
 
     /**

@@ -9,6 +9,7 @@
 #define __ICPU_HPP_ 1
 
 #include "types.hpp"
+#include "vc_dll.hpp"
 
 namespace trillek {
 namespace computer {
@@ -20,7 +21,7 @@ class VComputer;
  * Virtual Computer.
  * Derived class constructors must set vcomp == nullptr.
  */
-class ICPU {
+DECLDIR class ICPU {
 public:
 
     ICPU() : vcomp(nullptr) {
@@ -87,7 +88,7 @@ protected:
 
     computer::VComputer* vcomp; /// Ptr to the Virtual Computer
 };
- 
+
 } // End of namespace computer
 } // End of namespace trillek
 
