@@ -64,6 +64,7 @@ public:
     bool user_font;
 
     bool cursor;    /// Cursor enabled ?
+    bool cursor_blink;  /// Cursor blinking ?
     Byte cur_col;   // Cursor position
     Byte cur_row;
     Byte cur_color; /// Cursor color
@@ -76,8 +77,19 @@ public:
  * @param state Copy of the state of the TDA card
  * @param texture Ptr. to the texture. Must have a size enought to containt a
  **320x240 RGBA8 texture.
+ * @param frames Frames counter. Used to handle blinking
  */
-void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture);
+void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture, unsigned& frames);
+/**
+ * Generates/Updates a RGBA texture (4 byte per pixel) of the screen state
+ * @param state Copy of the state of the TDA card
+ * @param texture Ptr. to the texture. Must have a size enought to containt a
+ **320x240 RGBA8 texture.
+ */
+void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture) {
+    static unsigned frames = 0;
+    TDAtoRGBATexture (screen, texture, frames);
+}
 
 /**
  * Text Generator Adapter
@@ -170,8 +182,6 @@ public:
 
     virtual bool IsSyncDev() const;
 
-    virtual void Tick (unsigned n, const double delta);
-
     // API exterior to the Virtual Computer (affects or afected by stuff outside
     // of the computer)
 
@@ -196,7 +206,8 @@ public:
             screen.user_font = true;
         }
 
-        screen.cursor    = this->cursor && (this->blink_state || !this->blink);
+        screen.cursor    = this->cursor;
+        screen.cursor_blink = this->blink;
         screen.cur_row   = (Byte)(this->e >> 8);
         screen.cur_col   = (Byte) this->e;
         screen.cur_start = (Byte) this->d & 0x7;
@@ -211,18 +222,6 @@ public:
      */
     void DoVSync() {
         do_vsync = (vsync_msg != 0x0000);
-
-        if (this->cursor) {
-            // 8 frames on / 8 frames off
-            if (blink_count == 7 || blink_count == 0) {
-                blink_state = !blink_state;
-            }
-
-            blink_count++;
-            if (blink_count > 16) {
-                blink_count = 0;
-            }
-        }
     }
 
 protected:
@@ -235,9 +234,7 @@ protected:
     bool do_vsync;
 
     bool cursor;        /// Cursor enabled ?
-    bool blink_state;
     bool blink;         /// Blink enabled ?
-    Byte blink_count;
 };
 
 
