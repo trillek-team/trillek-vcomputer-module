@@ -37,6 +37,10 @@ const unsigned EnumCtrlBlkSize = 20; /// Enumeration and Control registers
 
 const unsigned BaseClock = 1000000; /// Computer Base Clock rate
 
+DECLDIR unsigned GetMajorVersion();      /// Library Major version
+DECLDIR unsigned GetMinorVersion();      /// Library Minor version
+DECLDIR const char* GetBuildVersion();   /// Library "build" version
+
 class EnumAndCtrlBlk;
 
 DECLDIR class VComputer {

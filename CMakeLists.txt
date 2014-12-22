@@ -1,11 +1,17 @@
 cmake_minimum_required(VERSION 2.6)
 
 project(VCOMPUTER)
+# Set the directory where to find cmake "modules"
+set(CMAKE_MODULE_PATH ${VCOMPUTER_SOURCE_DIR}/cmake)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+include(GetGitRevisionDescription)
+get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
 # Project generic variables
 set(VCOMP_VERSION_MAJOR 0)
-set(VCOMP_VERSION_MINOR 3)
-set(VCOMP_BUILD 0) # TODO Try to use git rev list HEAD --count to generate this value
+set(VCOMP_VERSION_MINOR 4)
+set(VCOMP_BUILD "${GIT_REFSPEC}-${GIT_SHA1}") # Try to use git files to get refspec and hash
 
 MESSAGE(STATUS "Trillek Virtual Computer version "
     ${VCOMP_VERSION_MAJOR} "." ${VCOMP_VERSION_MINOR} " Build " ${VCOMP_BUILD})
@@ -32,10 +38,6 @@ IF (BRKPOINTS_ENABLED)
     message("Breakpoints functionality enabled")
 ENDIF (BRKPOINTS_ENABLED)
 
-# Set the directory where to find cmake "modules"
-set(CMAKE_MODULE_PATH ${VCOMPUTER_SOURCE_DIR}/cmake)
-
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Include dirs
 set(VCOMPUTER_INCLUDE_DIRS

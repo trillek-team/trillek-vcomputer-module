@@ -192,6 +192,9 @@ int main(int argc, char* argv[]) {
     Byte* rom = nullptr;
     size_t rom_size = 0;
 
+    std::printf("Trillek Virtual Compuver v%u.%u Build %s\n",
+            GetMajorVersion(), GetMinorVersion(), GetBuildVersion());
+
     VmParamaters options(argc, (const char**)argv); // Parse parameters
 
     if (options.valid_params == false) {
