@@ -174,6 +174,33 @@ else (EMSCRIPTEN)
 
     endif(BUILD_TESTS_VCOMPUTER)
 
+    # Install shared libs
+    IF(NOT BUILD_STATIC_VCOMPUTER)
+        IF (NOT WIN32)
+            INSTALL(CODE "MESSAGE(\"Installing library and headers\")")
+            INSTALL(TARGETS VCOMPUTER
+                LIBRARY DESTINATION lib
+                )
+            INSTALL(DIRECTORY include/ 
+                DESTINATION include/tr-vcomputer
+                FILES_MATCHING PATTERN "*.hpp"
+                )
+        ENDIF (NOT WIN32)
+    ELSE(NOT BUILD_STATIC_VCOMPUTER)
+        IF (NOT WIN32)
+            INSTALL(CODE "MESSAGE(\"Installing library and headers\")")
+            INSTALL(TARGETS VCOMPUTER
+                ARCHIVE DESTINATION lib/static
+                PUBLIC_HEADER DESTINATION include/tr-vcomputer
+                )
+            INSTALL(DIRECTORY include/ 
+                DESTINATION include/tr-vcomputer
+                FILES_MATCHING PATTERN "*.hpp"
+                )
+        ENDIF (NOT WIN32)
+    ENDIF(NOT BUILD_STATIC_VCOMPUTER)
+
+
 endif (EMSCRIPTEN)
 
 
