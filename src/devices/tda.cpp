@@ -89,6 +89,18 @@ void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture, unsigned& frames
 
 } // TDAtoRGBATexture
 
+void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture, unsigned& frames) {
+    assert(texture != nullptr);
+    TDAtoRGBATexture (screen, texture, frames);
+
+    // We interchanged B and R components
+    for (unsigned i=0; i < 320*240 ; i++) {
+        DWord g_a   = texture[i] & 0xFF00FF00;
+        DWord red   = texture[i] & 0x000000FF;
+        DWord blue  = texture[i] & 0x00FF0000;
+        texture[i]  = g_a | (red << 16) | (blue >> 16);
+    }
+} // TDAtoBGRATexture
 TDADev::TDADev () : buffer_ptr(0), font_ptr(0), vsync_msg(0), do_vsync(false),
                     cursor(false), blink(false) {
 }
