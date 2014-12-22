@@ -67,6 +67,9 @@ file(GLOB VCOMPUTER_SRC
 # Apply all configuration stuff to config.hpp.in
 configure_file (src/config.hpp.in
     "${PROJECT_BINARY_DIR}/config.hpp" )
+# Apply all configuration stuff to vc_dll.hpp.in
+configure_file (include/vc_dll.hpp.in
+    "${VCOMPUTER_SOURCE_DIR}/include/vc_dll.hpp" )
 
 if (EMSCRIPTEN)
     # We are compiling with emscripten
@@ -183,6 +186,7 @@ else (EMSCRIPTEN)
                 )
             INSTALL(DIRECTORY include/
                 DESTINATION include/tr-vcomputer
+                PATTERN "*.in" EXCLUDE
                 )
         ENDIF (NOT WIN32)
     ELSE(NOT BUILD_STATIC_VCOMPUTER)
@@ -190,10 +194,10 @@ else (EMSCRIPTEN)
             INSTALL(CODE "MESSAGE(\"Installing library and headers\")")
             INSTALL(TARGETS VCOMPUTER
                 ARCHIVE DESTINATION lib/static
-                PUBLIC_HEADER DESTINATION include/tr-vcomputer
                 )
             INSTALL(DIRECTORY include/
                 DESTINATION include/tr-vcomputer
+                PATTERN "*.in" EXCLUDE
                 )
         ENDIF (NOT WIN32)
     ENDIF(NOT BUILD_STATIC_VCOMPUTER)

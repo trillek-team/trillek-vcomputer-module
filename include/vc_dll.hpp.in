@@ -10,7 +10,11 @@
 #ifndef __VC_DLL_HPP_
 #define __VC_DLL_HPP_ 1
 
+#cmakedefine BUILD_STATIC_VCOMPUTER
+#ifndef BUILD_STATIC_VCOMPUTER
+
 #if defined(_MSC_VER)
+// DLL library on Windows, need special stuff
 
 #if defined DLL_EXPORT
 #define DECLDIR __declspec(dllexport)
@@ -22,5 +26,9 @@
 #define DECLDIR
 #endif // if defined(_MSC_VER)
 
+#else // Static library, not need special stuff
+#define DECLDIR
+
+#endif // BUILD_STATIC_VCOMPUTER
 #endif // __VC_DLL_HPP_
 
