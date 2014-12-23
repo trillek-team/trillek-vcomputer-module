@@ -13,11 +13,11 @@ new-item build -type director
 pushd
 # glew
 # C:\glew.1.9.0.1\build\native
-nuget install glew 
-Copy-Item -path c:\glew.1.9.0.1\include\* -destination lib/include
+#nuget install glew 
+#Copy-Item -path c:\glew.1.9.0.1\include\* -destination lib/include
 
-nuget install GLFW
-nuget install glm
+#nuget install GLFW
+#nuget install glm
 #nuget install openal.redist
 nuget install gtest
 
