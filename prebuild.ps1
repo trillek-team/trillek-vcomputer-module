@@ -20,5 +20,6 @@ pushd
 #nuget install glm
 #nuget install openal.redist
 nuget install gtest
+$env:GTEST_ROOT = "C:\gtest.1.7.0.1"
 
 popd
