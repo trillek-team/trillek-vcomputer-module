@@ -103,7 +103,7 @@ else (EMSCRIPTEN)
 
     endif(BUILD_STATIC_VCOMPUTER)
 
-    if(BUILD_TOOLS_VCOMPUTER OR BUILD_TESTS_VCOMPUTER)
+    if(BUILD_TOOLS_VCOMPUTER)
 
         # Find GLFW3 and OpenGL libs
         find_package(GLFW3)
@@ -158,7 +158,7 @@ else (EMSCRIPTEN)
         message(STATUS "Procesing Assets")
         add_subdirectory(assets)
 
-    endif(BUILD_TOOLS_VCOMPUTER OR BUILD_TESTS_VCOMPUTER)
+    endif(BUILD_TOOLS_VCOMPUTER)
 
     if(BUILD_TESTS_VCOMPUTER)
         message(STATUS "Procesing Tests")
