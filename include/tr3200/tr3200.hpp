@@ -17,7 +17,7 @@ namespace computer {
 /**
  * Implementation of TR3200 CPU for Trillek's virtual computer
  */
-class TR3200 : public ICPU {
+class DECLDIR TR3200 : public ICPU {
 public:
 
     /**

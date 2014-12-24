@@ -18,7 +18,7 @@ namespace computer {
 /**
  * Interface for a Address Listener
  */
-DECLDIR class AddrListener {
+class DECLDIR AddrListener {
 public:
 
     virtual ~AddrListener() {
@@ -37,7 +37,7 @@ public:
  * Range of 24bit addresses/address
  * Used to store/search an AddrListener stored in a tree
  */
-DECLDIR struct Range {
+struct DECLDIR Range {
     DWord start;
     DWord end;
 

@@ -98,6 +98,7 @@ else (EMSCRIPTEN)
             )
 
     else(BUILD_STATIC_VCOMPUTER)
+        add_definitions(-DDLL_EXPORT) # Enforces to use dllexport on shared library on Windows
         add_library( VCOMPUTER SHARED
             ${VCOMPUTER_SRC}
             )

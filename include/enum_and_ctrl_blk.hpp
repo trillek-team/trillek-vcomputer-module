@@ -23,7 +23,7 @@ namespace computer {
  * An specialized Address Listener used by VComputer to implement
  * Enumeration and Control registers in a slot
  */
-DECLDIR class EnumAndCtrlBlk : public AddrListener {
+class DECLDIR EnumAndCtrlBlk : public AddrListener {
 public:
 
     /**

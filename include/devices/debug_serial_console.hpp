@@ -18,7 +18,7 @@ namespace computer {
 /**
  * Serial Console for debuing
  */
-class DebugSerialConsole : public IDevice {
+class DECLDIR DebugSerialConsole : public IDevice {
 public:
 
     DebugSerialConsole () {

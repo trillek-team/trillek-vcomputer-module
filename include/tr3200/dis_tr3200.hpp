@@ -18,6 +18,7 @@ namespace computer {
  * Disassembly one instruction of TR3200 code to a humman redable text
  * \param data Ptr. to TR3200 machine code
  */
+DECLDIR
 std::string DisassemblyTR3200 (const VComputer& vc, DWord pc);
 
 } // End of namespace computer

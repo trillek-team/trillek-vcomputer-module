@@ -21,7 +21,7 @@ class VComputer;
  * Virtual Computer.
  * Derived class constructors must set vcomp == nullptr.
  */
-DECLDIR class ICPU {
+class DECLDIR ICPU {
 public:
 
     ICPU() : vcomp(nullptr) {

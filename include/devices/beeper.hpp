@@ -18,7 +18,7 @@ namespace computer {
 /**
  * Implements a embed beeper on the Virtual Computer
  */
-class Beeper : public AddrListener {
+class DECLDIR Beeper : public AddrListener {
 public:
 
     Beeper();

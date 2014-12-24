@@ -21,7 +21,7 @@ namespace gkeyboard {
 /**
  * Structure to store a snapshot of the device state
  */
-struct GKeyboardState {
+struct DECLDIR GKeyboardState {
 public:
 
     Word a, b, c;
@@ -32,7 +32,7 @@ public:
     bool do_int;
 };
 
-enum SCANCODES {
+enum DECLDIR SCANCODES {
     /// Scan codes of the events
     SCAN_UNKNOWN       = 0xFFFF,
     SCAN_NULL          = 0, // Read value when the buffer is empty
@@ -104,7 +104,7 @@ enum SCANCODES {
     SCAN_RIGHT_ALT     = 346
 };
 
-enum KEYCODES {
+enum DECLDIR KEYCODES {
     /// Key codes of the events
     KEY_NONE        = 0x00,
     KEY_UNKNOW      = 0x01,
@@ -124,7 +124,7 @@ enum KEYCODES {
     KEY_SPACEBAR    = 0x20
 };
 
-enum KEY_MODS {
+enum DECLDIR KEY_MODS {
     /// Key modifier
     KEY_MOD_NONE  = 0x0,
     KEY_MOD_SHIFT = 0x1,
@@ -137,7 +137,7 @@ static const size_t BSIZE = 64; /// Internal buffer size
  * Genertic Keyboard
  * Western / Latin generic keyboard
  */
-class GKeyboardDev : public IDevice {
+class DECLDIR GKeyboardDev : public IDevice {
 protected:
 
     Word a, b, c;

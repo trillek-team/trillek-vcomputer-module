@@ -23,7 +23,7 @@ class VComputer;
  * Virtual Computer.
  * Derived class constructors should set vcomp == nullptr.
  */
-DECLDIR class IDevice {
+class DECLDIR IDevice {
 public:
 
     virtual ~IDevice() {

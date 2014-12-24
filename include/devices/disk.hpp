@@ -56,7 +56,7 @@ enum class ERRORS : Byte
  * Generic class that represent a media image, and allows to save/read the disk
  * image data from a file
  */
-class Disk {
+class DECLDIR Disk {
 public:
 
     /**
