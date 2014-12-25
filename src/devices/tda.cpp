@@ -17,6 +17,16 @@ namespace trillek {
 namespace computer {
 namespace tda {
 
+void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture) {
+    static unsigned frames = 0;
+    TDAtoRGBATexture(screen, texture, frames);
+}
+
+void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture) {
+    static unsigned frames = 0;
+    TDAtoBGRATexture(screen, texture, frames);
+}
+
 void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture, unsigned& frames) {
     assert(texture != nullptr);
 

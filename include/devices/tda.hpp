@@ -75,31 +75,29 @@ public:
 /**
  * Generates/Updates a RGBA texture (4 byte per pixel) of the screen state
  * @param state Copy of the state of the TDA card
- * @param texture Ptr. to the texture. Must have a size enought to containt a
- **320x240 RGBA8 texture.
+ * @param texture Ptr. to the texture. Must be long enough to contain a
+ **320x240 RGBA8 texture (307200 bytes).
  * @param frames Frames counter. Used to handle blinking
  *
  * NOTE: Little Endian -> RGBA in little endian is 0xAABBGGRR
  */
 void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture, unsigned& frames);
+
 /**
  * Generates/Updates a RGBA texture (4 byte per pixel) of the screen state
  * @param state Copy of the state of the TDA card
- * @param texture Ptr. to the texture. Must have a size enought to containt a
- **320x240 RGBA8 texture.
+ * @param texture Ptr. to the texture. Must be long enough to contain a
+ **320x240 RGBA8 texture (307200 bytes).
  *
  * NOTE: Little Endian -> RGBA in little endian is 0xAABBGGRR
  */
-void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture) {
-    static unsigned frames = 0;
-    TDAtoRGBATexture (screen, texture, frames);
-}
+void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture);
 
 /**
  * Generates/Updates a BGRA texture (4 byte per pixel) of the screen state
  * @param state Copy of the state of the TDA card
- * @param texture Ptr. to the texture. Must have a size enought to containt a
- **320x240 BGRA8 texture.
+ * @param texture Ptr. to the texture. Must be long enough to contain a
+ **320x240 BGRA8 texture (307200 bytes).
  * @param frames Frames counter. Used to handle blinking
  *
  * Dont use this if you can use TDAtoRGBA, as this version calls to the other function and interchanges B and R components
@@ -108,15 +106,12 @@ void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture, unsigned& frames
 /**
  * Generates/Updates a BGRA texture (4 byte per pixel) of the screen state
  * @param state Copy of the state of the TDA card
- * @param texture Ptr. to the texture. Must have a size enought to containt a
- **320x240 BGRA8 texture.
+ * @param texture Ptr. to the texture. Must be long enough to contain a
+ **320x240 BGRA8 texture (307200 bytes).
  *
  * Dont use this if you can use TDAtoRGBA, as this version calls to the other function and interchanges B and R components
  */
-void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture) {
-    static unsigned frames = 0;
-    TDAtoBGRATexture (screen, texture, frames);
-}
+void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture);
 
 /**
  * Text Generator Adapter
