@@ -120,6 +120,7 @@ There are some TR3200 ASM programs, source code and binary files, in /asm direct
 Also, you can download an functional firmware from :
 
 - [Zardoz89/trillek-firmware](https://github.com/Zardoz89/trillek-firmware) : An firmware that try to boot from an floppy and if it fails, executes a simple machine code monitor (an clone of Wozniak monitor of Apple 1 and Apple ][)
+- [meisys](http://eciv.net/meisaka/meisys.ffi) : An firmware that try to boot from a floppy and shows some useful information. Also, sets a system clock. Actually only have the list command to list devices attached to the machine.
 
 
 IMPLEMENTED DEVICES
