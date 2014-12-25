@@ -17,7 +17,7 @@ namespace trillek {
 namespace computer {
 namespace tda {
 
-void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture) {
+void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture, unsigned& frames) {
     assert(texture != nullptr);
 
     const Byte* font = ROM_FONT;
@@ -61,30 +61,48 @@ void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture) {
     } // End for
 
     if ( screen.cursor) {
-        // Draw the cursor only when is necesary
-        if (screen.cur_start <= screen.cur_end) {
-            unsigned char col = screen.cur_col;
-            unsigned char row = screen.cur_row;
-            DWord color = PALETTE[screen.cur_color]; // Color
-            if (row < 30 && col < 40) {
-                // Paints the cursor
-                std::size_t addr = col + (WIDTH_CHARS * row);
-                for (unsigned y = screen.cur_start ; y <= screen.cur_end; y++) {
-                    for (unsigned x = 0; x < 8; x++) {
-                        addr = x + col*8 + ( 40*8 * (y + row*8) ); // Addres of the
-                                                                   // pixel in the
-                                                                   // buffer
-                        texture[addr] = color;
+        if (frames++ < 8) {
+            // Draw the cursor only when is necesary
+            if (screen.cur_start <= screen.cur_end) {
+                unsigned char col = screen.cur_col;
+                unsigned char row = screen.cur_row;
+                DWord color = PALETTE[screen.cur_color]; // Color
+                if (row < 30 && col < 40) {
+                    // Paints the cursor
+                    std::size_t addr = col + (WIDTH_CHARS * row);
+                    for (unsigned y = screen.cur_start ; y <= screen.cur_end; y++) {
+                        for (unsigned x = 0; x < 8; x++) {
+                            addr = x + col*8 + ( 40*8 * (y + row*8) ); // Addres of the
+                                                                       // pixel in the
+                                                                       // buffer
+                            texture[addr] = color;
+                        }
                     }
                 }
             }
+        } else if (frames++ < 16) {
+            // Do nothing
+        } else {
+            frames = 0; // Reset it
         }
     }
 
 } // TDAtoRGBATexture
 
+void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture, unsigned& frames) {
+    assert(texture != nullptr);
+    TDAtoRGBATexture (screen, texture, frames);
+
+    // We interchanged B and R components
+    for (unsigned i=0; i < 320*240 ; i++) {
+        DWord g_a   = texture[i] & 0xFF00FF00;
+        DWord red   = texture[i] & 0x000000FF;
+        DWord blue  = texture[i] & 0x00FF0000;
+        texture[i]  = g_a | (red << 16) | (blue >> 16);
+    }
+} // TDAtoBGRATexture
 TDADev::TDADev () : buffer_ptr(0), font_ptr(0), vsync_msg(0), do_vsync(false),
-                    cursor(false), blink_state(false), blink(false) {
+                    cursor(false), blink(false) {
 }
 
 TDADev::~TDADev() {
@@ -100,7 +118,6 @@ void TDADev::Reset () {
     this->e          = 0;
     this->do_vsync   = false;
     this->cursor     = false;
-    this->blink_state = false;
     this->blink      = false;
 }
 
@@ -147,11 +164,7 @@ void TDADev::IACK () {
 }
 
 bool TDADev::IsSyncDev() const {
-    return false; //return blink; // Only is need if is blinking :P
-}
-
-void TDADev::Tick (unsigned n, const double delta) {
-    // TODO ? Blink state should change every 8 frames....
+    return false;
 }
 
 void TDADev::GetState (void* ptr, std::size_t& size) const {
