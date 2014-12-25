@@ -17,6 +17,17 @@
 namespace trillek {
 namespace computer {
 
+
+unsigned GetMajorVersion() {
+    return MajorVersion;
+}
+unsigned GetMinorVersion() {
+    return MinorVersion;
+}
+const char* GetBuildVersion() {
+    return Build;
+}
+
 /* A function for aligned malloc that is portable */
 static uint8_t *my_malloc(size_t size) {
     void *block = nullptr;

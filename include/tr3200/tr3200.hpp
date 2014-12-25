@@ -8,8 +8,8 @@
 #ifndef __TR3200_HPP_
 #define __TR3200_HPP_ 1
 
-#include "cpu.hpp"
-#include "vcomputer.hpp"
+#include "../cpu.hpp"
+#include "../vcomputer.hpp"
 
 namespace trillek {
 namespace computer {
@@ -17,7 +17,7 @@ namespace computer {
 /**
  * Implementation of TR3200 CPU for Trillek's virtual computer
  */
-class TR3200 : public ICPU {
+class DECLDIR TR3200 : public ICPU {
 public:
 
     /**

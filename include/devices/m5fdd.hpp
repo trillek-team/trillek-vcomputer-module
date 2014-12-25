@@ -8,10 +8,9 @@
 #ifndef __M5FDD_HPP_
 #define __M5FDD_HPP_ 1
 
-#include "types.hpp"
-#include "vcomputer.hpp"
+#include "../vcomputer.hpp"
 
-#include "devices/disk.hpp"
+#include "disk.hpp"
 
 #include <string>
 #include <iostream>
@@ -60,7 +59,7 @@ enum class ERROR_CODES : uint16_t {
 /**
  * Mackapar 3,5" floppy drive
  */
-class M5FDD : public IDevice {
+class DECLDIR M5FDD : public IDevice {
 public:
 
     M5FDD();

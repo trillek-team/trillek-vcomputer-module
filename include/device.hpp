@@ -10,6 +10,7 @@
 
 #include "types.hpp"
 #include "vcomputer.hpp"
+#include "vc_dll.hpp"
 
 namespace trillek {
 namespace computer {
@@ -22,7 +23,7 @@ class VComputer;
  * Virtual Computer.
  * Derived class constructors should set vcomp == nullptr.
  */
-class IDevice {
+class DECLDIR IDevice {
 public:
 
     virtual ~IDevice() {

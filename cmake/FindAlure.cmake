@@ -10,7 +10,7 @@ find_path(ALURE_INCLUDE_DIR
     )
 
 if (NOT ALURE_INCLUDE_DIR)
-    message(FATAL_ERROR "Could not find the Alure headers" )
+    message(WARNING "Could not find the Alure headers" )
 endif (NOT ALURE_INCLUDE_DIR)
 
 FIND_LIBRARY(ALURE_LIBRARY
@@ -19,7 +19,7 @@ FIND_LIBRARY(ALURE_LIBRARY
     )
 
 if (NOT ALURE_LIBRARY)
-    message(FATAL_ERROR "Could not find the Alure library" )
+    message(WARNING "Could not find the Alure library" )
 endif (NOT ALURE_LIBRARY)
 
 find_package_handle_standard_args(ALURE DEFAULT_MSG ALURE_INCLUDE_DIR ALURE_LIBRARY)

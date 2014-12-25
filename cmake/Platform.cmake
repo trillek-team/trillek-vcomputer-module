@@ -1,5 +1,5 @@
 if (CMAKE_HOST_APPLE)
-    set(rc32000_SEARCH_PATHS
+    set(trillek_vcomputer_modulue_SEARCH_PATHS
         /usr
         /Applications/Xcode.app/Contents/Developer/Platforms.MacOSX.platform/Developer/SDKs
         /Library/Frameworks
@@ -9,7 +9,7 @@ if (CMAKE_HOST_APPLE)
 else (CMAKE_HOST_APPLE)
     # OS X is a Unix, but it's not a normal Unix as far as search paths go.
     if (CMAKE_HOST_UNIX)
-        set(rc32000_SEARCH_PATHS
+        set(trillek_vcomputer_modulue_SEARCH_PATHS
             /usr
             /usr/local
             /opt/local

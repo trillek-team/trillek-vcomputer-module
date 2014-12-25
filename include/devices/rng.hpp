@@ -8,8 +8,8 @@
 #ifndef __RNG_HPP_
 #define __RNG_HPP_ 1
 
-#include "types.hpp"
-#include "addr_listener.hpp"
+#include "../types.hpp"
+#include "../addr_listener.hpp"
 
 #include <random>
 

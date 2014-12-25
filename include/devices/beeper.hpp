@@ -7,8 +7,8 @@
 #ifndef __BEEPER_HPP_
 #define __BEEPER_HPP_ 1
 
-#include "types.hpp"
-#include "addr_listener.hpp"
+#include "../types.hpp"
+#include "../addr_listener.hpp"
 
 #include <functional>
 
@@ -18,7 +18,7 @@ namespace computer {
 /**
  * Implements a embed beeper on the Virtual Computer
  */
-class Beeper : public AddrListener {
+class DECLDIR Beeper : public AddrListener {
 public:
 
     Beeper();

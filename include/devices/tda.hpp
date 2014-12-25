@@ -9,8 +9,7 @@
 #ifndef __TDA_HPP_
 #define __TDA_HPP_ 1
 
-#include "types.hpp"
-#include "vcomputer.hpp"
+#include "../vcomputer.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -19,27 +18,34 @@ namespace trillek {
 namespace computer {
 namespace tda {
 
-static const unsigned WIDTH_CHARS  = 40; /// Width of the screen in Characters
-static const unsigned HEIGHT_CHARS = 30; /// Height of the screen in Characters
+DECLDIR
+const unsigned WIDTH_CHARS  = 40; /// Width of the screen in Characters
+DECLDIR
+const unsigned HEIGHT_CHARS = 30; /// Height of the screen in Characters
 
-static const unsigned TXT_BUFFER_SIZE  = WIDTH_CHARS*HEIGHT_CHARS*2;
-static const unsigned FONT_BUFFER_SIZE = 256*8;
+DECLDIR
+const unsigned TXT_BUFFER_SIZE  = WIDTH_CHARS*HEIGHT_CHARS*2;
+DECLDIR
+const unsigned FONT_BUFFER_SIZE = 256*8;
 /// Texture size in total pixels!
-static const unsigned TEXTURE_SIZE     = WIDTH_CHARS*HEIGHT_CHARS*8*8;
+DECLDIR
+const unsigned TEXTURE_SIZE     = WIDTH_CHARS*HEIGHT_CHARS*8*8;
 
-static const DWord PALETTE[] = {
+DECLDIR
+const DWord PALETTE[] = {
     /// Default color palette
-        #include "devices/rom_palette.inc"
+        #include "rom_palette.inc"
 };
 
-static const Byte ROM_FONT[256*8] = { /// Default font
-        #include "devices/tda_font.inc"
+DECLDIR
+const Byte ROM_FONT[256*8] = { /// Default font
+        #include "tda_font.inc"
 };
 
 /**
  * Structure to store a snapshot of the device state
  */
-struct TDAState {
+struct DECLDIR TDAState {
 public:
 
     Word txt_buffer[WIDTH_CHARS*HEIGHT_CHARS];
@@ -56,7 +62,7 @@ public:
 /**
  * Structure to store a snapshot TDA computer screen
  */
-struct TDAScreen {
+struct DECLDIR TDAScreen {
 public:
 
     Word txt_buffer[WIDTH_CHARS*HEIGHT_CHARS];
@@ -91,6 +97,7 @@ void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture, unsigned& frames
  *
  * NOTE: Little Endian -> RGBA in little endian is 0xAABBGGRR
  */
+DECLDIR
 void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture);
 
 /**
@@ -117,7 +124,7 @@ void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture);
  * Text Generator Adapter
  * Text only video card
  */
-class TDADev : public IDevice {
+class DECLDIR TDADev : public IDevice {
 public:
 
     TDADev ();

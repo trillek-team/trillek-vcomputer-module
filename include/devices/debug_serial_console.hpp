@@ -8,8 +8,7 @@
 #ifndef __DEBUGSERIALCONSOLE_HPP_
 #define __DEBUGSERIALCONSOLE_HPP_ 1
 
-#include "types.hpp"
-#include "vcomputer.hpp"
+#include "../vcomputer.hpp"
 
 #include <functional>
 
@@ -19,7 +18,7 @@ namespace computer {
 /**
  * Serial Console for debuing
  */
-class DebugSerialConsole : public IDevice {
+class DECLDIR DebugSerialConsole : public IDevice {
 public:
 
     DebugSerialConsole () {
