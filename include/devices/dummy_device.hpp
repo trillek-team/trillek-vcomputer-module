@@ -7,8 +7,7 @@
 #ifndef __DUMMYDEVICE_HPP_
 #define __DUMMYDEVICE_HPP_ 1
 
-#include "types.hpp"
-#include "vcomputer.hpp"
+#include "../vcomputer.hpp"
 
 namespace trillek {
 namespace computer {
@@ -16,7 +15,7 @@ namespace computer {
 /**
  * DummyDevice for testing
  */
-class DummyDevice : public IDevice {
+class DECLDIR DummyDevice : public IDevice {
 public:
 
     DummyDevice () {

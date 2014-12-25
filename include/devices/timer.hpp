@@ -8,8 +8,8 @@
 #ifndef __TIMER_HPP_
 #define __TIMER_HPP_ 1
 
-#include "types.hpp"
-#include "addr_listener.hpp"
+#include "../types.hpp"
+#include "../addr_listener.hpp"
 
 namespace trillek {
 namespace computer {

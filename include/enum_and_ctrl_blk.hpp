@@ -8,6 +8,7 @@
 #define __ENUMANDCTROLBLK_HPP_ 1
 
 #include "types.hpp"
+#include "vc_dll.hpp"
 
 #include "device.hpp"
 #include "addr_listener.hpp"
@@ -22,7 +23,7 @@ namespace computer {
  * An specialized Address Listener used by VComputer to implement
  * Enumeration and Control registers in a slot
  */
-class EnumAndCtrlBlk : public AddrListener {
+class DECLDIR EnumAndCtrlBlk : public AddrListener {
 public:
 
     /**

@@ -1,11 +1,17 @@
 cmake_minimum_required(VERSION 2.6)
 
 project(VCOMPUTER)
+# Set the directory where to find cmake "modules"
+set(CMAKE_MODULE_PATH ${VCOMPUTER_SOURCE_DIR}/cmake)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+include(GetGitRevisionDescription)
+get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
 # Project generic variables
 set(VCOMP_VERSION_MAJOR 0)
-set(VCOMP_VERSION_MINOR 3)
-set(VCOMP_BUILD 0) # TODO Try to use git rev list HEAD --count to generate this value
+set(VCOMP_VERSION_MINOR 4)
+set(VCOMP_BUILD "${GIT_REFSPEC}-${GIT_SHA1}") # Try to use git files to get refspec and hash
 
 MESSAGE(STATUS "Trillek Virtual Computer version "
     ${VCOMP_VERSION_MAJOR} "." ${VCOMP_VERSION_MINOR} " Build " ${VCOMP_BUILD})
@@ -32,10 +38,6 @@ IF (BRKPOINTS_ENABLED)
     message("Breakpoints functionality enabled")
 ENDIF (BRKPOINTS_ENABLED)
 
-# Set the directory where to find cmake "modules"
-set(CMAKE_MODULE_PATH ${VCOMPUTER_SOURCE_DIR}/cmake)
-
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Include dirs
 set(VCOMPUTER_INCLUDE_DIRS
@@ -67,6 +69,9 @@ file(GLOB VCOMPUTER_SRC
 # Apply all configuration stuff to config.hpp.in
 configure_file (src/config.hpp.in
     "${PROJECT_BINARY_DIR}/config.hpp" )
+# Apply all configuration stuff to vc_dll.hpp.in
+configure_file (include/vc_dll.hpp.in
+    "${VCOMPUTER_SOURCE_DIR}/include/vc_dll.hpp" )
 
 if (EMSCRIPTEN)
     # We are compiling with emscripten
@@ -93,6 +98,7 @@ else (EMSCRIPTEN)
             )
 
     else(BUILD_STATIC_VCOMPUTER)
+        add_definitions(-DDLL_EXPORT) # Enforces to use dllexport on shared library on Windows
         add_library( VCOMPUTER SHARED
             ${VCOMPUTER_SRC}
             )
@@ -103,7 +109,7 @@ else (EMSCRIPTEN)
 
     endif(BUILD_STATIC_VCOMPUTER)
 
-    if(BUILD_TOOLS_VCOMPUTER OR BUILD_TESTS_VCOMPUTER)
+    if(BUILD_TOOLS_VCOMPUTER)
 
         # Find GLFW3 and OpenGL libs
         find_package(GLFW3)
@@ -158,7 +164,7 @@ else (EMSCRIPTEN)
         message(STATUS "Procesing Assets")
         add_subdirectory(assets)
 
-    endif(BUILD_TOOLS_VCOMPUTER OR BUILD_TESTS_VCOMPUTER)
+    endif(BUILD_TOOLS_VCOMPUTER)
 
     if(BUILD_TESTS_VCOMPUTER)
         message(STATUS "Procesing Tests")
@@ -181,9 +187,9 @@ else (EMSCRIPTEN)
             INSTALL(TARGETS VCOMPUTER
                 LIBRARY DESTINATION lib
                 )
-            INSTALL(DIRECTORY include/ 
+            INSTALL(DIRECTORY include/
                 DESTINATION include/tr-vcomputer
-                FILES_MATCHING PATTERN "*.hpp"
+                PATTERN "*.in" EXCLUDE
                 )
         ENDIF (NOT WIN32)
     ELSE(NOT BUILD_STATIC_VCOMPUTER)
@@ -191,11 +197,10 @@ else (EMSCRIPTEN)
             INSTALL(CODE "MESSAGE(\"Installing library and headers\")")
             INSTALL(TARGETS VCOMPUTER
                 ARCHIVE DESTINATION lib/static
-                PUBLIC_HEADER DESTINATION include/tr-vcomputer
                 )
-            INSTALL(DIRECTORY include/ 
+            INSTALL(DIRECTORY include/
                 DESTINATION include/tr-vcomputer
-                FILES_MATCHING PATTERN "*.hpp"
+                PATTERN "*.in" EXCLUDE
                 )
         ENDIF (NOT WIN32)
     ENDIF(NOT BUILD_STATIC_VCOMPUTER)
