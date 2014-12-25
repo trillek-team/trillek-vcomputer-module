@@ -8,8 +8,8 @@
 #ifndef __RTC_HPP_
 #define __RTC_HPP_ 1
 
-#include "types.hpp"
-#include "addr_listener.hpp"
+#include "../types.hpp"
+#include "../addr_listener.hpp"
 
 #include <ctime>
 

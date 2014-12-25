@@ -14,7 +14,7 @@ namespace computer {
 
 static const unsigned MajorVersion = @VCOMP_VERSION_MAJOR@;  /// Major version
 static const unsigned MinorVersion = @VCOMP_VERSION_MINOR@;  /// Minor version
-static const unsigned Build = @VCOMP_BUILD@;                 /// Build (git rev-list HEAD --count)
+static const char* Build = "@VCOMP_BUILD@";               /// Build (git refspecvar & hash )
 
 } // namespace computer
 } // namespace trillek

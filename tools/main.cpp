@@ -33,7 +33,7 @@
 
 class KeyEventHandler : public OS::event::IKeyboardEventHandler {
     public:
-        KeyEventHandler () : OS::event::IKeyboardEventHandler(),
+        KeyEventHandler (bool ext_keys) : OS::event::IKeyboardEventHandler(),
         prev_key(trillek::computer::gkeyboard::SCANCODES::SCAN_NULL),
         mod (trillek::computer::gkeyboard::KEY_MODS::KEY_MOD_NONE) {
             // Register listened characters
@@ -60,6 +60,16 @@ class KeyEventHandler : public OS::event::IKeyboardEventHandler {
             this->keys.push_back(344);
             this->keys.push_back(345);
             this->keys.push_back(346);
+
+            if(ext_keys) {
+                // bonus keys
+                for(unsigned i = 266; i <= 336; i++) { // ins home end pg up/dn keypad Fn, etc.
+                    this->keys.push_back(i);
+                }
+                this->keys.push_back(343); // super
+                this->keys.push_back(347); // super
+                this->keys.push_back(348); // menu
+            }
         }
 
         ~KeyEventHandler () {}
@@ -132,7 +142,11 @@ class KeyEventHandler : public OS::event::IKeyboardEventHandler {
                         mod |= KEY_MODS::KEY_MOD_ALTGR;
                         break;
 
+                    case GLFW_KEY_KP_ENTER:
+                    gk->EnforceSendKeyEvent(prev_key, KEY_RETURN, mod);
+                    break;
                     default:
+        //gk->EnforceSendKeyEvent(prev_key, KEY_UNKNOW, mod);
                         return;
                 }
 
@@ -191,6 +205,9 @@ int main(int argc, char* argv[]) {
 
     Byte* rom = nullptr;
     size_t rom_size = 0;
+
+    std::printf("Trillek Virtual Compuver v%u.%u Build %s\n",
+            GetMajorVersion(), GetMinorVersion(), GetBuildVersion());
 
     VmParamaters options(argc, (const char**)argv); // Parse parameters
 
@@ -286,7 +303,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "Error initializasing OpenAL\n";
     }
 
-    al.Test();
+    //al.Test();
 
     vc.SetFreqChangedCB ( [&al](Word f){
         al.Tone(f);
@@ -295,15 +312,17 @@ int main(int argc, char* argv[]) {
 
     vc.On();  // Powering it !
 
-    std::cout << "Run program (r) or Step Mode (s) ?\n";
-    char mode;
-    std::cin >> mode;
-    std::getchar();
-
-
     bool debug = false;
-    if (mode == 's' || mode == 'S') {
-        debug = true;
+
+    if(!options.exec_vm) {
+        std::cout << "Run program (r) or Step Mode (s) ?\n";
+        char mode;
+        std::cin >> mode;
+        std::getchar();
+
+        if(mode == 's' || mode == 'S') {
+            debug = true;
+        }
     }
 
 #ifdef GLFW3_ENABLE
@@ -324,7 +343,7 @@ int main(int argc, char* argv[]) {
     if (useOpenGL) {
         std::printf("Initiated OpenGL\n");
 
-        KeyEventHandler* keyhandler = new KeyEventHandler();
+        KeyEventHandler* keyhandler = new KeyEventHandler(options.extentions & EXT_FULLKEYB);
         keyhandler->gk = gk;
         glfwos.RegisterKeyboardEventHandler(keyhandler);
 
@@ -409,12 +428,15 @@ int main(int argc, char* argv[]) {
 
             // Speed info
             if (ticks_count > 400000) {
-                std::printf("Running %u cycles in %f ms ", ticks, delta);
-                double ttick = delta / ticks;
-                const double tclk = 1000.0 / 1000000.0; // Base clock 1Mhz
-                std::printf("Ttick %f ms ", ttick); // Time take in one cycle
-                std::printf("Tclk %f ms ", tclk); // Time that should take one cycle
-                std::printf("Speed of %f %% \n", 100.0f * (tclk / ttick) );
+                if(options.timing_debug) {
+                    std::printf("Running %u cycles in %f ms ", ticks, delta);
+                    double ttick = delta / ticks;
+                    const double tclk = 1000.0 / 1000000.0; // Base clock 1Mhz
+                    std::printf("Ttick %f ms Tclk %f ms Speed of %f %% \n",
+                        ttick, /* Time taken in one cycle */
+                        tclk, /* Time that one cycle should take */
+                        100.0f * (tclk / ttick));
+                }
                 ticks_count -= 400000;
             }
 

@@ -90,7 +90,7 @@ namespace AlEngine {
         blipbuf.bass_freq(300); // Equalization like a TV speaker
         synth.treble_eq( -8.0f ); // Synthetize Equalization
 
-        synth.volume (0.80);
+        synth.volume (0.30);
         synth.output (&blipbuf);
 
         beep_freq = 0;

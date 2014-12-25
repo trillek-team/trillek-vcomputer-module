@@ -27,19 +27,22 @@
 namespace trillek {
 namespace computer {
 
-const unsigned MAX_N_DEVICES = 32;          /// Max number of devices
-                                            // attached
+const unsigned MAX_N_DEVICES = 32; /// Max number of devices attached
+
 const std::size_t MAX_ROM_SIZE = 32*1024;   /// Max ROM size
 const std::size_t MAX_RAM_SIZE = 1024*1024; /// Max RAM size
 
-const unsigned EnumCtrlBlkSize = 20; /// Enumeration and Control registers
-                                     // blk size
+const unsigned EnumCtrlBlkSize = 20; /// Enumeration and Control registers blk size
 
 const unsigned BaseClock = 1000000; /// Computer Base Clock rate
 
+DECLDIR unsigned GetMajorVersion();      /// Library Major version
+DECLDIR unsigned GetMinorVersion();      /// Library Minor version
+DECLDIR const char* GetBuildVersion();   /// Library "build" version
+
 class EnumAndCtrlBlk;
 
-class VComputer {
+class DECLDIR VComputer {
 public:
 
     /**
@@ -287,10 +290,17 @@ public:
     bool RmAddrListener (int32_t id);
 
     /**
-     * Sizeo of the RAM in bytes
+     * Size of the RAM in bytes
      */
     std::size_t RamSize () const {
         return ram_size;
+    }
+
+    /**
+     * Size of the ROM in bytes
+     */
+    std::size_t RomSize () const {
+        return rom_size;
     }
 
     /**
@@ -299,6 +309,10 @@ public:
      */
     const Byte* Ram () const {
         return ram;
+    }
+
+    const Byte* Rom () const {
+        return rom;
     }
 
     /**

@@ -82,10 +82,10 @@ int main (int argc, char* argv[]) {
   // TODO load screen from a file
 
   OS::OS glfwos;
-	if (!glfwos.InitializeWindow(1024, 768, "TDA screen dump viewer")) {
-		std::clog << "Failed creating the window or context.";
-		return -1;
-	}
+    if (!glfwos.InitializeWindow(1024, 768, "TDA screen dump viewer")) {
+        std::clog << "Failed creating the window or context.";
+        return -1;
+    }
 
   initGL(glfwos);
   std::printf("Initiated OpenGL\n");
@@ -125,10 +125,10 @@ int main (int argc, char* argv[]) {
 
   bool loop = true;
   while ( loop) {
-		if (glfwos.Closing()) {
-			loop = false;
-			continue;
-		}
+        if (glfwos.Closing()) {
+        loop = false;
+        continue;
+        }
 
     // Clear The Screen And The Depth Buffer
     frame_count += 1.0;
@@ -228,8 +228,8 @@ int main (int argc, char* argv[]) {
     glDisableVertexAttribArray(sh_in_UV);
 
     // Update host window
-		glfwos.SwapBuffers();
-		glfwos.OSMessageLoop();
+        glfwos.SwapBuffers();
+        glfwos.OSMessageLoop();
 
     deltat = glfwos.GetDeltaTime(); // Gets new Delta time
     t_acu += deltat;
@@ -240,43 +240,43 @@ int main (int argc, char* argv[]) {
 
 // Init OpenGL ************************************************************
 void initGL(OS::OS& os) {
-	int OpenGLVersion[2];
+    int OpenGLVersion[2];
 
-	// Use the GL3 way to get the version number
-	glGetIntegerv(GL_MAJOR_VERSION, &OpenGLVersion[0]);
-	glGetIntegerv(GL_MINOR_VERSION, &OpenGLVersion[1]);
-	std::cout << "OpenGL " << OpenGLVersion[0] << "." << OpenGLVersion[1] << "\n";
+    // Use the GL3 way to get the version number
+    glGetIntegerv(GL_MAJOR_VERSION, &OpenGLVersion[0]);
+    glGetIntegerv(GL_MINOR_VERSION, &OpenGLVersion[1]);
+    std::cout << "OpenGL " << OpenGLVersion[0] << "." << OpenGLVersion[1] << "\n";
 
-	// Sanity check to make sure we are at least in a good major version number.
-	assert((OpenGLVersion[0] > 1) && (OpenGLVersion[0] < 5));
+    // Sanity check to make sure we are at least in a good major version number.
+    assert((OpenGLVersion[0] > 1) && (OpenGLVersion[0] < 5));
 
-	winWidth = os.GetWindowWidth(); winHeight = os.GetWindowHeight();
+    winWidth = os.GetWindowWidth(); winHeight = os.GetWindowHeight();
 
-	// Determine the aspect ratio and sanity check it to a safe ratio
-	GLfloat aspectRatio = static_cast<float>(winWidth) / static_cast<float>(winHeight);
-	if (aspectRatio < 1.0f) {
-		aspectRatio = 4.0f / 3.0f;
-	}
+    // Determine the aspect ratio and sanity check it to a safe ratio
+    GLfloat aspectRatio = static_cast<float>(winWidth) / static_cast<float>(winHeight);
+    if (aspectRatio < 1.0f) {
+        aspectRatio = 4.0f / 3.0f;
+    }
   // Projection matrix : 45° Field of View
   proj = glm::perspective(
-			45.0f,			// FOV
-			aspectRatio,
-			0.1f,				// Near cliping plane
-			10000.0f);	// Far cliping plane
+        45.0f,			// FOV
+        aspectRatio,
+        0.1f,				// Near cliping plane
+        10000.0f);	// Far cliping plane
 
-	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-	#if __APPLE__
-		// GL_MULTISAMPLE are Core.
-		glEnable(GL_MULTISAMPLE);
-	#else
-		if (GLEW_ARB_multisample) {
-			glEnable(GL_MULTISAMPLE_ARB);
-		}
-	#endif
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    #if __APPLE__
+        // GL_MULTISAMPLE are Core.
+        glEnable(GL_MULTISAMPLE);
+    #else
+        if (GLEW_ARB_multisample) {
+        glEnable(GL_MULTISAMPLE_ARB);
+        }
+    #endif
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
-	glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
   // Accept fragment if it closer to the camera than the former one
   glDepthFunc(GL_LESS);
 

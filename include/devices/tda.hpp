@@ -9,8 +9,7 @@
 #ifndef __TDA_HPP_
 #define __TDA_HPP_ 1
 
-#include "types.hpp"
-#include "vcomputer.hpp"
+#include "../vcomputer.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -19,29 +18,29 @@ namespace trillek {
 namespace computer {
 namespace tda {
 
-static const unsigned WIDTH_CHARS  = 40; /// Width of the screen in Characters
-static const unsigned HEIGHT_CHARS = 30; /// Height of the screen in Characters
+const unsigned WIDTH_CHARS  = 40; /// Width of the screen in Characters
+const unsigned HEIGHT_CHARS = 30; /// Height of the screen in Characters
 
-static const unsigned TXT_BUFFER_SIZE  = WIDTH_CHARS*HEIGHT_CHARS*2;
-static const unsigned FONT_BUFFER_SIZE = 256*8;
+const unsigned TXT_BUFFER_SIZE  = WIDTH_CHARS*HEIGHT_CHARS*2;
+const unsigned FONT_BUFFER_SIZE = 256*8;
+
 /// Texture size in total pixels!
-static const unsigned TEXTURE_SIZE     = WIDTH_CHARS*HEIGHT_CHARS*8*8;
+const unsigned TEXTURE_SIZE = WIDTH_CHARS*HEIGHT_CHARS*8*8;
 
-static const DWord PALETTE[] = {
+const DWord PALETTE[16] = {
     /// Default color palette
-        #include "devices/rom_palette.inc"
-};
+    #include "rom_palette.inc"
+}; // end of declaration
 
-static const Byte ROM_FONT[256*8] = { /// Default font
-        #include "devices/tda_font.inc"
-};
+const Byte ROM_FONT[256*8] = {
+    /// Default font
+    #include "tda_font.inc"
+}; // end of declaration
 
 /**
  * Structure to store a snapshot of the device state
  */
 struct TDAState {
-public:
-
     Word txt_buffer[WIDTH_CHARS*HEIGHT_CHARS];
     Byte font_buffer[FONT_BUFFER_SIZE];
 
@@ -57,13 +56,12 @@ public:
  * Structure to store a snapshot TDA computer screen
  */
 struct TDAScreen {
-public:
-
     Word txt_buffer[WIDTH_CHARS*HEIGHT_CHARS];
     Byte font_buffer[FONT_BUFFER_SIZE];
     bool user_font;
 
     bool cursor;    /// Cursor enabled ?
+    bool cursor_blink;  /// Cursor blinking ?
     Byte cur_col;   // Cursor position
     Byte cur_row;
     Byte cur_color; /// Cursor color
@@ -74,16 +72,53 @@ public:
 /**
  * Generates/Updates a RGBA texture (4 byte per pixel) of the screen state
  * @param state Copy of the state of the TDA card
- * @param texture Ptr. to the texture. Must have a size enought to containt a
- **320x240 RGBA8 texture.
+ * @param texture Ptr. to the texture. Must be long enough to contain a
+ **320x240 RGBA8 texture (307200 bytes).
+ * @param frames Frames counter. Used to handle blinking
+ *
+ * NOTE: Little Endian -> RGBA in little endian is 0xAABBGGRR
  */
+DECLDIR
+void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture, unsigned& frames);
+
+/**
+ * Generates/Updates a RGBA texture (4 byte per pixel) of the screen state
+ * @param state Copy of the state of the TDA card
+ * @param texture Ptr. to the texture. Must be long enough to contain a
+ **320x240 RGBA8 texture (307200 bytes).
+ *
+ * NOTE: Little Endian -> RGBA in little endian is 0xAABBGGRR
+ */
+DECLDIR
 void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture);
+
+/**
+ * Generates/Updates a BGRA texture (4 byte per pixel) of the screen state
+ * @param state Copy of the state of the TDA card
+ * @param texture Ptr. to the texture. Must be long enough to contain a
+ **320x240 BGRA8 texture (307200 bytes).
+ * @param frames Frames counter. Used to handle blinking
+ *
+ * Dont use this if you can use TDAtoRGBA, as this version calls to the other function and interchanges B and R components
+ */
+DECLDIR
+void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture, unsigned& frames);
+/**
+ * Generates/Updates a BGRA texture (4 byte per pixel) of the screen state
+ * @param state Copy of the state of the TDA card
+ * @param texture Ptr. to the texture. Must be long enough to contain a
+ **320x240 BGRA8 texture (307200 bytes).
+ *
+ * Dont use this if you can use TDAtoRGBA, as this version calls to the other function and interchanges B and R components
+ */
+DECLDIR
+void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture);
 
 /**
  * Text Generator Adapter
  * Text only video card
  */
-class TDADev : public IDevice {
+class DECLDIR TDADev : public IDevice {
 public:
 
     TDADev ();
@@ -170,8 +205,6 @@ public:
 
     virtual bool IsSyncDev() const;
 
-    virtual void Tick (unsigned n, const double delta);
-
     // API exterior to the Virtual Computer (affects or afected by stuff outside
     // of the computer)
 
@@ -189,14 +222,21 @@ public:
 
         screen.user_font = false;
         // Copy FONT_BUFFER
-        if ( this->font_ptr != 0 &&
-             this->font_ptr + FONT_BUFFER_SIZE < vcomp->RamSize() ) {
+        if ( this->font_ptr != 0 ) {
+            if ( this->font_ptr + FONT_BUFFER_SIZE <= vcomp->RamSize() ) {
             auto orig = &(vcomp->Ram()[this->font_ptr]);
             std::copy_n(orig, FONT_BUFFER_SIZE, (Byte*)screen.font_buffer);
             screen.user_font = true;
+            }
+            else if ( this->font_ptr - 0x100000 + FONT_BUFFER_SIZE <= vcomp->RomSize() ) {
+            auto orig = &(vcomp->Rom()[this->font_ptr - 0x100000]);
+            std::copy_n(orig, FONT_BUFFER_SIZE, (Byte*)screen.font_buffer);
+            screen.user_font = true;
+            }
         }
 
-        screen.cursor    = this->cursor && (this->blink_state || !this->blink);
+        screen.cursor    = this->cursor;
+        screen.cursor_blink = this->blink;
         screen.cur_row   = (Byte)(this->e >> 8);
         screen.cur_col   = (Byte) this->e;
         screen.cur_start = (Byte) this->d & 0x7;
@@ -211,18 +251,6 @@ public:
      */
     void DoVSync() {
         do_vsync = (vsync_msg != 0x0000);
-
-        if (this->cursor) {
-            // 8 frames on / 8 frames off
-            if (blink_count == 7 || blink_count == 0) {
-                blink_state = !blink_state;
-            }
-
-            blink_count++;
-            if (blink_count > 16) {
-                blink_count = 0;
-            }
-        }
     }
 
 protected:
@@ -235,9 +263,7 @@ protected:
     bool do_vsync;
 
     bool cursor;        /// Cursor enabled ?
-    bool blink_state;
     bool blink;         /// Blink enabled ?
-    Byte blink_count;
 };
 
 

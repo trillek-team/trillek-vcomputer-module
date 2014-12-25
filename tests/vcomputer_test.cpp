@@ -7,6 +7,7 @@
 
 #include "gtest/gtest.h"
 
+#include <cstring>
 #include <cstdlib>
 #include <cstdio>
 #include <ctime>
@@ -55,10 +56,12 @@ TestAddrListener g_addr;
 class VComputer_test : public ::testing::Test {
   protected:
     trillek::computer::VComputer vc;
-    trillek::Byte rom[1024] = {'H','e','l','l','o',' ','w','o','r','l','d','!'};
+    trillek::Byte rom[1024];
+    const char* dumy_str= "Hello world!";
     trillek::DWord addr_id[3];
 
     virtual void SetUp() {
+      std::memmove ((void*)rom, (void*)dumy_str, std::strlen(dumy_str));
       vc.SetROM(this->rom, 1024);
       addr_id[0] = -1;
       addr_id[1] = -1;

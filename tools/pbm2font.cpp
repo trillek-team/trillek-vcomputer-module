@@ -1,10 +1,10 @@
 /**//**************************************************************************
  *   PBM to TDA font tool
- *   This program reads a plain text PBM image file, and generates a 8x8 font 
+ *   This program reads a plain text PBM image file, and generates a 8x8 font
  *   from it.
  *   It outputs in .DAT format or in a list of HEX values
  *
- *   For more information about PBM file format, see: 
+ *   For more information about PBM file format, see:
  *      http://en.wikipedia.org/wiki/Netpbm_format#PBM_example
  *****************************************************************************/
 
@@ -12,7 +12,7 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
-#include <iomanip> 
+#include <iomanip>
 #include <cstdlib>
 #include <cstdint>
 
@@ -53,7 +53,7 @@ int main (int argc, char **argv)
         if (argv[k][0] == '-') {
             std::string opt = argv[k];
             std::cerr << opt << '\n';
-            
+
             if (opt=="--help"||opt=="-help"||opt=="-h") {
                 std::string pn = argv[0];
                 pn.erase(0,pn.find_last_of('\\')+1); //windows
@@ -98,7 +98,7 @@ int main (int argc, char **argv)
     }
 
     // Read the PBM file
-    std::string str; 
+    std::string str;
     std::getline(fin, str);
 
     // Check header
@@ -130,7 +130,7 @@ int main (int argc, char **argv)
 
         width = std::atol(str.substr(0, pos).c_str());
         height = std::atol(str.substr(pos).c_str());
-        
+
         // Calcs the number of glyphs (8x8 font)
         num_glyphs = (width / 8) * (height / 8);
 
@@ -149,8 +149,8 @@ int main (int argc, char **argv)
     const unsigned num_bytes = 8*num_glyphs;
 
     // We store her the glyphs
-    Byte* glyphs = new Byte[num_bytes]();  
-    
+    Byte* glyphs = new Byte[num_bytes]();
+
     std::cerr << "PBM file of X: " << width << " Y: " << height << std::endl;
     std::cerr << "Num of glyphs: " << num_glyphs << std::endl;
 
@@ -172,11 +172,11 @@ int main (int argc, char **argv)
       } else if (comment || ! isalnum(c)) {
         continue;
       }
-     
+
       glyph = (x/8) + glyphs_row * (y/8);
       addr = glyph*8 + y%8;
       glyphs[addr] |= ((c == '1') << (7-(x%8)));
-      
+
       if (++x >= glyphs_row *8) {
         x = 0;
         y++;

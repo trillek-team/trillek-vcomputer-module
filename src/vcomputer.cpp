@@ -17,6 +17,17 @@
 namespace trillek {
 namespace computer {
 
+
+unsigned GetMajorVersion() {
+    return MajorVersion;
+}
+unsigned GetMinorVersion() {
+    return MinorVersion;
+}
+const char* GetBuildVersion() {
+    return Build;
+}
+
 /* A function for aligned malloc that is portable */
 static uint8_t *my_malloc(size_t size) {
     void *block = nullptr;
@@ -186,6 +197,7 @@ void VComputer::Reset() {
 
 void VComputer::On() {
     if (cpu && !is_on) {
+    	std::fill_n(ram, ram_size, 0);
         // Powering it wihtout cpu ?
         is_on = true;
         this->Reset(); // When we power on, we get a Reset!

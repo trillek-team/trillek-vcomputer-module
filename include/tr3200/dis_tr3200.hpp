@@ -7,7 +7,7 @@
 #ifndef __DISTR3200_HPP_
 #define __DISTR3200_HPP_ 1
 
-#include "tr3200/tr3200.hpp"
+#include "tr3200.hpp"
 
 #include <string>
 
@@ -18,6 +18,7 @@ namespace computer {
  * Disassembly one instruction of TR3200 code to a humman redable text
  * \param data Ptr. to TR3200 machine code
  */
+DECLDIR
 std::string DisassemblyTR3200 (const VComputer& vc, DWord pc);
 
 } // End of namespace computer

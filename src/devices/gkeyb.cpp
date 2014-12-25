@@ -121,7 +121,7 @@ bool GKeyboardDev::SetState (const void* ptr, std::size_t size) {
     return false;
 } // SetState
 
-    
+
 } // End of namespace gkeyboard
 } // End of namespace computer
 } // End of namespace trillek

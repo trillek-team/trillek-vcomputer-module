@@ -7,8 +7,7 @@
 #ifndef __DISK_HPP_
 #define __DISK_HPP_ 1
 
-#include "types.hpp"
-#include "vcomputer.hpp"
+#include "../vcomputer.hpp"
 
 #include <cstring>
 #include <iostream>
@@ -57,7 +56,7 @@ enum class ERRORS : Byte
  * Generic class that represent a media image, and allows to save/read the disk
  * image data from a file
  */
-class Disk {
+class DECLDIR Disk {
 public:
 
     /**
