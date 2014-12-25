@@ -13,7 +13,7 @@ This repo contains of the Trillek Virtual Computer lib and some extra tools, inc
 
 COMPILING
 ---------
-We are using CMake and C++ 11 (Vs2013/4 , G++ >= 4.7, LLVM). So if you are in GNU/Linux you could compile with this :
+We are using CMake and C++ 11 (Vs2013/14 , G++ >= 4.7, LLVM). So if you are in GNU/Linux you could compile with this :
 
     mkdir build
     cd build
@@ -25,24 +25,13 @@ By default it will generate a dynamic library and compile tools and tests.
 If you wish to compile a static lib, then you should use `cmake -DBUILD_STATIC_VCOMPUTER=True ..`
 ** This is required to build in MSVC **
 
-If you not wish to compile the tools, then you should use `cmake -DBUILD_TOOLS_VCOMPUTER=False ..`
+If you not wish to compile the tools, then you should use `cmake -DBUILD_TOOLS_VCOMPUTER=False ..`. Also yo ucan control if you like to have virtual screen and audio with BUILD_TOOLS_SCREEN and BUILD_TOOLS_AUDIO (By default both are true)
 
 If you not wish to compile the tests, then you should use `cmake -DBUILD_TESTS_VCOMPUTER=False ..`
 
 Plus you can control if you wish release or debug building using `-DCMAKE_BUILD_TYPE=Release` or `-DCMAKE_BUILD_TYPE=Debug` flag in cmake.
 
-In windows, you should add the "-g" parameter with the apropiated generator for VS2013 (you can get the list running cmake --help), or you can use the CMake GUI. With this, you can generate VS2013/4 project/solution files that you can open and compile.
-
-### EMSCRIPTEN
-Emscripten compilation has not been rewrite/checked yet with the new version. Expect it to fail.
-
-  cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Platform/Emscripten.cmake -DEMSCRIPTEN_ROOT_PATH=/usr/bin/ ..
-  make
-  
-Include vm_wrap.js inside a HTML page or other javascript. A example webpage will be copied to the build dir. Also, you can
-try it in [cpu.zardoz.es](http://cpu.zardoz.es)
-
-NOTE : Depending how you installed Emscripten, you will need to change the -DEMSCRIPTEN_ROOT_PATH value.
+In windows, you should add the "-g" parameter with the apropiated generator for VS2013 (you can get the list running cmake --help), or you can use the CMake GUI. With this, you can generate VS2013/4 project/solution files that you can open and compile, or use msbuild from a develop console.
 
 WHAT IT DOES ACTUALLY
 ------------------
@@ -110,18 +99,27 @@ In windows, you should do that in Control Panel.
 
 HOW I CAN CREATE PROGRAMS ?
 ---------------------------
-Actually you can use <a href="https://github.com/Meisaka/WaveAsm" target="_blank">Meisaka's WaveAsm</a> to generate TR3200 machine code.
+Actually you have two options :
+
+- [Meisaka's WaveAsm](https://github.com/Meisaka/WaveAsm) to generate TR3200 machine code.
+- [VASM](https://github.com/Zardoz89/VASM) is a portable and retargetable assembler. It have a TR3200 module that can generate flat binary files and VOBJ object files. It have support for assembly macros and other fancy stuff.
 
 ADJUNCT TR3200 ASM PROGRAMS
 --------------------------
 There are some TR3200 ASM programs, source code and binary files, in /asm directory. Specifically :
 
-- hello.asm : Hello world
-- test.asm : Some tests of TR3200 CPU compliance.
-- type1.asm : Basic typing program
+- type1.asm : Basic typing program (uses busy wait)
+- test.asm : Some tests of TR3200 CPU compliance and checks. Should show an OK on screen.
+- random.asm : Uses the RNG generator. Only to check that it works on step-mode of "vm"
 - hwn.asm : List how many devices are pluged and what are.
+- hello.asm : Hello world
+- floppy.asm : Writes data to a floppy. You could check that "disk.dsk" file get filled with some data.
 - clock.asm : Basic example of system clock using Timer0
-- beeper.asm : Generates some sound with the beeper.
+- beep.asm : Generates some sound with the beeper.
+
+Also, you can download an functional firmware from :
+
+- [Zardoz89/trillek-firmware](https://github.com/Zardoz89/trillek-firmware) : An firmware that try to boot from an floppy and if it fails, executes a simple machine code monitor (an clone of Wozniak monitor of Apple 1 and Apple ][)
 
 
 IMPLEMENTED DEVICES
@@ -137,7 +135,8 @@ IMPLEMENTED DEVICES
 TODO
 ----
 
-- Integrated stuff of the mother board (NVRAM)
-- Check interrupts
-- DCPU-16N cpu (Actually being implemented)
-
+- [ ] Integrated stuff of the mother board (NVRAM)
+- [ ] Check interrupts
+- [ ] Fix Debug mode of TR3200 cpu
+- [ ] DMA (There is an old PR that is broken. Need to be fix)
+- [ ] Tool to create floppy disk files and put on it flat binary files from WaveAsm or VASM

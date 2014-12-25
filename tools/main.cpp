@@ -267,6 +267,7 @@ int main(int argc, char* argv[]) {
     }
     // make a new disk
     else {
+        std::printf("Creating a floppy disk");
         computer::DiskDescriptor* info = new computer::DiskDescriptor;
 
         info->TypeDisk        = computer::DiskType::FLOPPY;
@@ -276,6 +277,9 @@ int main(int argc, char* argv[]) {
         info->SectorsPerTrack = 8;
         info->BytesPerSector  = 512;
         // 2*40*8*512 = 327680/1024 = 320KiB
+        std::printf(" of size: %u KiB\n",
+                info->NumSides * info->TracksPerSide * info->SectorsPerTrack
+                * info->BytesPerSector / 1024 );
 
         floppy = std::make_shared<computer::Disk>(options.dsk_file, info);
         fd->insertFloppy(floppy);
@@ -408,8 +412,13 @@ int main(int argc, char* argv[]) {
         if (!debug) {
             double ds = delta / 1000.0;
             if (ds == 0) {
-                std::fprintf(stderr, "Wops! ds is 0 seconds !!!\t delta = %f\n", delta);
-                ds = 0.0000001;
+#ifdef GLFW3_ENABLE
+                if (ticks_count > 400000) {
+                    std::fprintf(stderr, "Wops! ds is 0 seconds !!!\t delta = %f\n", delta);
+                }
+#endif
+                delta = 0.01;
+                ds = delta / 1000.0;
             }
             ticks_count += ticks;
             ticks = vc.Update(ds);
