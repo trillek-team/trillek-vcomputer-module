@@ -18,36 +18,29 @@ namespace trillek {
 namespace computer {
 namespace tda {
 
-DECLDIR
 const unsigned WIDTH_CHARS  = 40; /// Width of the screen in Characters
-DECLDIR
 const unsigned HEIGHT_CHARS = 30; /// Height of the screen in Characters
 
-DECLDIR
 const unsigned TXT_BUFFER_SIZE  = WIDTH_CHARS*HEIGHT_CHARS*2;
-DECLDIR
 const unsigned FONT_BUFFER_SIZE = 256*8;
+
 /// Texture size in total pixels!
-DECLDIR
-const unsigned TEXTURE_SIZE     = WIDTH_CHARS*HEIGHT_CHARS*8*8;
+const unsigned TEXTURE_SIZE = WIDTH_CHARS*HEIGHT_CHARS*8*8;
 
-DECLDIR
-const DWord PALETTE[] = {
+const DWord PALETTE[16] = {
     /// Default color palette
-        #include "rom_palette.inc"
-};
+    #include "rom_palette.inc"
+}; // end of declaration
 
-DECLDIR
-const Byte ROM_FONT[256*8] = { /// Default font
-        #include "tda_font.inc"
-};
+const Byte ROM_FONT[256*8] = {
+    /// Default font
+    #include "tda_font.inc"
+}; // end of declaration
 
 /**
  * Structure to store a snapshot of the device state
  */
-struct DECLDIR TDAState {
-public:
-
+struct TDAState {
     Word txt_buffer[WIDTH_CHARS*HEIGHT_CHARS];
     Byte font_buffer[FONT_BUFFER_SIZE];
 
@@ -62,9 +55,7 @@ public:
 /**
  * Structure to store a snapshot TDA computer screen
  */
-struct DECLDIR TDAScreen {
-public:
-
+struct TDAScreen {
     Word txt_buffer[WIDTH_CHARS*HEIGHT_CHARS];
     Byte font_buffer[FONT_BUFFER_SIZE];
     bool user_font;
@@ -87,6 +78,7 @@ public:
  *
  * NOTE: Little Endian -> RGBA in little endian is 0xAABBGGRR
  */
+DECLDIR
 void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture, unsigned& frames);
 
 /**
@@ -109,6 +101,7 @@ void TDAtoRGBATexture (const TDAScreen& screen, DWord* texture);
  *
  * Dont use this if you can use TDAtoRGBA, as this version calls to the other function and interchanges B and R components
  */
+DECLDIR
 void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture, unsigned& frames);
 /**
  * Generates/Updates a BGRA texture (4 byte per pixel) of the screen state
@@ -118,6 +111,7 @@ void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture, unsigned& frames
  *
  * Dont use this if you can use TDAtoRGBA, as this version calls to the other function and interchanges B and R components
  */
+DECLDIR
 void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture);
 
 /**

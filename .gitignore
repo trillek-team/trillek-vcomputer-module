@@ -29,4 +29,5 @@ build/
 
 # Generated config files in include
 config.hpp
+include/vc_dll.hpp
 

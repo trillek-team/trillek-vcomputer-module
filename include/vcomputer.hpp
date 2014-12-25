@@ -27,19 +27,13 @@
 namespace trillek {
 namespace computer {
 
-DECLDIR
-const unsigned MAX_N_DEVICES = 32;          /// Max number of devices
-                                            // attached
-DECLDIR
+const unsigned MAX_N_DEVICES = 32; /// Max number of devices attached
+
 const std::size_t MAX_ROM_SIZE = 32*1024;   /// Max ROM size
-DECLDIR
 const std::size_t MAX_RAM_SIZE = 1024*1024; /// Max RAM size
 
-DECLDIR
-const unsigned EnumCtrlBlkSize = 20; /// Enumeration and Control registers
-                                     // blk size
+const unsigned EnumCtrlBlkSize = 20; /// Enumeration and Control registers blk size
 
-DECLDIR
 const unsigned BaseClock = 1000000; /// Computer Base Clock rate
 
 DECLDIR unsigned GetMajorVersion();      /// Library Major version
