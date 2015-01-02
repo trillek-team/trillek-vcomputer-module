@@ -262,7 +262,7 @@ int main(int argc, char* argv[]) {
     // Floppy drive
     auto fd = std::make_shared<computer::m5fdd::M5FDD>();
     vc.AddDevice(6, fd);
-    auto floppy = std::make_shared<computer::Disk>(options.dsk_file);
+    auto floppy = std::make_shared<computer::Media>(options.dsk_file);
 
     // load disk
     if (floppy->isValid()) {
@@ -284,7 +284,7 @@ int main(int argc, char* argv[]) {
                 info->NumSides * info->TracksPerSide * info->SectorsPerTrack
                 * info->BytesPerSector / 1024 );
 
-        floppy = std::make_shared<computer::Disk>(options.dsk_file, info);
+        floppy = std::make_shared<computer::Media>(options.dsk_file, info);
         fd->insertFloppy(floppy);
     }
 

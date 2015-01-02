@@ -1,10 +1,10 @@
 /**
  * \brief       Virtual Computer Generic Media image class
- * \file        disk.cpp
+ * \file        media.cpp
  * \copyright   The MIT License (MIT)
  *
  */
-#include "devices/disk.hpp"
+#include "devices/media.hpp"
 #include "vs_fix.hpp"
 
 #include <cmath>
@@ -12,7 +12,7 @@
 namespace trillek {
 namespace computer {
 
-Disk::Disk(const std::string filename) : HEADER_VERSION(1) {
+Media::Media(const std::string filename) : HEADER_VERSION(1) {
 
     // Check if file exists
     datafile.open(filename, std::ios::in | std::ios::out | std::ios::binary);
@@ -58,7 +58,7 @@ Disk::Disk(const std::string filename) : HEADER_VERSION(1) {
     std::cout << "[DISK] File loaded: " << filename.c_str() << std::endl;
 }
 
-Disk::Disk(const std::string filename, DiskDescriptor* info)  : HEADER_VERSION(1) {
+Media::Media(const std::string filename, DiskDescriptor* info)  : HEADER_VERSION(1) {
 
     Info.reset(info);
 
@@ -97,7 +97,7 @@ Disk::Disk(const std::string filename, DiskDescriptor* info)  : HEADER_VERSION(1
     datafile.flush();
 }
 
-Disk::~Disk() {
+Media::~Media() {
     if ( datafile.is_open() ) {
         datafile.flush();
         datafile.close();
@@ -105,12 +105,12 @@ Disk::~Disk() {
     }
 }
 
-uint8_t Disk::getBytesExponent() const {
+uint8_t Media::getBytesExponent() const {
     return log2(Info->BytesPerSector);
 }
 
 
-bool Disk::isSectorBad(uint16_t sector) const {
+bool Media::isSectorBad(uint16_t sector) const {
     if ( !datafile.good() || sector >= getTotalSectors() ) {
         return true;
     }
@@ -118,7 +118,7 @@ bool Disk::isSectorBad(uint16_t sector) const {
     return badSectors[sector / 8] & 128 >> (sector % 8);
 }
 
-ERRORS Disk::setSectorBad(uint16_t sector, bool state) {
+ERRORS Media::setSectorBad(uint16_t sector, bool state) {
     if ( !datafile.good() ) {
         return ERRORS::NO_MEDIA;
     }
@@ -145,7 +145,7 @@ ERRORS Disk::setSectorBad(uint16_t sector, bool state) {
     return ERRORS::NONE;
 } // setSectorBad
 
-ERRORS Disk::readSector(uint16_t sector, std::vector<uint8_t>* data) {
+ERRORS Media::readSector(uint16_t sector, std::vector<uint8_t>* data) {
     if ( !datafile.good() ) {
         return ERRORS::NO_MEDIA;
     }
@@ -159,7 +159,7 @@ ERRORS Disk::readSector(uint16_t sector, std::vector<uint8_t>* data) {
     return ERRORS::NONE;
 } // readSector
 
-ERRORS Disk::writeSector(uint16_t sector, std::vector<uint8_t>* data, bool dryRun) {
+ERRORS Media::writeSector(uint16_t sector, std::vector<uint8_t>* data, bool dryRun) {
     if ( !datafile.good() ) {
         return ERRORS::NO_MEDIA;
     }

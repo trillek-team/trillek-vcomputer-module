@@ -1,6 +1,6 @@
 /**
  * \brief       Virtual Computer Generic Media image class
- * \file        disk.hpp
+ * \file        media.hpp
  * \copyright   The MIT License (MIT)
  *
  */
@@ -56,24 +56,24 @@ enum class ERRORS : Byte
  * Generic class that represent a media image, and allows to save/read the disk
  * image data from a file
  */
-class DECLDIR Disk {
+class DECLDIR Media {
 public:
 
     /**
      * Opens a disk file
      * @param filename Filename were the floppy data is stored
      */
-    Disk(const std::string filename);
+    Media(const std::string filename);
 
     /**
      * Creates a new disk file
      */
-    Disk(const std::string filename, DiskDescriptor* info);
+    Media(const std::string filename, DiskDescriptor* info);
 
     /**
      * closes a floppy disk file and destroys this container
      */
-    virtual ~Disk();
+    virtual ~Media();
 
     /**
      * Return if the disk is valid

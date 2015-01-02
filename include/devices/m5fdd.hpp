@@ -10,7 +10,7 @@
 
 #include "../vcomputer.hpp"
 
-#include "disk.hpp"
+#include "media.hpp"
 
 #include <string>
 #include <iostream>
@@ -199,7 +199,7 @@ public:
      * If there is a floppy disk previously inserted, this is ejected
      * @param floppy Floppy disk
      */
-    void insertFloppy (std::shared_ptr<Disk> floppy);
+    void insertFloppy (std::shared_ptr<Media> floppy);
 
     /**
      * @brief Ejects the floppy actually inserted if is there one
@@ -213,7 +213,7 @@ private:
      */
     void setSector (uint16_t sector);
 
-    std::shared_ptr<Disk> floppy; /// Floppy inserted
+    std::shared_ptr<Media> floppy; /// Floppy inserted
     std::vector<Byte> sectorBuffer;            // buffer of sector being
                                                  // accessed
     STATE_CODES state;                           /// Floppy drive actual status
