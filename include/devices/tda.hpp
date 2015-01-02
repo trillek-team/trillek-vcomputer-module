@@ -118,7 +118,7 @@ void TDAtoBGRATexture (const TDAScreen& screen, DWord* texture);
  * Text Generator Adapter
  * Text only video card
  */
-class DECLDIR TDADev : public IDevice {
+class DECLDIR TDADev : public Device {
 public:
 
     TDADev ();

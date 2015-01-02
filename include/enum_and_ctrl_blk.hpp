@@ -30,7 +30,7 @@ public:
      * Builds the Enumeartion and Control register block for a device plugged
      * in slot XX
      */
-    EnumAndCtrlBlk (unsigned slot, IDevice* dev);
+    EnumAndCtrlBlk (unsigned slot, Device* dev);
 
     virtual ~EnumAndCtrlBlk () {
     }
@@ -51,7 +51,7 @@ public:
 private:
 
     unsigned slot; /// Slot number
-    IDevice* dev;  /// Ptr to the device
+    Device* dev;  /// Ptr to the device
 
     DWord cmd; /// Buffer used when a byte write hapens in CMD
     DWord a;   /// Buffer used when a byte write hapens in A
@@ -61,7 +61,7 @@ private:
     DWord e;   /// Buffer used when a byte write hapens in E
 };
 
-typedef std::tuple<std::shared_ptr<IDevice>, EnumAndCtrlBlk*, int32_t> device_t; /// Storage of a device
+typedef std::tuple<std::shared_ptr<Device>, EnumAndCtrlBlk*, int32_t> device_t; /// Storage of a device
 
 } // End of namespace computer
 } // End of namespace trillek

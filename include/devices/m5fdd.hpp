@@ -59,7 +59,7 @@ enum class ERROR_CODES : uint16_t {
 /**
  * Mackapar 3,5" floppy drive
  */
-class DECLDIR M5FDD : public IDevice {
+class DECLDIR M5FDD : public Device {
 public:
 
     M5FDD();
