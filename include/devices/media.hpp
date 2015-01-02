@@ -60,15 +60,24 @@ class DECLDIR Media {
 public:
 
     /**
-     * Opens a disk file
+     * Opens a media file
      * @param filename Filename were the floppy data is stored
      */
-    Media(const std::string filename);
+    Media(const std::string& filename);
 
     /**
-     * Creates a new disk file
+     * Creates a new media file
+     * @param filename Filename were the floppy data is stored
+     * @param info Pointer to media descriptor. Media takes the ownership of it
      */
-    Media(const std::string filename, DiskDescriptor* info);
+    Media(const std::string& filename, DiskDescriptor* info);
+    
+    /**
+     * Creates a new media file
+     * @param filename Filename were the floppy data is stored
+     * @param info Media Descriptor. Does a copy from it
+     */
+    Media(const std::string& filename, const DiskDescriptor& info);
 
     /**
      * closes a floppy disk file and destroys this container

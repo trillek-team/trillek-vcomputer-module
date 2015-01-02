@@ -12,7 +12,7 @@
 namespace trillek {
 namespace computer {
 
-Media::Media(const std::string filename) : HEADER_VERSION(1) {
+Media::Media(const std::string& filename) : HEADER_VERSION(1) {
 
     // Check if file exists
     datafile.open(filename, std::ios::in | std::ios::out | std::ios::binary);
@@ -58,7 +58,7 @@ Media::Media(const std::string filename) : HEADER_VERSION(1) {
     std::cout << "[DISK] File loaded: " << filename.c_str() << std::endl;
 }
 
-Media::Media(const std::string filename, DiskDescriptor* info)  : HEADER_VERSION(1) {
+Media::Media(const std::string& filename, DiskDescriptor* info)  : HEADER_VERSION(1) {
 
     Info.reset(info);
 
@@ -94,6 +94,46 @@ Media::Media(const std::string filename, DiskDescriptor* info)  : HEADER_VERSION
     datafile.seekg(HEADER_SIZE + getTotalSectors() * Info->BytesPerSector, std::fstream::beg);
     datafile.write( reinterpret_cast<char*>( badSectors.data() ), badSectors.size() );
 
+    datafile.flush();
+}
+
+Media::Media(const std::string& filename, const DiskDescriptor& info)  : HEADER_VERSION(1) {
+    DiskDescriptor* tmpInfo = new DiskDescriptor();
+    std::memmove(tmpInfo, &info, sizeof(DiskDescriptor));
+    Info.reset(tmpInfo);
+    
+    // create new file
+    std::cout << "[DISK] Creating file: " << filename.c_str() << std::endl;
+    
+    datafile.open(filename, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+    
+    /* write file header */
+    datafile.write(HEADER_MAGIC, 3);
+    datafile.write(&HEADER_VERSION, 1);
+    datafile.write(reinterpret_cast<char*>(&Info->TypeDisk), 1);
+    datafile.write(reinterpret_cast<char*>(&Info->writeProtect), 1);
+    datafile.write(reinterpret_cast<char*>(&Info->NumSides), 1);
+    datafile.write(reinterpret_cast<char*>(&Info->TracksPerSide), 1);
+    datafile.write(reinterpret_cast<char*>(&Info->SectorsPerTrack), 1);
+    datafile.write(reinterpret_cast<char*>(&Info->BytesPerSector), 2);
+    
+    char* sector = new char[Info->BytesPerSector];
+    std::memset(sector, 0, Info->BytesPerSector);
+    datafile.seekg(HEADER_SIZE, std::fstream::beg);
+    for (uint16_t i = 0; i < getTotalSectors(); i++) {
+        datafile.write(sector, Info->BytesPerSector);
+    }
+    delete[] sector;
+    
+    /* Get bad sector bitmap from the file */
+    int bitmapSize = getTotalSectors() / 8;
+    bitmapSize += getTotalSectors() % 8 != 0 ? 1 : 0;
+    badSectors  = std::vector<uint8_t>(bitmapSize);
+    badSectors.assign(badSectors.size(), 0);
+    
+    datafile.seekg(HEADER_SIZE + getTotalSectors() * Info->BytesPerSector, std::fstream::beg);
+    datafile.write( reinterpret_cast<char*>( badSectors.data() ), badSectors.size() );
+    
     datafile.flush();
 }
 
