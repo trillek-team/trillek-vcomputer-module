@@ -68,6 +68,31 @@ Parameters:
 
 Is a small tool that can generate a hexadecimal representation of a user font for the TDA display card. Uses as source image, a b&w ASCII **pbm** file (Gimp can generate it). It expects that the image have a width and height multiple of 8, as it divides the image in cells of 8x8 pixels each being a glyph of the font.
 
+### makedisk
+
+Is a tool that can generate floppy disk images of different sizes and could write on a disk image, raw binary data from a file.
+
+```
+makedisk
+
+Usage:
+    makedisk -o outputfile [other parameters]
+
+Parameters:
+    -o file : Output file
+    -i file : RAW binary file to be included on the floppy disk image
+    -s sectors : Sectors per track (8 to 36)
+    -t tracks : Tracks per side (between 40 and 80)
+    -1 : Creates a floppy with only a sigle side
+    -160 : Creates a 160KiB disk with a single side, 8 sectors and 40 tracks.
+    -320 : Creates a 320KiB disk with 8 sectors and 40 tracks. Default floppy size
+    -360 : Creates a 360KiB disk with 9 sectors and 40 tracks.
+    -640 : Creates a 640KiB disk with 8 sectors and 80 tracks.
+    -720 : Creates a 720KiB disk with 9 sectors and 80 tracks.
+    -1200 : Creates a 1200KiB disk with 15 sectors and 80 tracks.
+    -h : Shows this help
+```
+
 ### Tests
 
 #### benchmark
