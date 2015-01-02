@@ -154,6 +154,16 @@ public:
      * @return NONE, NO_MEDIA, BAD_SECTOR, PROTECTED
      */
     ERRORS writeSector (uint16_t sector, std::vector<uint8_t>* data, bool dryRun = false);
+    
+    /**
+     * Try to write data at the desired sector
+     * @param sector Desired sector to be written
+     * @param data Sector buffer to be written to the disk
+     * @param data_size Size of the array with the sector data to write
+     * @param dryRun Only check for errors, the disk is untouched
+     * @return NONE, NO_MEDIA, BAD_SECTOR, PROTECTED
+     */
+    ERRORS writeSector (uint16_t sector, const uint8_t* data, size_t data_size, bool dryRun = false);
 
     /**
      * Try to read data at the desired sector

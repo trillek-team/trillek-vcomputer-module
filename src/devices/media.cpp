@@ -212,10 +212,30 @@ ERRORS Media::writeSector(uint16_t sector, std::vector<uint8_t>* data, bool dryR
 
     if (!dryRun) {
         datafile.seekg(HEADER_SIZE + sector * Info->BytesPerSector, std::ios::beg);
-        datafile.write( reinterpret_cast<char*>( data->data() ), data->size() );
+        datafile.write( reinterpret_cast<const char*>( data->data() ), data->size() );
         datafile.flush();
     }
 
+    return ERRORS::NONE;
+} // writeSector
+
+ERRORS Media::writeSector(uint16_t sector, const uint8_t* data, size_t data_size, bool dryRun) {
+    if ( !datafile.good() ) {
+        return ERRORS::NO_MEDIA;
+    }
+    if ( sector >= getTotalSectors() || isSectorBad(sector) ) {
+        return ERRORS::BAD_SECTOR;
+    }
+    if (Info->writeProtect) {
+        return ERRORS::PROTECTED;
+    }
+    
+    if (!dryRun) {
+        datafile.seekg(HEADER_SIZE + sector * Info->BytesPerSector, std::ios::beg);
+        datafile.write( reinterpret_cast<const char*>( data ), data_size );
+        datafile.flush();
+    }
+    
     return ERRORS::NONE;
 } // writeSector
 
