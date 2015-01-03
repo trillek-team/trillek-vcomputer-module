@@ -16,7 +16,7 @@
 namespace trillek {
 namespace computer {
 
-EnumAndCtrlBlk::EnumAndCtrlBlk (unsigned slot, IDevice* dev) :
+EnumAndCtrlBlk::EnumAndCtrlBlk (unsigned slot, Device* dev) :
     slot(slot), dev(dev) {
     assert (slot < MAX_N_DEVICES);
     assert (dev != nullptr);

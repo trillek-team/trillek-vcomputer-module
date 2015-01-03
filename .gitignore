@@ -13,6 +13,9 @@
 *.la
 *.a
 
+# Other stuff
+*.pyc
+
 #CMakeFiles
 Makefile
 cmake_install.cmake
@@ -30,4 +33,5 @@ build/
 # Generated config files in include
 config.hpp
 include/vc_dll.hpp
+
 

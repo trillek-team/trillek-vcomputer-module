@@ -18,15 +18,15 @@ namespace computer {
 class VComputer;
 
 /**
- * \class IDevice
+ * \class Device
  * Interface that must be implemente by any Device that will be used by the
  * Virtual Computer.
  * Derived class constructors should set vcomp == nullptr.
  */
-class DECLDIR IDevice {
+class DECLDIR Device {
 public:
 
-    virtual ~IDevice() {
+    virtual ~Device() {
     }
 
     /**
@@ -171,3 +171,4 @@ protected:
 } // End of namespace trillek
 
 #endif // __IDEVICE_HPP_
+

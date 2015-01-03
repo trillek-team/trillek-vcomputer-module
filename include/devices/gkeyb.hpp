@@ -137,7 +137,7 @@ static const size_t BSIZE = 64; /// Internal buffer size
  * Genertic Keyboard
  * Western / Latin generic keyboard
  */
-class DECLDIR GKeyboardDev : public IDevice {
+class DECLDIR GKeyboardDev : public Device {
 protected:
 
     Word a, b, c;

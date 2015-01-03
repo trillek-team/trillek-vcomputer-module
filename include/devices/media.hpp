@@ -1,6 +1,6 @@
 /**
  * \brief       Virtual Computer Generic Media image class
- * \file        disk.hpp
+ * \file        media.hpp
  * \copyright   The MIT License (MIT)
  *
  */
@@ -56,24 +56,33 @@ enum class ERRORS : Byte
  * Generic class that represent a media image, and allows to save/read the disk
  * image data from a file
  */
-class DECLDIR Disk {
+class DECLDIR Media {
 public:
 
     /**
-     * Opens a disk file
+     * Opens a media file
      * @param filename Filename were the floppy data is stored
      */
-    Disk(const std::string filename);
+    Media(const std::string& filename);
 
     /**
-     * Creates a new disk file
+     * Creates a new media file
+     * @param filename Filename were the floppy data is stored
+     * @param info Pointer to media descriptor. Media takes the ownership of it
      */
-    Disk(const std::string filename, DiskDescriptor* info);
+    Media(const std::string& filename, DiskDescriptor* info);
+    
+    /**
+     * Creates a new media file
+     * @param filename Filename were the floppy data is stored
+     * @param info Media Descriptor. Does a copy from it
+     */
+    Media(const std::string& filename, const DiskDescriptor& info);
 
     /**
      * closes a floppy disk file and destroys this container
      */
-    virtual ~Disk();
+    virtual ~Media();
 
     /**
      * Return if the disk is valid
@@ -145,6 +154,16 @@ public:
      * @return NONE, NO_MEDIA, BAD_SECTOR, PROTECTED
      */
     ERRORS writeSector (uint16_t sector, std::vector<uint8_t>* data, bool dryRun = false);
+    
+    /**
+     * Try to write data at the desired sector
+     * @param sector Desired sector to be written
+     * @param data Sector buffer to be written to the disk
+     * @param data_size Size of the array with the sector data to write
+     * @param dryRun Only check for errors, the disk is untouched
+     * @return NONE, NO_MEDIA, BAD_SECTOR, PROTECTED
+     */
+    ERRORS writeSector (uint16_t sector, const uint8_t* data, size_t data_size, bool dryRun = false);
 
     /**
      * Try to read data at the desired sector

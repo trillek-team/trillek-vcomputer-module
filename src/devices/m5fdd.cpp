@@ -192,7 +192,7 @@ void M5FDD::Tick(unsigned n, const double delta) {
     }
 } // Tick
 
-void M5FDD::insertFloppy(std::shared_ptr<Disk> floppy) {
+void M5FDD::insertFloppy(std::shared_ptr<Media> floppy) {
     if (this->floppy) {
         ejectFloppy();
     }

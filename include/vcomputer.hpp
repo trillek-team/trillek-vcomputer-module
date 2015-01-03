@@ -71,12 +71,12 @@ public:
      * \param dev The device to be pluged in the slot
      * \return False if the slot have a device or the slot is invalid.
      */
-    bool AddDevice (unsigned slot, std::shared_ptr<IDevice> dev);
+    bool AddDevice (unsigned slot, std::shared_ptr<Device> dev);
 
     /**
      * Gets the Device plugged in the slot
      */
-    std::shared_ptr<IDevice> GetDevice (unsigned slot);
+    std::shared_ptr<Device> GetDevice (unsigned slot);
 
     /**
      * Remove a device from a slot

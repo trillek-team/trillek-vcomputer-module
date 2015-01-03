@@ -112,7 +112,7 @@ std::unique_ptr<ICPU> VComputer::RmCPU () {
     return std::move(cpu);
 }
 
-bool VComputer::AddDevice (unsigned slot, std::shared_ptr<IDevice> dev) {
+bool VComputer::AddDevice (unsigned slot, std::shared_ptr<Device> dev) {
     if ( slot >= MAX_N_DEVICES || std::get<0>(devices[slot]) ) {
         return false;
     }
@@ -134,7 +134,7 @@ bool VComputer::AddDevice (unsigned slot, std::shared_ptr<IDevice> dev) {
     return true;
 } // AddDevice
 
-std::shared_ptr<IDevice> VComputer::GetDevice (unsigned slot) {
+std::shared_ptr<Device> VComputer::GetDevice (unsigned slot) {
     if ( slot >= MAX_N_DEVICES || !std::get<0>(devices[slot]) ) {
         return nullptr;
     }

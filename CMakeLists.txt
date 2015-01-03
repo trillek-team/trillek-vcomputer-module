@@ -10,7 +10,7 @@ get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
 # Project generic variables
 set(VCOMP_VERSION_MAJOR 0)
-set(VCOMP_VERSION_MINOR 4)
+set(VCOMP_VERSION_MINOR 5)
 set(VCOMP_BUILD "${GIT_REFSPEC}-${GIT_SHA1}") # Try to use git files to get refspec and hash
 
 MESSAGE(STATUS "Trillek Virtual Computer version "
