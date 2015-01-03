@@ -107,3 +107,17 @@ add_executable( pbm2font
 include_directories( pbm2font
   ${VCOMPUTER_INCLUDE_DIRS}
   )
+
+# makedisk executable
+add_executable( makedisk
+  ./makedisk.cpp
+  ${TOOL_OTHER_SRC}
+  )
+
+include_directories( makedisk
+  ${VM_INCLUDE_DIRS}
+  )
+
+target_link_libraries( makedisk
+  ${VM_LINK_LIBS}
+  )
