@@ -112,6 +112,10 @@ std::unique_ptr<ICPU> VComputer::RmCPU () {
     return std::move(cpu);
 }
 
+bool VComputer::haveCpu() const {
+    return true && cpu; // Because compiler not like to return directly toe condition
+}
+
 bool VComputer::AddDevice (unsigned slot, std::shared_ptr<Device> dev) {
     if ( slot >= MAX_N_DEVICES || std::get<0>(devices[slot]) ) {
         return false;
@@ -208,7 +212,7 @@ void VComputer::Off() {
     is_on = false;
 }
 
-bool VComputer::isOn() {
+bool VComputer::isOn() const {
     return is_on && cpu;
 }
 

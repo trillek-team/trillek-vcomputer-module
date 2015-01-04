@@ -66,6 +66,11 @@ public:
     std::unique_ptr<ICPU> RmCPU ();
 
     /**
+     * Returns true if the computer have a CPU plugged
+     */
+    bool haveCpu() const;
+
+    /**
      * Adds a Device to a slot
      * \param slot Were plug the device
      * \param dev The device to be pluged in the slot
@@ -123,7 +128,7 @@ public:
     /**
      * Return if the computer is power up
      */
-    bool isOn ();
+    bool isOn () const;
 
     /**
      * Executes the apropaited number of Virtual Computer base clock cycles
