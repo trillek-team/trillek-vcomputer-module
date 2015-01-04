@@ -121,6 +121,11 @@ public:
     void Off ();
 
     /**
+     * Return if the computer is power up
+     */
+    bool isOn ();
+
+    /**
      * Executes the apropaited number of Virtual Computer base clock cycles
      * in function of the elapsed time since the last call (delta time)
      *

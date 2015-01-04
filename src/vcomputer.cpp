@@ -196,9 +196,9 @@ void VComputer::Reset() {
 } // Reset
 
 void VComputer::On() {
+    // Powering it wihtout cpu ?
     if (cpu && !is_on) {
-    	std::fill_n(ram, ram_size, 0);
-        // Powering it wihtout cpu ?
+        std::fill_n(ram, ram_size, 0);
         is_on = true;
         this->Reset(); // When we power on, we get a Reset!
     }
@@ -206,6 +206,10 @@ void VComputer::On() {
 
 void VComputer::Off() {
     is_on = false;
+}
+
+bool VComputer::isOn() {
+    return is_on && cpu;
 }
 
 unsigned VComputer::Update( const double delta) {
