@@ -93,10 +93,10 @@ int main (int argc, char* argv[]) {
   double deltat = glfwos.GetDeltaTime();
   double t_acu = 0; // Time acumulator
 
-  // TODO Here insert a callback fro events
+  // TODO Here insert a callback from events
 
   // Test screen
-  TDAScreen screen = {0}; // Clear it
+  TDAScreen screen;
   screen.txt_buffer[0]  = 0x0F00 | 'H';
   screen.txt_buffer[1]  = 0x1F00 | 'e';
   screen.txt_buffer[2]  = 0x2F00 | 'l';

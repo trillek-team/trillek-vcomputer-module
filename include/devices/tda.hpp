@@ -67,6 +67,13 @@ struct TDAScreen {
     Byte cur_color; /// Cursor color
     Byte cur_start; /// Start scanline
     Byte cur_end;   /// End scnaline
+
+    TDAScreen() : user_font(0), cursor(0), cursor_blink(0), cur_col(0),
+                    cur_row(0), cur_color(0), cur_start(0), cur_end(0)
+    {
+        std::fill_n(txt_buffer, WIDTH_CHARS*HEIGHT_CHARS, 0);
+        std::fill_n(font_buffer, FONT_BUFFER_SIZE, 0);
+    }
 };
 
 /**

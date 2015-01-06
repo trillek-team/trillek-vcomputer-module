@@ -249,7 +249,7 @@ int main(int argc, char* argv[]) {
     // Add devices to the Virtual Machine
     auto gcard = std::make_shared<computer::tda::TDADev>();
 #ifdef GLFW3_ENABLE
-    computer::tda::TDAScreen gcard_screen = {0};
+    computer::tda::TDAScreen gcard_screen;
 #endif
     vc.AddDevice(5, gcard);
 
