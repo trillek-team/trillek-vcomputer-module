@@ -42,6 +42,16 @@ DECLDIR const char* GetBuildVersion();   /// Library "build" version
 
 class EnumAndCtrlBlk;
 
+/**
+ * To work the virtual computer have 3 different "clock ticks" :
+ *  - base clock -> at BaseClock hz (1MHz)
+ *  - devices clock -> at 100KHz
+ *  - cpu clock -> depend of the CPU, but <= base clock
+ * 
+ * All public API that does in/out clock ticks on this class, are refered to base clock.
+ * A device clock tick happens every 10 base clock ticks (1MHz/10 = 100KHz)
+ * A CPU clock tick happens every X base clock ticks. X = BaseClock / cpu clock
+ */
 class DECLDIR VComputer {
 public:
 
