@@ -225,8 +225,8 @@ unsigned VComputer::Update( const double delta) {
     if (cycles <= 1) {
         cycles = 1;
     }
-    else if (cycles >= 80000) {
-        cycles = 80000;
+    else if (cycles >= 100000) {
+        cycles = 100000;
     }
 
     this->Tick(cycles, delta);
