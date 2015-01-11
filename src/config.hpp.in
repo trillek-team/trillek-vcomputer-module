@@ -20,14 +20,10 @@ static const char* Build = "@VCOMP_BUILD@";                  /// Build (git refs
 } // namespace computer
 } // namespace trillek
 
-/// Debug build
-#ifndef DEBUG
-    #define DEBUG @DEBUG_BUILD@
+// Visual doing all different...
+#ifdef _DEBUG
+#define DEBUG
 #endif
-#if DEBUG == 0
-    #undef DEBUG
-#endif
-
 
 /// Break Points functionality ?
 #define BRKPOINTS @BRKPOINTS_ENABLED@
