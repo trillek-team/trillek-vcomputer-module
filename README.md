@@ -3,9 +3,9 @@ Trillek Virtual Computer Lib
 
 Using these [specs](https://github.com/trillek-team/trillek-computer)
 
-The design of the Virtual Computer allows to plug and use different CPUs. Actually is the TR3200. 
+The design of the Virtual Computer allows to plug and use different CPUs. Actually is the TR3200.
 
-This repo contains of the Trillek Virtual Computer lib and some extra tools, including a toy emulator build over the lib. 
+This repo contains of the Trillek Virtual Computer lib and some extra tools, including a toy emulator build over the lib.
 
 | GNU/Linux                                        | Windows (VStudio 2012)  |
 |--------------------------------------------------|-------------------------|
@@ -45,7 +45,7 @@ Is a program that uses the Trillek Virtual Computer lib to run a TR3200 emulatio
 - Step mode, has an on-line disassembler. Each time that you press enter or 's' or 'S'
   keys, one instruction is executed, and the status of registers and stack, is
   shown. '**q**' ends the execution. '**r**' switch to Run mode
-- Run mode, It tries to enforce CPU Clock speed. Only stops by doing '**Ctrl+C**' or closing the virtual screen window, or when finds a breakpoint. 
+- Run mode, It tries to enforce CPU Clock speed. Only stops by doing '**Ctrl+C**' or closing the virtual screen window, or when finds a breakpoint.
 
 It accepts this parameters:
 ```
@@ -112,22 +112,19 @@ Is a program that runs a quick and dirty benchmark to measure the performance of
 
 If before calling CMake, you setup a enviroment variable called "GTEST_ROOT" with the path to GTest suite, then the unit tests could be compiled and will generate an executable file "unit_test". This allow to check if some basic code gets broken if someone try to edit the source code. Are far of being a exaustive tests, but it's far better that nothing.
 
-To set a enviroment variable on GNU/Linux (and Mac):
+To set a enviroment variable on GNU/Linux (and Mac): ```export GTEST_ROOT=...```
 
-    export GTEST_ROOT=...
+If you are using fish shell : ```set -x GTEST_ROOT /usr/src/gtest/```
 
-If you are using fish shell :
-
-    set -x GTEST_ROOT /usr/src/gtest/
-  
-In windows, you should do that in Control Panel.
+In windows, you should do that in Control Panel, or if you run CMake on a PowerShell console, with : ```$env:GTEST_ROOT = $PWD.Path + "\gtest-1.7.0\"```
 
 HOW I CAN CREATE PROGRAMS ?
 ---------------------------
-Actually you have two options :
+Actually you have a few options :
 
 - [Meisaka's WaveAsm](https://github.com/Meisaka/WaveAsm) to generate TR3200 machine code.
 - [VASM](https://github.com/Zardoz89/VASM) is a portable and retargetable assembler. It have a TR3200 module that can generate flat binary files and VOBJ object files. It have support for assembly macros and other fancy stuff.
+- [SmallerC](https://github.com/alexfru/SmallerC) is a small C compiler, that can generate TR3200 assembly code for VASM. Actually we not have yet a C Standard lib. Any help with it would be very apreciated.
 
 ADJUNCT TR3200 ASM PROGRAMS
 --------------------------
@@ -160,9 +157,4 @@ IMPLEMENTED DEVICES
 
 TODO
 ----
-
-- [ ] Integrated stuff of the mother board (NVRAM)
-- [ ] Check interrupts
-- [ ] Fix Debug mode of TR3200 cpu
-- [ ] DMA (There is an old PR that is broken. Need to be fix)
-- [ ] Tool to create floppy disk files and put on it flat binary files from WaveAsm or VASM
+See issues on github or the [Trello board](https://trello.com/b/ONRIy13Q)
