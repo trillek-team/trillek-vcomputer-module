@@ -21,10 +21,11 @@ install:
 before_script:
   - mkdir build
   - cd build
-  - cmake ..
-script: 
+  - cmake -DCMAKE_BUILD_TYPE=Debug ..
+script:
   - make
-  - ./unit_test
+  - ctest -VV
+  #- ./unit_test
 
 notifications:
     email:
