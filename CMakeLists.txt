@@ -76,135 +76,124 @@ configure_file (src/config.hpp.in
 configure_file (include/vc_dll.hpp.in
     "${VCOMPUTER_SOURCE_DIR}/include/vc_dll.hpp" )
 
-if (EMSCRIPTEN)
-    # We are compiling with emscripten
 
-    set(CMAKE_CXX_FLAGS "-std=c++11 ${MAKE_CXX_FLAGS}")
-    set(CMAKE_EXECUTABLE_SUFFIX ".js")
+include(Platform)
 
-    message(STATUS "Procesing Source Code - Build Library JS Wrapper")
-    add_subdirectory(emscripten)
-
-else (EMSCRIPTEN)
-
-    include(Platform)
-
-    message(STATUS "Procesing Source Code - Build library")
-    # VCOMPUTER VM core lib
-    if(BUILD_STATIC_VCOMPUTER)
-        add_library( VCOMPUTER STATIC
-            ${VCOMPUTER_SRC}
-            )
-
-        include_directories(VCOMPUTER
-            ${VCOMPUTER_INCLUDE_DIRS}
-            )
-
-    else(BUILD_STATIC_VCOMPUTER)
-        add_definitions(-DDLL_EXPORT) # Enforces to use dllexport on shared library on Windows
-        add_library( VCOMPUTER SHARED
-            ${VCOMPUTER_SRC}
-            )
-
-        include_directories(VCOMPUTER
-            ${VCOMPUTER_INCLUDE_DIRS}
-            )
-
-    endif(BUILD_STATIC_VCOMPUTER)
-
-    # Version of the libs
-    SET_TARGET_PROPERTIES(VCOMPUTER PROPERTIES
-        VERSION ${VCOMP_VERSION_STRING}
-        SOVERSION ${VCOMP_VERSION_MAJOR}
+message(STATUS "Procesing Source Code - Build library")
+# VCOMPUTER VM core lib
+if(BUILD_STATIC_VCOMPUTER)
+    add_library( VCOMPUTER STATIC
+        ${VCOMPUTER_SRC}
         )
+
+    include_directories(VCOMPUTER
+        ${VCOMPUTER_INCLUDE_DIRS}
+        )
+
+else(BUILD_STATIC_VCOMPUTER)
+    add_definitions(-DDLL_EXPORT) # Enforces to use dllexport on shared library on Windows
+    add_library( VCOMPUTER SHARED
+        ${VCOMPUTER_SRC}
+        )
+
+    include_directories(VCOMPUTER
+        ${VCOMPUTER_INCLUDE_DIRS}
+        )
+
+endif(BUILD_STATIC_VCOMPUTER)
+
+# Version of the libs
+SET_TARGET_PROPERTIES(VCOMPUTER PROPERTIES
+    VERSION ${VCOMP_VERSION_STRING}
+    SOVERSION ${VCOMP_VERSION_MAJOR}
+    )
+
+if(BUILD_TOOLS_VCOMPUTER)
+
+    # Find GLFW3 and OpenGL libs
+    find_package(GLFW3)
+    if (NOT GLFW3_FOUND)
+        message("GLFW3 not found! main executable will not display screen and virtual keyboard")
+        set (GLFW3_ENABLE 0)
+    else (NOT GLFW3_FOUND)
+        set (GLFW3_ENABLE 1)
+    endif (NOT GLFW3_FOUND)
+
+    find_package(OpenGL)
+    if (NOT OPENGL_FOUND)
+        message("OpenGL not found! main executable will not display screen and virtual keyboard")
+        set (GLFW3_ENABLE 0)
+    endif (NOT OPENGL_FOUND)
+
+    find_package(GLEW)
+    if(NOT GLEW_FOUND)
+        message("GLEW not found! main executable will not display screen and virtual keyboard")
+        set (GLFW3_ENABLE 0)
+    endif(NOT GLEW_FOUND)
+
+    find_package(GLM)
+    if(NOT GLM_FOUND)
+        message("GLM not found! main executable will not display screen and virtual keyboard")
+        set (GLFW3_ENABLE 0)
+    endif(NOT GLM_FOUND)
+
+    find_package(OpenAL)
+    if(NOT OPENAL_FOUND)
+        message("OpenAL not found! main executable will not be hable to play the beeper")
+        set (OPENAL_ENABLE 0)
+    else (NOT OPENAL_FOUND)
+
+        find_package(Alure)
+        if(NOT ALURE_FOUND)
+            message("ALure not found! main executable will not be hable to play the beeper")
+            set (OPENAL_ENABLE 0)
+        else(NOT ALURE_FOUND)
+            set (OPENAL_ENABLE 1)
+        endif(NOT ALURE_FOUND)
+
+    endif(NOT OPENAL_FOUND)
+
+
 
     if(BUILD_TOOLS_VCOMPUTER)
-
-        # Find GLFW3 and OpenGL libs
-        find_package(GLFW3)
-        if (NOT GLFW3_FOUND)
-            message("GLFW3 not found! main executable will not display screen and virtual keyboard")
-            set (GLFW3_ENABLE 0)
-        else (NOT GLFW3_FOUND)
-            set (GLFW3_ENABLE 1)
-        endif (NOT GLFW3_FOUND)
-
-        find_package(OpenGL)
-        if (NOT OPENGL_FOUND)
-            message("OpenGL not found! main executable will not display screen and virtual keyboard")
-            set (GLFW3_ENABLE 0)
-        endif (NOT OPENGL_FOUND)
-
-        find_package(GLEW)
-        if(NOT GLEW_FOUND)
-            message("GLEW not found! main executable will not display screen and virtual keyboard")
-            set (GLFW3_ENABLE 0)
-        endif(NOT GLEW_FOUND)
-
-        find_package(GLM)
-        if(NOT GLM_FOUND)
-            message("GLM not found! main executable will not display screen and virtual keyboard")
-            set (GLFW3_ENABLE 0)
-        endif(NOT GLM_FOUND)
-
-        find_package(OpenAL)
-        if(NOT OPENAL_FOUND)
-            message("OpenAL not found! main executable will not be hable to play the beeper")
-            set (OPENAL_ENABLE 0)
-        else (NOT OPENAL_FOUND)
-
-            find_package(Alure)
-            if(NOT ALURE_FOUND)
-                message("ALure not found! main executable will not be hable to play the beeper")
-                set (OPENAL_ENABLE 0)
-            else(NOT ALURE_FOUND)
-                set (OPENAL_ENABLE 1)
-            endif(NOT ALURE_FOUND)
-
-        endif(NOT OPENAL_FOUND)
-
-
-
-        if(BUILD_TOOLS_VCOMPUTER)
-            message(STATUS "Procesing Tools")
-            add_subdirectory(tools)
-        endif(BUILD_TOOLS_VCOMPUTER)
-
-        message(STATUS "Procesing Assets")
-        add_subdirectory(assets)
-
+        message(STATUS "Procesing Tools")
+        add_subdirectory(tools)
     endif(BUILD_TOOLS_VCOMPUTER)
 
-    if(BUILD_TESTS_VCOMPUTER)
-        message(STATUS "Procesing Tests")
-        enable_testing()
+    message(STATUS "Procesing Assets")
+    add_subdirectory(assets)
 
-        find_package(GTest)
-        if(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
-            # findGTEST could fail if gtest is not compiled
-            add_subdirectory($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest)
-        endif(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
+endif(BUILD_TOOLS_VCOMPUTER)
 
-    add_subdirectory(tests)
+if(BUILD_TESTS_VCOMPUTER)
+    message(STATUS "Procesing Tests")
+    enable_testing()
 
-    endif(BUILD_TESTS_VCOMPUTER)
+    find_package(GTest)
+    if(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
+        # findGTEST could fail if gtest is not compiled
+        add_subdirectory($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest)
+    endif(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
 
-    # Install of library
-    INSTALL(CODE "MESSAGE(\"Installing library and headers\")")
-    INSTALL(DIRECTORY include/
-        DESTINATION include/tr-vcomputer
-        PATTERN "*.in" EXCLUDE
-        )
+add_subdirectory(tests)
 
-    INSTALL(TARGETS VCOMPUTER
-        EXPORT VCOMPUTER
-        RUNTIME DESTINATION bin
-        ARCHIVE DESTINATION lib/static
-        LIBRARY DESTINATION lib
-        )
-        # COMPONENT library)
+endif(BUILD_TESTS_VCOMPUTER)
+
+# Install of library
+INSTALL(CODE "MESSAGE(\"Installing library and headers\")")
+INSTALL(DIRECTORY include/
+    DESTINATION include/tr-vcomputer
+    PATTERN "*.in" EXCLUDE
+    )
+
+INSTALL(TARGETS VCOMPUTER
+    EXPORT VCOMPUTER
+    RUNTIME DESTINATION bin
+    ARCHIVE DESTINATION lib/static
+    LIBRARY DESTINATION lib
+    )
+    # COMPONENT library)
 
 
-endif (EMSCRIPTEN)
 
 
