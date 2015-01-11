@@ -24,6 +24,9 @@ unsigned GetMajorVersion() {
 unsigned GetMinorVersion() {
     return MinorVersion;
 }
+unsigned GetPatchVersion() {
+    return PatchVersion;
+}
 const char* GetBuildVersion() {
     return Build;
 }

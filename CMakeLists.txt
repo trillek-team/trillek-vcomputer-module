@@ -11,10 +11,13 @@ get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 # Project generic variables
 set(VCOMP_VERSION_MAJOR 0)
 set(VCOMP_VERSION_MINOR 5)
+set(VCOMP_VERSION_PATCH 0)
+set(VCOMP_VERSION_STRING ${VCOMP_VERSION_MAJOR}.${VCOMP_VERSION_MINOR}.${VCOMP_VERSION_PATCH})
+
 set(VCOMP_BUILD "${GIT_REFSPEC}-${GIT_SHA1}") # Try to use git files to get refspec and hash
 
 MESSAGE(STATUS "Trillek Virtual Computer version "
-    ${VCOMP_VERSION_MAJOR} "." ${VCOMP_VERSION_MINOR} " Build " ${VCOMP_BUILD})
+    ${VCOMP_VERSION_STRING} " Build " ${VCOMP_BUILD})
 
 # Debug build ?
 IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -109,6 +112,12 @@ else (EMSCRIPTEN)
 
     endif(BUILD_STATIC_VCOMPUTER)
 
+    # Version of the libs
+    SET_TARGET_PROPERTIES(VCOMPUTER PROPERTIES
+        VERSION ${VCOMP_VERSION_STRING}
+        SOVERSION ${VCOMP_VERSION_MAJOR}
+        )
+
     if(BUILD_TOOLS_VCOMPUTER)
 
         # Find GLFW3 and OpenGL libs
@@ -180,30 +189,20 @@ else (EMSCRIPTEN)
 
     endif(BUILD_TESTS_VCOMPUTER)
 
-    # Install shared libs
-    IF(NOT BUILD_STATIC_VCOMPUTER)
-        IF (NOT WIN32)
-            INSTALL(CODE "MESSAGE(\"Installing library and headers\")")
-            INSTALL(TARGETS VCOMPUTER
-                LIBRARY DESTINATION lib
-                )
-            INSTALL(DIRECTORY include/
-                DESTINATION include/tr-vcomputer
-                PATTERN "*.in" EXCLUDE
-                )
-        ENDIF (NOT WIN32)
-    ELSE(NOT BUILD_STATIC_VCOMPUTER)
-        IF (NOT WIN32)
-            INSTALL(CODE "MESSAGE(\"Installing library and headers\")")
-            INSTALL(TARGETS VCOMPUTER
-                ARCHIVE DESTINATION lib/static
-                )
-            INSTALL(DIRECTORY include/
-                DESTINATION include/tr-vcomputer
-                PATTERN "*.in" EXCLUDE
-                )
-        ENDIF (NOT WIN32)
-    ENDIF(NOT BUILD_STATIC_VCOMPUTER)
+    # Install of library
+    INSTALL(CODE "MESSAGE(\"Installing library and headers\")")
+    INSTALL(DIRECTORY include/
+        DESTINATION include/tr-vcomputer
+        PATTERN "*.in" EXCLUDE
+        )
+
+    INSTALL(TARGETS VCOMPUTER
+        EXPORT VCOMPUTER
+        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib/static
+        LIBRARY DESTINATION lib
+        )
+        # COMPONENT library)
 
 
 endif (EMSCRIPTEN)

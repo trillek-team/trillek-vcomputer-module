@@ -38,6 +38,7 @@ const unsigned BaseClock = 1000000; /// Computer Base Clock rate
 
 DECLDIR unsigned GetMajorVersion();      /// Library Major version
 DECLDIR unsigned GetMinorVersion();      /// Library Minor version
+DECLDIR unsigned GetPatchVersion();      /// Library Patch/Revision version
 DECLDIR const char* GetBuildVersion();   /// Library "build" version
 
 class EnumAndCtrlBlk;
@@ -47,7 +48,7 @@ class EnumAndCtrlBlk;
  *  - base clock -> at BaseClock hz (1MHz)
  *  - devices clock -> at 100KHz
  *  - cpu clock -> depend of the CPU, but <= base clock
- * 
+ *
  * All public API that does in/out clock ticks on this class, are refered to base clock.
  * A device clock tick happens every 10 base clock ticks (1MHz/10 = 100KHz)
  * A CPU clock tick happens every X base clock ticks. X = BaseClock / cpu clock
