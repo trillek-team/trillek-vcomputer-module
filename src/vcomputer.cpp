@@ -24,6 +24,9 @@ unsigned GetMajorVersion() {
 unsigned GetMinorVersion() {
     return MinorVersion;
 }
+unsigned GetPatchVersion() {
+    return PatchVersion;
+}
 const char* GetBuildVersion() {
     return Build;
 }
@@ -121,8 +124,8 @@ bool VComputer::AddDevice (unsigned slot, std::shared_ptr<Device> dev) {
         return false;
     }
 
-    // TODO See were store the pointer or use a shared_ptr
     auto enumblk = new EnumAndCtrlBlk( slot, dev.get() );
+    // TODO Check if listernes std::map would do a double free when a device is removed
     std::get<2>(devices[slot]) = this->AddAddrListener(enumblk->GetRange(), enumblk);
     if (std::get<2>(devices[slot]) != -1) {
         std::get<0>(devices[slot]) = dev;
@@ -151,6 +154,7 @@ void VComputer::RmDevice (unsigned slot) {
         std::get<0>(devices[slot])->SetVComputer(nullptr);
         std::get<0>(devices[slot]).reset(); // Cleans the slot
         delete std::get<1>(devices[slot]);
+        // TODO RmDevice should remove the AddrListener
         std::get<1>(devices[slot]) = nullptr;
         std::get<2>(devices[slot]) = -1;
     }
@@ -225,8 +229,8 @@ unsigned VComputer::Update( const double delta) {
     if (cycles <= 1) {
         cycles = 1;
     }
-    else if (cycles >= 80000) {
-        cycles = 80000;
+    else if (cycles >= 100000) {
+        cycles = 100000;
     }
 
     this->Tick(cycles, delta);
