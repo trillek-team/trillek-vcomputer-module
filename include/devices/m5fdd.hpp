@@ -3,7 +3,8 @@
  * \file        m5fdd.hpp
  * \copyright   The MIT License (MIT)
  *
- * Mackapar 5.25" Floppy Drive
+ * 5.25" Floppy Drive
+ * Implement specs v0.2.3
  */
 #ifndef __M5FDD_HPP_
 #define __M5FDD_HPP_ 1
@@ -51,13 +52,14 @@ enum class ERROR_CODES : uint16_t {
     PROTECTED  = 3, /// Attempted to write to a protected floppy
     EJECT      = 4, /// The floppy was ejected while was reading/writing
     BAD_SECTOR = 5, /// The requested sector is broken, the data on it is lost
+    BAD_CHS    = 6, /// The CHS value is not valid. Check QUERY_MEDIA
 
     BROKEN = 0xFFFF /// There's been some major software/hardware problem.
                     /// Try to do a hard reset the device.
 };
 
 /**
- * Mackapar 3,5" floppy drive
+ * 5.25" floppy drive
  */
 class DECLDIR M5FDD : public Device {
 public:
@@ -209,28 +211,28 @@ public:
 private:
 
     /**
-     * Moves the head to the desired track
+     * Moves the head to the desired position
      */
-    void setSector (uint16_t sector);
+    void setSector (uint8_t track, uint8_t head, uint8_t sector);
 
-    std::shared_ptr<Media> floppy; /// Floppy inserted
-    std::vector<Byte> sectorBuffer;            // buffer of sector being
-                                                 // accessed
-    STATE_CODES state;                           /// Floppy drive actual status
-    ERROR_CODES error;                           /// Floppy drive actual error
-                                                 // state
+    std::shared_ptr<Media> floppy;  /// Floppy inserted
+    std::vector<Byte> sectorBuffer; // buffer of sector being accessed
+    STATE_CODES state;              /// Floppy drive actual status
+    ERROR_CODES error;              /// Floppy drive actual error state
 
-    bool writing;         /// is the drive reading or writing?
-    unsigned curSector;   /// current absolute sector the head is at
-    unsigned curPosition; /// current DMA position inside of the sector
-    unsigned busyCycles;  /// Device Cycles that the device will be busy
-    DWord dmaLocation;  /// RAM Location for the DMA transfer
+    bool writing;           /// is the drive reading or writing?
+    unsigned curHead;       /// current head
+    unsigned curTrack;      /// current track the head is at
+    unsigned curSector;     /// current sector the head is at
+    unsigned curPosition;   /// current DMA position inside of the sector
+    unsigned busyCycles;    /// Device Cycles that the device will be busy
+    DWord dmaLocation;      /// RAM Location for the DMA transfer
 
     uint16_t msg;          /// Msg to send if need to trigger a interrupt
     bool pendingInterrupt; /// Must launch a interrupt from device to CPU ?
     DWord a, b, c, d;    /// Data registers
 };
-    
+
 } // End of namespace m5ffd
 } // End of namespace computer
 } // End of namespace trillek
