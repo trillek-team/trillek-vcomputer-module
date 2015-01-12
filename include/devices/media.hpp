@@ -52,6 +52,18 @@ enum class ERRORS : Byte
     BAD_SECTOR = 5  // Sector is bad
 };
 
+
+/*!
+ * Converts CHS addressing to LBA (raw sector count from 0) that
+ * expectes Media class
+ * \param head Header
+ * \param track Track/Cylinder
+ * \param sector Sector, counting from 1
+ * \param descriptor Media descriptor
+ * \return raw sector number or -1 if is a not valid CHS value
+ */
+unsigned CHStoLBA (uint8_t head, uint8_t track, uint8_t sector, const DiskDescriptor& descriptor );
+
 /**
  * Generic class that represent a media image, and allows to save/read the disk
  * image data from a file
@@ -71,7 +83,7 @@ public:
      * @param info Pointer to media descriptor. Media takes the ownership of it
      */
     Media(const std::string& filename, DiskDescriptor* info);
-    
+
     /**
      * Creates a new media file
      * @param filename Filename were the floppy data is stored
@@ -154,7 +166,7 @@ public:
      * @return NONE, NO_MEDIA, BAD_SECTOR, PROTECTED
      */
     ERRORS writeSector (uint16_t sector, std::vector<uint8_t>* data, bool dryRun = false);
-    
+
     /**
      * Try to write data at the desired sector
      * @param sector Desired sector to be written
@@ -190,7 +202,7 @@ private:
     std::vector<uint8_t> badSectors;      /// Bitmap of bad sectors
     std::unique_ptr<DiskDescriptor> Info; /// disk metrics
 };
-    
+
 } // End of namespace computer
 } // End of namespace trillek
 
