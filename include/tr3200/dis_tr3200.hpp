@@ -16,11 +16,19 @@ namespace computer {
 
 /**
  * Disassembly one instruction of TR3200 code to a humman redable text
- * \param data Ptr. to TR3200 machine code
+ * \param vc Virtual computer instance
+ * \param pc Address to dissamble
  */
 DECLDIR
 std::string DisassemblyTR3200 (const VComputer& vc, DWord pc);
 
+/**
+ * Disassembly one instruction of TR3200 code to a humman redable text
+ * \param data Ptr. to TR3200 machine code
+ * \param size Size of data to read. Must be >= 8
+ */
+DECLDIR
+std::string DisassemblyTR3200 (const Byte* data, std::size_t size);
 } // End of namespace computer
 } // End of namespace trillek
 
