@@ -11,19 +11,34 @@
 #include "tr3200/tr3200_macros.hpp"
 #include "vs_fix.hpp"
 
+#include <cassert>
 #include <cstdio>
 
 namespace trillek {
 namespace computer {
 
 std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
+    const DWord codebuff[2] = {vc.ReadDW(pc), vc.ReadDW(pc+4)};
+    return DisassemblyTR3200((Byte*) codebuff, 8);
+}
+
+std::string DisassemblyTR3200 (const Byte* data, std::size_t size) {
+    assert(size >= 8);
+
 #define BUF_SIZE (32)
     char buf[BUF_SIZE] = {
         0
     };
 
-    DWord inst = vc.ReadDW(pc); // Fetch
-    pc = pc +4;
+    const DWord inst = data[0]      |
+                       data[1] << 8 |
+                       data[2] << 16|
+                       data[3] << 24;
+
+    const DWord ndword= data[4]      |
+                        data[5] << 8 |
+                        data[6] << 16|
+                        data[7] << 24;
 
     // Here beging the Decoding
     DWord opcode, rd, rn, rs;
@@ -37,8 +52,7 @@ std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
         // 3 parameter instruction ********************************************
         // Get rn value
         if (big_literal) { // Next dword is literal value
-                rn  = vc.ReadDW(pc);
-                pc += 4;
+                rn  = ndword;
         }
         else if (literal) {
             rn = LIT14(inst);
@@ -293,8 +307,7 @@ std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
         // Fetch Rn operand
         // Get rn value
         if (big_literal) { // Next dword is literal value
-                rn  = vc.ReadDW(pc);
-                pc += 4;
+                rn  = ndword;
         }
         else if (literal) {
             rn = LIT18(inst);
@@ -550,8 +563,7 @@ std::string DisassemblyTR3200 (const VComputer& vc, DWord pc) {
         // Fetch Rn operand
         // Get rn value
         if (big_literal) { // Next dword is literal value
-                rn  = vc.ReadDW(pc);
-                pc += 4;
+                rn  = ndword;
         }
         else if (literal) {
             rn = LIT22(inst);
