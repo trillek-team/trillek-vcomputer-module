@@ -8,6 +8,7 @@
 #include "vs_fix.hpp"
 
 #include <cmath>
+#include <cstdio>
 
 namespace trillek {
 namespace computer {
@@ -23,7 +24,7 @@ int32_t CHStoLBA (uint8_t track, uint8_t head, uint8_t sector, const DiskDescrip
     }
 
     // read the sector
-    return sector = (track * descriptor.NumSides + head)* descriptor.SectorsPerTrack + sector -1;
+    return (track * descriptor.NumSides + head)* descriptor.SectorsPerTrack + sector -1;
 }
 
 Media::Media(const std::string& filename) : HEADER_VERSION(1) {
@@ -31,7 +32,9 @@ Media::Media(const std::string& filename) : HEADER_VERSION(1) {
     // Check if file exists
     datafile.open(filename, std::ios::in | std::ios::out | std::ios::binary);
     if ( !datafile.good() ) {
+#ifndef NDEBUG
         std::cout << "[DISK] File could not be opened: " << filename.c_str() << std::endl;
+#endif
         datafile.close();
         return;
     }
@@ -39,14 +42,18 @@ Media::Media(const std::string& filename) : HEADER_VERSION(1) {
     char temp[3];
     datafile.read(temp, 3);
     if (std::memcmp(temp, HEADER_MAGIC, 3) != 0) {
+#ifndef NDEBUG
         std::cout << "[DISK] File not a disk image: " << filename.c_str() << std::endl;
+#endif
         datafile.close();
         return;
     }
 
     datafile.read(temp, 1);
     if (temp[0] != HEADER_VERSION) {
+#ifndef NDEBUG
         std::cout << "[DISK] File is wrong version: " << filename.c_str() << std::endl;
+#endif
         datafile.close();
         return;
     }
@@ -69,7 +76,9 @@ Media::Media(const std::string& filename) : HEADER_VERSION(1) {
     datafile.seekg(HEADER_SIZE + getTotalSectors() * Info->BytesPerSector, std::fstream::beg);
     datafile.read( reinterpret_cast<char*>( badSectors.data() ), badSectors.size() );
 
+#ifndef NDEBUG
     std::cout << "[DISK] File loaded: " << filename.c_str() << std::endl;
+#endif
 }
 
 Media::Media(const std::string& filename, DiskDescriptor* info)  : HEADER_VERSION(1) {
@@ -77,7 +86,9 @@ Media::Media(const std::string& filename, DiskDescriptor* info)  : HEADER_VERSIO
     Info.reset(info);
 
     // create new file
+#ifndef NDEBUG
     std::cout << "[DISK] Creating file: " << filename.c_str() << std::endl;
+#endif
 
     datafile.open(filename, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
 
@@ -117,7 +128,9 @@ Media::Media(const std::string& filename, const DiskDescriptor& info)  : HEADER_
     Info.reset(tmpInfo);
 
     // create new file
+#ifndef NDEBUG
     std::cout << "[DISK] Creating file: " << filename.c_str() << std::endl;
+#endif
 
     datafile.open(filename, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
 
@@ -155,7 +168,9 @@ Media::~Media() {
     if ( datafile.is_open() ) {
         datafile.flush();
         datafile.close();
+#ifndef NDEBUG
         std::cout << "[DISK] Datafile closed" << std::endl;
+#endif
     }
 }
 
@@ -206,6 +221,9 @@ ERRORS Media::readSector(uint16_t sector, std::vector<uint8_t>* data) {
     if ( sector >= getTotalSectors() || isSectorBad(sector) ) {
         return ERRORS::BAD_SECTOR;
     }
+#ifndef NDEBUG
+        std::fprintf(stderr, "[DISK] Read at 0x%04X\n",(HEADER_SIZE + sector * Info->BytesPerSector) );
+#endif
 
     datafile.seekg(HEADER_SIZE + sector * Info->BytesPerSector, std::ios::beg);
     datafile.read( reinterpret_cast<char*>( data->data() ), data->size() );
@@ -224,6 +242,9 @@ ERRORS Media::writeSector(uint16_t sector, std::vector<uint8_t>* data, bool dryR
         return ERRORS::PROTECTED;
     }
 
+#ifndef NDEBUG
+        std::fprintf(stderr, "[DISK] Write at 0x%04X\n",(HEADER_SIZE + sector * Info->BytesPerSector) );
+#endif
     if (!dryRun) {
         datafile.seekg(HEADER_SIZE + sector * Info->BytesPerSector, std::ios::beg);
         datafile.write( reinterpret_cast<const char*>( data->data() ), data->size() );
@@ -243,6 +264,9 @@ ERRORS Media::writeSector(uint16_t sector, const uint8_t* data, size_t data_size
     if (Info->writeProtect) {
         return ERRORS::PROTECTED;
     }
+#ifndef NDEBUG
+        std::fprintf(stderr, "[DISK] Write at 0x%04X\n",(HEADER_SIZE + sector * Info->BytesPerSector) );
+#endif
 
     if (!dryRun) {
         datafile.seekg(HEADER_SIZE + sector * Info->BytesPerSector, std::ios::beg);
