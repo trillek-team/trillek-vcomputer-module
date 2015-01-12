@@ -56,13 +56,13 @@ enum class ERRORS : Byte
 /*!
  * Converts CHS addressing to LBA (raw sector count from 0) that
  * expectes Media class
- * \param head Header
  * \param track Track/Cylinder
+ * \param head Header
  * \param sector Sector, counting from 1
  * \param descriptor Media descriptor
  * \return raw sector number or -1 if is a not valid CHS value
  */
-unsigned CHStoLBA (uint8_t head, uint8_t track, uint8_t sector, const DiskDescriptor& descriptor );
+ int32_t CHStoLBA (uint8_t track, uint8_t head, uint8_t sector, const DiskDescriptor& descriptor );
 
 /**
  * Generic class that represent a media image, and allows to save/read the disk

@@ -13,17 +13,17 @@ namespace trillek {
 namespace computer {
 
 
-unsigned CHStoLBA (uint8_t head, uint8_t track, uint8_t sector, const DiskDescriptor& descriptor ) {
-    if ( head >= descriptor->NumSides
-        || track >= descriptor->TracksPerSide
-        || sector >= descriptor->SectorsPerTrack
+int32_t CHStoLBA (uint8_t track, uint8_t head, uint8_t sector, const DiskDescriptor& descriptor ) {
+    if ( head >= descriptor.NumSides
+        || track >= descriptor.TracksPerSide
+        || sector >= descriptor.SectorsPerTrack
         || sector == 0 ) {
 
         return -1; // Bad CHS value
     }
 
     // read the sector
-    return sector = (track * descriptor->NumSides + hide)* descriptor->SectorsPerTrack + sector -1;
+    return sector = (track * descriptor.NumSides + head)* descriptor.SectorsPerTrack + sector -1;
 }
 
 Media::Media(const std::string& filename) : HEADER_VERSION(1) {
