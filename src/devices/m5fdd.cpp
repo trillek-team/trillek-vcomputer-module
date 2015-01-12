@@ -9,6 +9,8 @@
 #include "devices/m5fdd.hpp"
 #include "vs_fix.hpp"
 
+#include <cstdio>
+
 namespace trillek {
 namespace computer {
 namespace m5fdd {
@@ -22,7 +24,7 @@ M5FDD::~M5FDD() {
 }
 
 void M5FDD::Reset() {
-#ifdef DEBUG
+#ifndef NDEBUG
     std::cout << "[M5FDD] Device reset!" << std::endl;
 #endif
 
@@ -41,11 +43,10 @@ void M5FDD::Reset() {
     pendingInterrupt = false;
     if (floppy) {
         state  = floppy->isProtected() ? STATE_CODES::READY_WP : STATE_CODES::READY;
-        error = ERROR_CODES::NO_MEDIA;
     } else {
         state = STATE_CODES::NO_MEDIA;
-        error = ERROR_CODES::NONE;
     }
+        error = ERROR_CODES::NONE;
 } // Reset
 
 bool M5FDD::DoesInterrupt(uint16_t& msg) {
@@ -68,7 +69,7 @@ void M5FDD::SendCMD(Word cmd) {
 
     case COMMANDS::SET_INTERRUPT:
         msg = a;
-#ifdef DEBUG
+#ifndef NDEBUG
         std::cout << "[M5FDD] msg set to " << msg << std::endl;
 #endif
         break;
@@ -80,7 +81,7 @@ void M5FDD::SendCMD(Word cmd) {
                 // This not should happen never, but...
                 state = STATE_CODES::NO_MEDIA;
                 error = ERROR_CODES::BROKEN;
-#ifdef DEBUG
+#ifndef NDEBUG
                 std::cout << "[M5FDD] COMMANDS::READ_SECTOR, STATE_CODES::READY, but no floppy class!" << std::endl;
 #endif
                 break;
@@ -92,11 +93,16 @@ void M5FDD::SendCMD(Word cmd) {
             auto lba = CHStoLBA(track, head, sector, *(floppy->getDescriptor()));
             if (lba < 0) { // Check if is a valid CHS value
                 error = ERROR_CODES::BAD_CHS;
-#ifdef DEBUG
+#ifndef NDEBUG
                 std::cout << "[M5FDD] bad CHS value" << std::endl;
 #endif
                 break;
             }
+#ifndef NDEBUG
+            std::fprintf(stderr, "[M5FDD] Read at LBA:%u C:%u H:%u S:%u\t",
+                    lba, track, head, sector);
+            std::fprintf(stderr, "@ 0x%08X\n", (b << 16) + a);
+#endif
 
             // read the sector
             ERRORS diskError = floppy->readSector(lba, &sectorBuffer);
@@ -117,7 +123,7 @@ void M5FDD::SendCMD(Word cmd) {
                 error            = ERROR_CODES::BUSY;
                 pendingInterrupt = true;
             }
-#ifdef DEBUG
+#ifndef NDEBUG
             std::cout << "[M5FDD] Reading set to Error: " << static_cast<int>(error) << std::endl;
 #endif
         }
@@ -130,7 +136,7 @@ void M5FDD::SendCMD(Word cmd) {
                 // This not should happen never, but...
                 state = STATE_CODES::NO_MEDIA;
                 error = ERROR_CODES::BROKEN;
-#ifdef DEBUG
+#ifndef NDEBUG
                 std::cout << "[M5FDD] COMMANDS::WRITE_SECTOR, STATE_CODES::READY, but no floppy class!" << std::endl;
 #endif
                 break;
@@ -142,12 +148,17 @@ void M5FDD::SendCMD(Word cmd) {
             auto lba = CHStoLBA(track, head, sector, *(floppy->getDescriptor()));
             if (lba < 0) { // Check if is a valid CHS value
                 error = ERROR_CODES::BAD_CHS;
-#ifdef DEBUG
+#ifndef NDEBUG
                 std::cout << "[M5FDD] bad CHS value" << std::endl;
 #endif
                 break;
             }
-
+#ifndef NDEBUG
+            std::fprintf(stderr, "[M5FDD] Write at LBA:%u C:%u H:%u S:%u\t",
+                    lba, track, head, sector);
+            std::fprintf(stderr, "@ 0x%08X\n", (b << 16) + a);
+#endif
+            // TODO WTF ! Does write two times !!!
             ERRORS diskError = floppy->writeSector(lba, &sectorBuffer, true);
             error = static_cast<ERROR_CODES> (diskError);
             if (error == ERROR_CODES::NONE) {
@@ -170,7 +181,7 @@ void M5FDD::SendCMD(Word cmd) {
                 pendingInterrupt = true;
             }
 
-#ifdef DEBUG
+#ifndef NDEBUG
             std::cout << "[M5FDD] Writing set to Error: " << static_cast<int>(error) << std::endl;
 #endif
         }
@@ -214,7 +225,8 @@ void M5FDD::Tick(unsigned n, const double delta) {
 
             // just finished DMAing to the buffer, write it
             if (writing && curPosition == floppy->getDescriptor()->BytesPerSector) {
-                floppy->writeSector(curSector, &sectorBuffer);
+                auto lba = CHStoLBA(curTrack, curHead, curSector, *(floppy->getDescriptor()));
+                floppy->writeSector(lba, &sectorBuffer);
             }
         } else if (floppy && state == STATE_CODES::BUSY) {
             // Updates state
@@ -232,7 +244,7 @@ void M5FDD::insertFloppy(std::shared_ptr<Media> floppy) {
     error = ERROR_CODES::NONE;
     sectorBuffer.resize(floppy->getDescriptor()->BytesPerSector);
     pendingInterrupt = true; // State changes, and error could
-#ifdef DEBUG
+#ifndef NDEBUG
     std::cout << "[M5FDD] Disk inserted! " << floppy->getFilename() << std::endl;
 #endif
 } // insertFloppy
@@ -240,7 +252,7 @@ void M5FDD::insertFloppy(std::shared_ptr<Media> floppy) {
 void M5FDD::ejectFloppy() {
     if (this->floppy) {
         this->floppy.reset(); // like = NULL
-#ifdef DEBUG
+#ifndef NDEBUG
         std::cout << "[M5FDD] Disk ejected!" << std::endl;
 #endif
 
