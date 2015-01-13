@@ -242,10 +242,10 @@ ERRORS Media::writeSector(uint16_t sector, std::vector<uint8_t>* data, bool dryR
         return ERRORS::PROTECTED;
     }
 
+    if (!dryRun) {
 #ifndef NDEBUG
         std::fprintf(stderr, "[DISK] Write at 0x%04X\n",(HEADER_SIZE + sector * Info->BytesPerSector) );
 #endif
-    if (!dryRun) {
         datafile.seekg(HEADER_SIZE + sector * Info->BytesPerSector, std::ios::beg);
         datafile.write( reinterpret_cast<const char*>( data->data() ), data->size() );
         datafile.flush();

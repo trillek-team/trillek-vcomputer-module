@@ -158,7 +158,7 @@ void M5FDD::SendCMD(Word cmd) {
                     lba, track, head, sector);
             std::fprintf(stderr, "@ 0x%08X\n", (b << 16) + a);
 #endif
-            // TODO WTF ! Does write two times !!!
+            // Does a dry run to check for errors
             ERRORS diskError = floppy->writeSector(lba, &sectorBuffer, true);
             error = static_cast<ERROR_CODES> (diskError);
             if (error == ERROR_CODES::NONE) {
