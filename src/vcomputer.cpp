@@ -247,14 +247,13 @@ unsigned VComputer::Step( const double delta) {
         }
         #endif
 
-        unsigned base_ticks = cpu_ticks * ( BaseClock / cpu->Clock() );
-        unsigned dev_ticks  = (base_ticks / 10); // Devices clock is at
-                                                 // 100 KHz
+        const unsigned base_ticks = cpu_ticks * ( BaseClock / cpu->Clock() );
+        const unsigned dev_ticks  = (base_ticks / 10); // Devices clock is at 100 KHz
         pit.Tick(dev_ticks, delta);
 
+        // Interrupt procesing
         Word msg;
-        bool interrupted = pit.DoesInterrupt(msg); // Highest priority
-                                                   // interrupt
+        bool interrupted = pit.DoesInterrupt(msg); // Highest priority interrupt
         if (interrupted) {
             if ( cpu->SendInterrupt(msg) ) {
                 // Send the interrupt to the CPU
@@ -285,6 +284,11 @@ unsigned VComputer::Step( const double delta) {
             }
         }
 
+        // Process CPU Traps
+        if (!interrupted && cpu->DoesTrap(msg) ) {
+            interrupted = true;
+            cpu->SendInterrupt(msg);
+        }
         return base_ticks;
     }
 

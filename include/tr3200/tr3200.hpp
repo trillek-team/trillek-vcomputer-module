@@ -60,6 +60,15 @@ public:
     bool SendInterrupt (Word msg);
 
     /**
+     * Checks if the CPU is generating an trap
+     *
+     * ICPU implementation does nothing.
+     * \param[out] msg The interrupt message will be writen here
+     * \return True if is generating a new interrupt
+     */
+    virtual bool DoesTrap(Word& msg);
+
+    /**
      * Writes a copy of CPU state in a chunk of memory pointer by ptr.
      * @param ptr Pointer were to write
      * @param size Size of the chunk of memory were can write. If is

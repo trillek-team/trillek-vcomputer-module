@@ -85,7 +85,7 @@ void TR3200::Tick(unsigned n) {
 } // Tick
 
 bool TR3200::SendInterrupt (Word msg) {
-    if ( GET_EI(REG_FLAGS) ) {
+    if ( GET_EI(REG_FLAGS) && !GET_IF(REG_FLAGS)) {
         // The CPU accepts a new interrupt
         interrupt = true;
         int_msg   = msg;
@@ -798,11 +798,8 @@ unsigned TR3200::RealStep() {
             } // switch
         }
 
-        // If step-mode is enable, Throw the adequate exception outside
-        // interrupt handlers
-        if ( step_mode && !GET_IF(REG_FLAGS) ) {
-            SendInterrupt(0);
-        }
+        // Toggles Single Step mode
+        step_mode = GET_EI(REG_FLAGS) && GET_ESS(REG_FLAGS);
 
         ProcessInterrupt(); // Here we check if a interrupt happens
 
@@ -832,11 +829,10 @@ unsigned TR3200::RealStep() {
  */
 void TR3200::ProcessInterrupt() {
     if (GET_EI(REG_FLAGS) && interrupt) {
-        Byte index = int_msg;
-        DWord addr = vcomp->ReadDW( REG_IA + (index << 2) ); // Get the
-                                                               // address to
-                                                               // jump from the
-                                                               // Vector Table
+        const Byte index = int_msg << 2; // * 4
+        const DWord addr = vcomp->ReadDW( REG_IA + index);
+        // Get the address to jump from the Vector Table
+
         interrupt = false;
         if (addr == 0) {
             // Null entry, does nothing
@@ -857,10 +853,20 @@ void TR3200::ProcessInterrupt() {
 
         r[0] = int_msg;
         pc   = addr;
-        SET_ON_IF(REG_FLAGS);
+        SET_ON_IF(REG_FLAGS); // IF flag should avoid new interrupts
         sleeping = false; // WakeUp!
     }
 } // ProcessInterrupt
+
+
+bool TR3200::DoesTrap(Word& msg) {
+    // If step-mode is enable, throws the adequate trap
+    if ( step_mode && !GET_IF(REG_FLAGS) ) {
+        msg = 0x0000; // Single Step mode aka Debug Trap
+        return true;
+    }
+    return false;
+}
 
 void TR3200::GetState (void* ptr, std::size_t& size) const {
     if ( ptr != nullptr && size >= sizeof(TR3200State) ) {
