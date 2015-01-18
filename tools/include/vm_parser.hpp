@@ -27,9 +27,11 @@ enum VmExtentions : unsigned {
 
 struct VmParamaters {
 
-    VmParamaters (const int argc, const char** argv) : def_dsk_file("disk.dsk"), ram_size(128*1024), clock(100000), valid_params(true), ask_help(false)   {
+    VmParamaters (const int argc, const char** argv) :
+        def_dsk_file("disk.dsk"), def_nvram_file("nvram.data"), ram_size(128*1024), clock(100000), valid_params(true), ask_help(false)   {
         // Default values
         dsk_file = def_dsk_file;
+        nvram_file = def_nvram_file;
         rom_file = nullptr;
         exec_vm = false;
         timing_debug = false;
@@ -80,6 +82,18 @@ struct VmParamaters {
 
                     dsk_file = arg;
 
+                } else if (strncmp(arg, "-nvram", 5) == 0) {
+                    // NVRAM file parameter
+                    i++;
+                    arg = argv[i];
+                    if (i >= argc || arg[0] == '-') {
+                        valid_params = false;
+                        std::fprintf(stderr, "Missing or invalid value for parameter %s\n", argv[i-1]);
+                        break;
+                    }
+
+                    nvram_file = arg;
+
                 } else if (strncmp(arg, "c", 1) == 0 || strncmp(arg, "-cpu", 4) == 0) {
                     // CPU type
                     i++;
@@ -110,7 +124,10 @@ struct VmParamaters {
                         std::fprintf(stderr, "Invalid value for parameter %s\nUsing 128KiB\n", argv[i-1]);
                         ram = 128*1024;
                     } else {
-                        ram ^= (ram & (128 - 1)); // bitwise round to 1<<7 (128) size blocks
+                        ram ^= (ram & (32 - 1)); // bitwise round to 1<<5 (32) size blocks
+                        if (ram == 0) {
+                            ram = 32;
+                        }
                     }
 
                     ram_size = ram * 1024;
@@ -151,10 +168,11 @@ struct VmParamaters {
                     "Parameters:\n"
                     "\t-r file or --rom file : RAW binary file for the ROM (32 KiB Max)\n"
                     "\t-d file or --disk file : Disk file\n"
+                    "\t--nvram file : Non volatile RAM file\n"
                     "\t-c val or --cpu val : Sets the CPU to use, from \"tr3200\" or \"dcpu-16n\"\n"
                     "\t-x or --exec : Run the computer in normal mode without asking\n"
                     "\t-m val or --mem val : How much RAM the computer will have, in KiB."
-                    " Must be between 128 and 1024 and will be rounded to a multiple of 128\n"
+                    " Must be between 32 and 1024 and will be rounded to a multiple of 32\n"
                     "\t--time : Show timing and speed info while running.\n"
                     "\t--clock val : CPU clock speed in Khz. Must be 100, 250, 500 or 1000.\n"
                     "\t-b val : Inserts a breakpoint at address val (could be hexadecimal or decimal).\n"
@@ -176,9 +194,11 @@ struct VmParamaters {
     }
 
     const char* def_dsk_file;
+    const char* def_nvram_file;
 
     const char* rom_file;           /// Path to ROM file
     const char* dsk_file;           /// Path to Floppy disk file
+    const char* nvram_file;         /// Path to NVRAM file
     unsigned ram_size;              /// Ram size in Bytes
     CpuToUse cpu;                   /// CPU to use (default TR3200)
     unsigned clock;                 /// CPU clock speed (default 100Khz)

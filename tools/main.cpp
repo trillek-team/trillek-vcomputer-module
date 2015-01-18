@@ -16,8 +16,8 @@
 #include "devices/dummy_device.hpp"
 
 #include <iostream>
-#include <vector>
 #include <fstream>
+#include <vector>
 #include <ios>
 #include <iomanip>
 #include <cstdio>
@@ -206,8 +206,8 @@ int main(int argc, char* argv[]) {
     Byte* rom = nullptr;
     size_t rom_size = 0;
 
-    std::printf("Trillek Virtual Compuver v%u.%u Build %s\n",
-            GetMajorVersion(), GetMinorVersion(), GetBuildVersion());
+    std::printf("Trillek Virtual Compuver v%u.%u.%u Build %s\n",
+            GetMajorVersion(), GetMinorVersion(), GetPatchVersion(), GetBuildVersion());
 
     VmParamaters options(argc, (const char**)argv); // Parse parameters
 
@@ -226,13 +226,30 @@ int main(int argc, char* argv[]) {
         std::fprintf(stderr, "An error occurred while reading file %s\n", argv[1]);
         return -1;
     }
-
     std::printf("Read %d bytes and stored in ROM\n", size);
     rom_size = size;
 
     // Create the Virtual Machine
     VComputer vc(options.ram_size);
     std::printf("Creating Virtual Computer with %d KiB of RAM\n", options.ram_size / 1024);
+
+    std::fstream nvram;
+    std::printf("NVRAM file : %s\n", options.nvram_file);
+    nvram.open(options.nvram_file, std::ios::in | std::ios::out | std::ios::binary);
+    if ( !nvram.good() ) {
+        std::printf("File could not be opened: %s\n", options.nvram_file);
+        std::printf("Creating a new NVRAM file\n");
+        nvram.close();
+        nvram.open(options.nvram_file, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+
+        // Fills with 0's if is empty or not have correct size
+        for(size_t i=0 ; i < 256; i++) {
+            nvram.put(0);
+        }
+    }
+
+    nvram.seekg (0, std::ios::beg);
+    vc.LoadNVRAM(nvram);
 
     /*if (options.cpu == CpuToUse::DCPU16N) {
         std::printf("Using CPU DCPU-16N\n");
@@ -426,7 +443,7 @@ int main(int argc, char* argv[]) {
             ticks_count += ticks;
             ticks = vc.Update(ds);
 
-            // Speed info
+            // Speed info & other stuff
             if (ticks_count > 400000) {
                 if(options.timing_debug) {
                     std::printf("Running %u cycles in %f ms ", ticks, delta);
@@ -434,7 +451,7 @@ int main(int argc, char* argv[]) {
                     const double tclk = 1000.0 / 1000000.0; // Base clock 1Mhz
                     std::printf("Ttick %f ms Tclk %f ms Speed of %f %% \n",
                         ttick, /* Time taken in one cycle */
-                        tclk, /* Time that one cycle should take */
+                        tclk,  /* Time that one cycle should take */
                         100.0f * (tclk / ttick));
                 }
                 ticks_count -= 400000;
@@ -507,6 +524,13 @@ int main(int argc, char* argv[]) {
         al.Update();
 #endif
 
+        // Saves NVRAM if a changed happen
+        if (vc.isDirtyNVRAM()) {
+            nvram.seekg (0, std::ios::beg);
+            vc.SaveNVRAM(nvram);
+        }
+
+
     } // End of loop
 
 
@@ -520,6 +544,9 @@ int main(int argc, char* argv[]) {
         glfwos.Terminate();
     }
 #endif
+
+    nvram.seekg (0, std::ios::beg);
+    vc.SaveNVRAM(nvram);
 
     if (rom != nullptr) {
         delete[] rom;
