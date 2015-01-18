@@ -91,6 +91,10 @@ VComputer::VComputer (std::size_t ram_size ) :
     // Add RTC address
     Range rtc_range(0x11E030, 0x11E036);
     AddAddrListener(rtc_range, &rtc);
+
+    // Add NVRAM address
+    Range nvram_range(NVRAM::BaseAddress, NVRAM::BaseAddress + 256);
+    AddAddrListener(nvram_range, &nvram);
 }
 
 VComputer::~VComputer () {

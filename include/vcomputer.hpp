@@ -17,6 +17,7 @@
 #include "devices/timer.hpp"
 #include "devices/rng.hpp"
 #include "devices/rtc.hpp"
+#include "devices/nvram.hpp"
 #include "devices/beeper.hpp"
 
 #include <map>
@@ -353,6 +354,32 @@ public:
     }
 
     /**
+     * Returns true if NVRAM have a unsaved changed
+     */
+    bool isDirtyNVRAM() {
+        return this->nvram.isDirty();
+    }
+
+    /**
+     * Fills NVRAM with data from a input stream
+     * \param stream Stream were to read the data
+     * \return True if read data from the strean
+     */
+    bool LoadNVRAM (std::istream& stream) {
+        return this->nvram.Load(stream);
+    }
+
+    /**
+     * Saves NVRAM data to a output stream
+     * \param stream Stream were to write the data
+     * \return True if writed data to the stream
+     */
+    bool SaveNVRAM (std::ostream& stream) {
+        return this->nvram.Save(stream);
+    }
+
+
+    /**
      * Add a breakpoint at the desired address
      * \param addr Address were will be the breakpoint
      */
@@ -433,6 +460,7 @@ private:
     Timer pit;     /// Programable Interval Timer
     RNG rng;       /// Random Number Generator
     RTC rtc;       /// Real Time Clock
+    NVRAM nvram;   /// No Volatile RAM (NVRAM)
     Beeper beeper; /// Real Time Clock
 
     std::set<DWord> breakpoints; /// Breakpoints list
