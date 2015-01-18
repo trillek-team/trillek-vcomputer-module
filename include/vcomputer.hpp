@@ -354,6 +354,13 @@ public:
     }
 
     /**
+     * Returns true if NVRAM have a unsaved changed
+     */
+    bool isDirtyNVRAM() {
+        return this->nvram.isDirty();
+    }
+
+    /**
      * Fills NVRAM with data from a input stream
      * \param stream Stream were to read the data
      * \return True if read data from the strean

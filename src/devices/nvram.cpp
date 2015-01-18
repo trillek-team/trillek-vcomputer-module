@@ -15,7 +15,7 @@
 namespace trillek {
 namespace computer {
 
-NVRAM::NVRAM() {
+NVRAM::NVRAM() : dirty(false) {
 }
 
 NVRAM::~NVRAM() {
@@ -85,6 +85,7 @@ void NVRAM::WriteB(DWord addr, Byte val) {
     assert (addr < 256);
 
     eprom[addr] = val;
+    dirty = true;
 } // WriteB
 
 void NVRAM::WriteW(DWord addr, Word val) {
@@ -101,6 +102,7 @@ void NVRAM::WriteW(DWord addr, Word val) {
         eprom[addr] = val;
         eprom[addr+1] = val >> 8;
     }
+    dirty = true;
 } // WriteW
 
 void NVRAM::WriteDW(DWord addr, DWord val) {
@@ -126,7 +128,12 @@ void NVRAM::WriteDW(DWord addr, DWord val) {
         eprom[addr+2] = val >> 16;
         eprom[addr+3] = val >> 24;
     }
+    dirty = true;
 } // WriteDW
+
+bool NVRAM::isDirty() {
+    return dirty;
+}
 
 bool NVRAM::Load (std::istream& stream) {
     if (stream.good() && ! stream.eof()) {
@@ -135,6 +142,7 @@ bool NVRAM::Load (std::istream& stream) {
         } catch (std::exception& ex) {
             return false;
         }
+        dirty = false;
         return stream.gcount() == 256;
     }
     return false;
@@ -147,6 +155,7 @@ bool NVRAM::Save (std::ostream& stream) {
         } catch (std::exception& ex) {
             return false;
         }
+        dirty = false;
         return true;
     }
     return false;

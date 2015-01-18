@@ -34,6 +34,11 @@ public:
     void Reset ();
 
     /**
+     * Returns true if there is a unsaved change on NVRAM
+     */
+    bool isDirty();
+
+    /**
      * Fills NVRAM with data from a input stream
      * \param stream Stream were to read the data
      * \return True if read data from the strean
@@ -51,7 +56,7 @@ public:
 private:
 
     Byte eprom[256];
-
+    bool dirty;
 };
 
 } // End of namespace computer
