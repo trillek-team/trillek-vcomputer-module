@@ -356,92 +356,56 @@ public:
     /**
      * Returns true if NVRAM have a unsaved changed
      */
-    bool isDirtyNVRAM() {
-        return this->nvram.isDirty();
-    }
+	bool isDirtyNVRAM();
 
     /**
      * Fills NVRAM with data from a input stream
      * \param stream Stream were to read the data
      * \return True if read data from the strean
      */
-    bool LoadNVRAM (std::istream& stream) {
-        return this->nvram.Load(stream);
-    }
+	bool LoadNVRAM(std::istream& stream);
 
     /**
      * Saves NVRAM data to a output stream
      * \param stream Stream were to write the data
      * \return True if writed data to the stream
      */
-    bool SaveNVRAM (std::ostream& stream) {
-        return this->nvram.Save(stream);
-    }
-
+	bool SaveNVRAM(std::ostream& stream);
 
     /**
      * Add a breakpoint at the desired address
      * \param addr Address were will be the breakpoint
      */
-    void SetBreakPoint (DWord addr) {
-        breakpoints.insert(addr);
-    }
+	void SetBreakPoint(DWord addr);
 
     /**
      * Erase a breakpoint at the desired address
      * \param addr Address were will be the breakpoint
      */
-    void RmBreakPoint (DWord addr) {
-        breakpoints.erase(addr);
-    }
+	void RmBreakPoint(DWord addr);
 
     /**
      * Remove all breakpoints
      */
-    void ClearBreakPoints () {
-        breakpoints.clear();
-    }
+	void ClearBreakPoints();
 
     /**
      * Check if there isa breakpoint at an particular address
      * \param addr Address to verify
      * \return True if there is a breakpoint in these address
      */
-    bool isBreakPoint (DWord addr) {
-        if ( breakpoints.find(addr) != breakpoints.end() ) {
-            last_break = addr;
-            breaking   = true;
-            return true;
-        }
-
-        if (recover_break) {
-            // Recover temporaly removed breakpoint
-            SetBreakPoint(last_break);
-            recover_break = false;
-        }
-
-        return false;
-    } // isBreakPoint
+	bool isBreakPoint(DWord addr);
 
     /**
      * Check if the Virtual Computer is halted by a breakpoint
      * \return True if a breakpoint happened
      */
-    bool isHalted () {
-        return breaking;
-    }
+	bool isHalted();
 
     /**
      * Allows to continue if a Breakpoint happened
      */
-    void Resume () {
-        if (breaking) {
-            breaking = false;
-            // Temporaly, we remove the last break point
-            RmBreakPoint(last_break);
-            recover_break = true;
-        }
-    }
+	void Resume();
 
 private:
 

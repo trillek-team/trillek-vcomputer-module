@@ -21,6 +21,7 @@
     #pragma warning(disable : 4018) // Compare of signed and unsigned with auto
                                     // conversion
     #pragma warning(disable : 4244) // Conversion of variables with data loss
+    #pragma warning(disable : 4800) // forcing value to bool 'true/false'
     #pragma warning(disable : 4996) // _snprintf is not secure....
 
 #endif // if defined(_MSC_VER)

@@ -362,5 +362,75 @@ bool VComputer::RmAddrListener (int32_t id) {
 
 }
 
+bool VComputer::isDirtyNVRAM()	{
+	return this->nvram.isDirty();
+}
+
+bool VComputer::LoadNVRAM(std::istream& stream) {
+	return this->nvram.Load(stream);
+}
+
+bool VComputer::SaveNVRAM(std::ostream& stream) {
+	return this->nvram.Save(stream);
+}
+
+void VComputer::SetBreakPoint(DWord addr) {
+#ifdef BRKPOINTS
+	breakpoints.insert(addr);
+#endif
+}
+
+void VComputer::RmBreakPoint(DWord addr) {
+#ifdef BRKPOINTS
+	breakpoints.erase(addr);
+#endif
+}
+
+void VComputer::ClearBreakPoints() {
+#ifdef BRKPOINTS
+	breakpoints.clear();
+#endif
+}
+
+bool VComputer::isBreakPoint(DWord addr) {
+#ifdef BRKPOINTS
+	if (breakpoints.find(addr) != breakpoints.end()) {
+		last_break = addr;
+		breaking = true;
+		return true;
+	}
+
+	if (recover_break) {
+		// Recover temporaly removed breakpoint
+		SetBreakPoint(last_break);
+		recover_break = false;
+	}
+
+#endif
+	return false;
+} // isBreakPoint
+
+/**
+* Check if the Virtual Computer is halted by a breakpoint
+* \return True if a breakpoint happened
+*/
+bool VComputer::isHalted() {
+	return breaking;
+}
+
+/**
+* Allows to continue if a Breakpoint happened
+*/
+void VComputer::Resume() {
+#ifdef BRKPOINTS
+	if (breaking) {
+		breaking = false;
+		// Temporaly, we remove the last break point
+		RmBreakPoint(last_break);
+		recover_break = true;
+	}
+#endif
+}
+
 } // End of namespace computer
 } // End of namespace trillek
