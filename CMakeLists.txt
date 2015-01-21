@@ -184,6 +184,7 @@ INSTALL(CODE "MESSAGE(\"Installing library and headers\")")
 INSTALL(DIRECTORY include/
     DESTINATION include/tr-vcomputer
     PATTERN "*.in" EXCLUDE
+    PATTERN "*.*~" EXCLUDE
     )
 
 INSTALL(TARGETS VCOMPUTER
