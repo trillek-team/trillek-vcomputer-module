@@ -15,7 +15,7 @@ namespace computer {
 /**
  * DummyDevice for testing
  */
-class DECLDIR DummyDevice : public Device {
+class DummyDevice : public Device {
 public:
 
     DummyDevice () {
