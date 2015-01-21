@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
                     std::fprintf(stderr, "Invalid number of sectors per track\n");
                     return -1;
                 }
-                diskdescriptor.SectorsPerTrack = tmp;
+                diskdescriptor.SectorsPerTrack = (uint8_t)tmp;
 
             } else if (strncmp(arg, "t", 1) == 0 ) {
                 // Tracks parameter
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
                     std::fprintf(stderr, "Invalid number of tracks\n");
                     return -1;
                 }
-                diskdescriptor.TracksPerSide = tmp;
+                diskdescriptor.TracksPerSide = (uint8_t)tmp;
                 
             } else if (strncmp(arg, "1", 1) == 0 ) {
                 // Single side
@@ -182,7 +182,7 @@ int main(int argc, char* argv[]) {
         if ( !f.is_open() ) {
             return -1;
         }
-        size_t size;
+        std::streamoff size;
         
         auto begin = f.tellg();
         f.seekg (0, std::ios::end);
