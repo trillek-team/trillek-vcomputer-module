@@ -18,11 +18,11 @@ namespace computer {
 /**
  * Implements a embed beeper on the Virtual Computer
  */
-class DECLDIR Beeper : public AddrListener {
+class Beeper : public AddrListener {
 public:
 
-    Beeper();
-    virtual ~Beeper();
+	DECLDIR Beeper();
+	DECLDIR virtual ~Beeper();
 
     virtual Byte ReadB (DWord addr);
     virtual Word ReadW (DWord addr);
@@ -38,7 +38,7 @@ public:
      * /brief Assing a function to be called when Freq is changed
      * /param f_changed function to be called
      */
-    void SetFreqChangedCB (std::function<void(DWord freq)> f_changed);
+	DECLDIR void SetFreqChangedCB(std::function<void(DWord freq)> f_changed);
 
 private:
 

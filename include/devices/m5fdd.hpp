@@ -61,23 +61,23 @@ enum class ERROR_CODES : uint16_t {
 /**
  * 5.25" floppy drive
  */
-class DECLDIR M5FDD : public Device {
+class M5FDD : public Device {
 public:
 
-    M5FDD();
-    virtual ~M5FDD();
+	DECLDIR M5FDD();
+	DECLDIR virtual ~M5FDD();
 
     /*!
      * Resets device internal state
      * Called by VComputer
      */
-    virtual void Reset ();
+	DECLDIR virtual void Reset();
 
     /**
      * Sends (writes to CMD register) a command to the device
      * @param cmd Command value to send
      */
-    virtual void SendCMD (Word cmd);
+	virtual void SendCMD(Word cmd);
 
     virtual void A(Word val) {
         a = val;
@@ -181,7 +181,7 @@ public:
      * \param[in,out] size Size of the chunk of memory were can write. If is
      * successful, it will be set to the size of the write data.
      */
-    virtual void GetState(void* ptr, std::size_t& size) const {
+	DECLDIR virtual void GetState(void* ptr, std::size_t& size) const {
     }
 
     /*!
@@ -190,7 +190,7 @@ public:
      * \param size Size of the chunk of memory were will read.
      * \return True if can read the State data from the pointer.
      */
-    virtual bool SetState(const void* ptr, std::size_t size) {
+	DECLDIR  virtual bool SetState(const void* ptr, std::size_t size) {
         return true;
     }
 
@@ -201,12 +201,12 @@ public:
      * If there is a floppy disk previously inserted, this is ejected
      * @param floppy Floppy disk
      */
-    void insertFloppy (std::shared_ptr<Media> floppy);
+	DECLDIR void insertFloppy(std::shared_ptr<Media> floppy);
 
     /**
      * @brief Ejects the floppy actually inserted if is there one
      */
-    void ejectFloppy ();
+	DECLDIR void ejectFloppy();
 
 private:
 

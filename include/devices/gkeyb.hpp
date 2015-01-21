@@ -26,7 +26,7 @@ public:
 
     Word a, b, c;
 
-    std::deque<DWord> keybuffer; /// Stores the key events
+	std::deque<DWord> keybuffer; /// Stores the key events
 
     Word int_msg;
     bool do_int;
@@ -137,7 +137,7 @@ static const size_t BSIZE = 64; /// Internal buffer size
  * Genertic Keyboard
  * Western / Latin generic keyboard
  */
-class DECLDIR GKeyboardDev : public Device {
+class GKeyboardDev : public Device {
 protected:
 
     Word a, b, c;
@@ -149,9 +149,9 @@ protected:
 
 public:
 
-    GKeyboardDev ();
+	DECLDIR GKeyboardDev();
 
-    virtual ~GKeyboardDev ();
+	DECLDIR virtual ~GKeyboardDev();
 
     virtual void Reset ();
 
@@ -221,9 +221,9 @@ public:
 
     virtual void IACK ();
 
-    virtual void GetState (void* ptr, std::size_t& size) const;
+	DECLDIR virtual void GetState(void* ptr, std::size_t& size) const;
 
-    virtual bool SetState (const void* ptr, std::size_t size);
+	DECLDIR virtual bool SetState(const void* ptr, std::size_t size);
 
     /* API exterior to the Virtual Computer (affects or afected by stuff outside
      *of the computer) */
@@ -235,7 +235,7 @@ public:
      * @param status Status bits
      * @return False if the buffer is full
      */
-    bool SendKeyEvent (Word scancode, unsigned char keycode, Byte status) {
+	DECLDIR bool SendKeyEvent(Word scancode, unsigned char keycode, Byte status) {
         if (keybuffer.size() >= BSIZE) {
             return false;
         }
@@ -253,7 +253,7 @@ public:
      * @param keycode
      * @param status Status bits
      */
-    void EnforceSendKeyEvent (Word scancode, unsigned char keycode, Byte status) {
+	DECLDIR void EnforceSendKeyEvent(Word scancode, unsigned char keycode, Byte status) {
         if (keybuffer.size() >= BSIZE) {
             keybuffer.pop_front();
         }

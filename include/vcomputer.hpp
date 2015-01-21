@@ -54,33 +54,33 @@ class EnumAndCtrlBlk;
  * A device clock tick happens every 10 base clock ticks (1MHz/10 = 100KHz)
  * A CPU clock tick happens every X base clock ticks. X = BaseClock / cpu clock
  */
-class DECLDIR VComputer {
+class VComputer {
 public:
 
     /**
      * Creates a Virtual Computer
      * \param ram_size RAM size in BYTES
      */
-    VComputer (std::size_t ram_size = 128*1024);
+	DECLDIR VComputer(std::size_t ram_size = 128 * 1024);
 
-    ~VComputer ();
+	DECLDIR ~VComputer();
 
     /**
      * Sets the CPU of the computer
      * \param cpu New CPU in the computer
      */
-    void SetCPU (std::unique_ptr<ICPU> cpu);
+	DECLDIR void SetCPU(std::unique_ptr<ICPU> cpu);
 
     /**
      * Removes the CPU of the computer
      * \return Returns the ICPU
      */
-    std::unique_ptr<ICPU> RmCPU ();
+	DECLDIR std::unique_ptr<ICPU> RmCPU();
 
     /**
      * Returns true if the computer have a CPU plugged
      */
-    bool haveCpu() const;
+	DECLDIR bool haveCpu() const;
 
     /**
      * Adds a Device to a slot
@@ -88,23 +88,23 @@ public:
      * \param dev The device to be pluged in the slot
      * \return False if the slot have a device or the slot is invalid.
      */
-    bool AddDevice (unsigned slot, std::shared_ptr<Device> dev);
+	DECLDIR bool AddDevice(unsigned slot, std::shared_ptr<Device> dev);
 
     /**
      * Gets the Device plugged in the slot
      */
-    std::shared_ptr<Device> GetDevice (unsigned slot);
+	DECLDIR std::shared_ptr<Device> GetDevice(unsigned slot);
 
     /**
      * Remove a device from a slot
      * \param slot Slot were unplug the device
      */
-    void RmDevice (unsigned slot);
+	DECLDIR void RmDevice(unsigned slot);
 
     /**
      * CPU clock speed in Hz
      */
-    unsigned CPUClock () const;
+	DECLDIR unsigned CPUClock() const;
 
     /**
      * Writes a copy of CPU state in a chunk of memory pointer by ptr.
@@ -112,7 +112,7 @@ public:
      * \param size Size of the chunk of memory were can write. If is
      * sucesfull, it will be set to the size of the write data.
      */
-    void GetState (void* ptr, std::size_t size) const;
+	DECLDIR void GetState(void* ptr, std::size_t size) const;
 
     /**
      * Gets a pointer were is stored the ROM data
@@ -120,27 +120,27 @@ public:
      * \param rom_size Size of the ROM data that must be less or equal to 32KiB.
      *******Big sizes will be ignored
      */
-    void SetROM (const Byte* rom, std::size_t rom_size);
+	DECLDIR void SetROM(const Byte* rom, std::size_t rom_size);
 
     /**
      * Resets the virtual machine (but not clears RAM!)
      */
-    void Reset ();
+	DECLDIR void Reset();
 
     /**
      * Power On the computer
      */
-    void On ();
+	DECLDIR void On();
 
     /**
      * Power Off the computer
      */
-    void Off ();
+	DECLDIR void Off();
 
     /**
      * Return if the computer is power up
      */
-    bool isOn () const;
+	DECLDIR bool isOn() const;
 
     /**
      * Executes the apropaited number of Virtual Computer base clock cycles
@@ -149,23 +149,23 @@ public:
      * \param delta Number of seconds since the last call
      * \return Number of base clock cycles executed
      */
-    unsigned Update ( const double delta);
+	DECLDIR unsigned Update(const double delta);
 
     /**
      * Executes one instruction
      * \param delta Number of seconds since the last call
      * \return number of base clock ticks needed
      */
-    unsigned Step ( const double delta = 0);
+	DECLDIR unsigned Step(const double delta = 0);
 
     /**
      * Executes N clock ticks
      * \param n nubmer of base clock ticks, by default 1
      * \param delta Number of seconds since the last call
      */
-    void Tick ( unsigned n = 1, const double delta = 0);
+	DECLDIR void Tick(unsigned n = 1, const double delta = 0);
 
-    Byte ReadB (DWord addr) const {
+	DECLDIR Byte ReadB(DWord addr) const {
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 
         if ( addr < ram_size ) {
@@ -187,7 +187,7 @@ public:
         return 0;
     } // ReadB
 
-    Word ReadW (DWord addr) const {
+	DECLDIR Word ReadW(DWord addr) const {
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
         size_t tmp;
 
@@ -213,7 +213,7 @@ public:
         return 0;
     } // ReadW
 
-    DWord ReadDW (DWord addr) const {
+	DECLDIR DWord ReadDW(DWord addr) const {
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
         size_t tmp;
 
@@ -239,7 +239,7 @@ public:
         return 0;
     } // ReadDW
 
-    void WriteB (DWord addr, Byte val) {
+	DECLDIR void WriteB(DWord addr, Byte val) {
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
 
         if (addr < ram_size) {
@@ -254,7 +254,7 @@ public:
         }
     } // WriteB
 
-    void WriteW (DWord addr, Word val) {
+	DECLDIR void WriteW(DWord addr, Word val) {
         size_t tmp;
 
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
@@ -276,7 +276,7 @@ public:
         }
     } // WriteW
 
-    void WriteDW (DWord addr, DWord val) {
+	DECLDIR void WriteDW(DWord addr, DWord val) {
         size_t tmp;
 
         addr = addr & 0x00FFFFFF; // We use only 24 bit addresses
@@ -302,26 +302,26 @@ public:
      * \param listener AddrListener using these range
      * \return And ID oif the listener or -1 if can't add the listener
      */
-    int32_t AddAddrListener (const Range& range, AddrListener* listener);
+	DECLDIR int32_t AddAddrListener(const Range& range, AddrListener* listener);
 
     /**
      * Removes an AddrListener from the computer
      * \param id ID of the address listener to remove (ID from AddAddrListener)
      * \return True if can find these listener and remove it.
      */
-    bool RmAddrListener (int32_t id);
+	DECLDIR bool RmAddrListener(int32_t id);
 
     /**
      * Size of the RAM in bytes
      */
-    std::size_t RamSize () const {
+	DECLDIR std::size_t RamSize() const {
         return ram_size;
     }
 
     /**
      * Size of the ROM in bytes
      */
-    std::size_t RomSize () const {
+	DECLDIR std::size_t RomSize() const {
         return rom_size;
     }
 
@@ -329,11 +329,11 @@ public:
      * Returns a pointer to the RAM for reading raw values from it
      * Use only for GetState methods or dump a snapshot of the computer state
      */
-    const Byte* Ram () const {
+	DECLDIR const Byte* Ram() const {
         return ram;
     }
 
-    const Byte* Rom () const {
+	DECLDIR const Byte* Rom() const {
         return rom;
     }
 
@@ -341,7 +341,7 @@ public:
      * Returns a pointer to the RAM for writing raw values to it
      * Use only for SetState methods or load a snapshot of the computer state
      */
-    Byte* Ram() {
+	DECLDIR Byte* Ram() {
         return ram;
     }
 
@@ -349,63 +349,63 @@ public:
      * /brief Assing a function to be called when Beeper freq is changed
      * /param f_changed function to be called
      */
-    void SetFreqChangedCB (std::function<void(DWord freq)> f_changed) {
+	DECLDIR void SetFreqChangedCB(std::function<void(DWord freq)> f_changed) {
         beeper.SetFreqChangedCB(f_changed);
     }
 
     /**
      * Returns true if NVRAM have a unsaved changed
      */
-	bool isDirtyNVRAM();
+	DECLDIR bool isDirtyNVRAM();
 
     /**
      * Fills NVRAM with data from a input stream
      * \param stream Stream were to read the data
      * \return True if read data from the strean
      */
-	bool LoadNVRAM(std::istream& stream);
+	DECLDIR bool LoadNVRAM(std::istream& stream);
 
     /**
      * Saves NVRAM data to a output stream
      * \param stream Stream were to write the data
      * \return True if writed data to the stream
      */
-	bool SaveNVRAM(std::ostream& stream);
+	DECLDIR bool SaveNVRAM(std::ostream& stream);
 
     /**
      * Add a breakpoint at the desired address
      * \param addr Address were will be the breakpoint
      */
-	void SetBreakPoint(DWord addr);
+	DECLDIR void SetBreakPoint(DWord addr);
 
     /**
      * Erase a breakpoint at the desired address
      * \param addr Address were will be the breakpoint
      */
-	void RmBreakPoint(DWord addr);
+	DECLDIR void RmBreakPoint(DWord addr);
 
     /**
      * Remove all breakpoints
      */
-	void ClearBreakPoints();
+	DECLDIR void ClearBreakPoints();
 
     /**
      * Check if there isa breakpoint at an particular address
      * \param addr Address to verify
      * \return True if there is a breakpoint in these address
      */
-	bool isBreakPoint(DWord addr);
+	DECLDIR bool isBreakPoint(DWord addr);
 
     /**
      * Check if the Virtual Computer is halted by a breakpoint
      * \return True if a breakpoint happened
      */
-	bool isHalted();
+	DECLDIR bool isHalted();
 
     /**
      * Allows to continue if a Breakpoint happened
      */
-	void Resume();
+	DECLDIR void Resume();
 
 private:
 
