@@ -13,8 +13,20 @@
 *.la
 *.a
 
+# VStudio & Windows stuff
+*.sln
+*.suo
+*.vcxproj
+*.vcxproj.filters
+*.dir
+*.sdf
+Testing/**/*
+Win32/**/*
+
 # Other stuff
 *.pyc
+*.orig
+install_manifest.txt
 
 #CMakeFiles
 Makefile
@@ -28,10 +40,12 @@ build/
 
 # vim/kate/nano backup files
 *.swp
-*.~
+*.*~
 
 # Generated config files in include
 config.hpp
+config_main.hpp
 include/vc_dll.hpp
+
 
 
