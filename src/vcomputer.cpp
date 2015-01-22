@@ -8,6 +8,7 @@
 
 #include "vcomputer.hpp"
 #include "vs_fix.hpp"
+#define __VCOMP_NO_EXTERN_ 1
 #include "config.hpp"
 
 #include <algorithm>

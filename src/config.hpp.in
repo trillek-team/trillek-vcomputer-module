@@ -12,10 +12,17 @@
 namespace trillek {
 namespace computer {
 
-static const unsigned MajorVersion = @VCOMP_VERSION_MAJOR@;  /// Major version
-static const unsigned MinorVersion = @VCOMP_VERSION_MINOR@;  /// Minor version
-static const unsigned PatchVersion = @VCOMP_VERSION_PATCH@;  /// patch/revision version
-static const char* Build = "@VCOMP_BUILD@";                  /// Build (git refspecvar & hash )
+#ifdef __VCOMP_NO_EXTERN_
+const unsigned MajorVersion = @VCOMP_VERSION_MAJOR@;  /// Major version
+const unsigned MinorVersion = @VCOMP_VERSION_MINOR@;  /// Minor version
+const unsigned PatchVersion = @VCOMP_VERSION_PATCH@;  /// patch/revision version
+const char* Build = "@VCOMP_BUILD@";                  /// Build (git refspecvar & hash )
+#else
+extern const unsigned MajorVersion;
+extern const unsigned MinorVersion;
+extern const unsigned PatchVersion;
+extern const char* Build;
+#endif
 
 } // namespace computer
 } // namespace trillek
