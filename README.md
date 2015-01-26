@@ -20,16 +20,13 @@ We are using CMake and C++ 11 (Vs2013/14 , G++ >= 4.7, LLVM). So if you are in G
     cmake ..
     make
 
-By default it will generate a dynamic library and compile tools and tests.
+By default it will generate a dynamic and static libraries and compile tools and tests.
 
-If you wish to compile a static lib, then you should use `cmake -DBUILD_STATIC_VCOMPUTER=True ..`
-** This is required to build in MSVC **
-
-If you not wish to compile the tools, then you should use `cmake -DBUILD_TOOLS_VCOMPUTER=False ..`. Also yo ucan control if you like to have virtual screen and audio with BUILD_TOOLS_SCREEN and BUILD_TOOLS_AUDIO (By default both are true)
+If you not wish to compile the tools, then you should use `cmake -DBUILD_TOOLS_VCOMPUTER=False ..`. Also you can control if you like to have virtual screen and audio with BUILD_TOOLS_SCREEN and BUILD_TOOLS_AUDIO (By default both are true)
 
 If you not wish to compile the tests, then you should use `cmake -DBUILD_TESTS_VCOMPUTER=False ..`
 
-Plus you can control if you wish release or debug building using `-DCMAKE_BUILD_TYPE=Release` or `-DCMAKE_BUILD_TYPE=Debug` flag in cmake.
+Plus you can control if you wish release or debug building using `-DCMAKE_BUILD_TYPE=Release` or `-DCMAKE_BUILD_TYPE=Debug` flag in cmake (note that if you uses VStudio, it would change it acording to your solution output mode)
 
 In windows, you should add the "-g" parameter with the apropiated generator for VS2013 (you can get the list running cmake --help), or you can use the CMake GUI. With this, you can generate VS2013/4 project/solution files that you can open and compile, or use msbuild from a develop console.
 
