@@ -7,6 +7,7 @@
  */
 
 #include "devices/m5fdd.hpp"
+#include "config.hpp"
 #include "vs_fix.hpp"
 
 #include <cstdio>

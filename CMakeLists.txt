@@ -1,38 +1,33 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(VCOMPUTER)
+PROJECT(VCOMPUTER)
 # Set the directory where to find cmake "modules"
-set(CMAKE_MODULE_PATH ${VCOMPUTER_SOURCE_DIR}/cmake)
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+SET (CMAKE_MODULE_PATH ${VCOMPUTER_SOURCE_DIR}/cmake)
+SET (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-include(GetGitRevisionDescription)
+INCLUDE(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
 # Project generic variables
-set(VCOMP_VERSION_MAJOR 0)
-set(VCOMP_VERSION_MINOR 5)
-set(VCOMP_VERSION_PATCH 0)
-set(VCOMP_VERSION_STRING ${VCOMP_VERSION_MAJOR}.${VCOMP_VERSION_MINOR}.${VCOMP_VERSION_PATCH})
+SET(VCOMP_VERSION_MAJOR 0)
+SET(VCOMP_VERSION_MINOR 5)
+SET(VCOMP_VERSION_PATCH 0)
+SET(VCOMP_VERSION_STRING ${VCOMP_VERSION_MAJOR}.${VCOMP_VERSION_MINOR}.${VCOMP_VERSION_PATCH})
 
-set(VCOMP_BUILD "${GIT_REFSPEC}-${GIT_SHA1}") # Try to use git files to get refspec and hash
+SET(VCOMP_BUILD "${GIT_REFSPEC}-${GIT_SHA1}") # Try to use git files to get refspec and hash
 
 MESSAGE(STATUS "Trillek Virtual Computer version "
     ${VCOMP_VERSION_STRING} " Build " ${VCOMP_BUILD})
 
 # Debug build ?
-IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message("Debug build")
-    set(DEBUG_BUILD 1)
-
-else (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(DEBUG_BUILD 0)
-
-endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+IF (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    MESSAGE("Debug build")
+    ADD_DEFINITIONS(-DDEBUG)
+ENDIF (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
 
 # Options for optional compiling stuff
-set(BUILD_TOOLS_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER tools")
-set(BUILD_TESTS_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER tests")
-set(BUILD_STATIC_VCOMPUTER FALSE CACHE BOOL "Build Trillek VCOMPUTER as a static library")
+SET(BUILD_TOOLS_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER tools")
+SET(BUILD_TESTS_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER tests")
 
 # Optiones that affect functionality
 set(BRKPOINTS_ENABLED 1 CACHE INT "Enables Break Points functionality")
@@ -43,14 +38,14 @@ ENDIF (BRKPOINTS_ENABLED)
 
 
 # Include dirs
-set(VCOMPUTER_INCLUDE_DIRS
+SET(VCOMPUTER_INCLUDE_DIRS
     ${PROJECT_BINARY_DIR}
     ${VCOMPUTER_SOURCE_DIR}/include
     ${VCOMPUTER_SOURCE_DIR}/src
     )
 
 # Source dirs
-file(GLOB VCOMPUTER_SRC
+FILE(GLOB VCOMPUTER_SRC
     "src/*.cpp"
     "src/tr3200/*.cpp"
     "src/dcpu16n/*.cpp"
@@ -70,45 +65,51 @@ file(GLOB VCOMPUTER_SRC
     )
 
 # Apply all configuration stuff to config.hpp.in
-configure_file (src/config.hpp.in
+CONFIGURE_FILE (src/config.hpp.in
     "${PROJECT_BINARY_DIR}/config.hpp" )
 # Apply all configuration stuff to vc_dll.hpp.in
-configure_file (include/vc_dll.hpp.in
+CONFIGURE_FILE (include/vc_dll.hpp.in
     "${VCOMPUTER_SOURCE_DIR}/include/vc_dll.hpp" )
 
 
-include(Platform)
+INCLUDE(Platform)
 
-message(STATUS "Procesing Source Code - Build library")
+MESSAGE(STATUS "Procesing Source Code - Build library")
 # VCOMPUTER VM core lib
-if(BUILD_STATIC_VCOMPUTER)
-    add_library( VCOMPUTER STATIC
-        ${VCOMPUTER_SRC}
-        )
+ADD_LIBRARY( VCOMPUTER_STATIC STATIC
+    ${VCOMPUTER_SRC}
+    )
 
-    include_directories(VCOMPUTER
-        ${VCOMPUTER_INCLUDE_DIRS}
-        )
+INCLUDE_DIRECTORIES(VCOMPUTER_STATIC
+    ${VCOMPUTER_INCLUDE_DIRS}
+    )
 
-else(BUILD_STATIC_VCOMPUTER)
-    add_definitions(-DDLL_EXPORT) # Enforces to use dllexport on shared library on Windows
-    add_library( VCOMPUTER SHARED
-        ${VCOMPUTER_SRC}
+ADD_LIBRARY( VCOMPUTER SHARED
+    ${VCOMPUTER_SRC}
+    )
+# Enforces to use dllexport on shared library on Windows
+IF(WIN32)
+    MESSAGE("Advice. If you try to link against dinamic library on windows, don't forgot to add \"BUILD_DLL_VCOMPUTER\" preprocesor declaration to your proyect")
+    SET_TARGET_PROPERTIES (VCOMPUTER PROPERTIES COMPILE_DEFINITIONS
+        "DLL_EXPORT;BUILD_DLL_VCOMPUTER"
         )
+ENDIF(WIN32)
 
-    include_directories(VCOMPUTER
-        ${VCOMPUTER_INCLUDE_DIRS}
-        )
-
-endif(BUILD_STATIC_VCOMPUTER)
+INCLUDE_DIRECTORIES(VCOMPUTER
+    ${VCOMPUTER_INCLUDE_DIRS}
+    )
 
 # Version of the libs
 SET_TARGET_PROPERTIES(VCOMPUTER PROPERTIES
     VERSION ${VCOMP_VERSION_STRING}
     SOVERSION ${VCOMP_VERSION_MAJOR}
     )
+SET_TARGET_PROPERTIES(VCOMPUTER_STATIC PROPERTIES
+    VERSION ${VCOMP_VERSION_STRING}
+    SOVERSION ${VCOMP_VERSION_MAJOR}
+    )
 
-if(BUILD_TOOLS_VCOMPUTER)
+IF(BUILD_TOOLS_VCOMPUTER)
 
     # Find GLFW3 and OpenGL libs
     find_package(GLFW3)
@@ -153,8 +154,6 @@ if(BUILD_TOOLS_VCOMPUTER)
 
     endif(NOT OPENAL_FOUND)
 
-
-
     if(BUILD_TOOLS_VCOMPUTER)
         message(STATUS "Procesing Tools")
         add_subdirectory(tools)
@@ -180,20 +179,28 @@ add_subdirectory(tests)
 endif(BUILD_TESTS_VCOMPUTER)
 
 # Install of library
-INSTALL(CODE "MESSAGE(\"Installing library and headers\")")
+INSTALL(CODE "MESSAGE(\"Installing library headers\")")
 INSTALL(DIRECTORY include/
     DESTINATION include/tr-vcomputer
     PATTERN "*.in" EXCLUDE
     PATTERN "*.*~" EXCLUDE
     )
 
+INSTALL(CODE "MESSAGE(\"Installing dinamic library\")")
 INSTALL(TARGETS VCOMPUTER
     EXPORT VCOMPUTER
     RUNTIME DESTINATION bin
     ARCHIVE DESTINATION lib/static
     LIBRARY DESTINATION lib
     )
-    # COMPONENT library)
+
+INSTALL(CODE "MESSAGE(\"Installing static library\")")
+INSTALL(TARGETS VCOMPUTER_STATIC
+    EXPORT VCOMPUTER
+    RUNTIME DESTINATION bin
+    ARCHIVE DESTINATION lib/static
+    LIBRARY DESTINATION lib
+    )
 
 
 
