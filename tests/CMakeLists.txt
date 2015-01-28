@@ -5,8 +5,20 @@ FILE(GLOB unit_test_files_src
     "*_test.cpp"
     )
 
+# Links agains the static version if is enabled
+IF(BUILD_STATIC_VCOMPUTER)
+    SET(VM_LINK_LIBS
+      VCOMPUTER_STATIC
+      )
+ELSEIF(BUILD_DYNAMIC_VCOMPUTER)
+    SET(VM_LINK_LIBS
+      VCOMPUTER
+      )
+ENDIF(BUILD_STATIC_VCOMPUTER)
+
 IF(GTEST_FOUND)
     message(" ... using gtest found by findGTest")
+    FIND_PACKAGE(Threads REQUIRED)
 
     set(test_EXECUTABLE unit_test)
 
@@ -20,15 +32,16 @@ IF(GTEST_FOUND)
         )
 
     target_link_libraries( unit_test
-        VCOMPUTER
+        ${VM_LINK_LIBS}
         ${GTEST_BOTH_LIBRARIES}
-        pthread
+        ${CMAKE_THREAD_LIBS_INIT}
         )
 
     add_test(unit_tests ../unit_test)
 
 ELSEIF(DEFINED ENV{GTEST_ROOT})  # Note we omit the $ here!
     message(" ... using gtest found in $ENV{GTEST_ROOT}")
+    FIND_PACKAGE(Threads REQUIRED)
 
     set(test_EXECUTABLE unit_test)
 
@@ -44,16 +57,17 @@ ELSEIF(DEFINED ENV{GTEST_ROOT})  # Note we omit the $ here!
 
 
     target_link_libraries( unit_test
-        VCOMPUTER
+        ${VM_LINK_LIBS}
         gtest
         gtest_main
-        pthread
+        ${CMAKE_THREAD_LIBS_INIT}
         )
 
     add_test(unit_tests ../unit_test)
 
 ELSEIF(GTEST_ROOT)
     message(" ... using gtest in ${GTEST_ROOT}")
+    FIND_PACKAGE(Threads REQUIRED)
 
     set(test_EXECUTABLE unit_test)
 
@@ -69,9 +83,10 @@ ELSEIF(GTEST_ROOT)
 
 
     target_link_libraries( unit_test
-        VCOMPUTER
+        ${VM_LINK_LIBS}
         gtest
         gtest_main
+        ${CMAKE_THREAD_LIBS_INIT}
         )
 
     add_test(unit_tests ../unit_test)
@@ -93,6 +108,6 @@ include_directories( benchmark
     )
 
 target_link_libraries( benchmark
-    VCOMPUTER
+    ${VM_LINK_LIBS}
     )
 

@@ -2,6 +2,50 @@
 set(BUILD_TOOLS_SCREEN TRUE CACHE BOOL "Build Trillek VCOMPUTER tools with virtual screen")
 set(BUILD_TOOLS_AUDIO  TRUE CACHE BOOL "Build Trillek VCOMPUTER tools with audio")
 
+# Find GLFW3 and OpenGL libs
+find_package(GLFW3)
+if (NOT GLFW3_FOUND)
+    message(WARNING "GLFW3 not found! toy emulator will not display screen and virtual keyboard")
+    set (GLFW3_ENABLE 0)
+else (NOT GLFW3_FOUND)
+    set (GLFW3_ENABLE 1)
+endif (NOT GLFW3_FOUND)
+
+find_package(OpenGL)
+if (NOT OPENGL_FOUND)
+    message(WARNING "OpenGL not found! toy emulator will not display screen and virtual keyboard")
+    set (GLFW3_ENABLE 0)
+endif (NOT OPENGL_FOUND)
+
+find_package(GLEW)
+if(NOT GLEW_FOUND)
+    message(WARNING "GLEW not found! toy emulator  will not display screen and virtual keyboard")
+    set (GLFW3_ENABLE 0)
+endif(NOT GLEW_FOUND)
+
+find_package(GLM)
+if(NOT GLM_FOUND)
+    message(WARNING "GLM not found! toy emulator will not display screen and virtual keyboard")
+    set (GLFW3_ENABLE 0)
+endif(NOT GLM_FOUND)
+
+find_package(OpenAL)
+if(NOT OPENAL_FOUND)
+    message(WARNING "OpenAL not found! toy emulator will not be hable to play the beeper")
+    set (OPENAL_ENABLE 0)
+else (NOT OPENAL_FOUND)
+
+    find_package(Alure)
+    if(NOT ALURE_FOUND)
+        message(WARNING "ALure not found! toy emulator will not be hable to play the beeper")
+        set (OPENAL_ENABLE 0)
+    else(NOT ALURE_FOUND)
+        set (OPENAL_ENABLE 1)
+    endif(NOT ALURE_FOUND)
+
+endif(NOT OPENAL_FOUND)
+
+
 IF (NOT BUILD_TOOLS_SCREEN)
     SET(GLFW3_ENABLE 0)
 ENDIF (NOT BUILD_TOOLS_SCREEN)
@@ -21,13 +65,21 @@ set(VM_INCLUDE_DIRS
   "${CMAKE_CURRENT_SOURCE_DIR}/include/"
   )
 
-set(VM_LINK_LIBS
-  VCOMPUTER
-  )
+
+# Links agains the static version if is enabled
+IF(BUILD_STATIC_VCOMPUTER)
+    SET(VM_LINK_LIBS
+      VCOMPUTER_STATIC
+      )
+ELSEIF(BUILD_DYNAMIC_VCOMPUTER)
+    SET(VM_LINK_LIBS
+      VCOMPUTER
+      )
+ENDIF(BUILD_STATIC_VCOMPUTER)
 
 # If we have OpenGL / GLFW3 / GLM / GLEW libs
 IF (GLFW3_ENABLE EQUAL 1)
-  MESSAGE("vm executable have Virtual Screen enabled")
+    MESSAGE(STATUS "vm executable have Virtual Screen enabled")
 
   # Some auxiliar libs
   file(GLOB TOOL_OTHER_SRC
@@ -69,7 +121,7 @@ ENDIF (GLFW3_ENABLE EQUAL 1)
 
 # If we have OpenAL
 IF (OPENAL_ENABLE EQUAL 1)
-  MESSAGE("vm executable have Sound enabled")
+    MESSAGE(STATUS "vm executable have Sound enabled")
 
   set(VM_INCLUDE_DIRS
     ${VM_INCLUDE_DIRS}

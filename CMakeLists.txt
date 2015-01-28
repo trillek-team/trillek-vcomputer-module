@@ -21,21 +21,31 @@ MESSAGE(STATUS "Trillek Virtual Computer version "
 
 # Debug build ?
 IF (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    MESSAGE("Debug build")
+    MESSAGE(STATUS "Debug build")
     ADD_DEFINITIONS(-DDEBUG)
 ENDIF (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+
+## Options !!!
+SET(BUILD_STATIC_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER library - static version")
+SET(BUILD_DYNAMIC_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER library - dynamic version")
 
 # Options for optional compiling stuff
 SET(BUILD_TOOLS_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER tools")
 SET(BUILD_TESTS_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER tests")
 
 # Optiones that affect functionality
-set(BRKPOINTS_ENABLED 1 CACHE INT "Enables Break Points functionality")
+SET(BRKPOINTS_ENABLED 1 CACHE INT "Enables Break Points functionality")
 
 IF (BRKPOINTS_ENABLED)
-    message("Breakpoints functionality enabled")
+    MESSAGE(STATUS "Breakpoints functionality enabled")
 ENDIF (BRKPOINTS_ENABLED)
 
+IF (NOT BUILD_STATIC_VCOMPUTER AND NOT BUILD_DYNAMIC_VCOMPUTER)
+    IF(NOT WIN32)
+        STRING(ASCII 27 Esc)
+    ENDIF(NOT WIN32)
+    MESSAGE(FATAL_ERROR "${Esc}[31mWTF! Choose Dynamic or Static or both!!!${Esc}[m")
+ENDIF()
 
 # Include dirs
 SET(VCOMPUTER_INCLUDE_DIRS
@@ -71,112 +81,76 @@ CONFIGURE_FILE (src/config.hpp.in
 CONFIGURE_FILE (include/vc_dll.hpp.in
     "${VCOMPUTER_SOURCE_DIR}/include/vc_dll.hpp" )
 
-
 INCLUDE(Platform)
 
 MESSAGE(STATUS "Procesing Source Code - Build library")
 # VCOMPUTER VM core lib
-ADD_LIBRARY( VCOMPUTER_STATIC STATIC
-    ${VCOMPUTER_SRC}
-    )
+IF(BUILD_STATIC_VCOMPUTER)
+    MESSAGE(STATUS "Building VComputer library - Static version")
+    ADD_LIBRARY( VCOMPUTER_STATIC STATIC
+        ${VCOMPUTER_SRC}
+        )
 
-INCLUDE_DIRECTORIES(VCOMPUTER_STATIC
-    ${VCOMPUTER_INCLUDE_DIRS}
-    )
+    INCLUDE_DIRECTORIES(VCOMPUTER_STATIC
+        ${VCOMPUTER_INCLUDE_DIRS}
+        )
+ENDIF(BUILD_STATIC_VCOMPUTER)
 
-ADD_LIBRARY( VCOMPUTER SHARED
-    ${VCOMPUTER_SRC}
-    )
+IF(BUILD_DYNAMIC_VCOMPUTER)
+    MESSAGE(STATUS "Building VComputer library - Dynamic (DLL) version")
+    ADD_LIBRARY( VCOMPUTER SHARED
+        ${VCOMPUTER_SRC}
+        )
+
+    INCLUDE_DIRECTORIES(VCOMPUTER
+        ${VCOMPUTER_INCLUDE_DIRS}
+        )
+ENDIF(BUILD_DYNAMIC_VCOMPUTER)
+
 # Enforces to use dllexport on shared library on Windows
 IF(WIN32)
-    MESSAGE("Advice. If you try to link against dinamic library on windows, don't forgot to add \"BUILD_DLL_VCOMPUTER\" preprocesor declaration to your proyect")
     SET_TARGET_PROPERTIES (VCOMPUTER PROPERTIES COMPILE_DEFINITIONS
         "DLL_EXPORT;BUILD_DLL_VCOMPUTER"
         )
 ENDIF(WIN32)
 
-INCLUDE_DIRECTORIES(VCOMPUTER
-    ${VCOMPUTER_INCLUDE_DIRS}
-    )
-
 # Version of the libs
+IF(BUILD_DYNAMIC_VCOMPUTER)
 SET_TARGET_PROPERTIES(VCOMPUTER PROPERTIES
     VERSION ${VCOMP_VERSION_STRING}
     SOVERSION ${VCOMP_VERSION_MAJOR}
     )
-SET_TARGET_PROPERTIES(VCOMPUTER_STATIC PROPERTIES
-    VERSION ${VCOMP_VERSION_STRING}
-    SOVERSION ${VCOMP_VERSION_MAJOR}
-    )
+ENDIF(BUILD_DYNAMIC_VCOMPUTER)
+
+IF(BUILD_STATIC_VCOMPUTER)
+    SET_TARGET_PROPERTIES(VCOMPUTER_STATIC PROPERTIES
+        VERSION ${VCOMP_VERSION_STRING}
+        SOVERSION ${VCOMP_VERSION_MAJOR}
+        )
+ENDIF(BUILD_STATIC_VCOMPUTER)
 
 IF(BUILD_TOOLS_VCOMPUTER)
+    MESSAGE(STATUS "Procesing Tools")
+    ADD_SUBDIRECTORY(tools)
 
-    # Find GLFW3 and OpenGL libs
-    find_package(GLFW3)
-    if (NOT GLFW3_FOUND)
-        message("GLFW3 not found! main executable will not display screen and virtual keyboard")
-        set (GLFW3_ENABLE 0)
-    else (NOT GLFW3_FOUND)
-        set (GLFW3_ENABLE 1)
-    endif (NOT GLFW3_FOUND)
+    MESSAGE(STATUS "Procesing Assets")
+    ADD_SUBDIRECTORY(assets)
 
-    find_package(OpenGL)
-    if (NOT OPENGL_FOUND)
-        message("OpenGL not found! main executable will not display screen and virtual keyboard")
-        set (GLFW3_ENABLE 0)
-    endif (NOT OPENGL_FOUND)
+ENDIF(BUILD_TOOLS_VCOMPUTER)
 
-    find_package(GLEW)
-    if(NOT GLEW_FOUND)
-        message("GLEW not found! main executable will not display screen and virtual keyboard")
-        set (GLFW3_ENABLE 0)
-    endif(NOT GLEW_FOUND)
+IF(BUILD_TESTS_VCOMPUTER)
+    MESSAGE(STATUS "Procesing Tests")
+    ENABLE_TESTING()
 
-    find_package(GLM)
-    if(NOT GLM_FOUND)
-        message("GLM not found! main executable will not display screen and virtual keyboard")
-        set (GLFW3_ENABLE 0)
-    endif(NOT GLM_FOUND)
-
-    find_package(OpenAL)
-    if(NOT OPENAL_FOUND)
-        message("OpenAL not found! main executable will not be hable to play the beeper")
-        set (OPENAL_ENABLE 0)
-    else (NOT OPENAL_FOUND)
-
-        find_package(Alure)
-        if(NOT ALURE_FOUND)
-            message("ALure not found! main executable will not be hable to play the beeper")
-            set (OPENAL_ENABLE 0)
-        else(NOT ALURE_FOUND)
-            set (OPENAL_ENABLE 1)
-        endif(NOT ALURE_FOUND)
-
-    endif(NOT OPENAL_FOUND)
-
-    if(BUILD_TOOLS_VCOMPUTER)
-        message(STATUS "Procesing Tools")
-        add_subdirectory(tools)
-    endif(BUILD_TOOLS_VCOMPUTER)
-
-    message(STATUS "Procesing Assets")
-    add_subdirectory(assets)
-
-endif(BUILD_TOOLS_VCOMPUTER)
-
-if(BUILD_TESTS_VCOMPUTER)
-    message(STATUS "Procesing Tests")
-    enable_testing()
-
-    find_package(GTest)
-    if(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
+    FIND_PACKAGE(GTest)
+    IF(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
         # findGTEST could fail if gtest is not compiled
-        add_subdirectory($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest)
-    endif(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
+        ADD_SUBDIRECTORY($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest)
+    ENDIF(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
 
-add_subdirectory(tests)
+    ADD_SUBDIRECTORY(tests)
 
-endif(BUILD_TESTS_VCOMPUTER)
+ENDIF(BUILD_TESTS_VCOMPUTER)
 
 # Install of library
 INSTALL(CODE "MESSAGE(\"Installing library headers\")")
@@ -186,22 +160,23 @@ INSTALL(DIRECTORY include/
     PATTERN "*.*~" EXCLUDE
     )
 
-INSTALL(CODE "MESSAGE(\"Installing dinamic library\")")
-INSTALL(TARGETS VCOMPUTER
-    EXPORT VCOMPUTER
-    RUNTIME DESTINATION bin
-    ARCHIVE DESTINATION lib/static
-    LIBRARY DESTINATION lib
-    )
+IF(BUILD_DYNAMIC_VCOMPUTER)
+    INSTALL(CODE "MESSAGE(\"Installing dinamic library\")")
+    INSTALL(TARGETS VCOMPUTER
+        EXPORT VCOMPUTER
+        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib/static
+        LIBRARY DESTINATION lib
+        )
+ENDIF(BUILD_DYNAMIC_VCOMPUTER)
 
-INSTALL(CODE "MESSAGE(\"Installing static library\")")
-INSTALL(TARGETS VCOMPUTER_STATIC
-    EXPORT VCOMPUTER
-    RUNTIME DESTINATION bin
-    ARCHIVE DESTINATION lib/static
-    LIBRARY DESTINATION lib
-    )
-
-
-
+IF(BUILD_STATIC_VCOMPUTER)
+    INSTALL(CODE "MESSAGE(\"Installing static library\")")
+    INSTALL(TARGETS VCOMPUTER_STATIC
+        EXPORT VCOMPUTER
+        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib/static
+        LIBRARY DESTINATION lib
+        )
+ENDIF(BUILD_STATIC_VCOMPUTER)
 
