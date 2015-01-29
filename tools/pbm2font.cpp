@@ -149,7 +149,7 @@ int main (int argc, char **argv)
     const unsigned num_bytes = 8*num_glyphs;
 
     // We store her the glyphs
-	Byte* glyphs = new Byte[num_bytes]({ 0 });
+	  Byte* glyphs = new Byte[num_bytes]();
 
     std::cerr << "PBM file of X: " << width << " Y: " << height << std::endl;
     std::cerr << "Num of glyphs: " << num_glyphs << std::endl;
