@@ -27,6 +27,10 @@ find_package(GLM)
 if(NOT GLM_FOUND)
     message(WARNING "GLM not found! toy emulator will not display screen and virtual keyboard")
     set (GLFW3_ENABLE 0)
+else()
+  # Force using radians as degrees is deprecated
+  # Bullet is built using doubles
+  ADD_DEFINITIONS(-DGLM_FORCE_RADIANS -DBT_USE_DOUBLE_PRECISION)
 endif(NOT GLM_FOUND)
 
 find_package(OpenAL)
@@ -35,7 +39,7 @@ if(NOT OPENAL_FOUND)
     set (OPENAL_ENABLE 0)
 else (NOT OPENAL_FOUND)
 
-    find_package(Alure)
+    find_package(ALURE)
     if(NOT ALURE_FOUND)
         message(WARNING "ALure not found! toy emulator will not be hable to play the beeper")
         set (OPENAL_ENABLE 0)
@@ -77,6 +81,13 @@ ELSEIF(BUILD_DYNAMIC_VCOMPUTER)
       )
 ENDIF(BUILD_STATIC_VCOMPUTER)
 
+set(MEDIA_INCLUDE_DIRS
+    ${VM_INCLUDE_DIRS}
+    )
+set(MEDIA_LINK_LIBS
+    ${VM_LINK_LIBS}
+    )
+
 # If we have OpenGL / GLFW3 / GLM / GLEW libs
 IF (GLFW3_ENABLE EQUAL 1)
     MESSAGE(STATUS "vm executable have Virtual Screen enabled")
@@ -87,21 +98,20 @@ IF (GLFW3_ENABLE EQUAL 1)
     "${CMAKE_CURRENT_SOURCE_DIR}/include/devices/*.hpp"
     )
 
-  set(VM_INCLUDE_DIRS
-    ${VM_INCLUDE_DIRS}
+  set(MEDIA_INCLUDE_DIRS
+    ${MEDIA_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
     ${GLM_INCLUDE_DIR}
     ${GLFW3_INCLUDE_PATH}
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/"
     )
 
-  set(VM_LINK_LIBS
-    ${VM_LINK_LIBS}
+  set(MEDIA_LINK_LIBS
+    ${MEDIA_LINK_LIBS}
     ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARIES}
     ${GLM_LIBRARIES}
-    ${GLFW3_LIBRARY}
+    ${GLFW3_LIBRARIES}
     )
 
   # TDA viewer can only be build with OpenGL stuff
@@ -110,29 +120,29 @@ IF (GLFW3_ENABLE EQUAL 1)
     )
 
   include_directories( tda_view
-    ${VM_INCLUDE_DIRS}
+    ${MEDIA_INCLUDE_DIRS}
     )
 
   target_link_libraries( tda_view
-    ${VM_LINK_LIBS}
+    ${MEDIA_LINK_LIBS}
     )
 
 ENDIF (GLFW3_ENABLE EQUAL 1)
 
 # If we have OpenAL
 IF (OPENAL_ENABLE EQUAL 1)
-    MESSAGE(STATUS "vm executable have Sound enabled")
+  MESSAGE(STATUS "vm executable have Sound enabled")
 
-  set(VM_INCLUDE_DIRS
-    ${VM_INCLUDE_DIRS}
+  set(MEDIA_INCLUDE_DIRS
+    ${MEDIA_INCLUDE_DIRS}
     ${OPENAL_INCLUDE_DIR}
     ${ALURE_INCLUDE_DIR}
     )
 
-  set(VM_LINK_LIBS
-    ${VM_LINK_LIBS}
-    ${OPENAL_LIBRARY}
-    ${ALURE_LIBRARY}
+  set(MEDIA_LINK_LIBS
+    ${MEDIA_LINK_LIBS}
+    ${OPENAL_LIBRARIES}
+    ${ALURE_LIBRARIES}
     )
 
 ENDIF (OPENAL_ENABLE EQUAL 1)
@@ -144,11 +154,11 @@ add_executable( vc
   )
 
 include_directories( vc
-  ${VM_INCLUDE_DIRS}
+  ${MEDIA_INCLUDE_DIRS}
   )
 
 target_link_libraries( vc
-  ${VM_LINK_LIBS}
+  ${MEDIA_LINK_LIBS}
   )
 
 #pbm2font tool
@@ -157,13 +167,15 @@ add_executable( pbm2font
   )
 
 include_directories( pbm2font
-  ${VCOMPUTER_INCLUDE_DIRS}
+  ${VM_INCLUDE_DIRS}
+  )
+target_link_libraries( pbm2font
+  ${VM_LINK_LIBS}
   )
 
 # makedisk executable
 add_executable( makedisk
   ./makedisk.cpp
-  ${TOOL_OTHER_SRC}
   )
 
 include_directories( makedisk

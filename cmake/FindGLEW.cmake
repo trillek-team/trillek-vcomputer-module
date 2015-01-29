@@ -2,7 +2,7 @@
 # This module defines the following variables:
 #  GLEW_INCLUDE_DIRS - include directories for GLEW
 #  GLEW_LIBRARIES - libraries to link against GLEW
-#  GLEW_FOUND - true if GLEW has been found and can be used
+#  GLEW_FOUND - true IF GLEW has been found and can be used
 
 #=============================================================================
 # Copyright 2012 Benjamin Eikel
@@ -18,19 +18,34 @@
 #  License text for the above reference.)
 
 find_path(GLEW_INCLUDE_DIR GL/glew.h)
-if(USE_STATIC_GLEW)
-set(GLEW_NAMES glew32s)
-add_definitions(-DGLEW_STATIC)
-else(USE_STATIC_GLEW)
-set(GLEW_NAMES GLEW glew32 glew glew32s)
-endif(USE_STATIC_GLEW)
-find_library(GLEW_LIBRARY NAMES ${GLEW_NAMES} PATH_SUFFIXES x86 x64 amd64 lib64)
+IF(USE_STATIC_GLEW)
+    SET(GLEW_DEBUG_NAMES glew32sd)
+    SET(GLEW_NAMES glew32s)
+    add_definitions(-DGLEW_STATIC)
+ELSE(USE_STATIC_GLEW)
+    SET(GLEW_DEBUG_NAMES glew32d)
+    SET(GLEW_NAMES GLEW glew32 glew)
+ENDIF(USE_STATIC_GLEW)
 
-set(GLEW_INCLUDE_DIRS ${GLEW_INCLUDE_DIR})
-set(GLEW_LIBRARIES ${GLEW_LIBRARY})
+# Reset the variables so that find_library will rescan in case we changed from static to none (or vice versa).
+UNSET(GLEW_LIBRARY)
+UNSET(GLEW_DEBUG_LIBRARY)
 
-include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
-find_package_handle_standard_args(GLEW
-                                  REQUIRED_VARS GLEW_INCLUDE_DIR GLEW_LIBRARY)
+FIND_LIBRARY(GLEW_LIBRARY NAMES ${GLEW_NAMES} PATH_SUFFIXES x86 x64 amd64 lib64)
+FIND_LIBRARY(GLEW_DEBUG_LIBRARY NAMES ${GLEW_DEBUG_NAMES} PATH_SUFFIXES x86 x64 amd64 lib64)
 
-mark_as_advanced(GLEW_INCLUDE_DIR GLEW_LIBRARY)
+IF(NOT GLEW_DEBUG_LIBRARY AND GLEW_LIBRARY)
+    SET(GLEW_DEBUG_LIBRARY ${GLEW_LIBRARY})
+ENDIF(NOT GLEW_DEBUG_LIBRARY AND GLEW_LIBRARY)
+
+SET(GLEW_INCLUDE_DIRS ${GLEW_INCLUDE_DIR})
+SET(GLEW_LIBRARIES debug ${GLEW_DEBUG_LIBRARY} optimized ${GLEW_LIBRARY})
+
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(  GLEW
+                                    DEFAULT_MSG
+                                    GLEW_LIBRARIES
+                                    GLEW_INCLUDE_DIR
+                                    )
+
+MARK_AS_ADVANCED(GLEW_INCLUDE_DIR GLEW_LIBRARY GLEW_DEBUG_LIBRARY)

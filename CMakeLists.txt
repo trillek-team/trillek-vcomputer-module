@@ -1,9 +1,17 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 
 PROJECT(VCOMPUTER)
 # Set the directory where to find cmake "modules"
 SET (CMAKE_MODULE_PATH ${VCOMPUTER_SOURCE_DIR}/cmake)
-SET (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+# Put the executable in the bin folder
+SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+
+# Install the libraries using bin folder as root
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/lib")
+
+# Check if we can compile with the current chaintool
+INCLUDE(Platform)
 
 INCLUDE(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
@@ -81,7 +89,20 @@ CONFIGURE_FILE (src/config.hpp.in
 CONFIGURE_FILE (include/vc_dll.hpp.in
     "${VCOMPUTER_SOURCE_DIR}/include/vc_dll.hpp" )
 
-INCLUDE(Platform)
+LINK_DIRECTORIES(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+# If we are on windows add in the local search directories as well.
+IF (WIN32 AND NOT MINGW) # Windows
+    SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CMAKE_SOURCE_DIR}/lib/include/)
+    INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/lib/include/")
+    IF (CMAKE_CL_64)
+    LINK_DIRECTORIES("${CMAKE_SOURCE_DIR}/lib/x64/debug" "${CMAKE_SOURCE_DIR}/lib/x64/release")
+    SET(CMAKE_LIBRARY_PATH ${CMAKE_SOURCE_DIR}/lib/x64/debug ${CMAKE_SOURCE_DIR}/lib/x64/release)
+    ELSE (CMAKE_CL_64)
+    LINK_DIRECTORIES("${CMAKE_SOURCE_DIR}/lib/x86/debug" "${CMAKE_SOURCE_DIR}/lib/x86/release")
+    SET(CMAKE_LIBRARY_PATH ${CMAKE_SOURCE_DIR}/lib/x86/debug ${CMAKE_SOURCE_DIR}/lib/x86/release)
+    ENDIF (CMAKE_CL_64)
+ENDIF (WIN32 AND NOT MINGW)
+
 
 MESSAGE(STATUS "Procesing Source Code - Build library")
 # VCOMPUTER VM core lib
@@ -141,12 +162,6 @@ ENDIF(BUILD_TOOLS_VCOMPUTER)
 IF(BUILD_TESTS_VCOMPUTER)
     MESSAGE(STATUS "Procesing Tests")
     ENABLE_TESTING()
-
-    FIND_PACKAGE(GTest)
-    IF(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
-        # findGTEST could fail if gtest is not compiled
-        ADD_SUBDIRECTORY($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest)
-    ENDIF(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
 
     ADD_SUBDIRECTORY(tests)
 

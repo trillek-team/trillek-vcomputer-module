@@ -5,7 +5,7 @@
 #include "devices/dummy_device.hpp"
 #include "devices/debug_serial_console.hpp"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include <cstring>
 #include <cstdlib>

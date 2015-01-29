@@ -3,7 +3,7 @@
  */
 #include "devices/gkeyb.hpp"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include <cstdlib>
 #include <cstdio>

@@ -16,8 +16,16 @@ ELSEIF(BUILD_DYNAMIC_VCOMPUTER)
       )
 ENDIF(BUILD_STATIC_VCOMPUTER)
 
+FIND_PACKAGE(GTEST)
+FIND_PACKAGE(GTEST_MAIN)
+IF(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
+  # FindGTEST could fail if gtest is not compiled
+    ADD_SUBDIRECTORY($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest)
+ENDIF(NOT GTEST_FOUND AND DEFINED ENV{GTEST_ROOT})
+
+
 IF(GTEST_FOUND)
-    message(" ... using gtest found by findGTest")
+    message(" ... using gtest found by FindGTest")
     FIND_PACKAGE(Threads REQUIRED)
 
     set(test_EXECUTABLE unit_test)
@@ -33,7 +41,8 @@ IF(GTEST_FOUND)
 
     target_link_libraries( unit_test
         ${VM_LINK_LIBS}
-        ${GTEST_BOTH_LIBRARIES}
+        ${GTEST_LIBRARIES}
+        ${GTEST_MAIN_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
         )
 
