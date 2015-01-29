@@ -3,5 +3,7 @@ cmake -G "Visual Studio 12" -DCMAKE_BUILD_TYPE=Debug -DBUILD_TOOLS_VCOMPUTER=Fal
 
 msbuild VCOMPUTER.sln /p:Configuration=Debug /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
-ctest -VV
+cd bin
+cd Debug
+unit_test.exe
 
