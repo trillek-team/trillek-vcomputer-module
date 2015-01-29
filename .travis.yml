@@ -24,8 +24,8 @@ before_script:
   - cmake -DCMAKE_BUILD_TYPE=Debug ..
 script:
   - make
-  - ctest -VV
-  #- ./unit_test
+  - cd bin
+  - ./unit_test
 
 notifications:
     email:
