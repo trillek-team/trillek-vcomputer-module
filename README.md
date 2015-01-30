@@ -9,7 +9,7 @@ This repo contains of the Trillek Virtual Computer lib and some extra tools, inc
 
 | GNU/Linux                                        | Windows (VStudio 2012)  |
 |--------------------------------------------------|-------------------------|
-| [![Build Status](https://travis-ci.org/trillek-team/trillek-vcomputer-module.png?branch=new-version)](https://travis-ci.org/trillek-team/trillek-vcomputer-module) | [![Build status](https://ci.appveyor.com/api/projects/status/25nu8anmfjea1cnb?svg=true)](https://ci.appveyor.com/project/Zardoz89/trillek-vcomputer-module) |
+| [![Build Status](https://travis-ci.org/trillek-team/trillek-vcomputer-module.svg?branch=develop)](https://travis-ci.org/trillek-team/trillek-vcomputer-module) | [![Build status](https://ci.appveyor.com/api/projects/status/420wp0vh8tnsuvjn/branch/develop?svg=true)](https://ci.appveyor.com/project/Zardoz89/trillek-vcomputer-module-r5m16/branch/develop) |
 
 COMPILING
 ---------

@@ -61,6 +61,7 @@ class VComputer_test : public ::testing::Test {
     trillek::DWord addr_id[3];
 
     virtual void SetUp() {
+      std::memset((void*)rom, 0, 1024);
       std::memmove ((void*)rom, (void*)dumy_str, std::strlen(dumy_str));
       vc.SetROM(this->rom, 1024);
       addr_id[0] = -1;

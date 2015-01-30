@@ -1,6 +1,6 @@
 
 # version format
-version: 1.0.{build}
+version: 0.5.0 {branch}-{build}
 
 # branches to build
 branches:
@@ -24,10 +24,17 @@ clone_folder: c:\projects\trillek-vcomputer-module
 
 # scripts that run after cloning repository
 install:
+    - cmd: cd c:\projects\trillek-vcomputer-module\
     - ps: c:\projects\trillek-vcomputer-module\prebuild.ps1
 
 # build Configuration, i.e. Debug, Release, etc.
 configuration: Debug
 
 build_script:
+    - cmd: cd c:\projects\trillek-vcomputer-module\
     - ps: c:\projects\trillek-vcomputer-module\build.ps1
+
+test_script:
+    - cmd: cd c:\projects\trillek-vcomputer-module\bin\Debug
+    - cmd: dir
+    - cmd: unit_test.exe

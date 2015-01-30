@@ -11,9 +11,7 @@ new-item build -type director
 
 pushd
 
-Start-FileDownload 'https://googletest.googlecode.com/files/gtest-1.7.0.zip'
-7z -y x gtest-1.7.0.zip
-
-$env:GTEST_ROOT = $PWD.Path + "\gtest-1.7.0\"
+Start-FileDownload 'http://cpu.zardoz.es/trillek-win32-lib.zip'
+7z -y x trillek-win32-lib.zip
 
 popd
