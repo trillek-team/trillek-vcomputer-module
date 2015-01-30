@@ -12,13 +12,13 @@ IF (GTEST_MAIN_INCLUDE_DIR)
 ENDIF (GTEST_MAIN_INCLUDE_DIR)
 
 
-FIND_LIBRARY(	GTEST_MAIN_LIBRARY
-				NAMES gtest_main
-        HINTS
-          $ENV{GTEST_ROOT}
-          ${GTEST_ROOT}
-				PATHS /usr/lib /usr/lib64 /usr/lib32 /usr/local/lib
-				PATH_SUFFIXES x86 x64 amd64 lib64)
+FIND_LIBRARY(   GTEST_MAIN_LIBRARY
+    NAMES gtest_main
+    HINTS
+        $ENV{GTEST_ROOT}
+        ${GTEST_ROOT}
+    PATHS /usr/lib /usr/lib64 /usr/lib32 /usr/local/lib
+    PATH_SUFFIXES x86 x64 amd64 lib64)
 
 # Per-recommendation
 SET(GTEST_MAIN_LIBRARIES    "${GTEST_MAIN_LIBRARY}")
