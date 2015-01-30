@@ -30,4 +30,5 @@ install:
 configuration: Debug
 
 build_script:
+    - cd c:\projects\trillek-vcomputer-module\
     - ps: c:\projects\trillek-vcomputer-module\build.ps1
