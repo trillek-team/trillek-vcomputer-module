@@ -28,7 +28,7 @@ If you not wish to compile the tests, then you should use `cmake -DBUILD_TESTS_V
 
 Plus you can control if you wish release or debug building using `-DCMAKE_BUILD_TYPE=Release` or `-DCMAKE_BUILD_TYPE=Debug` flag in cmake (note that if you uses VStudio, it would change it acording to your solution output mode)
 
-In windows, you should add the "-g" parameter with the apropiated generator for VS2013 (you can get the list running cmake --help), or you can use the CMake GUI. With this, you can generate VS2013/4 project/solution files that you can open and compile, or use msbuild from a develop console.
+In windows, you should add the "-g" parameter with the apropiated generator for VS2013 (you can get the list running cmake --help), or you can use the CMake GUI. With this, you can generate VS2013/4 project/solution files that you can open and compile, or use msbuild from a develop console. On window, to get wroking video and sound, you should put all necesary library and include files on a "lib" directory on the root dir of the source code. You could download a zip file with all necesary library and includes files for Windows, from http://cpu.zardoz.es/trillek-win32-lib.zip . If you use this file, you need to set the flag USE_STATIC_GLEW to true.
 
 WHAT IT DOES ACTUALLY
 ------------------
