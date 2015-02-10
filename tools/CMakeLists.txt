@@ -90,7 +90,7 @@ set(MEDIA_LINK_LIBS
 
 # If we have OpenGL / GLFW3 / GLM / GLEW libs
 IF (GLFW3_ENABLE EQUAL 1)
-    MESSAGE(STATUS "vm executable have Virtual Screen enabled")
+    MESSAGE(STATUS "vc executable have Virtual Screen enabled")
 
   # Some auxiliar libs
   file(GLOB TOOL_OTHER_SRC
@@ -131,7 +131,7 @@ ENDIF (GLFW3_ENABLE EQUAL 1)
 
 # If we have OpenAL
 IF (OPENAL_ENABLE EQUAL 1)
-  MESSAGE(STATUS "vm executable have Sound enabled")
+  MESSAGE(STATUS "vc executable have Sound enabled")
 
   set(MEDIA_INCLUDE_DIRS
     ${MEDIA_INCLUDE_DIRS}
@@ -163,26 +163,26 @@ target_link_libraries( vc
   )
 
 #pbm2font tool
-add_executable( pbm2font
+add_executable( pbm2tdafont
   ./pbm2font.cpp
   )
 
-include_directories( pbm2font
+include_directories( pbm2tdafont
   ${VM_INCLUDE_DIRS}
   )
-target_link_libraries( pbm2font
+target_link_libraries( pbm2tdafont
   ${VM_LINK_LIBS}
   )
 
 # makedisk executable
-add_executable( makedisk
+add_executable( maketrdisk
   ./makedisk.cpp
   )
 
-include_directories( makedisk
+include_directories( maketrdisk
   ${VM_INCLUDE_DIRS}
   )
 
-target_link_libraries( makedisk
+target_link_libraries( maketrdisk
   ${VM_LINK_LIBS}
   )
