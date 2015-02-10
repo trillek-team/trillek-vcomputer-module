@@ -1,7 +1,7 @@
 /*!
  * \brief       OpenGL Stuff of the test/toy emulator
  * \file        gl_engine.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * OpenGL Stuff of the test/toy emulator.
  */

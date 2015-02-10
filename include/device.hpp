@@ -1,7 +1,7 @@
 /**
  * \brief       Base class for Devices
  * \file        device.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Defines a base interface for all Devices in the Virtual Computer
  */

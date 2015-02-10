@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer Generic Media image class
  * \file        media.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  */
 #include "devices/media.hpp"

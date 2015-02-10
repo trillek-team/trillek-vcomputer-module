@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer Random Number Generator
  * \file        rng.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Implementation of embedded RNG device
  */

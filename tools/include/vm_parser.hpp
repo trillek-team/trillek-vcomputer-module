@@ -1,7 +1,7 @@
 /*!
  * \brief       Parameters parser for vm tool (main.cpp)
  * \file        vm_parser.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Parameters parser for vm tool (main.cpp)
  */

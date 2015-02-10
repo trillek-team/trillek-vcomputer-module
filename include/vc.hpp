@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer Main header
  * \file        vc.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * A header that includes the needed headers to create a virtual computer and
  * run it.

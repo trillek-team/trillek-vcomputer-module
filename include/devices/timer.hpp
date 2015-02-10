@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer Timer
  * \file        timer.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Implementation of Timer embed device
  */

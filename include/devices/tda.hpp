@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer Text Display Adapter
  * \file        tda.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Nya Elektriska Text Display Adapter
  * @see https://github.com/trillek-team/trillek-computer/blob/master/TDA.md

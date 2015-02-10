@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer generic keyboard
  * \file        gkeyb.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Generic Western/Latin Keyboard
  * @see https://github.com/trillek-team/trillek-computer/blob/master/Keyboard.md

@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer Random No Volatile RAM (NVRAM)
  * \file        nvram.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Implementation of NVRAM
  */

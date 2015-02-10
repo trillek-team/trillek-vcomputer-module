@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer Real Time Clock
  * \file        rtc.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Implementation of embedded RTC device
  */

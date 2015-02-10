@@ -1,7 +1,7 @@
 /**
  * \brief       OpCodes of TR3200 CPU v0.10
  * \file        TR3200_opcodes.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * OpCodes of TR3200 CPU v0.4.0
  * @see https://github.com/trillek-team/trillek-computer/blob/master/TR3200.md

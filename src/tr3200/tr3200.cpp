@@ -1,7 +1,7 @@
 /**
  * \brief       TR3200 CPU
  * \file        tr3200.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Implementation of the TR3200 CPU v0.3.0
  * @see https://github.com/trillek-team/trillek-computer/blob/master/TR3200.md

@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer Auxiliar functions
  * \file        auxiliar.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Some auciliar functions and methods
  */

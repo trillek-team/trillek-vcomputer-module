@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer Core
  * \file        vcomputer.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Virtual Computer core
  */

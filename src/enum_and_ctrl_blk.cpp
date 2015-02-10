@@ -1,7 +1,7 @@
 /**
  * \brief       Enumeration and Control/status address Block
  * \file        enum_and_ctrl_blk.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * An specialized Address Listener used by VComputer to implement
  * Enumeration and Control registers in a slot

@@ -1,7 +1,7 @@
 /**
  * \brief       Debug Serial Console
  * \file        debug_serial_console.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Debug Serial Console for debuing the Virtual Computer
  */

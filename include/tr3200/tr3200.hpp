@@ -1,7 +1,7 @@
 /**
  * \brief       TR3200 CPU
  * \file        tr3200.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Implementation of the TR3200 CPU
  */

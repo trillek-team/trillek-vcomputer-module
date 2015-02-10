@@ -1,7 +1,7 @@
 /**
  * \brief       Defines an interface for Address Listeners
  * \file        AddrListener.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  */
 #ifndef __ADDRLISTENER_HPP_

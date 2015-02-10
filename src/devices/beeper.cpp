@@ -1,7 +1,7 @@
 /*!
  * \brief       Virtual Computer embeded device Beeper
  * \file        beeper.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  */
 

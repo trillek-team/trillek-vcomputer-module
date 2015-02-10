@@ -1,7 +1,7 @@
 /*!
  * \brief       OpenAL Stuff of the test/toy emulator
  * \file        alengine.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * OpenAL Stuff of the test/toy emulator.
  */
