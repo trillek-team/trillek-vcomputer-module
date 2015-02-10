@@ -314,37 +314,122 @@ void initGL(OS::OS& os) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  // Loading shaders ********************************************************
-  auto f_vs = std::fopen("./assets/shaders/mvp_template.vert", "r");
-  if (f_vs != nullptr) {
-    fseek(f_vs, 0L, SEEK_END);
-    size_t bufsize = ftell(f_vs);
-    vertexSource = new GLchar[bufsize + 1]();
+    // Loading shaders ********************************************************
+    FILE* f_vs = nullptr;
+    FILE* f_fs = nullptr;
+#if WIN32
+    const std::string vertShaderFilename = "assets\\shaders\\mvp_template.vert";
+    const std::string fragShaderFilename = "assets\\shaders\\retro_texture.frag";
+    std::string programFilesPath = "";
+    std::string path;
+    LPWSTR wszPath = nullptr;
+    HRESULT hr;
 
-    fseek(f_vs, 0L, SEEK_SET);
-    auto t = fread(vertexSource, sizeof(GLchar), bufsize, f_vs);
-    if (t <= 0)
-      std::cerr << "Error reading Vertex Shader\n";
+    hr = SHGetKnownFolderPath(FOLDERID_ProgramFiles, 0, NULL, &wszPath);
+    if (SUCCEEDED(hr) ) {
+        _bstr_t bstrPath(wszPath);
+        programFilesPath = (char*)bstrPath;
+        path = programFilesPath + "\\trillek-tools\\"+ vertShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_vs = std::fopen(path.c_str(), "r");
 
-    fclose(f_vs);
-    vertexSource[bufsize] = 0; // Enforce null char
-  }
+        path = programFilesPath + "\\trillek-tools\\" + fragShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_fs = std::fopen(path.c_str(), "r");
 
-  //auto f_fs = std::fopen("./assets/shaders/basic_texture.frag", "r");
-  auto f_fs = std::fopen("./assets/shaders/retro_texture.frag", "r");
-  if (f_fs != nullptr) {
-    fseek(f_fs, 0L, SEEK_END);
-    size_t bufsize = ftell(f_fs);
-    fragmentSource = new GLchar[bufsize +1 ]();
+        CoTaskMemFree(wszPath);
+    }
 
-    fseek(f_fs, 0L, SEEK_SET);
-    auto t = fread(fragmentSource, sizeof(GLchar), bufsize, f_fs);
-    if (t <= 0)
-      std::cerr << "Error reading Fragment Shader\n";
+    if (f_vs == nullptr) {
+        path = ".\\"+ vertShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_vs = std::fopen(path.c_str(), "r");
+    }
+    if (f_fs == nullptr) {
+        path = ".\\"+ fragShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_fs = std::fopen(path.c_str(), "r");
+    }
+#else
+    const std::string vertShaderFilename = "assets/shaders/mvp_template.vert";
+    const std::string fragShaderFilename = "assets/shaders/retro_texture.frag";
+    std::string path = "./"+ vertShaderFilename;
+    std::clog << "Trying " << path << std::endl;
+    f_vs = std::fopen(path.c_str(), "r");
+    if (f_vs == nullptr) {
+        path = "/usr/share/trillek-tools/"+ vertShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_vs = std::fopen(path.c_str(), "r");
+    }
+    if (f_vs == nullptr) {
+        path = "/usr/local/share/trillek-tools/"+ vertShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_vs = std::fopen(path.c_str(), "r");
+    }
+    if (f_vs == nullptr) {
+        path = "/opt/trillek-tools/"+ vertShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_vs = std::fopen(path.c_str(), "r");
+    }
 
-    fclose(f_fs);
-    fragmentSource[bufsize] = 0; // Enforce null char
-  }
+    path = "./"+ fragShaderFilename;
+    std::clog << "Trying " << path << std::endl;
+    f_fs = std::fopen(path.c_str(), "r");
+    if (f_fs == nullptr) {
+        path = "/usr/share/trillek-tools/"+ fragShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_fs = std::fopen(path.c_str(), "r");
+    }
+    if (f_fs == nullptr) {
+        path = "/usr/local/share/trillek-tools/"+ fragShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_fs = std::fopen(path.c_str(), "r");
+    }
+    if (f_fs == nullptr) {
+        path = "/opt/trillek-tools/"+ fragShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_fs = std::fopen(path.c_str(), "r");
+    }
+
+#endif
+
+    if (f_vs != nullptr) {
+        fseek(f_vs, 0L, SEEK_END);
+        size_t bufsize = ftell(f_vs);
+        vertexSource = new GLchar[bufsize + 1]();
+
+        fseek(f_vs, 0L, SEEK_SET);
+        auto t = fread(vertexSource, sizeof(GLchar), bufsize, f_vs);
+        if (t <= 0) {
+            std::cerr << "Error reading Vertex Shader\n";
+            exit(-1);
+        }
+
+        fclose(f_vs);
+        vertexSource[bufsize] = 0; // Enforce null char
+    } else {
+        std::cerr << "Can't load Vertex Shader\n";
+        exit(-1);
+    }
+
+    if (f_fs != nullptr) {
+        fseek(f_fs, 0L, SEEK_END);
+        size_t bufsize = ftell(f_fs);
+        fragmentSource = new GLchar[bufsize +1 ]();
+
+        fseek(f_fs, 0L, SEEK_SET);
+        auto t = fread(fragmentSource, sizeof(GLchar), bufsize, f_fs);
+        if (t <= 0) {
+            std::cerr << "Error reading Fragment Shader\n";
+            exit(-1);
+        }
+
+        fclose(f_fs);
+        fragmentSource[bufsize] = 0; // Enforce null char
+    } else {
+        std::cerr << "Can't load Fragment Shader\n";
+        exit(-1);
+    }
 
   // Assign our handles a "name" to new shader objects
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
