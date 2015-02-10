@@ -186,3 +186,10 @@ include_directories( maketrdisk
 target_link_libraries( maketrdisk
   ${VM_LINK_LIBS}
   )
+
+
+INSTALL(CODE "MESSAGE(\"Installing tools\")")
+INSTALL(TARGETS maketrdisk pbm2tdafont vc tda_view
+    COMPONENT toolsbin
+    RUNTIME DESTINATION bin
+    )
