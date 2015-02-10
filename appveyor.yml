@@ -1,6 +1,6 @@
 
 # version format
-version: 0.5.0 {branch}-{build}
+version: 0.5.1 {branch}-{build}
 
 # branches to build
 branches:
@@ -38,3 +38,7 @@ test_script:
     - cmd: cd c:\projects\trillek-vcomputer-module\bin\Debug
     - cmd: dir
     - cmd: unit_test.exe
+
+on_success:
+    - cmd: cd c:\projects\trillek-vcomputer-module\
+    - cmd: cpack
