@@ -26,11 +26,12 @@ script:
   - make
   - cd bin
   - ./unit_test
+  - cd ..
+  - make package
 
 notifications:
     email:
       - luis.panadero@gmail.com
-    # I can also set up Glitch to output build results as well if we don't want the travis bot join/part spam
     irc:
       - "chat.freenode.net#project-trillek"
-    #    - "chat.freenode.net#sigma-gcf"
+      - "chat.freenode.net#trillek"
