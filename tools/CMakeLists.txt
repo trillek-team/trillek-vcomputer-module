@@ -157,6 +157,7 @@ include_directories( vc
   ${MEDIA_INCLUDE_DIRS}
   )
 
+message("    -- ${MEDIA_LINK_LIBS} " )
 target_link_libraries( vc
   ${MEDIA_LINK_LIBS}
   )
