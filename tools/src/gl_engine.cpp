@@ -135,6 +135,7 @@ int GlEngine::initGL(OS::OS& os) {
     FILE* f_vs = nullptr;
     FILE* f_fs = nullptr;
 #if WIN32
+    // TODO We should get path from HKEY_LOCAL_MACHINE\SOFTWARE\Trillek\Trillek VComputer
     const std::string vertShaderFilename = "assets\\shaders\\mvp_template.vert";
     const std::string fragShaderFilename = "assets\\shaders\\retro_texture.frag";
     std::string programFilesPath = "";
@@ -145,11 +146,11 @@ int GlEngine::initGL(OS::OS& os) {
     if (SUCCEEDED(hr) ) {
         _bstr_t bstrPath(wszPath);
         programFilesPath = (char*)bstrPath;
-        std::string path = programFilesPath + "\\trillek-tools\\"+ vertShaderFilename;
+        std::string path = programFilesPath + "\\Trillek VComputer\\" + vertShaderFilename;
         std::clog << "Trying " << path << std::endl;
         f_vs = std::fopen(path.c_str(), "r");
 
-        path = programFilesPath + "\\trillek-tools\\" + fragShaderFilename;
+        path = programFilesPath + "\\Trillek VComputer\\" + fragShaderFilename;
         std::clog << "Trying " << path << std::endl;
         f_fs = std::fopen(path.c_str(), "r");
 
