@@ -39,6 +39,6 @@ test_script:
     - cmd: dir
     - cmd: unit_test.exe
 
-#on_success:
-#    - cmd: cd c:\projects\trillek-vcomputer-module\
-#    - cmd: cpack
+on_success:
+    - cmd: cd c:\projects\trillek-vcomputer-module\
+    - cmd: msbuild PACKAGE.vcxproj /p:Configuration=Debug /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
