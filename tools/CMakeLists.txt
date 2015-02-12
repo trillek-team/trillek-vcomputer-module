@@ -2,6 +2,10 @@
 SET(BUILD_TOOLS_SCREEN TRUE CACHE BOOL "Build Trillek VCOMPUTER tools with virtual screen")
 SET(BUILD_TOOLS_AUDIO  TRUE CACHE BOOL "Build Trillek VCOMPUTER tools with audio")
 
+# Give these some dummy values and if the platform is LINUX or OSX they will be set accordingly.
+SET(X11_LIBRARIES "")
+SET(OSX_LIBRARIES "")
+
 # FIND GLFW3 AND OPENGL libs
 FIND_PACKAGE(GLFW3)
 IF (NOT GLFW3_FOUND)
@@ -89,8 +93,40 @@ SET(MEDIA_LINK_LIBS
 
 # If we have OpenGL / GLFW3 / GLM / GLEW libs
 IF (GLFW3_ENABLE EQUAL 1)
-    MESSAGE(STATUS "vc executable have Virtual Screen enabled")
+    IF (NOT APPLE) # X11 and GLEW are not needed on OSX.
+        FIND_PACKAGE(X11)
+        SET(USE_STATIC_GLEW CACHE BOOL "Build against GLEW static (default no)")
+        FIND_PACKAGE(GLEW REQUIRED) # We find GLEW here as OSX doesn't need it.
+    ENDIF (NOT APPLE)
 
+    IF (APPLE) # Mac OSX
+        SET(GLEW_LIBRARY "") # Set a dummy value for GLEW.
+
+        SET(CMAKE_XCODE_ATTRIBUTE_SUPPORTED_PLATFORMS macosx)
+
+        # Need the 10.7 SDK or later.
+        EXECUTE_PROCESS(COMMAND xcodebuild -sdk macosx -version SDKVersion OUTPUT_VARIABLE OSX_SDK_VERSION)
+        IF (NOT (OSX_SDK_VERSION VERSION_GREATER 10.7 OR OSX_SDK_VERSION VERSION_EQUAL 10.7))
+            MESSAGE(FATAL_ERROR "The installed version of Xcode does not support the 10.7 SDK or later.  Please upgrade Xcode and try again.")
+        ENDIF (NOT (OSX_SDK_VERSION VERSION_GREATER 10.7 OR OSX_SDK_VERSION VERSION_EQUAL 10.7))
+
+        # Configure the project to use the correct SDK.
+        IF (XCODE_VERSION)
+            SET(CMAKE_OSX_SYSROOT macosx)
+        ELSE (XCODE_VERSION)
+            # Non-Xcode generators need the full path.
+            EXECUTE_PROCESS(COMMAND xcodebuild -sdk macosx -version Path | head -n 1 OUTPUT_VARIABLE CMAKE_OSX_SYSROOT)
+            STRING(REGEX REPLACE "(\r?\n)+$" "" CMAKE_OSX_SYSROOT "${CMAKE_OSX_SYSROOT}")
+        ENDIF (XCODE_VERSION)
+
+        # Can deploy back to 10.7, the first OS X to support the GL Core.
+        SET(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)
+
+        # Need Core Foundation and libobjc.
+        SET(OSX_LIBRARIES "-framework CoreFoundation /usr/lib/libobjc.dylib")
+    ENDIF (APPLE)
+
+    MESSAGE(STATUS "vc executable have Virtual Screen enabled")
     # Some auxiliar libs
     FILE(GLOB TOOL_OTHER_SRC
         "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
@@ -106,6 +142,8 @@ IF (GLFW3_ENABLE EQUAL 1)
         )
 
     SET(MEDIA_LINK_LIBS
+        ${X11_LIBRARIES}
+        ${OSX_LIBRARIES}
         ${MEDIA_LINK_LIBS}
         ${OPENGL_LIBRARIES}
         ${GLEW_LIBRARIES}
