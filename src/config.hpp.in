@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer confgiration file
  * \file        config.hpp.in
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * This file is procesed by CMake to setup the apropiated macros of configuration
  */

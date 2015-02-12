@@ -1,7 +1,7 @@
 /*!
  * \brief       Test/Toy emulator
  * \file        main.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Test/Toy executable that uses the Virtual Computer lib to run a emulation
  */

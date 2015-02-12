@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer NVRAM
  * \file        rng.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Implementation of No Volatile RAM (NVRAM)
  */

@@ -1,54 +1,53 @@
 # Options
-set(BUILD_TOOLS_SCREEN TRUE CACHE BOOL "Build Trillek VCOMPUTER tools with virtual screen")
-set(BUILD_TOOLS_AUDIO  TRUE CACHE BOOL "Build Trillek VCOMPUTER tools with audio")
+SET(BUILD_TOOLS_SCREEN TRUE CACHE BOOL "Build Trillek VCOMPUTER tools with virtual screen")
+SET(BUILD_TOOLS_AUDIO  TRUE CACHE BOOL "Build Trillek VCOMPUTER tools with audio")
 
-# Find GLFW3 and OpenGL libs
-find_package(GLFW3)
-if (NOT GLFW3_FOUND)
-    message(WARNING "GLFW3 not found! toy emulator will not display screen and virtual keyboard")
-    set (GLFW3_ENABLE 0)
-else (NOT GLFW3_FOUND)
-    set (GLFW3_ENABLE 1)
-endif (NOT GLFW3_FOUND)
+# FIND GLFW3 AND OPENGL libs
+FIND_PACKAGE(GLFW3)
+IF (NOT GLFW3_FOUND)
+    MESSAGE(WARNING "GLFW3 not found! toy emulator will not display screen and virtual keyboard")
+    SET (GLFW3_ENABLE 0)
+ELSE (NOT GLFW3_FOUND)
+    SET (GLFW3_ENABLE 1)
+ENDIF (NOT GLFW3_FOUND)
 
-find_package(OpenGL)
-if (NOT OPENGL_FOUND)
-    message(WARNING "OpenGL not found! toy emulator will not display screen and virtual keyboard")
-    set (GLFW3_ENABLE 0)
-endif (NOT OPENGL_FOUND)
+FIND_PACKAGE(OpenGL)
+IF (NOT OPENGL_FOUND)
+    MESSAGE(WARNING "OpenGL not found! toy emulator will not display screen and virtual keyboard")
+    SET (GLFW3_ENABLE 0)
+ENDIF (NOT OPENGL_FOUND)
 
-find_package(GLEW)
-if(NOT GLEW_FOUND)
-    message(WARNING "GLEW not found! toy emulator  will not display screen and virtual keyboard")
-    set (GLFW3_ENABLE 0)
-endif(NOT GLEW_FOUND)
+FIND_PACKAGE(GLEW)
+IF(NOT GLEW_FOUND)
+    MESSAGE(WARNING "GLEW not found! toy emulator  will not display screen and virtual keyboard")
+    SET (GLFW3_ENABLE 0)
+ENDIF(NOT GLEW_FOUND)
 
-find_package(GLM)
-if(NOT GLM_FOUND)
-    message(WARNING "GLM not found! toy emulator will not display screen and virtual keyboard")
-    set (GLFW3_ENABLE 0)
-else()
-  # Force using radians as degrees is deprecated
-  # Bullet is built using doubles
-  ADD_DEFINITIONS(-DGLM_FORCE_RADIANS -DBT_USE_DOUBLE_PRECISION)
-endif(NOT GLM_FOUND)
+FIND_PACKAGE(GLM)
+IF(NOT GLM_FOUND)
+    MESSAGE(WARNING "GLM not found! toy emulator will not display screen and virtual keyboard")
+    SET (GLFW3_ENABLE 0)
+ELSE()
+    # Force using radians as degrees is deprecated
+    # Bullet is built using doubles
+    ADD_DEFINITIONS(-DGLM_FORCE_RADIANS -DBT_USE_DOUBLE_PRECISION)
+ENDIF(NOT GLM_FOUND)
 
-find_package(OpenAL)
-if(NOT OPENAL_FOUND)
-    message(WARNING "OpenAL not found! toy emulator will not be hable to play the beeper")
-    set (OPENAL_ENABLE 0)
-else (NOT OPENAL_FOUND)
+FIND_PACKAGE(OpenAL)
+IF(NOT OPENAL_FOUND)
+    MESSAGE(WARNING "OpenAL not found! toy emulator will not be hable to play the beeper")
+    SET (OPENAL_ENABLE 0)
+ELSE (NOT OPENAL_FOUND)
 
-    find_package(ALURE)
-    if(NOT ALURE_FOUND)
-        message(WARNING "ALure not found! toy emulator will not be hable to play the beeper")
-        set (OPENAL_ENABLE 0)
-    else(NOT ALURE_FOUND)
-        set (OPENAL_ENABLE 1)
-    endif(NOT ALURE_FOUND)
+    FIND_PACKAGE(ALURE)
+    IF(NOT ALURE_FOUND)
+        MESSAGE(WARNING "ALure not found! toy emulator will not be hable to play the beeper")
+        SET (OPENAL_ENABLE 0)
+    ELSE(NOT ALURE_FOUND)
+        SET (OPENAL_ENABLE 1)
+    ENDIF(NOT ALURE_FOUND)
 
-endif(NOT OPENAL_FOUND)
-
+ENDIF(NOT OPENAL_FOUND)
 
 IF (NOT BUILD_TOOLS_SCREEN)
     SET(GLFW3_ENABLE 0)
@@ -60,128 +59,139 @@ ENDIF (NOT BUILD_TOOLS_AUDIO)
 # Main executable
 
 # Main executable config file
-configure_file (./config_main.hpp.in
-  "${PROJECT_BINARY_DIR}/config_main.hpp" )
+CONFIGURE_FILE (./config_main.hpp.in
+    "${PROJECT_BINARY_DIR}/config_main.hpp"
+    )
 
 # Setup include and libs to be used in main/vm
-set(VM_INCLUDE_DIRS
-  ${VCOMPUTER_INCLUDE_DIRS}
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/"
-  )
-
+SET(VM_INCLUDE_DIRS
+    ${VCOMPUTER_INCLUDE_DIRS}
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    )
 
 # Links agains the static version if is enabled
 IF(BUILD_STATIC_VCOMPUTER)
     SET(VM_LINK_LIBS
-      VCOMPUTER_STATIC
-      )
+        VCOMPUTER_STATIC
+        )
 ELSEIF(BUILD_DYNAMIC_VCOMPUTER)
     SET(VM_LINK_LIBS
-      VCOMPUTER
-      )
+        VCOMPUTER
+        )
 ENDIF(BUILD_STATIC_VCOMPUTER)
 
-set(MEDIA_INCLUDE_DIRS
+SET(MEDIA_INCLUDE_DIRS
     ${VM_INCLUDE_DIRS}
     )
-set(MEDIA_LINK_LIBS
+SET(MEDIA_LINK_LIBS
     ${VM_LINK_LIBS}
     )
 
 # If we have OpenGL / GLFW3 / GLM / GLEW libs
 IF (GLFW3_ENABLE EQUAL 1)
-    MESSAGE(STATUS "vm executable have Virtual Screen enabled")
+    MESSAGE(STATUS "vc executable have Virtual Screen enabled")
 
-  # Some auxiliar libs
-  file(GLOB TOOL_OTHER_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/devices/*.hpp"
-    )
+    # Some auxiliar libs
+    FILE(GLOB TOOL_OTHER_SRC
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/devices/*.hpp"
+        )
 
-  set(MEDIA_INCLUDE_DIRS
-    ${MEDIA_INCLUDE_DIRS}
-    ${OPENGL_INCLUDE_DIR}
-    ${GLEW_INCLUDE_DIR}
-    ${GLM_INCLUDE_DIR}
-    ${GLFW3_INCLUDE_PATH}
-    )
+    SET(MEDIA_INCLUDE_DIRS
+        ${MEDIA_INCLUDE_DIRS}
+        ${OPENGL_INCLUDE_DIR}
+        ${GLEW_INCLUDE_DIR}
+        ${GLM_INCLUDE_DIR}
+        ${GLFW3_INCLUDE_PATH}
+        )
 
-  set(MEDIA_LINK_LIBS
-    ${MEDIA_LINK_LIBS}
-    ${OPENGL_LIBRARIES}
-    ${GLEW_LIBRARIES}
-    ${GLM_LIBRARIES}
-    ${GLFW3_LIBRARIES}
-    )
+    SET(MEDIA_LINK_LIBS
+        ${MEDIA_LINK_LIBS}
+        ${OPENGL_LIBRARIES}
+        ${GLEW_LIBRARIES}
+        ${GLM_LIBRARIES}
+        ${GLFW3_LIBRARIES}
+        )
 
-  # TDA viewer can only be build with OpenGL stuff
-  add_executable( tda_view
-    ./tda_view.cpp
-    )
+    # TDA VIEWER Can only be build with OpenGL stuff
+    ADD_EXECUTABLE( tda_view
+        ./tda_view.cpp
+        )
+    SET(TARGETS ${TARGETS} "tda_view")
 
-  include_directories( tda_view
-    ${MEDIA_INCLUDE_DIRS}
-    )
+    INCLUDE_DIRECTORIES( tda_view
+        ${MEDIA_INCLUDE_DIRS}
+        )
 
-  target_link_libraries( tda_view
-    ${MEDIA_LINK_LIBS}
-    )
+    TARGET_LINK_LIBRARIES( tda_view
+        ${MEDIA_LINK_LIBS}
+        )
 
 ENDIF (GLFW3_ENABLE EQUAL 1)
 
 # If we have OpenAL
 IF (OPENAL_ENABLE EQUAL 1)
-  MESSAGE(STATUS "vm executable have Sound enabled")
+    MESSAGE(STATUS "vc executable have Sound enabled")
 
-  set(MEDIA_INCLUDE_DIRS
-    ${MEDIA_INCLUDE_DIRS}
-    ${OPENAL_INCLUDE_DIR}
-    ${ALURE_INCLUDE_DIR}
-    )
+    SET(MEDIA_INCLUDE_DIRS
+        ${MEDIA_INCLUDE_DIRS}
+        ${OPENAL_INCLUDE_DIR}
+        ${ALURE_INCLUDE_DIR}
+        )
 
-  set(MEDIA_LINK_LIBS
-    ${MEDIA_LINK_LIBS}
-    ${OPENAL_LIBRARIES}
-    ${ALURE_LIBRARIES}
-    )
+    SET(MEDIA_LINK_LIBS
+        ${MEDIA_LINK_LIBS}
+        ${OPENAL_LIBRARIES}
+        ${ALURE_LIBRARIES}
+        )
 
 ENDIF (OPENAL_ENABLE EQUAL 1)
 
 # Main executable
-add_executable( vc
-  ./main.cpp
-  ${TOOL_OTHER_SRC}
-  )
+ADD_EXECUTABLE( vc
+    ./main.cpp
+    ${TOOL_OTHER_SRC}
+    )
+SET(TARGETS ${TARGETS} "vc")
 
-include_directories( vc
-  ${MEDIA_INCLUDE_DIRS}
-  )
+INCLUDE_DIRECTORIES( vc
+    ${MEDIA_INCLUDE_DIRS}
+    )
 
-target_link_libraries( vc
-  ${MEDIA_LINK_LIBS}
-  )
+TARGET_LINK_LIBRARIES( vc
+    ${MEDIA_LINK_LIBS}
+    )
 
 #pbm2font tool
-add_executable( pbm2font
-  ./pbm2font.cpp
-  )
+ADD_EXECUTABLE( pbm2tdafont
+    ./pbm2font.cpp
+    )
+SET(TARGETS ${TARGETS} "pbm2tdafont")
 
-include_directories( pbm2font
-  ${VM_INCLUDE_DIRS}
-  )
-target_link_libraries( pbm2font
-  ${VM_LINK_LIBS}
-  )
+INCLUDE_DIRECTORIES( pbm2tdafont
+    ${VM_INCLUDE_DIRS}
+    )
+TARGET_LINK_LIBRARIES( pbm2tdafont
+    ${VM_LINK_LIBS}
+    )
 
 # makedisk executable
-add_executable( makedisk
-  ./makedisk.cpp
-  )
+ADD_EXECUTABLE( maketrdisk
+    ./makedisk.cpp
+    )
+SET(TARGETS ${TARGETS} "maketrdisk")
 
-include_directories( makedisk
-  ${VM_INCLUDE_DIRS}
-  )
+INCLUDE_DIRECTORIES( maketrdisk
+    ${VM_INCLUDE_DIRS}
+    )
 
-target_link_libraries( makedisk
-  ${VM_LINK_LIBS}
-  )
+TARGET_LINK_LIBRARIES( maketrdisk
+    ${VM_LINK_LIBS}
+    )
+
+INSTALL(CODE "MESSAGE(\"Installing tools\")")
+INSTALL(TARGETS ${TARGETS}
+    COMPONENT toolsbin
+    RUNTIME DESTINATION bin
+    )
+

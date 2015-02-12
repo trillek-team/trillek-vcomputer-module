@@ -1,7 +1,7 @@
 /**
  * \brief       Mackapar 5.25" Floppy Drive
  * \file        m5fdd.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Mackapar 5.25" Floppy Drive
  */

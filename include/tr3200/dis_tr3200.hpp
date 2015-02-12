@@ -1,7 +1,7 @@
 /**
  * \brief       TR3200 CPU online dis-assembler
  * \file        dis_tr3200.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  */
 #ifndef __DISTR3200_HPP_

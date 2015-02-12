@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer Generic Media image class
  * \file        media.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  */
 #ifndef __DISK_HPP_

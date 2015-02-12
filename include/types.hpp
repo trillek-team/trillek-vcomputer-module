@@ -1,7 +1,7 @@
 /**
  * \brief       Basic types used by the Virtual Computer
  * \file        types.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  */
 #ifndef __TYPES_HPP_
 #define __TYPES_HPP_ 1

@@ -1,7 +1,7 @@
 /**
  * \brief       Fix or hides VS2012 warings and errors
  * \file        vs_fix.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * VStudio pragmas and fix
  * Use ONLY on the .cpp files

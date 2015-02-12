@@ -2,7 +2,7 @@
 /*!
  * \brief       OpenAL/Alure Stuff of the test/toy emulator
  * \file        al_engine.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * OpenAL Stuff of the test/toy emulator.
  */

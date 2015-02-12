@@ -1,7 +1,7 @@
 /**
  * \brief       CPU base class
  * \file        cpu.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Defines a base "interface" for CPUs to the Virtual Computer
  */

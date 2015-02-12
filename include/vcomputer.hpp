@@ -1,7 +1,7 @@
 /**
  * \brief       Virtual Computer
  * \file        vcomputer.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Virtual Computer class itself
  */

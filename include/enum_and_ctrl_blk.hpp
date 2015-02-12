@@ -1,7 +1,7 @@
 /**
  * \brief       Enumeration and Control/status address Block
  * \file        enum_and_ctrl_blk.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  */
 #ifndef __ENUMANDCTROLBLK_HPP_

@@ -1,7 +1,7 @@
 /**
  * \brief       DummyDevice for testing
  * \file        dummy_device.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  */
 #ifndef __DUMMYDEVICE_HPP_

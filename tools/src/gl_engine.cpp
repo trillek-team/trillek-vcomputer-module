@@ -1,12 +1,20 @@
 /*!
  * \brief       OpenGL Stuff of the test/toy emulator
  * \file        gl_engine.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * OpenGL Stuff of the test/toy emulator.
  */
 
 #include "gl_engine.hpp"
+
+#if WIN32
+#include <shlobj.h>
+#include <winerror.h>
+#include <atlbase.h>
+#include <comutil.h>
+#pragma comment(lib, "comsuppw")
+#endif
 
 #ifdef GLFW3_ENABLE
 
@@ -124,8 +132,73 @@ int GlEngine::initGL(OS::OS& os) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     // Loading shaders ********************************************************
-    // TODO paqth to shadersm should be a parameter
-    auto f_vs = std::fopen("./assets/shaders/mvp_template.vert", "r");
+    FILE* f_vs = nullptr;
+    FILE* f_fs = nullptr;
+#if WIN32
+    // TODO We should get path from HKEY_LOCAL_MACHINE\SOFTWARE\Trillek\Trillek VComputer
+    const std::string vertShaderFilename = "assets\\shaders\\mvp_template.vert";
+    const std::string fragShaderFilename = "assets\\shaders\\retro_texture.frag";
+    std::string programFilesPath = "";
+    LPWSTR wszPath = nullptr;
+    HRESULT hr;
+
+    hr = SHGetKnownFolderPath(FOLDERID_ProgramFiles, 0, NULL, &wszPath);
+    if (SUCCEEDED(hr) ) {
+        _bstr_t bstrPath(wszPath);
+        programFilesPath = (char*)bstrPath;
+        std::string path = programFilesPath + "\\Trillek VComputer\\" + vertShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_vs = std::fopen(path.c_str(), "r");
+
+        path = programFilesPath + "\\Trillek VComputer\\" + fragShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_fs = std::fopen(path.c_str(), "r");
+
+        CoTaskMemFree(wszPath);
+    }
+#else
+    const std::string vertShaderFilename = "assets/shaders/mvp_template.vert";
+    const std::string fragShaderFilename = "assets/shaders/retro_texture.frag";
+    std::string path = "./"+ vertShaderFilename;
+    std::clog << "Trying " << path << std::endl;
+    f_vs = std::fopen(path.c_str(), "r");
+    if (f_vs == nullptr) {
+        path = "/usr/share/trillek-tools/"+ vertShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_vs = std::fopen(path.c_str(), "r");
+    }
+    if (f_vs == nullptr) {
+        path = "/usr/local/share/trillek-tools/"+ vertShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_vs = std::fopen(path.c_str(), "r");
+    }
+    if (f_vs == nullptr) {
+        path = "/opt/trillek-tools/"+ vertShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_vs = std::fopen(path.c_str(), "r");
+    }
+
+    path = "./"+ fragShaderFilename;
+    std::clog << "Trying " << path << std::endl;
+    f_fs = std::fopen(path.c_str(), "r");
+    if (f_fs == nullptr) {
+        path = "/usr/share/trillek-tools/"+ fragShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_fs = std::fopen(path.c_str(), "r");
+    }
+    if (f_fs == nullptr) {
+        path = "/usr/local/share/trillek-tools/"+ fragShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_fs = std::fopen(path.c_str(), "r");
+    }
+    if (f_fs == nullptr) {
+        path = "/opt/trillek-tools/"+ fragShaderFilename;
+        std::clog << "Trying " << path << std::endl;
+        f_fs = std::fopen(path.c_str(), "r");
+    }
+
+#endif
+
     if (f_vs != nullptr) {
         fseek(f_vs, 0L, SEEK_END);
         size_t bufsize = ftell(f_vs);
@@ -140,10 +213,11 @@ int GlEngine::initGL(OS::OS& os) {
 
         fclose(f_vs);
         vertexSource[bufsize] = 0; // Enforce null char
+    } else {
+        std::cerr << "Can't load Vertex Shader\n";
+        return -1;
     }
 
-    //auto f_fs = std::fopen("./assets/shaders/basic_texture.frag", "r");
-    auto f_fs = std::fopen("./assets/shaders/retro_texture.frag", "r");
     if (f_fs != nullptr) {
         fseek(f_fs, 0L, SEEK_END);
         size_t bufsize = ftell(f_fs);
@@ -158,6 +232,9 @@ int GlEngine::initGL(OS::OS& os) {
 
         fclose(f_fs);
         fragmentSource[bufsize] = 0; // Enforce null char
+    } else {
+        std::cerr << "Can't load Fragment Shader\n";
+        return -1;
     }
 
     // Assign our handles a "name" to new shader objects

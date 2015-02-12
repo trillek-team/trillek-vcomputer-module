@@ -1,7 +1,7 @@
 /**
  * \brief       TR3200 CPU Macros
  * \file        ITR3200_macros.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Macros used by TR3200 cpu implementation
  */

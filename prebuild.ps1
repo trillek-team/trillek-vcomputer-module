@@ -11,7 +11,8 @@ new-item build -type director
 
 pushd
 
-Start-FileDownload 'http://cpu.zardoz.es/trillek-win32-lib.zip'
+#Start-FileDownload 'http://cpu.zardoz.es/trillek-win32-lib.zip'
+Start-FileDownload 'https://github.com/trillek-team/trillek-vcomputer-module/releases/download/v0.5.0/trillek-win32-lib.zip'
 7z -y x trillek-win32-lib.zip
 
 popd

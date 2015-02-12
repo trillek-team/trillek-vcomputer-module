@@ -1,7 +1,7 @@
 /*!
  * \brief       Stuff to create GLFW window and gestionate it
  * \file        os.hpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Stuff to create GLFW window and gestionate it
  */

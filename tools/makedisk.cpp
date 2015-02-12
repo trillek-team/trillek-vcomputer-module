@@ -1,7 +1,7 @@
 /*!
  * \brief       Creates a floppy disk file
  * \file        makedisk.cpp
- * \copyright   The MIT License (MIT)
+ * \copyright   LGPL v3
  *
  * Creates a floppy disk file and inserts a binary file on it
  */
