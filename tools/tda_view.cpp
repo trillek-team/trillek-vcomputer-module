@@ -79,171 +79,171 @@ static const float uv_data[] = {
 glm::mat4 proj, view, model; // MVP Matrixes
 float yaw  = 0.0;
 float pith = 0.0;
-float zoom = 6.0;
+float zoom = 5.0;
 
 void initGL(OS::OS& os);
 
 int main (int argc, char* argv[]) {
-  using namespace trillek;
-  using namespace trillek::computer::tda;
+    using namespace trillek;
+    using namespace trillek::computer::tda;
 
-  // TODO load screen from a file
+    // TODO load screen from a file
 
-  OS::OS glfwos;
+    OS::OS glfwos;
     if (!glfwos.InitializeWindow(1024, 768, "TDA screen dump viewer")) {
         std::clog << "Failed creating the window or context.";
         return -1;
     }
 
-  initGL(glfwos);
-  std::printf("Initiated OpenGL\n");
-  float frame_count = 0; // Count frames
-  double deltat = glfwos.GetDeltaTime();
-  double t_acu = 0; // Time acumulator
+    initGL(glfwos);
+    std::printf("Initiated OpenGL\n");
+    float frame_count = 0; // Count frames
+    double deltat = glfwos.GetDeltaTime();
+    double t_acu = 0; // Time acumulator
 
-  // TODO Here insert a callback from events
+    // TODO Here insert a callback from events
 
-  // Test screen
-  TDAScreen screen;
-  screen.txt_buffer[0]  = 0x0F00 | 'H';
-  screen.txt_buffer[1]  = 0x1F00 | 'e';
-  screen.txt_buffer[2]  = 0x2F00 | 'l';
-  screen.txt_buffer[3]  = 0x3F00 | 'l';
-  screen.txt_buffer[4]  = 0x4F00 | 'o';
-  screen.txt_buffer[5]  = 0x5F00 | ' ';
-  screen.txt_buffer[6]  = 0x6F00 | 'w';
-  screen.txt_buffer[7]  = 0x7F00 | 'o';
-  screen.txt_buffer[8]  = 0x8F00 | 'r';
-  screen.txt_buffer[9]  = 0x9F00 | 'l';
-  screen.txt_buffer[10] = 0xAF00 | 'd';
-  screen.txt_buffer[11] = 0xBF00 | '!';
+    // Test screen
+    TDAScreen screen;
+    screen.txt_buffer[0]  = 0x0F00 | 'H';
+    screen.txt_buffer[1]  = 0x1F00 | 'e';
+    screen.txt_buffer[2]  = 0x2F00 | 'l';
+    screen.txt_buffer[3]  = 0x3F00 | 'l';
+    screen.txt_buffer[4]  = 0x4F00 | 'o';
+    screen.txt_buffer[5]  = 0x5F00 | ' ';
+    screen.txt_buffer[6]  = 0x6F00 | 'w';
+    screen.txt_buffer[7]  = 0x7F00 | 'o';
+    screen.txt_buffer[8]  = 0x8F00 | 'r';
+    screen.txt_buffer[9]  = 0x9F00 | 'l';
+    screen.txt_buffer[10] = 0xAF00 | 'd';
+    screen.txt_buffer[11] = 0xBF00 | '!';
 
-  screen.cursor = true;
-  screen.cur_col = 20;
-  screen.cur_row = 0;
-  screen.cur_start = 5;
-  screen.cur_end = 7;
-  screen.cur_color = 15;
+    screen.cursor = true;
+    screen.cur_col = 20;
+    screen.cur_row = 0;
+    screen.cur_start = 5;
+    screen.cur_end = 7;
+    screen.cur_color = 15;
 
-  for (unsigned i= 40; i < WIDTH_CHARS*HEIGHT_CHARS; i++ ) {
-    Byte fg = i % 16;
-    Byte bg = (15 - i) % 16;
-    screen.txt_buffer[i] = (bg << 12) | (fg << 8) | ((i-40) % 256);
-  }
-
-  bool loop = true;
-  while ( loop) {
-        if (glfwos.Closing()) {
-        loop = false;
-        continue;
-        }
-
-    // Clear The Screen And The Depth Buffer
-    frame_count += 1.0;
-
-    glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Model matrix <- Identity
-    model = glm::mat4(1.0f);
-
-    // Camera Matrix
-    view = glm::lookAt(
-        glm::vec3(
-          (float)(zoom * sin(yaw)*cos(pith)),
-          (float)(zoom * sin(pith)),
-          (float)(zoom * cos(yaw))*cos(pith)), // Were is the camera
-        glm::vec3(0,0,0), // and looks at the origin
-        glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-        );
-
-    // Drawing ...
-    glUseProgram(shaderProgram);
-    // Set sampler to user Texture Unit 0
-    glUniform1i(glGetUniformLocation( shaderProgram, "texture0" ), 0);
-
-    // Bind texture
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, screenTex);
-
-    if (t_acu >= 0.04) { // Updates screen texture at a rate of ~25 Hz
-      t_acu -= 0.04;
-
-      // Stream the texture *************************************************
-      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
-
-      // Copy the PBO to the texture
-      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 320, 240, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-
-      // Updates the PBO with the new texture
-      auto tdata = (DWord*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-      if (tdata != nullptr) {
-        TDAtoRGBATexture(screen, tdata); // Write the texture to the PBO buffer
-
-        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-      }
-
-      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO
+    for (unsigned i= 40; i < WIDTH_CHARS*HEIGHT_CHARS; i++ ) {
+      Byte fg = i % 16;
+      Byte bg = (15 - i) % 16;
+      screen.txt_buffer[i] = (bg << 12) | (fg << 8) | ((i-40) % 256);
     }
 
-    // Enable attribute in_Position as being used
-    glEnableVertexAttribArray(sh_in_Position);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
-    glVertexAttribPointer(
-        sh_in_Position,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        0,
-        0 );
+    bool loop = true;
+    while ( loop) {
+          if (glfwos.Closing()) {
+          loop = false;
+          continue;
+          }
 
-    // Enable attribute in_Color as being used
-    glEnableVertexAttribArray(sh_in_Color);
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
-    glVertexAttribPointer(
-        sh_in_Color,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        0,
-        0 );
+      // Clear The Screen And The Depth Buffer
+      frame_count += 1.0;
 
-    // Enable attribute in_UV as being used
-    glEnableVertexAttribArray(sh_in_UV);
-    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-    // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
-    glVertexAttribPointer(
-        sh_in_UV,
-        2,
-        GL_FLOAT,
-        GL_FALSE,
-        0,
-        0 );
+      glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
+      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Send M, V, P matrixes to the uniform inputs,
-    glUniformMatrix4fv(modelId, 1, GL_FALSE, &model[0][0]);
-    glUniformMatrix4fv(viewId, 1, GL_FALSE, &view[0][0]);
-    glUniformMatrix4fv(projId, 1, GL_FALSE, &proj[0][0]);
+      // Model matrix <- Identity
+      model = glm::mat4(1.0f);
 
-    glUniform1f(timeId, (float)((int)frame_count +1));
+      // Camera Matrix
+      view = glm::lookAt(
+          glm::vec3(
+            (float)(zoom * sin(yaw)*cos(pith)),
+            (float)(zoom * sin(pith)),
+            (float)(zoom * cos(yaw))*cos(pith)), // Were is the camera
+          glm::vec3(0,0,0), // and looks at the origin
+          glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+          );
 
-    glDrawArrays(GL_TRIANGLE_STRIP, sh_in_Position, N_VERTICES);
+      // Drawing ...
+      glUseProgram(shaderProgram);
+      // Set sampler to user Texture Unit 0
+      glUniform1i(glGetUniformLocation( shaderProgram, "texture0" ), 0);
 
-    glDisableVertexAttribArray(sh_in_Position);
-    glDisableVertexAttribArray(sh_in_Color);
-    glDisableVertexAttribArray(sh_in_UV);
+      // Bind texture
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, screenTex);
 
-    // Update host window
-        glfwos.SwapBuffers();
-        glfwos.OSMessageLoop();
+      if (t_acu >= 0.04) { // Updates screen texture at a rate of ~25 Hz
+        t_acu -= 0.04;
 
-    deltat = glfwos.GetDeltaTime(); // Gets new Delta time
-    t_acu += deltat;
-  }
+        // Stream the texture *************************************************
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
 
-  return 0;
+        // Copy the PBO to the texture
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 320, 240, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+        // Updates the PBO with the new texture
+        auto tdata = (DWord*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+        if (tdata != nullptr) {
+          TDAtoRGBATexture(screen, tdata); // Write the texture to the PBO buffer
+
+          glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+        }
+
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO
+      }
+
+      // Enable attribute in_Position as being used
+      glEnableVertexAttribArray(sh_in_Position);
+      glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+      // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
+      glVertexAttribPointer(
+          sh_in_Position,
+          3,
+          GL_FLOAT,
+          GL_FALSE,
+          0,
+          0 );
+
+      // Enable attribute in_Color as being used
+      glEnableVertexAttribArray(sh_in_Color);
+      glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+      // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
+      glVertexAttribPointer(
+          sh_in_Color,
+          3,
+          GL_FLOAT,
+          GL_FALSE,
+          0,
+          0 );
+
+      // Enable attribute in_UV as being used
+      glEnableVertexAttribArray(sh_in_UV);
+      glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+      // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
+      glVertexAttribPointer(
+          sh_in_UV,
+          2,
+          GL_FLOAT,
+          GL_FALSE,
+          0,
+          0 );
+
+      // Send M, V, P matrixes to the uniform inputs,
+      glUniformMatrix4fv(modelId, 1, GL_FALSE, &model[0][0]);
+      glUniformMatrix4fv(viewId, 1, GL_FALSE, &view[0][0]);
+      glUniformMatrix4fv(projId, 1, GL_FALSE, &proj[0][0]);
+
+      glUniform1f(timeId, (float)((int)frame_count +1));
+
+      glDrawArrays(GL_TRIANGLE_STRIP, sh_in_Position, N_VERTICES);
+
+      glDisableVertexAttribArray(sh_in_Position);
+      glDisableVertexAttribArray(sh_in_Color);
+      glDisableVertexAttribArray(sh_in_UV);
+
+      // Update host window
+          glfwos.SwapBuffers();
+          glfwos.OSMessageLoop();
+
+      deltat = glfwos.GetDeltaTime(); // Gets new Delta time
+      t_acu += deltat;
+    }
+
+    return 0;
 }
 
 // Init OpenGL ************************************************************
@@ -267,20 +267,13 @@ void initGL(OS::OS& os) {
     }
   // Projection matrix : 45° Field of View
   proj = glm::perspective(
-        45.0f,			// FOV
+        45.0f,          // FOV
         aspectRatio,
-        0.1f,				// Near cliping plane
-        10000.0f);	// Far cliping plane
+        0.1f,               // Near cliping plane
+        10000.0f);  // Far cliping plane
 
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-    #if __APPLE__
-        // GL_MULTISAMPLE are Core.
-        glEnable(GL_MULTISAMPLE);
-    #else
-        if (GLEW_ARB_multisample) {
-        glEnable(GL_MULTISAMPLE_ARB);
-        }
-    #endif
+    glEnable(GL_MULTISAMPLE);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
@@ -288,7 +281,7 @@ void initGL(OS::OS& os) {
   // Accept fragment if it closer to the camera than the former one
   glDepthFunc(GL_LESS);
 
-
+  // TODO Rehacer desde aqui !!!
   // Initialize VBOs ********************************************************
   glGenBuffers(1, &vertexbuffer);
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -506,7 +499,7 @@ void initGL(OS::OS& os) {
 
   // Camera matrix
   view = glm::lookAt(
-      glm::vec3(3,3,7), // Camera is at (3,3,7), in World Space
+      glm::vec3(0,0,7), // Camera is at (0,0,7), in World Space
       glm::vec3(0,0,0), // and looks at the origin
       glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
       );

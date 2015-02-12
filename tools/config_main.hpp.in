@@ -12,8 +12,6 @@
 #if GLFW3_ENABLE == 0
     #undef GLFW3_ENABLE
 #else
-
-
     #ifdef __APPLE__
         #include <OpenGL/gl3.h>
         #define GLFW_INCLUDE_GLCOREARB
@@ -28,12 +26,12 @@
         extern "C" SEL sel_getUid(const char *str);
 
     #else
-        #include <GLFW/glfw3.h>
         #include <GL/glew.h>
 
         #ifndef __unix
             #include <GL/wglew.h>
         #endif
+        #include <GLFW/glfw3.h>
     #endif
 
     #ifndef GLM_FORCE_RADIANS
