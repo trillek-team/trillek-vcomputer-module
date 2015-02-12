@@ -360,11 +360,11 @@ void Timer::WriteDW (DWord addr, DWord val) {
         break;
 
     case 0x11E008:
-        tmr1 = tmr1;
+        tmr1 = val;
         break;
 
     case 0x11E00C:
-        re1 = re1;
+        re1 = val;
         break;
 
     case 0x11E010:
