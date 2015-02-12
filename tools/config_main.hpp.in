@@ -13,9 +13,11 @@
     #undef GLFW3_ENABLE
 #else
 
-    #include <GLFW/glfw3.h>
 
     #ifdef __APPLE__
+        #include <OpenGL/gl3.h>
+        #define GLFW_INCLUDE_GLCOREARB
+        #include <GLFW/glfw3.h>
         // Needed so we can disable retina support for our window.
         #define GLFW_EXPOSE_NATIVE_COCOA 1
         #define GLFW_EXPOSE_NATIVE_NSGL 1
@@ -25,8 +27,8 @@
         extern "C" id objc_msgSend(id self, SEL op, ...);
         extern "C" SEL sel_getUid(const char *str);
 
-        #include <OpenGL/gl3.h>
     #else
+        #include <GLFW/glfw3.h>
         #include <GL/glew.h>
 
         #ifndef __unix
