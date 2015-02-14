@@ -154,6 +154,8 @@ IF (GLFW3_ENABLE EQUAL 1)
     # TDA VIEWER Can only be build with OpenGL stuff
     ADD_EXECUTABLE( tda_view
         ./tda_view.cpp
+        ./src/gl_engine.cpp
+        ./src/glerror.cpp
         )
     SET(TARGETS ${TARGETS} "tda_view")
 

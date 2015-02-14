@@ -27,10 +27,13 @@ public:
 
         yaw  = 0;
         pith = 0;
-        zoom = 6.0;
+        zoom = 4.7;
 
         frame_count = 0;
         t_acu = 0;
+
+        vertShaderFile = "mvp_template.vert";
+        fragShaderFile = "retro_texture.frag";
     }
 
     ~GlEngine () {
@@ -42,6 +45,13 @@ public:
         if (fragmentSource != nullptr) {
             delete[] fragmentSource;
         }
+    }
+
+    void setVertexShaderFile (const std::string& file) {
+        this->vertShaderFile = file;
+    }
+    void setFragmentShaderFile (const std::string& file) {
+        this->fragShaderFile = file;
     }
 
     //! Init OpenGL
@@ -89,17 +99,14 @@ private:
 
     static const GLfloat N_VERTICES;
 
-    GLuint vertexbuffer;
+    GLuint vao, vbo[3]; // vbo = {vdata, color, uv}
     static const float vdata[];
-
-    GLuint colorbuffer;
     static const float color_data[];
-
-    GLuint uvbuffer;
     static const float uv_data[];
 
     glm::mat4 proj, view, model; //! MVP Matrixes
 
+    // Camera position
     float yaw;
     float pith;
     float zoom;
@@ -108,6 +115,9 @@ private:
     double t_acu;       //! Acumulated time
 
     std::function<void(void*)> painter; //! Function that paints screen texture
+
+    std::string vertShaderFile;
+    std::string fragShaderFile;
 };
 
 #endif

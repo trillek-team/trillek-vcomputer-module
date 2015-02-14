@@ -351,7 +351,7 @@ int main(int argc, char* argv[]) {
         useOpenGL = false;
         //return -1;
     } else if (gl.initGL(glfwos) != 0) {
-        std::cerr << "Error initiating OpenGL\n";
+        std::clog << "Error initiating OpenGL\n";
         useOpenGL = false;
         //return -1;
     }

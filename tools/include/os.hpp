@@ -38,6 +38,7 @@ namespace OS {
             ~OS() { }
 
             bool InitializeWindow(const int width, const int height, const std::string title, const unsigned int glMajor = 3, const unsigned int glMinor = 2) {
+                assert(glMajor >=4 || (glMajor == 3 && glMinor >= 2));
                 glfwSetErrorCallback(ErrorCallback);
 
                 // Initialize the library.
@@ -46,20 +47,11 @@ namespace OS {
                 }
 
                 glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+                glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, glMajor);
+                glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glMinor);
+                glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
                 // Create a windowed mode window and its OpenGL context.
                 this->window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
-                if (!this->window) {
-                    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-                    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, glMajor);
-                    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glMinor);
-                    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-                    this->window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
-
-                    if (!this->window) {
-                        glfwTerminate();
-                        return false;
-                    }
-                }
 
                 // Make the window's context current.
                 glfwMakeContextCurrent(this->window);
@@ -67,13 +59,11 @@ namespace OS {
                 std::string glcx_version((char*)glGetString(GL_VERSION));
                 std::string glcx_major = glcx_version.substr(0, glcx_version.find('.', 0));
                 if(glcx_major == "1" || glcx_major == "2") {
-                    std::cout << "Enforcin OpenGL version\n";
-                    // we got a version 1 context, that will not work
+                    // we got a old version context, that will not work
                     // so try again.
                     glfwMakeContextCurrent(nullptr);
                     glfwDestroyWindow(this->window);
-                    // be more specific this time
-                    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
                     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, glMajor);
                     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glMinor);
                     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);

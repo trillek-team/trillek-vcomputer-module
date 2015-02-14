@@ -16,8 +16,11 @@
 #pragma comment(lib, "comsuppw")
 #endif
 
+#include "glerror.hpp"
+
 #ifdef GLFW3_ENABLE
 
+// Constants
 const unsigned int GlEngine::sh_in_Position = 0;
 const unsigned int GlEngine::sh_in_Color = 1;
 const unsigned int GlEngine::sh_in_UV = 3;
@@ -50,14 +53,14 @@ void GlEngine::SetTextureCB (std::function<void(void*)> painter) {
     this->painter = painter;
 }
 
-
 int GlEngine::initGL(OS::OS& os) {
+    check_gl_error();
     int OpenGLVersion[2];
 
     // Use the GL3 way to get the version number
     glGetIntegerv(GL_MAJOR_VERSION, &OpenGLVersion[0]);
     glGetIntegerv(GL_MINOR_VERSION, &OpenGLVersion[1]);
-    std::cout << "OpenGL " << OpenGLVersion[0] << "." << OpenGLVersion[1] << "\n";
+    std::cout << "Using OpenGL " << OpenGLVersion[0] << "." << OpenGLVersion[1] << " Core\n";
 
     // Sanity check to make sure we are at least in a good major version number.
     assert((OpenGLVersion[0] > 1) && (OpenGLVersion[0] < 5));
@@ -83,61 +86,60 @@ int GlEngine::initGL(OS::OS& os) {
             10000.0f);  // Far cliping plane
 
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-#if __APPLE__
-    // GL_MULTISAMPLE are Core.
     glEnable(GL_MULTISAMPLE);
-#else
-    if (GLEW_ARB_multisample) {
-        glEnable(GL_MULTISAMPLE_ARB);
-    }
-#endif
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
     glEnable(GL_DEPTH_TEST);
-    // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
 
-    // Initialize VBOs ********************************************************
-    glGenBuffers(1, &vertexbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    // Upload data to VBO
+    // Generate VAO
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    // Alloicate VBOs (position, color, UV)
+    glGenBuffers(3, vbo);
+    check_gl_error();
+
+    // Upload vertex position
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_Position]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vdata), vdata, GL_STATIC_DRAW);
-
-    glGenBuffers(1, &colorbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    // Upload data to VBO
+    check_gl_error();
+    // Upload color
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_Color]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(color_data), color_data, GL_STATIC_DRAW);
-
-    glGenBuffers(1, &uvbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-    // Upload data to VBO
+    check_gl_error();
+    // Upload UV
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_UV]);
+    check_gl_error();
     glBufferData(GL_ARRAY_BUFFER, sizeof(uv_data), uv_data, GL_STATIC_DRAW);
+    check_gl_error();
 
     // Initialize PBO *********************************************************
     glGenBuffers(1, &tex_pbo);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
     glBufferData(GL_PIXEL_UNPACK_BUFFER, 320*240*4, nullptr, GL_STREAM_DRAW);
 
+    check_gl_error();
     // Initialize Texture *****************************************************
     glGenTextures(1, &screenTex);
     glBindTexture(GL_TEXTURE_2D, screenTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    check_gl_error();
 
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    check_gl_error();
 
     // Loading shaders ********************************************************
     FILE* f_vs = nullptr;
     FILE* f_fs = nullptr;
 #if WIN32
     // TODO We should get path from HKEY_LOCAL_MACHINE\SOFTWARE\Trillek\Trillek VComputer
-    const std::string vertShaderFilename = "assets\\shaders\\mvp_template.vert";
-    const std::string fragShaderFilename = "assets\\shaders\\retro_texture.frag";
+    const std::string vertShaderFilename = "assets\\shaders\\" + this->vertShaderFile;
+    const std::string fragShaderFilename = "assets\\shaders\\" + this->fragShaderFile;
     std::string programFilesPath = "";
     LPWSTR wszPath = nullptr;
     HRESULT hr;
@@ -157,8 +159,8 @@ int GlEngine::initGL(OS::OS& os) {
         CoTaskMemFree(wszPath);
     }
 #else
-    const std::string vertShaderFilename = "assets/shaders/mvp_template.vert";
-    const std::string fragShaderFilename = "assets/shaders/retro_texture.frag";
+    const std::string vertShaderFilename = "assets/shaders/" + this->vertShaderFile;
+    const std::string fragShaderFilename = "assets/shaders/" + this->fragShaderFile;
     std::string path = "./"+ vertShaderFilename;
     std::clog << "Trying " << path << std::endl;
     f_vs = std::fopen(path.c_str(), "r");
@@ -296,9 +298,30 @@ int GlEngine::initGL(OS::OS& os) {
     // Attach our shaders to our program
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
+    check_gl_error();
 
     // Link shader program
     glLinkProgram(shaderProgram);
+
+    int IsLinked; int maxLength;
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, (int *)&IsLinked);
+    if(IsLinked == GL_FALSE) {
+        /* Noticed that glGetProgramiv is used to get the length for a shader program, not glGetShaderiv. */
+        glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &maxLength);
+
+        /* The maxLength includes the NULL character */
+        auto shaderProgramInfoLog = (char *)malloc(maxLength);
+
+        /* Notice that glGetProgramInfoLog, not glGetShaderInfoLog. */
+        glGetProgramInfoLog(shaderProgram, maxLength, &maxLength, shaderProgramInfoLog);
+
+        std::cerr << shaderProgramInfoLog << std::endl;
+        glDeleteShader(vertexShader);
+        glDeleteShader(fragmentShader);
+
+        free(shaderProgramInfoLog);
+        return -1;
+    }
 
     // Bind attributes indexes
     glBindAttribLocation(shaderProgram, sh_in_Position, "in_Position");
@@ -311,17 +334,10 @@ int GlEngine::initGL(OS::OS& os) {
 
     timeId = glGetUniformLocation(shaderProgram, "time");
 
+    check_gl_error();
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
-
-
-    // Camera matrix
-    view = glm::lookAt(
-            glm::vec3(3,3,7), // Camera is at (3,3,7), in World Space
-            glm::vec3(0,0,0), // and looks at the origin
-            glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-            );
 
     return 0;
 }
@@ -380,42 +396,23 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO
     }
 
-    // Enable attribute in_Position as being used
+    // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_Position]);
+    glVertexAttribPointer(sh_in_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(sh_in_Position);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    //check_gl_error();
 
     // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
-    glVertexAttribPointer(
-            sh_in_Position,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            0,
-            0 );
-
-    // Enable attribute in_Color as being used
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_Color]);
+    glVertexAttribPointer(sh_in_Color, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(sh_in_Color);
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
-    glVertexAttribPointer(
-            sh_in_Color,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            0,
-            0 );
+    //check_gl_error();
 
-    // Enable attribute in_UV as being used
-    glEnableVertexAttribArray(sh_in_UV);
-    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
     // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
-    glVertexAttribPointer(
-            sh_in_UV,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            0,
-            0 );
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_UV]);
+    glVertexAttribPointer(sh_in_UV, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(sh_in_UV);
+    //check_gl_error();
 
     // Send M, V, P matrixes to the uniform inputs,
     glUniformMatrix4fv(modelId, 1, GL_FALSE, &model[0][0]);
