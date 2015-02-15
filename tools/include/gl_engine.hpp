@@ -97,7 +97,7 @@ private:
     static const unsigned int sh_in_Color;
     static const unsigned int sh_in_UV;
 
-    static const GLfloat N_VERTICES;
+	static const GLsizei N_VERTICES;
 
     GLuint vao, vbo[3]; // vbo = {vdata, color, uv}
     static const float vdata[];

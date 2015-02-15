@@ -25,7 +25,7 @@ const unsigned int GlEngine::sh_in_Position = 0;
 const unsigned int GlEngine::sh_in_Color = 1;
 const unsigned int GlEngine::sh_in_UV = 3;
 
-const GLfloat GlEngine::N_VERTICES = 4;
+const GLsizei GlEngine::N_VERTICES = 4;
 
 const float GlEngine::vdata[] = {
     3.2,  2.4, 0.0, // Top Right
@@ -110,7 +110,7 @@ int GlEngine::initGL(OS::OS& os) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(color_data), color_data, GL_STATIC_DRAW);
     check_gl_error();
     // Upload UV
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_UV]);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_UV-1]);
     check_gl_error();
     glBufferData(GL_ARRAY_BUFFER, sizeof(uv_data), uv_data, GL_STATIC_DRAW);
     check_gl_error();
@@ -409,7 +409,7 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
     //check_gl_error();
 
     // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_UV]);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_UV-1]);
     glVertexAttribPointer(sh_in_UV, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(sh_in_UV);
     //check_gl_error();
