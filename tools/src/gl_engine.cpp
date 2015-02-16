@@ -376,6 +376,8 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
             glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
             );
 
+    // Binding shader
+    glUseProgram(shaderProgram);
     // Set sampler to user Texture Unit 0
     glUniform1i(glGetUniformLocation( shaderProgram, "texture0" ), 0);
 
@@ -408,8 +410,7 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO
     }
 
-    // Binding sahder and VAO
-    glUseProgram(shaderProgram);
+    // Binding VAO
     glBindVertexArray(vao);
 
     // Send M, V, P matrixes to the uniform inputs,
