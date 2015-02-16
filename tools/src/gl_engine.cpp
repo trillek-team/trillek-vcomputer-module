@@ -23,7 +23,7 @@
 // Constants
 const unsigned int GlEngine::sh_in_Position = 0;
 const unsigned int GlEngine::sh_in_Color = 1;
-const unsigned int GlEngine::sh_in_UV = 3;
+const unsigned int GlEngine::sh_in_UV = 2;
 
 const GLsizei GlEngine::N_VERTICES = 4;
 
@@ -118,7 +118,7 @@ int GlEngine::initGL(OS::OS& os) {
     check_gl_error();
 
     // Upload UV
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_UV-1]);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_UV]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(uv_data), uv_data, GL_STATIC_DRAW);
     // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
     glVertexAttribPointer(sh_in_UV, 2, GL_FLOAT, GL_FALSE, 0, 0);

@@ -32,7 +32,7 @@ public:
         frame_count = 0;
         t_acu = 0;
 
-        vertShaderFile = "mvp_template.vert";
+        vertShaderFile = "basic_vs.vert";
         fragShaderFile = "retro_texture.frag";
         this->pbo = 0;
     }
