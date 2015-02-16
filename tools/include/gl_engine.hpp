@@ -34,6 +34,7 @@ public:
 
         vertShaderFile = "mvp_template.vert";
         fragShaderFile = "retro_texture.frag";
+        this->pbo = 0;
     }
 
     ~GlEngine () {
@@ -74,7 +75,8 @@ private:
     //bool capture_keyboard = false;
 
     GLuint screenTex; // ID of screen Texture
-    GLuint tex_pbo;   // ID of the screen texture PBO
+    GLuint tex_pbo[2];// IDs of the screen texture PBO
+    size_t pbo;
 
     // Handler of shader program
     GLuint shaderProgram;

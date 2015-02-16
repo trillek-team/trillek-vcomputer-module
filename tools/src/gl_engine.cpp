@@ -97,27 +97,40 @@ int GlEngine::initGL(OS::OS& os) {
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    // Alloicate VBOs (position, color, UV)
+    // Allocate VBOs (position, color, UV)
     glGenBuffers(3, vbo);
     check_gl_error();
 
     // Upload vertex position
     glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_Position]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vdata), vdata, GL_STATIC_DRAW);
+    // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
+    glVertexAttribPointer(sh_in_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(sh_in_Position);
     check_gl_error();
+
     // Upload color
     glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_Color]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(color_data), color_data, GL_STATIC_DRAW);
+    // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
+    glVertexAttribPointer(sh_in_Color, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(sh_in_Color);
     check_gl_error();
+
     // Upload UV
     glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_UV-1]);
-    check_gl_error();
     glBufferData(GL_ARRAY_BUFFER, sizeof(uv_data), uv_data, GL_STATIC_DRAW);
+    // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
+    glVertexAttribPointer(sh_in_UV, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(sh_in_UV);
     check_gl_error();
 
     // Initialize PBO *********************************************************
-    glGenBuffers(1, &tex_pbo);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
+    glGenBuffers(2, tex_pbo);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo[pbo]);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, 320*240*4, nullptr, GL_STREAM_DRAW);
+    pbo = (pbo+1) % 2;
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo[pbo]);
     glBufferData(GL_PIXEL_UNPACK_BUFFER, 320*240*4, nullptr, GL_STREAM_DRAW);
 
     check_gl_error();
@@ -347,7 +360,6 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
 
     // Clear The Screen And The Depth Buffer
     frame_count += 1.0;
-
     glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -364,8 +376,6 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
             glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
             );
 
-    // Drawing ...
-    glUseProgram(shaderProgram);
     // Set sampler to user Texture Unit 0
     glUniform1i(glGetUniformLocation( shaderProgram, "texture0" ), 0);
 
@@ -377,12 +387,14 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
         t_acu -= 0.04;
 
         // Stream the texture *************************************************
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo[pbo]);
 
         // Copy the PBO to the texture
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 320, 240, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
-        // Updates the PBO with the new texture
+        pbo = (pbo+1) % 2;
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo[pbo]);
+        // Updates the other PBO with the new texture
         auto tdata = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
         if (tdata != nullptr) {
             //std::fill_n(tdata, 320*240, 0xFF800000);
@@ -396,23 +408,9 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO
     }
 
-    // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_Position]);
-    glVertexAttribPointer(sh_in_Position, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(sh_in_Position);
-    //check_gl_error();
-
-    // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_Color]);
-    glVertexAttribPointer(sh_in_Color, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(sh_in_Color);
-    //check_gl_error();
-
-    // Vertex data to attribute index 0 (shadderAttribute) and is 3 floats
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_UV-1]);
-    glVertexAttribPointer(sh_in_UV, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(sh_in_UV);
-    //check_gl_error();
+    // Binding sahder and VAO
+    glUseProgram(shaderProgram);
+    glBindVertexArray(vao);
 
     // Send M, V, P matrixes to the uniform inputs,
     glUniformMatrix4fv(modelId, 1, GL_FALSE, &model[0][0]);
@@ -423,9 +421,9 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
 
     glDrawArrays(GL_TRIANGLE_STRIP, sh_in_Position, N_VERTICES);
 
-    glDisableVertexAttribArray(sh_in_Position);
-    glDisableVertexAttribArray(sh_in_Color);
-    glDisableVertexAttribArray(sh_in_UV);
+    // Unbind
+    glBindVertexArray(0);
+    glUseProgram(0);
 
     // Update host window
     os.SwapBuffers();
