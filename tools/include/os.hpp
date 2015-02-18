@@ -20,8 +20,15 @@
 #include "keyboard_input_system.hpp"
 
 #include <cstdio>
+#include <iostream>
 
 namespace OS {
+    // Error helper function used by GLFW for error messaging.
+    // Currently outputs to std::cout.
+    static void ErrorCallback(int error, const char* description) {
+        std::cerr << error << " -> " << description << std::endl;
+    }
+
     class OS {
         public:
             OS() : mouseLock(false) {
@@ -30,38 +37,65 @@ namespace OS {
 
             ~OS() { }
 
-            bool InitializeWindow(const int width, const int height, const std::string title, const unsigned int glMajor = 3, const unsigned int glMinor = 2) {
-                // Initialize the library.
-                if (glfwInit() != GL_TRUE) {
-                    return false;
-                }
+			bool InitializeWindow(const int width, const int height, const std::string title, const unsigned int glMajor = 3, const unsigned int glMinor = 2) {
+				assert(glMajor >= 4 || (glMajor == 3 && glMinor >= 2));
+				std::string glcx_major = "1";
+				std::string glcx_version;
+				glfwSetErrorCallback(ErrorCallback);
 
-                glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-                glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-                glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, glMajor);
-                glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glMinor);
+				// Initialize the library.
+				if (glfwInit() != GL_TRUE) {
+					return false;
+				}
 
-#ifdef __APPLE__
-                // Must use the Core Profile on OS X to get GL 3.2.
-                glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#else
-                glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
-#endif
+				glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+				glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, glMajor);
+				glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glMinor);
+				glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+				// Create a windowed mode window and its OpenGL context.
+				this->window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+				if (this->window) {				
+					// Make the window's context current.
+					glfwMakeContextCurrent(this->window);
 
-                // Create a windowed mode window and its OpenGL context.
-                this->window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+					glcx_version = (char*)glGetString(GL_VERSION);
+					glcx_major = glcx_version.substr(0, glcx_version.find('.', 0));
+				}
 
-                if (!this->window) {
-                    // Try with core profile
+				if (glcx_major == "1" || glcx_major == "2") {
+					std::clog << "Trying again to geta valid OpenGL context\n";
+					// we got a old version context or failed. So try again.
+					if (this->window) {
+						glfwMakeContextCurrent(nullptr);
+						glfwDestroyWindow(this->window);
+					}
+					// Try again, enforcing Core profile
+					glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+					glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, glMajor);
+					glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glMinor);
                     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+					glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
                     this->window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
 
                     if (!this->window) {
                         glfwTerminate();
                         return false;
                     }
-                }
+                    // attach the context
+                    glfwMakeContextCurrent(this->window);
 
+                    // check the context version again
+                    glcx_version = (char*)glGetString(GL_VERSION);
+                    glcx_major = glcx_version.substr(0, glcx_version.find('.', 0));
+                    if(glcx_major == "1") {
+                        // still 1, higher versions probably not supported
+                        glfwTerminate();
+                        std::cerr << "Initializing OpenGL failed, unsupported version: " << glcx_version << '\n';
+                        std::cerr << "Press \"Enter\" to exit\n";
+                        std::cin.get();
+                        return false;
+                    }
+                }
                 this->width = width;
                 this->height = height;
 
@@ -70,16 +104,11 @@ namespace OS {
                 id cocoaWindow = glfwGetCocoaWindow(this->window);
                 id cocoaGLView = ((id (*)(id, SEL)) objc_msgSend)(cocoaWindow, sel_getUid("contentView"));
                 ((void (*)(id, SEL, bool)) objc_msgSend)(cocoaGLView, sel_getUid("setWantsBestResolutionOpenGLSurface:"), false);
-#endif
 
-                // Make the window's context current.
-                glfwMakeContextCurrent(this->window);
-
-#ifndef __APPLE__
+#else
                 // setting glewExperimental fixes a glfw context problem
                 // (tested on Ubuntu 13.04)
                 glewExperimental = GL_TRUE;
-
                 // Init GLEW.
                 GLuint error = glewInit();
                 if (error != GLEW_OK) {

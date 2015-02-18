@@ -27,10 +27,14 @@ public:
 
         yaw  = 0;
         pith = 0;
-        zoom = 6.0;
+        zoom = 4.7;
 
         frame_count = 0;
         t_acu = 0;
+
+        vertShaderFile = "basic_vs.vert";
+        fragShaderFile = "retro_texture.frag";
+        this->pbo = 0;
     }
 
     ~GlEngine () {
@@ -42,6 +46,13 @@ public:
         if (fragmentSource != nullptr) {
             delete[] fragmentSource;
         }
+    }
+
+    void setVertexShaderFile (const std::string& file) {
+        this->vertShaderFile = file;
+    }
+    void setFragmentShaderFile (const std::string& file) {
+        this->fragShaderFile = file;
     }
 
     //! Init OpenGL
@@ -64,7 +75,8 @@ private:
     //bool capture_keyboard = false;
 
     GLuint screenTex; // ID of screen Texture
-    GLuint tex_pbo;   // ID of the screen texture PBO
+    GLuint tex_pbo[2];// IDs of the screen texture PBO
+    size_t pbo;
 
     // Handler of shader program
     GLuint shaderProgram;
@@ -87,19 +99,16 @@ private:
     static const unsigned int sh_in_Color;
     static const unsigned int sh_in_UV;
 
-    static const GLfloat N_VERTICES;
+	static const GLsizei N_VERTICES;
 
-    GLuint vertexbuffer;
+    GLuint vao, vbo[3]; // vbo = {vdata, color, uv}
     static const float vdata[];
-
-    GLuint colorbuffer;
     static const float color_data[];
-
-    GLuint uvbuffer;
     static const float uv_data[];
 
     glm::mat4 proj, view, model; //! MVP Matrixes
 
+    // Camera position
     float yaw;
     float pith;
     float zoom;
@@ -108,6 +117,9 @@ private:
     double t_acu;       //! Acumulated time
 
     std::function<void(void*)> painter; //! Function that paints screen texture
+
+    std::string vertShaderFile;
+    std::string fragShaderFile;
 };
 
 #endif
