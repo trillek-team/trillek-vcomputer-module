@@ -3,7 +3,7 @@
  * \file        tr3200.cpp
  * \copyright   LGPL v3
  *
- * Implementation of the TR3200 CPU v0.3.0
+ * Implementation of the TR3200 CPU v0.4.2
  * @see https://github.com/trillek-team/trillek-computer/blob/master/TR3200.md
  */
 
