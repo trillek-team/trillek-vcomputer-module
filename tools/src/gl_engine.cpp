@@ -9,6 +9,7 @@
 #include "gl_engine.hpp"
 
 #if WIN32
+#include "vs_fix.hpp"
 #include <shlobj.h>
 #include <winerror.h>
 #include <atlbase.h>
