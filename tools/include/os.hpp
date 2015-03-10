@@ -42,10 +42,12 @@ namespace OS {
 
 				// Initialize the library.
 				if (glfwInit() != GL_TRUE) {
-					std::cerr << "Can¡t start GLFW\n";
+					std::cerr << "Can't start GLFW\n";
 					return false;
 				}
 #ifdef __APPLE__
+                // Try to grab latest OpenGL version on OSX
+                // Source : http://antongerdelan.net/opengl/hellotriangle.html
 				glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 				glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 				glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -59,7 +61,7 @@ namespace OS {
 					std::cerr << "Can't open a window with GLFW\n";
 					return false;
 				}
-				
+
 				// Make the window's context current.
 				glfwMakeContextCurrent(this->window);
 
@@ -73,8 +75,7 @@ namespace OS {
                 id cocoaWindow = glfwGetCocoaWindow(this->window);
                 id cocoaGLView = ((id (*)(id, SEL)) objc_msgSend)(cocoaWindow, sel_getUid("contentView"));
                 ((void (*)(id, SEL, bool)) objc_msgSend)(cocoaGLView, sel_getUid("setWantsBestResolutionOpenGLSurface:"), false);
-
-#endif
+#else
                 // setting glewExperimental fixes a glfw context problem
                 // (tested on Ubuntu 13.04)
                 glewExperimental = GL_TRUE;
@@ -85,6 +86,7 @@ namespace OS {
 					glfwTerminate();
 					return false;
                 }
+#endif
 
 				std::string gl_version, gl_renderer;
 				gl_version = (char*)glGetString(GL_VERSION);
