@@ -48,7 +48,6 @@ const float GlEngine::uv_data[] = {
     0.0,  1.0,      // Bottom Left
 };
 
-
 void GlEngine::SetTextureCB (std::function<void(void*)> painter) {
     this->painter = painter;
 }
@@ -108,7 +107,7 @@ int GlEngine::initGL(OS::OS& os) {
 	glEnableVertexAttribArray(sh_in_Position);
 	glVertexAttribPointer(sh_in_Position, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     check_gl_error();
-	
+
     // Upload color
     glBindBuffer(GL_ARRAY_BUFFER, vbo[sh_in_Color]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(color_data), color_data, GL_STATIC_DRAW);
@@ -124,9 +123,9 @@ int GlEngine::initGL(OS::OS& os) {
     glVertexAttribPointer(sh_in_UV, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(sh_in_UV);
     check_gl_error();
-	
+
     // Initialize PBO *********************************************************
-	
+
     glGenBuffers(2, tex_pbo);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo[pbo]);
     glBufferData(GL_PIXEL_UNPACK_BUFFER, 320*240*4, nullptr, GL_STREAM_DRAW);
@@ -135,9 +134,9 @@ int GlEngine::initGL(OS::OS& os) {
     glBufferData(GL_PIXEL_UNPACK_BUFFER, 320*240*4, nullptr, GL_STREAM_DRAW);
 
     check_gl_error();
-	
+
     // Initialize Texture *****************************************************
-	
+
     glGenTextures(1, &screenTex);
     glBindTexture(GL_TEXTURE_2D, screenTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 320, 240, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -148,7 +147,7 @@ int GlEngine::initGL(OS::OS& os) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     check_gl_error();
-	
+
 
     // Loading shaders ********************************************************
     FILE* f_vs = nullptr;
@@ -400,7 +399,7 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
         t_acu -= 0.04;
 
         // Stream the texture *************************************************
-		
+
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo[pbo]);
 
         // Copy the PBO to the texture
@@ -409,7 +408,9 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
         pbo = (pbo+1) % 2;
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, tex_pbo[pbo]);
         // Updates the other PBO with the new texture
-        auto tdata = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+        //auto tdata = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+        auto tdata = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 320*240*4 ,
+                GL_MAP_WRITE_BIT |GL_MAP_INVALIDATE_BUFFER_BIT );
         if (tdata != nullptr) {
             //std::fill_n(tdata, 320*240, 0xFF800000);
             if (painter) {
@@ -417,23 +418,25 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
             }
 
             glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+        } else {
+            check_gl_error();
         }
 
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0); // Release the PBO
-		
+
     }
 
     // Binding VAO
     glBindVertexArray(vao);
 
     // Send M, V, P matrixes to the uniform inputs,
-	
+
 	glUniformMatrix4fv(modelId, 1, GL_FALSE, &model[0][0]);
     glUniformMatrix4fv(viewId, 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(projId, 1, GL_FALSE, &proj[0][0]);
-	
+
     glUniform1f(timeId, frame_count / 10.0f);
-	
+
 	glDrawArrays(GL_TRIANGLE_STRIP, sh_in_Position, N_VERTICES);
 
     // Unbind

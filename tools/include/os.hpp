@@ -40,6 +40,7 @@ namespace OS {
 			bool InitializeWindow(const int width, const int height, const std::string title) {
 				glfwSetErrorCallback(ErrorCallback);
 
+                this->title = title;
 				// Initialize the library.
 				if (glfwInit() != GL_TRUE) {
 					std::cerr << "Can't start GLFW\n";
@@ -54,6 +55,7 @@ namespace OS {
 				glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 				glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
+                glfwWindowHint (GLFW_SAMPLES, 4);
 				// Create a windowed mode window and its OpenGL context.
 				this->window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
 				if (!this->window) {
@@ -265,6 +267,25 @@ namespace OS {
                 return false;
             }
 
+            /**
+             * Display FPS on title
+             */
+            void UpdateCounter () {
+                static double previous_seconds = glfwGetTime ();
+                static int frame_count;
+                double current_seconds = glfwGetTime ();
+                double elapsed_seconds = current_seconds - previous_seconds;
+                if (elapsed_seconds > 0.25) {
+                    previous_seconds = current_seconds;
+                    double fps = (double)frame_count / elapsed_seconds;
+                    char tmp[128];
+                    snprintf (tmp, 128, "%s @ fps: %.2f", this->title.c_str(), fps);
+                    glfwSetWindowTitle (this->window, tmp);
+                    frame_count = 0;
+                }
+                frame_count++;
+            }
+
         private:
 
             /**
@@ -302,6 +323,7 @@ namespace OS {
             double lastTime; // The time at the last call to GetDeltaTime().
             bool mouseLock; // If mouse lock is enabled causing the cursor to snap to mid-window each movement event.
 
+            std::string title;
             event::KeyboardInputSystem KeyboardEventSystem;
     };
 

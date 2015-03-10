@@ -91,6 +91,7 @@ int main (int argc, char* argv[]) {
 
     bool loop = true;
     while ( loop) {
+        glfwos.UpdateCounter();
         // Calcs delta time
 
         auto oldClock = clock;
