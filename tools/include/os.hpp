@@ -37,65 +37,38 @@ namespace OS {
 
             ~OS() { }
 
-			bool InitializeWindow(const int width, const int height, const std::string title, const unsigned int glMajor = 3, const unsigned int glMinor = 2) {
-				assert(glMajor >= 4 || (glMajor == 3 && glMinor >= 2));
-				std::string glcx_major = "1";
-				std::string glcx_version;
+			bool InitializeWindow(const int width, const int height, const std::string title) {
 				glfwSetErrorCallback(ErrorCallback);
 
+                this->title = title;
 				// Initialize the library.
 				if (glfwInit() != GL_TRUE) {
+					std::cerr << "Can't start GLFW\n";
+					return false;
+				}
+#ifdef __APPLE__
+                // Try to grab latest OpenGL version on OSX
+                // Source : http://antongerdelan.net/opengl/hellotriangle.html
+				glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+				glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+				glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+				glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+				glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
+                glfwWindowHint (GLFW_SAMPLES, 4);
+				// Create a windowed mode window and its OpenGL context.
+				this->window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+				if (!this->window) {
+					glfwTerminate();
+					std::cerr << "Can't open a window with GLFW\n";
 					return false;
 				}
 
-				glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-				glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, glMajor);
-				glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glMinor);
-				glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-				// Create a windowed mode window and its OpenGL context.
-				this->window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
-				if (this->window) {				
-					// Make the window's context current.
-					glfwMakeContextCurrent(this->window);
+				// Make the window's context current.
+				glfwMakeContextCurrent(this->window);
 
-					glcx_version = (char*)glGetString(GL_VERSION);
-					glcx_major = glcx_version.substr(0, glcx_version.find('.', 0));
-				}
 
-				if (glcx_major == "1" || glcx_major == "2") {
-					std::clog << "Trying again to geta valid OpenGL context\n";
-					// we got a old version context or failed. So try again.
-					if (this->window) {
-						glfwMakeContextCurrent(nullptr);
-						glfwDestroyWindow(this->window);
-					}
-					// Try again, enforcing Core profile
-					glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-					glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, glMajor);
-					glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glMinor);
-                    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-					glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-                    this->window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
 
-                    if (!this->window) {
-                        glfwTerminate();
-                        return false;
-                    }
-                    // attach the context
-                    glfwMakeContextCurrent(this->window);
-
-                    // check the context version again
-                    glcx_version = (char*)glGetString(GL_VERSION);
-                    glcx_major = glcx_version.substr(0, glcx_version.find('.', 0));
-                    if(glcx_major == "1") {
-                        // still 1, higher versions probably not supported
-                        glfwTerminate();
-                        std::cerr << "Initializing OpenGL failed, unsupported version: " << glcx_version << '\n';
-                        std::cerr << "Press \"Enter\" to exit\n";
-                        std::cin.get();
-                        return false;
-                    }
-                }
                 this->width = width;
                 this->height = height;
 
@@ -104,7 +77,6 @@ namespace OS {
                 id cocoaWindow = glfwGetCocoaWindow(this->window);
                 id cocoaGLView = ((id (*)(id, SEL)) objc_msgSend)(cocoaWindow, sel_getUid("contentView"));
                 ((void (*)(id, SEL, bool)) objc_msgSend)(cocoaGLView, sel_getUid("setWantsBestResolutionOpenGLSurface:"), false);
-
 #else
                 // setting glewExperimental fixes a glfw context problem
                 // (tested on Ubuntu 13.04)
@@ -112,9 +84,18 @@ namespace OS {
                 // Init GLEW.
                 GLuint error = glewInit();
                 if (error != GLEW_OK) {
-                    return false;
+					std::cerr << "Can't initialize glew\n";
+					glfwTerminate();
+					return false;
                 }
 #endif
+
+				std::string gl_version, gl_renderer;
+				gl_version = (char*)glGetString(GL_VERSION);
+				gl_renderer = (char*)glGetString(GL_RENDERER);
+
+				std::cout << "Renderer: " << gl_renderer << "\n";
+				std::cout << "OpenGL Version: " << gl_version << "\n";
 
                 // Associate a pointer for this instance with this window.
                 glfwSetWindowUserPointer(this->window, this);
@@ -190,7 +171,9 @@ namespace OS {
                 OS* os = static_cast<OS*>(glfwGetWindowUserPointer(window));
                 if (os) {
                     if (width != os->width || height != os->height) {
-                        glfwSetWindowSize(window, os->width, os->height);
+                        //glfwSetWindowSize(window, os->width, os->height);
+						os->UpdateWindowSize(width, height);
+						glViewport(0, 0, width, height);
                     }
                 }
             }
@@ -286,6 +269,30 @@ namespace OS {
                 return false;
             }
 
+            /**
+             * Display FPS on title
+             */
+            void UpdateCounter () {
+                static double previous_seconds = glfwGetTime ();
+                static int frame_count;
+                double current_seconds = glfwGetTime ();
+                double elapsed_seconds = current_seconds - previous_seconds;
+                if (elapsed_seconds > 0.25) {
+                    previous_seconds = current_seconds;
+                    double fps = (double)frame_count / elapsed_seconds;
+                    char tmp[128];
+#if defined(_MSC_VER)
+					// VC++ C compiler support : C89 thanks microsoft !
+                    _snprintf (tmp, 128, "%s @ fps: %.2f", this->title.c_str(), fps);
+#else
+					snprintf(tmp, 128, "%s @ fps: %.2f", this->title.c_str(), fps);
+#endif
+                    glfwSetWindowTitle (this->window, tmp);
+                    frame_count = 0;
+                }
+                frame_count++;
+            }
+
         private:
 
             /**
@@ -323,6 +330,7 @@ namespace OS {
             double lastTime; // The time at the last call to GetDeltaTime().
             bool mouseLock; // If mouse lock is enabled causing the cursor to snap to mid-window each movement event.
 
+            std::string title;
             event::KeyboardInputSystem KeyboardEventSystem;
     };
 

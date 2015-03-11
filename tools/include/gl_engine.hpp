@@ -27,7 +27,7 @@ public:
 
         yaw  = 0;
         pith = 0;
-        zoom = 4.7;
+        zoom = 4.7f;
 
         frame_count = 0;
         t_acu = 0;

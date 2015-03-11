@@ -16,11 +16,12 @@
 #ifdef __APPLE__
     #include <OpenAL/al.h>
     #include <OpenAL/alc.h>
+    #include <OpenAL/alure.h>
 #else
     #include <AL/al.h>
     #include <AL/alc.h>
+    #include <AL/alure.h>
 #endif
-#include <AL/alure.h> // Check if in MacOS or Win needs other stuff here
 
 
 #include "types.hpp"
