@@ -171,7 +171,9 @@ namespace OS {
                 OS* os = static_cast<OS*>(glfwGetWindowUserPointer(window));
                 if (os) {
                     if (width != os->width || height != os->height) {
-                        glfwSetWindowSize(window, os->width, os->height);
+                        //glfwSetWindowSize(window, os->width, os->height);
+						os->UpdateWindowSize(width, height);
+						glViewport(0, 0, width, height);
                     }
                 }
             }
@@ -279,7 +281,12 @@ namespace OS {
                     previous_seconds = current_seconds;
                     double fps = (double)frame_count / elapsed_seconds;
                     char tmp[128];
-                    snprintf (tmp, 128, "%s @ fps: %.2f", this->title.c_str(), fps);
+#if defined(_MSC_VER)
+					// VC++ C compiler support : C89 thanks microsoft !
+                    _snprintf (tmp, 128, "%s @ fps: %.2f", this->title.c_str(), fps);
+#else
+					snprintf(tmp, 128, "%s @ fps: %.2f", this->title.c_str(), fps);
+#endif
                     glfwSetWindowTitle (this->window, tmp);
                     frame_count = 0;
                 }

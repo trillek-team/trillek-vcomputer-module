@@ -374,6 +374,19 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// Determine the aspect ratio and sanity check it to a safe ratio
+	GLfloat aspectRatio = static_cast<float>(os.GetWindowWidth()) / static_cast<float>(os.GetWindowHeight());
+	if (aspectRatio < 1.0f) {
+		aspectRatio = 4.0f / 3.0f;
+	}
+
+	// Projection matrix : 45° Field of View
+	proj = glm::perspective(
+		45.0f,      // FOV
+		aspectRatio,
+		0.1f,       // Near cliping plane
+		10000.0f);  // Far cliping plane
+
     // Model matrix <- Identity
     model = glm::mat4(1.0f);
 
