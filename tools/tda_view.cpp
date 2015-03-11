@@ -105,7 +105,7 @@ int main (int argc, char* argv[]) {
         // Ugly hack
         for(unsigned long i=0; i < 10000000 ; i++) {
             ;
-        }
+        } 
 
         gl.UpdScreen (glfwos, delta);
     }

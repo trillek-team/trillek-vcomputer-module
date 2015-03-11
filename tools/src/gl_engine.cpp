@@ -60,7 +60,7 @@ int GlEngine::initGL(OS::OS& os) {
     // Use the GL3 way to get the version number
     glGetIntegerv(GL_MAJOR_VERSION, &OpenGLVersion[0]);
     glGetIntegerv(GL_MINOR_VERSION, &OpenGLVersion[1]);
-    std::cout << "Using OpenGL " << OpenGLVersion[0] << "." << OpenGLVersion[1] << "\n";
+    std::cerr << "Using OpenGL " << OpenGLVersion[0] << "." << OpenGLVersion[1] << "\n";
 
     // Sanity check to make sure we are at least in a good major version number.
     assert((OpenGLVersion[0] > 1) && (OpenGLVersion[0] < 5));
@@ -324,6 +324,11 @@ int GlEngine::initGL(OS::OS& os) {
     glAttachShader(shaderProgram, fragmentShader);
     check_gl_error();
 
+    // Bind attributes indexes
+    glBindAttribLocation(shaderProgram, sh_in_Position, "in_Position");
+    glBindAttribLocation(shaderProgram, sh_in_Color, "in_Color");
+    glBindAttribLocation(shaderProgram, sh_in_UV, "in_UV");
+
     // Link shader program
     glLinkProgram(shaderProgram);
 
@@ -346,11 +351,6 @@ int GlEngine::initGL(OS::OS& os) {
         free(shaderProgramInfoLog);
         return -1;
     }
-
-    // Bind attributes indexes
-    glBindAttribLocation(shaderProgram, sh_in_Position, "in_Position");
-    glBindAttribLocation(shaderProgram, sh_in_Color, "in_Color");
-    glBindAttribLocation(shaderProgram, sh_in_UV, "in_UV");
 
     modelId = glGetUniformLocation(shaderProgram, "in_Model");
     viewId  = glGetUniformLocation(shaderProgram, "in_View");
@@ -413,7 +413,7 @@ void GlEngine::UpdScreen (OS::OS& os, const double delta) {
         auto tdata = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 320*240*4 ,
                 GL_MAP_WRITE_BIT |GL_MAP_INVALIDATE_BUFFER_BIT );
         if (tdata != nullptr) {
-            //std::fill_n(tdata, 320*240, 0xFF800000);
+            std::fill_n((unsigned*)tdata, 320*240, 0xFF800000);
             if (painter) {
                 painter(tdata);
             }

@@ -6,6 +6,8 @@ if (CMAKE_HOST_APPLE)
         /usr/local
         /opt/local
     )
+    INCLUDE_DIRECTORIES(/usr/include)
+    INCLUDE_DIRECTORIES(/usr/local/include)
 else (CMAKE_HOST_APPLE)
     # OS X is a Unix, but it's not a normal Unix as far as search paths go.
     if (CMAKE_HOST_UNIX)
