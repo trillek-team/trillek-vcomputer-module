@@ -30,13 +30,19 @@ Plus you can control if you wish release or debug building using `-DCMAKE_BUILD_
 
 In windows, you should add the "-g" parameter with the apropiated generator for VS2013 (you can get the list running cmake --help), or you can use the CMake GUI. With this, you can generate VS2013/4 project/solution files that you can open and compile, or use msbuild from a develop console. On window, to get wroking video and sound, you should put all necesary library and include files on a "lib" directory on the root dir of the source code. You could download a zip file with all necesary library and includes files for Windows, from http://cpu.zardoz.es/trillek-win32-lib.zip . If you use this file, you need to set the flag USE_STATIC_GLEW to true.
 
+Rememeber to copy/link the assets folder to the directory build/bin/ (on Linux/OSX) or build/bin/Debug/ or build/bin/Release/ 
+INSTALLING
+----------
+
+You could do a ```make install``` (or run Install solution on Visual Studio) to install the toy emulator + tools + library.
+
 WHAT IT DOES ACTUALLY
 ------------------
 ### Tools
 
 #### vm
 
-Is a program that uses the Trillek Virtual Computer lib to run a TR3200 emulation. Can run in step mode or in "run mode" where it executes all the program without stopping. Needs C++ 11 *std::chrono compilance* for measuring times; **GLFW3 + GLM + OpenGL 3.2** is needed if you desire to see the virtual screen.
+Is a program that uses the Trillek Virtual Computer lib to run a TR3200 emulation. Can run in step mode or in "run mode" where it executes all the program without stopping. Needs C++ 11 *std::chrono compilance* for measuring times; **GLFW3 + GLM + OpenGL 3.3** is needed if you desire to see the virtual screen.
 
 - Can load a little endian binary file with a ROM image with a max size of 32KiB.
 - Step mode, has an on-line disassembler. Each time that you press enter or 's' or 'S'
@@ -52,14 +58,22 @@ Usage:
         ./vm -r romfile [other parameters]
 
 Parameters:
-        -r file or --rom file : RAW binary file for the ROM 32 KiB
+        -r file or --rom file : RAW binary file for the ROM (32 KiB Max)
         -d file or --disk file : Disk file
+        --nvram file : Non volatile RAM file
         -c val or --cpu val : Sets the CPU to use, from "tr3200" or "dcpu-16n"
-        -m val or --disk val : How many RAM have the computer in KiB. Must be > 128 and < 1024. Will be round to a multiple of 128
+        -x or --exec : Run the computer in normal mode without asking
+        -m val or --mem val : How much RAM the computer will have, in KiB. Must be between 32 and 1024 and will be rounded to a multiple of 32
+        --time : Show timing and speed info while running.
         --clock val : CPU clock speed in Khz. Must be 100, 250, 500 or 1000.
         -b val : Inserts a breakpoint at address val (could be hexadecimal or decimal).
+        --ext-keys : Allow extra (non-standard) keycodes with virtual keyboard.
         -h or --help : Shows this help
 ```
+
+For example, if you run vc on the directory were is generated when you compile the project, you could simply :
+```./vc -r ../../asm/hello.ffi -x```
+And it would run the "Hello world" program.
 
 #### pbm2font
 
@@ -154,4 +168,4 @@ IMPLEMENTED DEVICES
 
 TODO
 ----
-See issues on github or the [Trello board](https://trello.com/b/ONRIy13Q)
+See issues on github or [Trello board](https://trello.com/b/ONRIy13Q)
