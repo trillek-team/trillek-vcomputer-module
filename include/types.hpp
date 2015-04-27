@@ -3,8 +3,8 @@
  * \file        types.hpp
  * \copyright   LGPL v3
  */
-#ifndef __TYPES_HPP_
-#define __TYPES_HPP_ 1
+#ifndef __TR_TYPES_HPP_
+#define __TR_TYPES_HPP_ 1
 
 #include <cstdint>
 #include <cstddef> // std::size_t
@@ -23,4 +23,4 @@ typedef int8_t   SByte;   /// signed Byte
 
 } // End of namespace trillek
 
-#endif // __TYPES_HPP_
+#endif // __TR_TYPES_HPP_
