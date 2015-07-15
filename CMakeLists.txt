@@ -68,19 +68,15 @@ SET(VCOMPUTER_INCLUDE_DIRS
 FILE(GLOB VCOMPUTER_SRC
     "src/*.cpp"
     "src/tr3200/*.cpp"
-    "src/dcpu16n/*.cpp"
     "src/devices/*.cpp"
     "src/*.hpp"
     "src/tr3200/*.hpp"
-    "src/dcpu16n/*.hpp"
     "src/devices/*.hpp"
     "src/*.inc"
     "src/tr3200/*.inc"
-    "src/dcpu16n/*.inc"
     "src/devices/*.inc"
     "include/*.hpp"
     "include/tr3200/*.hpp"
-    "include/dcpu16n/*.hpp"
     "include/devices/*.hpp"
     )
 
