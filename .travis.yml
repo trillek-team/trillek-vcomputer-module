@@ -2,6 +2,14 @@ language: cpp
 
 os: linux
 
+sudo: false
+cache:
+  directories:
+      - $HOME/cmake
+      - $HOME/glfw-lib
+      - $HOME/glm
+      - $HOME/gtest-1.7.0
+
 addons:
     apt:
         sources:
@@ -13,59 +21,48 @@ addons:
             - libgl1-mesa-dev
             - xorg-dev
             - libglu1-mesa-dev
+            - libglew-dev
+            - libopenal-dev
 
 compiler:
     - gcc
 
 before_install:
-    - echo $LANG
-    - echo $LC_ALL
-    - sudo apt-get update -qq
-    # Install CMake 3.1
-    - (cd /tmp && wget http://www.cmake.org/files/v3.1/cmake-3.1.3.tar.gz && tar zxf cmake-3.1.3.tar.gz)
-    - (cd /tmp/cmake-3.1.3 && cmake . && make && sudo make install) > /dev/null 2>&1
-    - cmake --version
-    # No ppa for GLFW3 at this time. Compiling by hand!
-    - git clone --depth=100 https://github.com/glfw/glfw.git
-    - cd glfw
-    - CMAKE_CXX_FLAGS=-fPIC CMAKE_C_FLAGS=-fPIC cmake -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:bool=true .
-    - sudo make install
-    - cd ..
-    # Download GLM 9.5 from github
-    - wget https://github.com/g-truc/glm/archive/0.9.5.3.zip
-    - unzip 0.9.5.3.zip -d /tmp
-    - sudo cp -r /tmp/glm-0.9.5.3/glm /usr/include
-
-install:
     # Enforces GCC 4.8
     - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
     # Enforces CLang 3.7
     #- if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.7"; fi
-    # Install OpenAL, GLEW, GTest
-    - sudo apt-get -q -y install libglew-dev libopenal-dev libgtest-dev
-    - BUILD_PATH=$(pwd)
-    - cd /usr/src/gtest
-    - sudo cmake CMakeLists.txt
-    - sudo make
-    - GTEST_ROOT=/usr/src/gtest
-    - export GTEST_ROOT
-    - cd $BUILD_PATH
+    - echo $LANG
+    - echo $LC_ALL
+    - ./travis/install_cmake.sh
+    - ls -lha $HOME/cmake/
+    - export PATH=$HOME/cmake/:$HOME/cmake/bin/:$PATH
+    - cmake --version
+    - ./travis/install_deps.sh
+    - export GLFW_ROOT_DIR=$HOME/glfw-lib
+    - export GLM_ROOT_DIR=$HOME/glm
+    - export GTEST_ROOT=$HOME/gtest-1.7.0
+
+install:
 
 before_script:
-  - mkdir build
-  - cd build
-  - cmake -DCMAKE_BUILD_TYPE=Debug ..
+    - mkdir -p build
+    - cd build
+    - cmake -DCMAKE_BUILD_TYPE=Debug ..
 
 script:
-  - make
-  - cd bin
-  - ./unit_test
-  - cd ..
-  - make package
+    - make
+    - cd bin
+    - ./unit_test
+    - cd ..
+    - make package
 
 notifications:
     email:
-      - luis.panadero@gmail.com
+        - luis.panadero@gmail.com
     irc:
-      - "chat.freenode.net#project-trillek"
-      - "chat.freenode.net#trillek"
+        channels:
+            - "chat.freenode.net#trillek"
+              #      - "chat.freenode.net#project-trillek"
+        on_success: change
+        on_failure: always
