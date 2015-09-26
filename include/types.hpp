@@ -6,7 +6,7 @@
 #ifndef __TR_TYPES_HPP_
 #define __TR_TYPES_HPP_ 1
 
-#include <cstdint>
+#include <stdint.h>
 #include <cstddef> // std::size_t
 
 namespace trillek {

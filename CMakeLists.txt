@@ -1,6 +1,9 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 
 PROJECT(VCOMPUTER)
+SET(CMAKE_CXX_STANDARD_REQUIRED 11)
+
+INCLUDE(CMakeDependentOption)
 INCLUDE(InstallRequiredSystemLibraries)
 
 # Set the directory where to find cmake "modules"
@@ -20,8 +23,8 @@ get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 
 # Project generic variables
 SET(VCOMP_VERSION_MAJOR 0)
-SET(VCOMP_VERSION_MINOR 5)
-SET(VCOMP_VERSION_PATCH 2)
+SET(VCOMP_VERSION_MINOR 6)
+SET(VCOMP_VERSION_PATCH 0)
 SET(VCOMP_VERSION_STRING ${VCOMP_VERSION_MAJOR}.${VCOMP_VERSION_MINOR}.${VCOMP_VERSION_PATCH})
 
 SET(VCOMP_BUILD "${GIT_SHA1}") # Try to use git files to get hash
@@ -36,15 +39,15 @@ IF (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebIn
 ENDIF (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
 
 ## Options !!!
-SET(BUILD_STATIC_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER library - static version")
-SET(BUILD_DYNAMIC_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER library - dynamic version")
+OPTION(BUILD_STATIC_VCOMPUTER "Build Trillek VCOMPUTER library - static version" TRUE)
+OPTION(BUILD_DYNAMIC_VCOMPUTER "Build Trillek VCOMPUTER library - dynamic version" TRUE)
 
 # Options for optional compiling stuff
-SET(BUILD_TOOLS_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER tools")
-SET(BUILD_TESTS_VCOMPUTER TRUE CACHE BOOL "Build Trillek VCOMPUTER tests")
+OPTION(BUILD_TOOLS_VCOMPUTER "Build Trillek VCOMPUTER tools" TRUE)
+OPTION(BUILD_TESTS_VCOMPUTER "Build Trillek VCOMPUTER tests" TRUE)
 
 # Optiones that affect functionality
-SET(BRKPOINTS_ENABLED 1 CACHE INT "Enables Break Points functionality")
+OPTION(BRKPOINTS_ENABLED "Enables Break Points functionality" TRUE)
 
 IF (BRKPOINTS_ENABLED)
     MESSAGE(STATUS "Breakpoints functionality enabled")
@@ -68,19 +71,15 @@ SET(VCOMPUTER_INCLUDE_DIRS
 FILE(GLOB VCOMPUTER_SRC
     "src/*.cpp"
     "src/tr3200/*.cpp"
-    "src/dcpu16n/*.cpp"
     "src/devices/*.cpp"
     "src/*.hpp"
     "src/tr3200/*.hpp"
-    "src/dcpu16n/*.hpp"
     "src/devices/*.hpp"
     "src/*.inc"
     "src/tr3200/*.inc"
-    "src/dcpu16n/*.inc"
     "src/devices/*.inc"
     "include/*.hpp"
     "include/tr3200/*.hpp"
-    "include/dcpu16n/*.hpp"
     "include/devices/*.hpp"
     )
 
@@ -130,19 +129,19 @@ IF(BUILD_DYNAMIC_VCOMPUTER)
         )
 ENDIF(BUILD_DYNAMIC_VCOMPUTER)
 
-# Enforces to use dllexport on shared library on Windows
-IF(WIN32)
-    SET_TARGET_PROPERTIES (VCOMPUTER PROPERTIES COMPILE_DEFINITIONS
-        "DLL_EXPORT;BUILD_DLL_VCOMPUTER"
-        )
-ENDIF(WIN32)
-
 # Version of the libs
 IF(BUILD_DYNAMIC_VCOMPUTER)
-SET_TARGET_PROPERTIES(VCOMPUTER PROPERTIES
-    VERSION ${VCOMP_VERSION_STRING}
-    SOVERSION ${VCOMP_VERSION_MAJOR}
-    )
+    # Enforces to use dllexport on shared library on Windows
+    IF(WIN32)
+        SET_TARGET_PROPERTIES (VCOMPUTER PROPERTIES COMPILE_DEFINITIONS
+            "DLL_EXPORT;BUILD_DLL_VCOMPUTER"
+            )
+    ENDIF(WIN32)
+
+    SET_TARGET_PROPERTIES(VCOMPUTER PROPERTIES
+        VERSION ${VCOMP_VERSION_STRING}
+        SOVERSION ${VCOMP_VERSION_MAJOR}
+        )
 ENDIF(BUILD_DYNAMIC_VCOMPUTER)
 
 IF(BUILD_STATIC_VCOMPUTER)
@@ -235,10 +234,6 @@ SET(CPACK_PACKAGE_VERSION_MINOR ${VCOMP_VERSION_MINOR})
 SET(CPACK_PACKAGE_VERSION_PATCH ${VCOMP_VERSION_PATCH})
 SET(CPACK_PACKAGE_VERSION ${VCOMP_VERSION_STRING})
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Trillek VComputer")
-SET(CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://trillek.org/" )
-SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Luis Panadero Guardeño" )
-SET(CPACK_RPM_PACKAGE_LICENSE "LGPL 3")
-SET(CPACK_NSIS_MODIFY_PATH ON)
 
 SET(CPACK_COMPONENTS_ALL ${COMPONENTS})
 SET(CPACK_COMPONENT_SLIBRARY_DISPLAY_NAME "Static Library")
@@ -271,8 +266,6 @@ SET(CPACK_SOURCE_TOPLEVEL_TAG      "source")
 SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
 SET(CPACK_SOURCE_IGNORE_FILES      "/\\\\.git/;\\\\.swp$;\\\\.#;/#;\\\\.*~;cscope\\\\.*;/[Bb]uild[.+-_a-zA-Z0-9]*/")
 
-SET(CPACK_DEB_COMPONENT_INSTALL ON)
-SET(CPACK_RPM_COMPONENT_INSTALL ON)
 SET(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
 # Try to use apropiate generators for every system and other stuff
@@ -322,27 +315,8 @@ IF(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInf
     SET (CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}-debug")
 ENDIF()
 
-IF(WIN32)
-    SET(GENERATORS "ZIP")
-    SET(SRC_GENERATORS "ZIP")
-ELSE(WIN32)
-    SET(GENERATORS "STGZ;TGZ")
-    SET(SRC_GENERATORS "TGZ")
-
-    IF(UNIX AND NOT APPLE) # GNU Linux and perhaps BSDs
-        SET(GENERATORS "${GENERATORS};DEB")
-        SET(SRC_GENERATORS "${SRC_GENERATORS};DEB")
-
-        FIND_PROGRAM(RPMBUILD_EXECUTABLE rpmbuild)
-        IF(RPMBUILD_EXECUTABLE)
-            SET(GENERATORS "${GENERATORS};RPM")
-            SET(SRC_GENERATORS "${SRC_GENERATORS};RPM")
-        ENDIF()
-    ELSE() # Apple
-        SET(GENERATORS "${GENERATORS};PackageMaker")
-    ENDIF(UNIX AND NOT APPLE)
-
-ENDIF(WIN32)
+SET(GENERATORS "ZIP;TGZ")
+SET(SRC_GENERATORS "ZIP;TGZ")
 
 FIND_PROGRAM(NSISBUILD_EXECUTABLE makensis)
 IF(NSISBUILD_EXECUTABLE)

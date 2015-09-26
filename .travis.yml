@@ -1,55 +1,80 @@
 language: cpp
-compiler: gcc
+
+sudo: false
+
+cache:
+  directories:
+      - $HOME/cmake
+      - $HOME/lib
+
+matrix:
+    include:
+        - os: linux
+          compiler: gcc
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages:
+                      - gcc-4.9
+                      - g++-4.9
+                      - libx11-dev
+                      - libgl1-mesa-dev
+                      - xorg-dev
+                      - libglu1-mesa-dev
+                      - libglew-dev
+                      - libopenal-dev
+          env: COMPILER=g++-4.9
+
+        - os: linux
+          compiler: clang
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-test
+                      - llvm-toolchain-precise-3.7
+                  packages:
+                      - clang-3.7
+                      - libx11-dev
+                      - libgl1-mesa-dev
+                      - xorg-dev
+                      - libglu1-mesa-dev
+                      - libglew-dev
+                      - libopenal-dev
+          env: COMPILER=clang++-3.7
+
 before_install:
-    # Grabs a modern version of cmake
-    - echo "yes" | sudo add-apt-repository ppa:kalakris/cmake
-    - sudo apt-get update -qq
-    - sudo apt-get install cmake
-    # libstdc++-4.8-dev
-    - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
-    # clang++-3.2 and gcc 4.8
-    - sudo add-apt-repository --yes ppa:h-rayflood/llvm
-    - sudo apt-get -qq update
-    # No ppa for GLFW3 at this time. Compiling by hand!
-    - sudo apt-get -qq install xorg-dev libglu1-mesa-dev
-    - git clone --depth=100 https://github.com/glfw/glfw.git
-    - cd glfw
-    - CMAKE_CXX_FLAGS=-fPIC CMAKE_C_FLAGS=-fPIC cmake -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:bool=true .
-    - sudo make install
-    - cd ..
-    # Download GLM 9.5 from github
-    - wget https://github.com/g-truc/glm/archive/0.9.5.3.zip
-    - unzip 0.9.5.3.zip -d /tmp
-    - sudo cp -r /tmp/glm-0.9.5.3/glm /usr/include
+    - git submodule update --init
+    - export CXX="$COMPILER"
+    - ${CXX} --version
+    - echo $LANG
+    - echo $LC_ALL
+    # Grabs Cmake 3.2
+    - ./travis/install_cmake.sh
+    - ls -lha $HOME/cmake/
+    - export PATH=$HOME/cmake/:$HOME/cmake/bin/:$PATH
+    - cmake --version
+    - ./travis/install_deps.sh
+    - export GLFW_ROOT_DIR=$HOME/lib/$COMPILER/glfw-lib
+    - export GLM_ROOT_DIR=$HOME/lib/$COMPILER/glm
+    - export GTEST_ROOT=$HOME/lib/$COMPILER/gtest-1.7.0
+
 install:
-    - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
-    - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
-# GLEW
-    - sudo apt-get -q -y install libglew-dev
-# GTest
-    - sudo apt-get -q -y install libgtest-dev
-    - BUILD_PATH=$(pwd)
-    - cd /usr/src/gtest
-    - sudo cmake CMakeLists.txt
-    - sudo make
-    - GTEST_ROOT=/usr/src/gtest
-    - export GTEST_ROOT
-    - cd $BUILD_PATH
-#    - sudo apt-get -y install automake libtool cmake
+
 before_script:
-  - mkdir build
-  - cd build
-  - cmake -DCMAKE_BUILD_TYPE=Debug ..
+    - mkdir -p build
+    - cd build
+    - cmake -DCMAKE_BUILD_TYPE=Debug ..
+
 script:
-  - make
-  - cd bin
-  - ./unit_test
-  - cd ..
-  - make package
+    - make
+    - cd bin
+    - ./unit_test
+    - cd ..
+    - make package
 
 notifications:
-    email:
-      - luis.panadero@gmail.com
     irc:
-      - "chat.freenode.net#project-trillek"
-      - "chat.freenode.net#trillek"
+        channels:
+            - "chat.freenode.net#trillek"
+        on_success: change
+        on_failure: always
