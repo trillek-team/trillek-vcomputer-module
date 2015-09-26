@@ -10,37 +10,37 @@ cache:
 matrix:
     include:
         - os: linux
-        compiler: gcc
-        addons:
-            apt:
-                sources: ['ubuntu-toolchain-r-test']
-                packages:
-                  - gcc-4.9
-                  - g++-4.9
-                    - libx11-dev
-                    - libgl1-mesa-dev
-                    - xorg-dev
-                    - libglu1-mesa-dev
-                    - libglew-dev
-                    - libopenal-dev
-        env: COMPILER=g++-4.9
+          compiler: gcc
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages:
+                      - gcc-4.9
+                      - g++-4.9
+                      - libx11-dev
+                      - libgl1-mesa-dev
+                      - xorg-dev
+                      - libglu1-mesa-dev
+                      - libglew-dev
+                      - libopenal-dev
+          env: COMPILER=g++-4.9
 
         - os: linux
-        compiler: clang
-        addons:
-            apt:
-                sources:
-                    - ubuntu-toolchain-r-test
-                    - llvm-toolchain-precise-3.7
-                packages:
-                    - clang-3.7
-                    - libx11-dev
-                    - libgl1-mesa-dev
-                    - xorg-dev
-                    - libglu1-mesa-dev
-                    - libglew-dev
-                    - libopenal-dev
-        env: COMPILER=clang++-3.7
+          compiler: clang
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-test
+                      - llvm-toolchain-precise-3.7
+                  packages:
+                      - clang-3.7
+                      - libx11-dev
+                      - libgl1-mesa-dev
+                      - xorg-dev
+                      - libglu1-mesa-dev
+                      - libglew-dev
+                      - libopenal-dev
+          env: COMPILER=clang++-3.7
 
 before_install:
     - git submodule update --init
@@ -73,11 +73,8 @@ script:
     - make package
 
 notifications:
-    #    email:
-    #    - luis.panadero@gmail.com
     irc:
         channels:
             - "chat.freenode.net#trillek"
-              #      - "chat.freenode.net#project-trillek"
         on_success: change
         on_failure: always
