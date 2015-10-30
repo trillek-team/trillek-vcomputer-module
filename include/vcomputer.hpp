@@ -110,9 +110,17 @@ public:
      * Writes a copy of CPU state in a chunk of memory pointer by ptr.
      * \param ptr Pointer were to write
      * \param size Size of the chunk of memory were can write. If is
-     * sucesfull, it will be set to the size of the write data.
+     * successful, it will be set to the size of the write data.
      */
 	DECLDIR void GetState(void* ptr, std::size_t size) const;
+	
+
+    /**
+     * Sets the CPU state from a chunk of memory pointer by ptr.
+     * \param ptr Pointer were to read state from.
+     * \param size Size of the chunk of memory we're reading from
+     */
+	DECLDIR bool SetState(void* ptr, std::size_t size);
 
     /**
      * Gets a pointer were is stored the ROM data

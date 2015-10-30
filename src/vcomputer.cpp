@@ -178,6 +178,13 @@ void VComputer::GetState (void* ptr, std::size_t size) const {
     }
 }
 
+bool VComputer::SetState (void* ptr, std::size_t size) {
+    if (cpu) {
+        return cpu->SetState(ptr, size);
+    }
+	return false;
+}
+
 void VComputer::SetROM (const Byte* rom, std::size_t rom_size) {
     assert (rom != nullptr);
     assert (rom_size > 0);
