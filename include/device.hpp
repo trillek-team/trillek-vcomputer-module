@@ -9,7 +9,6 @@
 #define __IDEVICE_HPP_ 1
 
 #include "types.hpp"
-#include "vcomputer.hpp"
 #include "vc_dll.hpp"
 
 namespace trillek {
