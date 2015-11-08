@@ -14,6 +14,7 @@
 #include "vc.hpp"
 #include "tr3200/dis_tr3200.hpp"
 #include "devices/dummy_device.hpp"
+#include "device_factory.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -208,6 +209,8 @@ int main(int argc, char* argv[]) {
 
     std::printf("Trillek Virtual Compuver v%u.%u.%u Build %s\n",
             GetMajorVersion(), GetMinorVersion(), GetPatchVersion(), GetBuildVersion());
+
+    trillek::computer::registerDefaultDevices();
 
     VmParamaters options(argc, (const char**)argv); // Parse parameters
 

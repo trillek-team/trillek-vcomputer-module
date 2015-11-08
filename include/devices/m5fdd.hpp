@@ -208,6 +208,12 @@ public:
      */
 	DECLDIR void ejectFloppy();
 
+    /**
+     * Create a new device.
+     * \return The newly created Device
+     */
+    static Device* CreateNew() { return new M5FDD(); }
+
 private:
 
     /**

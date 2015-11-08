@@ -146,6 +146,12 @@ public:
         do_int = int_msg != 0x0000;
     }
 
+    /**
+     * Create a new device.
+     * \return The newly created Device
+     */
+    static Device* CreateNew() { return new DebugSerialConsole; }
+
 protected:
 
     Word a;

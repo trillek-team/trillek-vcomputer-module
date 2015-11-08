@@ -261,6 +261,12 @@ public:
         DWord keyevent = ( (status & 7) << 24 ) | (keycode << 16) | scancode;
         keybuffer.push_back(keyevent);
     }
+
+    /**
+     * Create a new device.
+     * \return The newly created Device
+     */
+    static Device* CreateNew() { return new GKeyboardDev(); }
 };
 
     
