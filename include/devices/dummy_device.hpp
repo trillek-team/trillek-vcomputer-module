@@ -111,6 +111,12 @@ public:
         return true;
     }
 
+    /**
+     * Create a new device.
+     * \return The newly created Device
+     */
+    static Device* CreateNew() { return new DummyDevice; }
+
     Word a, b, c, d, e;
 };
 

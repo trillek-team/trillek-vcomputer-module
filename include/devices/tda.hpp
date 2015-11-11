@@ -260,6 +260,12 @@ public:
         do_vsync = (vsync_msg != 0x0000);
     }
 
+    /**
+     * Create a new device.
+     * \return The newly created Device
+     */
+    static Device* CreateNew() { return new TDADev(); }
+
 protected:
 
     DWord buffer_ptr;
