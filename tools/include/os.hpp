@@ -45,8 +45,8 @@ namespace OS {
 				if (glfwInit() != GL_TRUE) {
 					std::cerr << "Can't start GLFW\n";
 					return false;
-				}
-#ifdef __APPLE__
+                }
+#ifndef _WIN32
                 // Try to grab latest OpenGL version on OSX
                 // Source : http://antongerdelan.net/opengl/hellotriangle.html
 				glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
@@ -90,9 +90,18 @@ namespace OS {
                 }
 #endif
 
+                /*Flush the error buffer. According to the OpenGL official
+                wiki, some version of GLEW generate a GL_INVALID_ENUM when
+                glewInit() is called which can be safely ignored. Do not remove
+                unless you know what you do.*/
+
+                glGetError();
+
+                //===================
+
 				std::string gl_version, gl_renderer;
-				gl_version = (char*)glGetString(GL_VERSION);
-				gl_renderer = (char*)glGetString(GL_RENDERER);
+                gl_version = (char*)glGetString(GL_VERSION);
+                gl_renderer = (char*)glGetString(GL_RENDERER);
 
 				std::cout << "Renderer: " << gl_renderer << "\n";
 				std::cout << "OpenGL Version: " << gl_version << "\n";
