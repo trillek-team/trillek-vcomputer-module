@@ -139,7 +139,7 @@ bool NVRAM::Load (std::istream& stream) {
     if (stream.good() && ! stream.eof()) {
         try {
             stream.read(reinterpret_cast<char*>(eprom), 256);
-        } catch (std::exception& ex) {
+        } catch (std::exception&) {
             return false;
         }
         dirty = false;
@@ -152,7 +152,7 @@ bool NVRAM::Save (std::ostream& stream) {
     if (stream.good() && ! stream.eof()) {
         try {
             stream.write(reinterpret_cast<char*>(eprom), 256);
-        } catch (std::exception& ex) {
+        } catch (std::exception&) {
             return false;
         }
         dirty = false;

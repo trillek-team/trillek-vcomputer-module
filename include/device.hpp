@@ -34,8 +34,8 @@ public:
      * \param[in] vcomp VComputer pointer or nullptr
      * \sa VComputer
      */
-    virtual void SetVComputer (VComputer* vcomp) {
-        this->vcomp = vcomp;
+    virtual void SetVComputer (VComputer* _vcomp) {
+        this->vcomp = _vcomp;
     }
 
     /**
@@ -48,21 +48,21 @@ public:
      * Sends (writes to CMD register) a command to the device
      * \param cmd Command value to send
      */
-    virtual void SendCMD (Word cmd) = 0;
+    virtual void SendCMD (Word) = 0;
 
-    virtual void A (Word cmd) {
+    virtual void A (Word) {
     } /// Set A register value
 
-    virtual void B (Word cmd) {
+    virtual void B (Word) {
     } /// Set B register value
 
-    virtual void C (Word cmd) {
+    virtual void C (Word) {
     } /// Set C register value
 
-    virtual void D (Word cmd) {
+    virtual void D (Word) {
     } /// Set D register value
 
-    virtual void E (Word cmd) {
+    virtual void E (Word) {
     } /// Set E register value
 
     virtual Word A () {
@@ -122,7 +122,7 @@ public:
      * \param n Number of clock cycles to be executed
      * \param delta Number milliseconds since the last call
      */
-    virtual void Tick (unsigned n = 1, const double delta = 0) {
+    virtual void Tick (unsigned, const double) {
     }
 
     /**
@@ -132,7 +132,7 @@ public:
      * \param[out] msg The interrupt message will be writen here
      * \return True if is generating a new interrupt
      */
-    virtual bool DoesInterrupt(Word& msg) {
+    virtual bool DoesInterrupt(Word&) {
         return false;
     }
 

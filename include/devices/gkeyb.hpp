@@ -186,7 +186,7 @@ public:
     }
 
     virtual Word E () {
-        return keybuffer.size();
+        return static_cast<Word>(keybuffer.size());
     }
 
     /**

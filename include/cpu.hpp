@@ -35,8 +35,8 @@ public:
      * This method must be only called by VComputer itself
      * @param vcomp VComputer pointer or nullptr
      */
-    void SetVComputer (computer::VComputer* vcomp) {
-        this->vcomp = vcomp;
+    void SetVComputer (computer::VComputer* _vcomp) {
+        this->vcomp = _vcomp;
     }
 
     /**
