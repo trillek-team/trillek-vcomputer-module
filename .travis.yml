@@ -4,7 +4,6 @@ sudo: false
 
 cache:
   directories:
-      - $HOME/cmake
       - $HOME/lib
 
 matrix:
@@ -15,15 +14,17 @@ matrix:
               apt:
                   sources: ['ubuntu-toolchain-r-test']
                   packages:
-                      - gcc-4.9
-                      - g++-4.9
+                      - gcc-7.0
+                      - g++-7.0
                       - libx11-dev
                       - libgl1-mesa-dev
                       - xorg-dev
                       - libglu1-mesa-dev
                       - libglew-dev
                       - libopenal-dev
-          env: COMPILER=g++-4.9
+                      - cmake-data
+                      - cmake
+          env: COMPILER=g++-7.0
 
         - os: linux
           compiler: clang
@@ -31,16 +32,18 @@ matrix:
               apt:
                   sources:
                       - ubuntu-toolchain-r-test
-                      - llvm-toolchain-precise-3.7
+                      - llvm-toolchain-trusty-5.0
                   packages:
-                      - clang-3.7
+                      - clang-5.0
                       - libx11-dev
                       - libgl1-mesa-dev
                       - xorg-dev
                       - libglu1-mesa-dev
                       - libglew-dev
                       - libopenal-dev
-          env: COMPILER=clang++-3.7
+                      - cmake-data
+                      - cmake
+          env: COMPILER=clang++-5.0
 
 before_install:
     - git submodule update --init
@@ -48,10 +51,6 @@ before_install:
     - ${CXX} --version
     - echo $LANG
     - echo $LC_ALL
-    # Grabs Cmake 3.2
-    - ./travis/install_cmake.sh
-    - ls -lha $HOME/cmake/
-    - export PATH=$HOME/cmake/:$HOME/cmake/bin/:$PATH
     - cmake --version
     - ./travis/install_deps.sh
     - export GLFW_ROOT_DIR=$HOME/lib/$COMPILER/glfw-lib
