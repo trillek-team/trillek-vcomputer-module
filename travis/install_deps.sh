@@ -20,11 +20,11 @@ else
     echo "GLM - Using cached directory";
 fi
 
-if [ ! -d "$HOME/lib/$COMPILER/gtest-release-1.7.0/include" ]; then
+if [ ! -d "$HOME/lib/$COMPILER/googletest-release-1.7.0/include" ]; then
     # Download GTest
     wget https://github.com/google/googletest/archive/release-1.7.0.zip
-    unzip googletest-release-1.7.0 -d $HOME/lib/$COMPILER
-    cd $HOME/lib/$COMPILER/gtest-release-1.7.0
+    unzip release-1.7.0 -d $HOME/lib/$COMPILER
+    cd $HOME/lib/$COMPILER/googletest-release-1.7.0
     cmake . && make
 else
     echo "Google Test - Using cached directory";
