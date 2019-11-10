@@ -14,8 +14,8 @@ matrix:
               apt:
                   sources: ['ubuntu-toolchain-r-test']
                   packages:
-                      - gcc-7.0
-                      - g++-7.0
+                      - gcc-7
+                      - g++-7
                       - libx11-dev
                       - libgl1-mesa-dev
                       - xorg-dev
@@ -24,7 +24,7 @@ matrix:
                       - libopenal-dev
                       - cmake-data
                       - cmake
-          env: COMPILER=g++-7.0
+          env: COMPILER=g++-7
 
         - os: linux
           compiler: clang
