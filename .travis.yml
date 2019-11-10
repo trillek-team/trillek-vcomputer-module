@@ -22,28 +22,22 @@ matrix:
                       - libglu1-mesa-dev
                       - libglew-dev
                       - libopenal-dev
-                      - cmake-data
-                      - cmake
           env: COMPILER=g++-7
 
         - os: linux
           compiler: clang
           addons:
               apt:
-                  sources:
-                      - ubuntu-toolchain-r-test
-                      - llvm-toolchain-trusty-5.0
+                  sources: ['ubuntu-toolchain-r-test']
                   packages:
-                      - clang-5.0
+                      - clang-7.0
                       - libx11-dev
                       - libgl1-mesa-dev
                       - xorg-dev
                       - libglu1-mesa-dev
                       - libglew-dev
                       - libopenal-dev
-                      - cmake-data
-                      - cmake
-          env: COMPILER=clang++-5.0
+          env: COMPILER=clang++-7.0
 
 before_install:
     - git submodule update --init
