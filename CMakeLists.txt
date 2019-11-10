@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.9)
 
 PROJECT(VCOMPUTER)
-SET(CMAKE_CXX_STANDARD_REQUIRED 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 INCLUDE(CMakeDependentOption)
 INCLUDE(InstallRequiredSystemLibraries)
@@ -69,18 +70,18 @@ SET(VCOMPUTER_INCLUDE_DIRS
 
 # Source dirs
 FILE(GLOB VCOMPUTER_SRC
-    "src/*.cpp"
-    "src/tr3200/*.cpp"
-    "src/devices/*.cpp"
-    "src/*.hpp"
-    "src/tr3200/*.hpp"
-    "src/devices/*.hpp"
-    "src/*.inc"
-    "src/tr3200/*.inc"
-    "src/devices/*.inc"
-    "include/*.hpp"
-    "include/tr3200/*.hpp"
-    "include/devices/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/tr3200/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/devices/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/tr3200/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/devices/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.inc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/tr3200/*.inc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/devices/*.inc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/tr3200/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/devices/*.hpp"
     )
 
 # Apply all configuration stuff to config.hpp.in
