@@ -30,16 +30,16 @@ matrix:
               apt:
                   sources: 
                       - ubuntu-toolchain-r-test
-                      - llvm-toolchain-xenial-7.0
+                      - llvm-toolchain-trusty-7
                   packages:
-                      - clang-7.0
+                      - clang-7
                       - libx11-dev
                       - libgl1-mesa-dev
                       - xorg-dev
                       - libglu1-mesa-dev
                       - libglew-dev
                       - libopenal-dev
-          env: COMPILER=clang++-7.0
+          env: COMPILER=clang++-7
 
 before_install:
     - git submodule update --init
