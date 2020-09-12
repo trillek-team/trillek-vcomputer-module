@@ -18,6 +18,7 @@
 
 // VM CPUs
 #include "tr3200/tr3200.hpp"
+#include "dcpu16n/dcpu16n.hpp"
 
 // Devices
 #include "devices/tda.hpp"

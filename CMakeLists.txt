@@ -72,15 +72,19 @@ SET(VCOMPUTER_INCLUDE_DIRS
 FILE(GLOB VCOMPUTER_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/tr3200/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/dcpu16n/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/devices/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/tr3200/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/dcpu16n/*.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/devices/*.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.inc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/tr3200/*.inc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/dcpu16n/*.inc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/devices/*.inc"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/tr3200/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/dcpu16n/*.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/devices/*.hpp"
     )
 
