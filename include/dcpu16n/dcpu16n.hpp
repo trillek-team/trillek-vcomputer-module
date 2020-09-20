@@ -8,8 +8,8 @@
 #ifndef __DCPU16N_HPP__
 #define __DCPU16N_HPP__
 
-#include "cpu.hpp"
-#include "vcomputer.hpp"
+#include "../cpu.hpp"
+#include "../vcomputer.hpp"
 
 namespace trillek {
 namespace computer {

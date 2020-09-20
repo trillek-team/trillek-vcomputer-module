@@ -1,6 +1,9 @@
 /**
  * Trillek Virtual Computer - DisDCPU16N.cpp
  * OnLine dis-assembly of DCPU-16N machine code
+ *
+ * Implementation of the DCPU-16N CPU v0.8
+ * @see https://gist.github.com/Meisaka/8800367
  */
 
 #include "dcpu16n/dis_dcpu16n.hpp"

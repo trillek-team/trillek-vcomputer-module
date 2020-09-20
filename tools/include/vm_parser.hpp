@@ -106,7 +106,7 @@ struct VmParamaters {
 
                     if (strncmp(arg, "tr3200", 6) == 0 || strncmp(arg, "TR3200", 6) == 0) {
                         cpu = CpuToUse::TR3200;
-                    } else if (strncmp(arg, "DCPU-16N", 6) == 0 || strncmp(arg, "dcpu-16n", 6) == 0) {
+                    } else if (strncmp(arg, "DCPU-16N", 8) == 0 || strncmp(arg, "dcpu-16n", 8) == 0) {
                         cpu = CpuToUse::DCPU16N;
                     }
 
@@ -178,17 +178,6 @@ struct VmParamaters {
                     "\t-b val : Inserts a breakpoint at address val (could be hexadecimal or decimal).\n"
                     "\t--ext-keys : Allow extra (non-standard) keycodes with virtual keyboard.\n"
                     "\t-h or --help : Shows this help\n");
-                    std::printf("Virtual Computer toy Emulator\n\n");
-                    std::printf("Usage:\n");
-                    std::printf("\t%s -r romfile [other parameters]\n\n", argv[0]);
-                    std::printf("Parameters:\n");
-                    std::printf("\t-r file or --rom file : RAW binary file for the ROM 32 KiB\n");
-                    std::printf("\t-d file or --disk file : Disk file\n");
-                    std::printf("\t-c val or --cpu val : Sets the CPU to use, from \"tr3200\" or \"dcpu-16n\"\n");
-                    std::printf("\t-m val or --disk val : How many RAM have the computer in KiB. Must be > 128 and < 1024. Will be round to a multiple of 128\n");
-                    std::printf("\t--clock val : CPU clock speed in Khz. Must be 100, 250, 500 or 1000.\n");
-                    std::printf("\t-b val : Inserts a breakpoint at address val (could be hexadecimal or decimal).\n");
-                    std::printf("\t-h or --help : Shows this help\n");
 
                     ask_help = true;
 

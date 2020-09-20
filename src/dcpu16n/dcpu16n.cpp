@@ -3,6 +3,8 @@
 * \file        dcpu16n.cpp
 * \copyright   The MIT License (MIT)
 *
+* Implementation of the DCPU-16N CPU v0.8
+* @see https://gist.github.com/Meisaka/8800367
 */
 
 #include "dcpu16n/dcpu16n.hpp"
