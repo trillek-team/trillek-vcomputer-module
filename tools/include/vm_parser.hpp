@@ -18,7 +18,7 @@
 
 enum class CpuToUse {
     TR3200,
-//    DCPU16N
+    DCPU16N
 };
 
 enum VmExtentions : unsigned {
@@ -106,9 +106,9 @@ struct VmParamaters {
 
                     if (strncmp(arg, "tr3200", 6) == 0 || strncmp(arg, "TR3200", 6) == 0) {
                         cpu = CpuToUse::TR3200;
-                    }/* else if (strncmp(arg, "DCPU-16N", 6) == 0 || strncmp(arg, "dcpu-16n", 6) == 0) {
+                    } else if (strncmp(arg, "DCPU-16N", 8) == 0 || strncmp(arg, "dcpu-16n", 8) == 0) {
                         cpu = CpuToUse::DCPU16N;
-                    }*/
+                    }
 
                 } else if(strncmp(arg, "m", 1) == 0 || strncmp(arg, "-mem", 4) == 0) {
                     // Total RAM
