@@ -193,8 +193,17 @@ public:
     }
 
 private:
+    void createMedia(const std::string& filename, DiskDescriptor* info);
+    void writeHeader();
+    int readHeader();
+    void writeBitmap();
+    void readBitmap();
+    void makeOffsets();
+    void upgradeMedia(char to_version);
 
     char HEADER_VERSION;
+    size_t offset_sectors;
+    size_t offset_bitmap;
 
     std::string filename;  /// file name of disk file
     std::fstream datafile; /// disk file on host

@@ -20,6 +20,7 @@
 #include "keyboard_input_system.hpp"
 
 #include <cstdio>
+#include <string>
 #include <iostream>
 
 namespace OS {

@@ -487,19 +487,19 @@ unsigned TR3200::RealStep() {
 
             case P2_OPCODE::SIGXB:
                 if ( (rn & 0x00000080) != 0 ) {
-                    rd |= 0xFFFFFF00; // Negative
+                    r[rd] = rn | 0xFFFFFF00; // Negative
                 }
                 else {
-                    rd &= 0x000000FF; // Positive
+                    r[rd] = rn & 0x000000FF; // Positive
                 }
                 break;
 
             case P2_OPCODE::SIGXW:
                 if ( (rn & 0x00008000) != 0 ) {
-                    rd |= 0xFFFF0000; // Negative
+                    r[rd] = rn | 0xFFFF0000; // Negative
                 }
                 else {
-                    rd &= 0x0000FFFF; // Positive
+                    r[rd] = rn & 0x0000FFFF; // Positive
                 }
                 break;
 
